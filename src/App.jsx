@@ -796,7 +796,7 @@ const App = () => {
           </div>
         </header>
 
-        <div className="flex-1 overflow-x-auto overflow-y-hidden p-4 md:p-6 xl:p-8 bg-bg">
+        <div className={`flex-1 bg-bg p-4 md:p-6 xl:p-8 ${activeTab === 'pipeline' ? 'overflow-x-auto overflow-y-hidden' : 'overflow-y-auto overflow-x-hidden'}`}>
           {activeTab === 'pipeline' && (
             <div className="flex overflow-x-auto pb-4 h-full gap-4 items-start snap-x snap-mandatory">
               {stages.map(stage => (
@@ -965,7 +965,7 @@ const App = () => {
               </div>
 
               {/* 2. Monthly Goal & Pipeline Health */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Monthly Goal */}
                 <Card className="p-8 lg:col-span-1 flex flex-col justify-center relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent pointer-events-none"></div>
@@ -1003,7 +1003,7 @@ const App = () => {
                 </Card>
 
                 {/* Pipeline Health (Bar Chart) */}
-                <Card className="p-6 lg:col-span-2">
+                <Card className="p-6 md:col-span-1 lg:col-span-2">
                   <h3 className="font-bold text-lg mb-6 text-text-main flex items-center gap-2"><BarChart3 size={20} className="text-warm-blue" /> Pipeline Health</h3>
                   <div className="grid grid-cols-5 gap-4 h-32 items-end">
                     {['lead', 'contact', 'quotation', 'negotiation', 'won'].map(stage => {
@@ -1024,7 +1024,7 @@ const App = () => {
               </div>
 
               {/* 3. Top Deals & Loss Analysis */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                 <Card className="p-6">
                   <h3 className="font-bold text-lg mb-4 text-text-main flex items-center"><Trophy size={18} className="mr-2 text-yellow-500" /> Top Opportunities</h3>
                   <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="text-text-muted border-b border-gray-100"><tr><th className="pb-3 pl-2">Deal Name</th><th className="pb-3 text-right pr-2">Value</th></tr></thead><tbody className="divide-y divide-gray-50">{deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').sort((a, b) => b.value - a.value).slice(0, 5).map(deal => (<tr key={deal.id} className="group hover:bg-gray-50 transition-colors"><td className="py-3 pl-2 font-medium text-text-main">{deal.title}<div className="text-[10px] text-text-muted">{deal.company}</div></td><td className="py-3 text-right pr-2 font-bold text-accent">{formatCurrency(deal.value)}</td></tr>))}</tbody></table></div>
