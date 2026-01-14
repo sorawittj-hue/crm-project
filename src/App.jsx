@@ -833,7 +833,15 @@ const App = () => {
                       }
 
                       return (
-                        <div key={deal.id} draggable="true" onDragStart={(e) => handleDragStart(e, deal.id)} onClick={() => handleDealClick(deal)} className={`${staleStyle} p-5 rounded-3xl shadow-clay-sm border hover:shadow-clay-md cursor-pointer hover:-translate-y-1 transition-all active:scale-95 group relative overflow-hidden`}>
+                        <div
+                          key={deal.id}
+                          draggable="true"
+                          onDragStart={(e) => handleDragStart(e, deal.id)}
+                          onClick={() => handleDealClick(deal)}
+                          onContextMenu={(e) => e.preventDefault()} // Block native popup
+                          style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
+                          className={`${staleStyle} p-5 rounded-3xl shadow-clay-sm border hover:shadow-clay-md cursor-pointer hover:-translate-y-1 transition-all active:scale-95 group relative overflow-hidden`}
+                        >
                           {staleBadge}
                           <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/80 to-transparent rounded-bl-full pointer-events-none opacity-50"></div>
                           <div className="flex justify-between items-start mb-3 relative z-10">
