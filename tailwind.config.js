@@ -36,6 +36,15 @@ export default {
       },
       fontFamily: {
         sans: ['"Nunito"', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'], // Suggesting a rounder font
+      },
+      animation: {
+        'fade-in-down': 'fadeInDown 0.5s ease-out forwards',
+      },
+      keyframes: {
+        fadeInDown: {
+          '0%': { opacity: '0', transform: 'translateY(-20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        }
       }
     },
   },

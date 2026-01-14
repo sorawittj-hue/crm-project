@@ -5,7 +5,7 @@ import {
   CheckCircle2, Upload, Download, FileSpreadsheet, AlertCircle,
   FileText, CheckSquare, MessageSquare, Trash2, XCircle, Clock, ArrowRight,
   Cpu, Calculator, Server, HardDrive, Wrench, ChevronRight, RotateCcw,
-  Battery, Zap, Signal, PieChart, BarChart3, Target, Sparkles, Wand2, TrendingUp
+  Battery, Zap, Signal, PieChart, BarChart3, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
@@ -167,6 +167,7 @@ const App = () => {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [isLostModalOpen, setIsLostModalOpen] = useState(false);
+  const [isEditingDetails, setIsEditingDetails] = useState(false);
 
   // UX State
   const [draggedDeal, setDraggedDeal] = useState(null);
@@ -231,23 +232,129 @@ const App = () => {
   }, []);
 
   const stages = [
-    { id: 'lead', title: 'ลูกค้าใหม่ (Lead)', color: 'bg-primary/20 border-primary/30', textColor: 'text-text-main' },
-    { id: 'contact', title: 'ติดต่อแล้ว', color: 'bg-warm-blue/20 border-warm-blue/30', textColor: 'text-warm-blue-dark' },
-    { id: 'proposal', title: 'ส่งใบเสนอราคา', color: 'bg-warm-yellow/20 border-warm-yellow/30', textColor: 'text-warm-yellow-dark' },
-    { id: 'negotiation', title: 'กำลังเจรจา', color: 'bg-warm-purple/20 border-warm-purple/30', textColor: 'text-warm-purple-dark' },
-    { id: 'won', title: 'ปิดการขายสำเร็จ', color: 'bg-warm-green/20 border-warm-green/30', textColor: 'text-warm-green-dark' },
+    { id: 'lead', title: 'ลูกค้าใหม่ (Cold)', color: 'bg-primary/20 border-primary/30', textColor: 'text-text-main' },
+    { id: 'contact', title: 'เริ่มพูดคุย (Warm)', color: 'bg-warm-blue/20 border-warm-blue/30', textColor: 'text-warm-blue-dark' },
+    { id: 'proposal', title: 'ส่งใบเสนอราคา (Warm+)', color: 'bg-warm-yellow/20 border-warm-yellow/30', textColor: 'text-warm-yellow-dark' },
+    { id: 'negotiation', title: 'เจรจา/ปิดดีล (Hot 🔥)', color: 'bg-orange-100 border-orange-200', textColor: 'text-orange-700' },
+    { id: 'won', title: 'ปิดการขาย (Won)', color: 'bg-warm-green/20 border-warm-green/30', textColor: 'text-warm-green-dark' },
     { id: 'lost', title: 'หลุด/แพ้ (Lost)', color: 'bg-warm-red/20 border-warm-red/30', textColor: 'text-warm-red-dark' },
   ];
 
   // Logic Functions
   const handleDealClick = (deal) => setSelectedDeal(deal);
 
+  // Toast State
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+  };
+
   const handleUpdateDeal = async (dealId, data) => {
+    data.lastActivity = new Date().toISOString(); // Update timestamp for Stale Alert / Sorting
+    // 1. Optimistic Update
+    let updatedDeal = null;
+    setDeals(prev => prev.map(d => {
+      if (d.id === dealId) {
+        updatedDeal = { ...d, ...data, updatedAt: new Date().toISOString() };
+        return updatedDeal;
+      }
+      return d;
+    }));
+
+    // 2. Workflow Automation Logic (Smart Stage Triggers)
+    if (updatedDeal && data.stage) {
+      // Define Rules for each Stage
+      const stageAutomations = {
+        'lead': { task: 'ตรวจสอบข้อมูลลูกค้าเบื้องต้น (Auto)', check: 'ตรวจสอบข้อมูล' },
+        'contact': { task: 'โทรหาลูกค้าเพื่อแนะนำตัว (Auto)', check: 'โทร' },
+        'proposal': { task: 'จัดเตรียมและส่งใบเสนอราคา (Auto)', check: 'ใบเสนอราคา' },
+        'negotiation': { task: 'ติดตามผลและต่อรองเงื่อนไข (Auto)', check: 'ต่อรอง' },
+        'won': { task: 'เตรียมสัญญาและเอกสารปิดการขาย (Auto)', check: 'สัญญา' },
+        'lost': { task: 'วิเคราะห์สาเหตุที่หลุด (Auto)', check: 'วิเคราะห์' }
+      };
+
+      const rule = stageAutomations[data.stage];
+
+      if (rule) {
+        // Check if task already exists
+        const hasTask = updatedDeal.tasks?.some(t => t.text.includes(rule.check));
+
+        if (!hasTask) {
+          const newTaskItem = {
+            id: Date.now(), // Generate ID
+            text: rule.task,
+            date: new Date().toISOString(),
+            completed: false
+          };
+
+          updatedDeal.tasks = [...(updatedDeal.tasks || []), newTaskItem];
+
+          // Re-update state with the new task
+          setDeals(prev => prev.map(d => d.id === dealId ? updatedDeal : d));
+
+          // Add to payload for Supabase
+          data.tasks = updatedDeal.tasks;
+
+          showToast(`⚡ Smart Trigger: สร้าง Task '${rule.task}'`, "success");
+        }
+      }
+    }
+
     try {
       const { error } = await supabase.from('deals').update(data).eq('id', dealId);
       if (error) console.error("Error updating deal:", error);
     } catch (error) { console.error("Error updating deal:", error); }
   };
+
+  // Rule 2: "If Inactive > 7 Days -> Notify/Add Task" (Run on Load)
+  useEffect(() => {
+    if (loading || !deals.length) return;
+
+    const checkInactivity = async () => {
+      const now = new Date();
+      let automationTriggered = false;
+
+      const updates = deals.map(deal => {
+        if (deal.stage === 'won' || deal.stage === 'lost') return deal; // Ignore finished deals
+
+        const lastActivityDate = new Date(deal.lastActivity || deal.createdAt); // Fallback to CreatedAt
+        const diffTime = Math.abs(now - lastActivityDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays > 7) {
+          const hasFollowUpTask = deal.tasks?.some(t => t.text.includes('7 วัน'));
+          if (!hasFollowUpTask) {
+            const newTaskItem = {
+              id: Date.now() + Math.random(), // Ensure unique ID
+              text: '⚠️ แจ้งเตือน: เงียบไปเกิน 7 วัน (Auto)',
+              date: now.toISOString(),
+              completed: false
+            };
+
+            // Trigger Supabase Update for this deal
+            supabase.from('deals').update({
+              tasks: [...(deal.tasks || []), newTaskItem]
+            }).eq('id', deal.id);
+
+            automationTriggered = true;
+            return { ...deal, tasks: [...(deal.tasks || []), newTaskItem] };
+          }
+        }
+        return deal;
+      });
+
+      if (automationTriggered) {
+        setDeals(updates);
+        showToast("🔔 Automation: ตรวจพบดีลเงียบเกิน 7 วัน", "warning");
+      }
+    };
+
+    // Run once when deals are loaded and stable
+    const timeoutId = setTimeout(checkInactivity, 2000); // Small delay to ensure data is ready
+    return () => clearTimeout(timeoutId);
+
+  }, [loading /* Only Re-run if loading changes (initial load), NOT on every deal change to avoid loops */]);
 
   const handleAddNote = async (e) => {
     e.preventDefault();
@@ -299,7 +406,7 @@ const App = () => {
       value: Number(formData.get('value')),
       stage: 'lead',
       probability: 20,
-      lastActivity: new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }),
+      lastActivity: new Date().toISOString(),
       createdAt: new Date().toISOString(),
       notes: [], tasks: []
     };
@@ -358,6 +465,55 @@ const App = () => {
     }
   };
 
+  const handleMarkLost = async (e) => {
+    e.preventDefault();
+    if (!selectedDeal) return;
+    const formData = new FormData(e.target);
+    const reason = formData.get('reason');
+    const followUpMonths = formData.get('followUp');
+
+    const updates = { stage: 'lost', lostReason: reason };
+
+    // Win-Back Strategy: Auto-create Task
+    if (followUpMonths && followUpMonths !== 'no') {
+      const months = parseInt(followUpMonths);
+      const followUpDate = new Date();
+      followUpDate.setMonth(followUpDate.getMonth() + months);
+
+      const task = {
+        id: Date.now(),
+        text: `♻️ Win-Back: ติดตามลูกค้า (เคยหลุด: ${reason})`,
+        date: followUpDate.toISOString(),
+        completed: false
+      };
+      // We need to fetch current tasks first or rely on selectedDeal.tasks
+      updates.tasks = [...(selectedDeal.tasks || []), task];
+      showToast(`ตั้งเตือนติดตามลูกค้าในอีก ${months} เดือนเรียบร้อย`, "success");
+    }
+
+    await handleUpdateDeal(selectedDeal.id, updates);
+    setIsLostModalOpen(false);
+    setSelectedDeal(null);
+  };
+
+  const handleSaveDealDetails = async (e) => {
+    e.preventDefault();
+    if (!selectedDeal) return;
+    const formData = new FormData(e.target);
+
+    const updates = {
+      title: formData.get('title'),
+      value: Number(formData.get('value')),
+      contact: formData.get('contact'),
+      company: formData.get('company'),
+    };
+
+    await handleUpdateDeal(selectedDeal.id, updates);
+    setSelectedDeal(prev => ({ ...prev, ...updates })); // Update local modal state
+    setIsEditingDetails(false);
+    showToast("อัพเดทข้อมูลเรียบร้อย", "success");
+  };
+
   const handleDeleteDeal = async (dealId, e) => {
     e.stopPropagation();
     if (!window.confirm("Are you sure you want to permanently delete this deal?")) return;
@@ -384,7 +540,7 @@ const App = () => {
 
   // Helper Functions
   const downloadTemplate = () => {
-    const csvContent = "Title,Value,Contact,Company,Stage\nออกแบบโลโก้ใหม่,5000,คุณวิชัย,ร้านกาแฟอารีย์,lead\nวางระบบบัญชี,25000,คุณสมหญิง,บริษัท เอสเอ็มอี จำกัด,contact";
+    const csvContent = "\uFEFFTitle,Value,Contact,Company,Stage\nออกแบบเว็บไซต์,50000,คุณวิชัย,Tech Corp,lead\nติดตั้ง Server,120000,คุณสมศรี,Bank inc.,negotiation\nดูแลระบบรายปี,25000,คุณจอร์น,StartUp,won";
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
@@ -404,26 +560,60 @@ const App = () => {
         const text = e.target.result;
         const lines = text.split('\n');
         const dataLines = lines.slice(1).filter(line => line.trim() !== '');
-        let successCount = 0;
-        const collectionRef = collection(db, 'deals');
+
+        const newDeals = [];
+
         for (const line of dataLines) {
+          // Simple CSV split (Note: does not handle commas inside quotes)
           const cols = line.split(',').map(item => item.trim());
           if (cols.length >= 2) {
             const [title, valueStr, contact, company, stageStr] = cols;
             let stage = 'lead';
             if (stageStr && stages.find(s => s.id === stageStr.toLowerCase())) stage = stageStr.toLowerCase();
-            await addDoc(collectionRef, {
-              title: title || 'No Title', value: Number(valueStr) || 0, contact: contact || '',
-              company: company || '', stage: stage, probability: 20,
-              lastActivity: new Date().toLocaleDateString('th-TH'), createdAt: new Date().toISOString(),
-              notes: [], tasks: []
+
+            newDeals.push({
+              title: title || 'No Title',
+              value: Number(valueStr) || 0,
+              contact: contact || '',
+              company: company || '',
+              stage: stage,
+              probability: 20,
+              lastActivity: new Date().toISOString(),
+              createdAt: new Date().toISOString(),
+              notes: [],
+              tasks: []
             });
-            successCount++;
           }
         }
-        setImportStatus(`success:${successCount}`);
-        setTimeout(() => { setImportStatus(null); setIsImportModalOpen(false); }, 2000);
-      } catch (error) { setImportStatus('error'); }
+
+        if (newDeals.length > 0) {
+          const { data, error } = await supabase.from('deals').insert(newDeals).select();
+
+          if (error) {
+            console.error("Supabase Import Error:", error);
+            throw error;
+          }
+
+          // Update Local State immediately
+          if (data) {
+            setDeals(prev => {
+              // Determine unique new deals that aren't already in state (though usually IDs are new)
+              const existingIds = new Set(prev.map(d => d.id));
+              const uniqueNew = data.filter(d => !existingIds.has(d.id));
+              return [...uniqueNew, ...prev];
+            });
+          }
+
+          setImportStatus(`success:${newDeals.length}`);
+          setTimeout(() => { setImportStatus(null); setIsImportModalOpen(false); }, 2000);
+        } else {
+          setImportStatus('error');
+        }
+
+      } catch (error) {
+        console.error("File Parse Error:", error);
+        setImportStatus('error');
+      }
     };
     reader.readAsText(file); event.target.value = '';
   };
@@ -454,20 +644,28 @@ const App = () => {
       {/* Mobile/Tablet Sidebar Overlay (Backdrop) */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 xl:hidden transition-opacity duration-300"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-xl shadow-clay-lg flex items-center gap-3 animate-fade-in-down transition-all duration-300 ${toast.type === 'success' ? 'bg-warm-green text-white' : 'bg-warm-yellow text-text-main'}`}>
+          {toast.type === 'success' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
+          <span className="font-bold">{toast.message}</span>
+        </div>
+      )}
+
       {/* Sidebar Navigation */}
       <aside className={`
-        fixed lg:static inset-y-0 left-0 z-40 
+        fixed xl:static inset-y-0 left-0 z-40 
         w-[280px] min-w-[280px]
         bg-surface text-text-muted 
-        flex flex-col m-0 lg:m-4 lg:rounded-3xl lg:shadow-clay-lg border border-white/50
+        flex flex-col m-0 xl:m-4 xl:rounded-3xl xl:shadow-clay-lg border border-white/50
         transition-transform duration-300 ease-in-out font-sans
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
-        lg:translate-x-0 
+        xl:translate-x-0 
       `}>
         {/* Header / Logo */}
         <div className="h-24 flex items-center justify-between px-8">
@@ -480,7 +678,7 @@ const App = () => {
               <span className="text-accent text-xs font-bold tracking-widest uppercase">Professional</span>
             </div>
           </div>
-          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-text-muted hover:text-accent transition-colors p-1">
+          <button onClick={() => setIsSidebarOpen(false)} className="xl:hidden text-text-muted hover:text-accent transition-colors p-1">
             <X size={24} />
           </button>
         </div>
@@ -560,10 +758,10 @@ const App = () => {
       </aside>
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-screen w-full relative overflow-hidden bg-bg">
-        <header className="h-24 bg-bg/50 backdrop-blur-sm flex justify-between items-center px-8 flex-shrink-0 z-20 sticky top-0">
+        <header className="h-24 bg-bg/50 backdrop-blur-sm flex justify-between items-center px-4 md:px-6 xl:px-8 flex-shrink-0 z-20 sticky top-0">
           <div className="flex items-center gap-3">
-            {/* Show Menu button on Mobile AND Tablet (lg:hidden) */}
-            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+            {/* Show Menu button on Mobile AND Tablet (xl:hidden) */}
+            <button onClick={() => setIsSidebarOpen(true)} className="xl:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
               <Menu size={24} />
             </button>
             <h1 className="text-lg md:text-xl font-bold text-gray-800 truncate">
@@ -598,11 +796,11 @@ const App = () => {
           </div>
         </header>
 
-        <div className="flex-1 overflow-x-auto overflow-y-hidden p-4 md:p-8 bg-bg">
+        <div className="flex-1 overflow-x-auto overflow-y-hidden p-4 md:p-6 xl:p-8 bg-bg">
           {activeTab === 'pipeline' && (
             <div className="flex overflow-x-auto pb-4 h-full gap-4 items-start snap-x snap-mandatory">
               {stages.map(stage => (
-                <div key={stage.id} className={`min-w-[85vw] md:min-w-[340px] w-[85vw] md:w-[340px] flex-shrink-0 flex flex-col max-h-full snap-center px-2 ${stage.id === 'lost' ? 'opacity-70 hover:opacity-100' : ''}`} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, stage.id)}>
+                <div key={stage.id} className={`min-w-[85vw] md:min-w-[320px] lg:min-w-[320px] xl:min-w-[340px] w-[85vw] md:w-[320px] lg:w-[320px] xl:w-[340px] flex-shrink-0 flex flex-col max-h-full snap-center px-2 ${stage.id === 'lost' ? 'opacity-70 hover:opacity-100' : ''}`} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, stage.id)}>
                   <div className={`p-4 mb-4 rounded-2xl bg-surface/40 backdrop-blur-sm border border-white/40 sticky top-0 z-10`}>
                     <div className="flex justify-between items-center mb-1">
                       <h3 className={`font-black text-lg text-text-main`}>{stage.title}</h3>
@@ -611,47 +809,70 @@ const App = () => {
                     <div className="text-sm text-text-muted font-bold">Total: {formatCurrency(getStageTotal(stage.id))}</div>
                   </div>
                   <div className="p-2 overflow-y-auto flex-1 space-y-4 custom-scrollbar touch-pan-y pb-20">
-                    {filteredDeals.filter(deal => deal.stage === stage.id).map(deal => (
-                      <div key={deal.id} draggable="true" onDragStart={(e) => handleDragStart(e, deal.id)} onClick={() => handleDealClick(deal)} className="bg-surface p-5 rounded-3xl shadow-clay-sm border border-white/60 hover:shadow-clay-md cursor-pointer hover:-translate-y-1 transition-all active:scale-95 group relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/80 to-transparent rounded-bl-full pointer-events-none opacity-50"></div>
-                        <div className="flex justify-between items-start mb-3 relative z-10">
-                          <div className="flex flex-col gap-1 max-w-[60%]">
-                            <span className="text-xs font-bold text-accent bg-accent/10 px-3 py-1 rounded-lg truncate">{deal.company}</span>
-                            {deal.ai_score !== undefined && deal.ai_score !== null && (
-                              <div className={`text-[10px] font-bold px-2 py-0.5 rounded border inline-flex items-center gap-1 w-fit
+                    {filteredDeals.filter(deal => deal.stage === stage.id).map(deal => {
+                      // --- Stale Deal Alert Logic ---
+                      let lastActive = new Date(deal.lastActivity); // Try lastActivity
+                      if (isNaN(lastActive.getTime())) lastActive = new Date(deal.createdAt); // Fallback if invalid (e.g. old string format)
+                      const diffHours = (new Date() - lastActive) / (1000 * 60 * 60);
+                      const diffDays = Math.ceil(diffHours / 24);
+
+                      let staleStyle = "bg-surface border-white/60";
+                      let staleBadge = null;
+
+                      if (stage.id === 'lead' && diffHours > 24) {
+                        staleStyle = "bg-orange-50 border-orange-300";
+                        staleBadge = (<div className="absolute top-2 right-2 z-20 flex items-center gap-1 bg-orange-100/90 backdrop-blur-sm text-orange-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-orange-200 shadow-sm animate-pulse"><Zap size={10} fill="currentColor" /> ด่วน {Math.floor(diffHours)} ชม.</div>);
+                      } else if (stage.id === 'proposal' && diffDays > 3) {
+                        staleStyle = "bg-red-50 border-red-300";
+                        staleBadge = (<div className="absolute top-2 right-2 z-20 flex items-center gap-1 bg-red-100/90 backdrop-blur-sm text-red-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-red-200 shadow-sm"><Flame size={10} fill="currentColor" /> ร้อน {diffDays} วัน</div>);
+                      } else if (stage.id === 'negotiation' && diffDays > 7) {
+                        staleStyle = "bg-yellow-50 border-yellow-300";
+                        staleBadge = (<div className="absolute top-2 right-2 z-20 flex items-center gap-1 bg-yellow-100/90 backdrop-blur-sm text-yellow-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-yellow-200 shadow-sm"><AlertTriangle size={10} fill="currentColor" /> เงียบ {diffDays} วัน</div>);
+                      }
+
+                      return (
+                        <div key={deal.id} draggable="true" onDragStart={(e) => handleDragStart(e, deal.id)} onClick={() => handleDealClick(deal)} className={`${staleStyle} p-5 rounded-3xl shadow-clay-sm border hover:shadow-clay-md cursor-pointer hover:-translate-y-1 transition-all active:scale-95 group relative overflow-hidden`}>
+                          {staleBadge}
+                          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/80 to-transparent rounded-bl-full pointer-events-none opacity-50"></div>
+                          <div className="flex justify-between items-start mb-3 relative z-10">
+                            <div className="flex flex-col gap-1 max-w-[60%]">
+                              <span className="text-xs font-bold text-accent bg-accent/10 px-3 py-1 rounded-lg truncate">{deal.company}</span>
+                              {deal.ai_score !== undefined && deal.ai_score !== null && (
+                                <div className={`text-[10px] font-bold px-2 py-0.5 rounded border inline-flex items-center gap-1 w-fit
                                  ${deal.ai_score >= 70 ? 'bg-green-100 text-green-700 border-green-200' : deal.ai_score >= 40 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : 'bg-red-100 text-red-700 border-red-200'}
                                `}>
-                                <TrendingUp size={10} /> {deal.ai_score}% Win Prob.
-                              </div>
-                            )}
+                                  <TrendingUp size={10} /> {deal.ai_score}% Win Prob.
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {deal.tasks?.filter(t => !t.completed).length > 0 && (<div className="flex items-center text-xs text-red-500 bg-red-50 px-1.5 py-0.5 rounded"><AlertCircle size={10} className="mr-1" />{deal.tasks.filter(t => !t.completed).length}</div>)}
+                              <button
+                                onClick={(e) => handleAnalyzeDeal(deal, e)}
+                                className={`text-text-muted hover:text-warm-purple hover:bg-warm-purple/10 p-1.5 rounded-lg transition-colors group/ai ${analyzingDealIds.has(deal.id) ? 'animate-spin text-warm-purple' : ''}`}
+                                title="AI Predict Score"
+                              >
+                                <Wand2 size={14} />
+                              </button>
+                              <button
+                                onClick={(e) => handleDeleteDeal(deal.id, e)}
+                                className="text-text-muted hover:text-warm-red hover:bg-warm-red/10 p-1.5 rounded-lg transition-colors group/delete"
+                                title="Delete Deal"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            {deal.tasks?.filter(t => !t.completed).length > 0 && (<div className="flex items-center text-xs text-red-500 bg-red-50 px-1.5 py-0.5 rounded"><AlertCircle size={10} className="mr-1" />{deal.tasks.filter(t => !t.completed).length}</div>)}
-                            <button
-                              onClick={(e) => handleAnalyzeDeal(deal, e)}
-                              className={`text-text-muted hover:text-warm-purple hover:bg-warm-purple/10 p-1.5 rounded-lg transition-colors group/ai ${analyzingDealIds.has(deal.id) ? 'animate-spin text-warm-purple' : ''}`}
-                              title="AI Predict Score"
-                            >
-                              <Wand2 size={14} />
-                            </button>
-                            <button
-                              onClick={(e) => handleDeleteDeal(deal.id, e)}
-                              className="text-text-muted hover:text-warm-red hover:bg-warm-red/10 p-1.5 rounded-lg transition-colors group/delete"
-                              title="Delete Deal"
-                            >
-                              <Trash2 size={14} />
-                            </button>
+                          <h4 className="font-bold text-lg text-text-main mb-1 leading-tight relative z-10">{deal.title}</h4>
+                          {deal.ai_insight && <p className="text-[10px] text-text-muted mb-2 relative z-10 italic">" {deal.ai_insight} "</p>}
+                          <div className="flex items-center text-sm text-text-muted mb-4 relative z-10"><Users size={16} className="mr-2" />{deal.contact}</div>
+                          <div className="border-t border-black/5 pt-3 flex justify-between items-center relative z-10">
+                            <span className="font-extrabold text-text-main text-lg">{formatCurrency(deal.value)}</span>
+                            {stage.id === 'lost' ? <span className="text-xs text-warm-red bg-warm-red/10 px-2 py-1 rounded-lg font-bold">{deal.lostReason || 'N/A'}</span> : stage.id !== 'won' && <div className="flex items-center text-xs text-warm-yellow font-bold bg-warm-yellow/10 px-2 py-1 rounded-lg"><Trophy size={14} className="mr-1" />{deal.probability}%</div>}
                           </div>
                         </div>
-                        <h4 className="font-bold text-lg text-text-main mb-1 leading-tight relative z-10">{deal.title}</h4>
-                        {deal.ai_insight && <p className="text-[10px] text-text-muted mb-2 relative z-10 italic">" {deal.ai_insight} "</p>}
-                        <div className="flex items-center text-sm text-text-muted mb-4 relative z-10"><Users size={16} className="mr-2" />{deal.contact}</div>
-                        <div className="border-t border-black/5 pt-3 flex justify-between items-center relative z-10">
-                          <span className="font-extrabold text-text-main text-lg">{formatCurrency(deal.value)}</span>
-                          {stage.id === 'lost' ? <span className="text-xs text-warm-red bg-warm-red/10 px-2 py-1 rounded-lg font-bold">{deal.lostReason || 'N/A'}</span> : stage.id !== 'won' && <div className="flex items-center text-xs text-warm-yellow font-bold bg-warm-yellow/10 px-2 py-1 rounded-lg"><Trophy size={14} className="mr-1" />{deal.probability}%</div>}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -817,7 +1038,7 @@ const App = () => {
           )}
           {activeTab === 'contacts' && (
             <div className="bg-surface rounded-3xl shadow-clay-md border border-white/60 overflow-hidden">
-              <div className="overflow-x-auto"><table className="w-full text-left min-w-[700px]"><thead className="bg-bg/50 text-text-muted font-bold text-sm"><tr><th className="px-6 py-4">Contact Name</th><th className="px-6 py-4">Company</th><th className="px-6 py-4">Related Deal</th><th className="px-6 py-4">Last Contact</th></tr></thead><tbody className="divide-y divide-black/5">{deals.map(deal => (<tr key={deal.id} className="hover:bg-bg/30 cursor-pointer transition-colors" onClick={() => setSelectedDeal(deal)}><td className="px-6 py-4"><div className="flex items-center"><div className="w-10 h-10 rounded-xl bg-gradient-to-br from-warm-blue to-primary text-white shadow-clay-sm flex items-center justify-center font-bold mr-3 text-sm shrink-0">{deal.contact?.charAt(0) || '?'}</div><span className="font-bold text-text-main">{deal.contact}</span></div></td><td className="px-6 py-4 text-text-muted font-medium">{deal.company}</td><td className="px-6 py-4 text-accent font-bold">{deal.title}</td><td className="px-6 py-4 text-text-muted text-sm">{deal.lastActivity}</td></tr>))}</tbody></table></div>
+              <div className="overflow-x-auto"><table className="w-full text-left min-w-[700px]"><thead className="bg-bg/50 text-text-muted font-bold text-sm"><tr><th className="px-6 py-4">Contact Name</th><th className="px-6 py-4">Company</th><th className="px-6 py-4">Related Deal</th><th className="px-6 py-4">Last Contact</th></tr></thead><tbody className="divide-y divide-black/5">{deals.map(deal => (<tr key={deal.id} className="hover:bg-bg/30 cursor-pointer transition-colors" onClick={() => setSelectedDeal(deal)}><td className="px-6 py-4"><div className="flex items-center"><div className="w-10 h-10 rounded-xl bg-gradient-to-br from-warm-blue to-primary text-white shadow-clay-sm flex items-center justify-center font-bold mr-3 text-sm shrink-0">{deal.contact?.charAt(0) || '?'}</div><span className="font-bold text-text-main">{deal.contact}</span></div></td><td className="px-6 py-4 text-text-muted font-medium">{deal.company}</td><td className="px-6 py-4 text-accent font-bold">{deal.title}</td><td className="px-6 py-4 text-text-muted text-sm">{deal.lastActivity && !deal.lastActivity.includes('-') ? deal.lastActivity : formatDate(deal.lastActivity)}</td></tr>))}</tbody></table></div>
             </div>
           )}
 
@@ -1322,14 +1543,44 @@ const App = () => {
           <div className="fixed inset-0 bg-bg/80 z-50 flex items-center justify-center sm:p-4 backdrop-blur-md overflow-y-auto">
             <div className="bg-surface w-full max-w-4xl min-h-[80vh] sm:rounded-3xl shadow-clay-lg flex flex-col md:flex-row overflow-hidden animate-in zoom-in-95 duration-200 border border-white/50">
               <div className="w-full md:w-1/3 bg-bg/50 border-r border-white/50 p-6 flex flex-col">
-                <div className="flex justify-between items-start mb-4"><span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${selectedDeal.stage === 'lost' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{stages.find(s => s.id === selectedDeal.stage)?.title}</span><button onClick={() => setSelectedDeal(null)} className="md:hidden text-gray-400"><X size={24} /></button></div>
-                <h2 className="text-xl font-bold text-gray-900 mb-1">{selectedDeal.title}</h2><p className="text-2xl font-mono text-gray-700 mb-6">{formatCurrency(selectedDeal.value)}</p>
-                <div className="space-y-4 flex-1">
-                  <div><label className="text-xs font-bold text-text-muted uppercase tracking-wide">Contact Person</label><div className="flex items-center mt-2"><div className="w-10 h-10 bg-warm-blue/20 rounded-xl flex items-center justify-center text-warm-blue-dark text-sm font-bold mr-4 shadow-clay-sm">{selectedDeal.contact?.charAt(0)}</div><div><p className="font-bold text-text-main text-lg">{selectedDeal.contact}</p><p className="text-sm text-text-muted font-medium">{selectedDeal.company}</p></div></div></div>
-                  <div><label className="text-xs font-bold text-text-muted uppercase tracking-wide">Created At</label><p className="text-sm font-bold text-text-main mt-1 bg-surface inline-block px-3 py-1 rounded-lg shadow-clay-sm">{formatDate(selectedDeal.createdAt)}</p></div>
-                  {selectedDeal.stage === 'lost' && (<div className="bg-warm-red/10 p-4 rounded-2xl border border-warm-red/20 shadow-clay-inner"><label className="text-xs font-bold text-warm-red uppercase flex items-center mb-1"><XCircle size={14} className="mr-2" /> Lost Reason</label><p className="text-base text-warm-red-dark font-bold">{selectedDeal.lostReason}</p></div>)}
-                </div>
-                {selectedDeal.stage !== 'lost' && selectedDeal.stage !== 'won' && (<div className="mt-6 pt-6 border-t border-gray-200"><button onClick={() => setIsLostModalOpen(true)} className="w-full py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium transition-colors">แจ้งเคสหลุด (Mark as Lost)</button></div>)}
+                {!isEditingDetails ? (
+                  <>
+                    <div className="flex justify-between items-start mb-4">
+                      <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${selectedDeal.stage === 'lost' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{stages.find(s => s.id === selectedDeal.stage)?.title}</span>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setIsEditingDetails(true)} className="text-text-muted hover:text-accent p-1"><Pencil size={18} /></button>
+                        <button onClick={() => setSelectedDeal(null)} className="md:hidden text-text-muted hover:text-red-500"><X size={24} /></button>
+                      </div>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-1 leading-tight">{selectedDeal.title}</h2>
+                    <p className="text-2xl font-mono text-gray-700 mb-6">{formatCurrency(selectedDeal.value)}</p>
+
+                    <div className="space-y-4 flex-1 overflow-y-auto pr-2">
+                      <div><label className="text-xs font-bold text-text-muted uppercase tracking-wide">Contact Person</label><div className="flex items-center mt-2"><div className="w-10 h-10 bg-warm-blue/20 rounded-xl flex items-center justify-center text-warm-blue-dark text-sm font-bold mr-4 shadow-clay-sm flex-shrink-0">{selectedDeal.contact?.charAt(0)}</div><div className="min-w-0"><p className="font-bold text-text-main text-lg truncate">{selectedDeal.contact}</p><p className="text-sm text-text-muted font-medium truncate">{selectedDeal.company}</p></div></div></div>
+                      <div><label className="text-xs font-bold text-text-muted uppercase tracking-wide">Created At</label><p className="text-sm font-bold text-text-main mt-1 bg-surface inline-block px-3 py-1 rounded-lg shadow-clay-sm">{formatDate(selectedDeal.createdAt)}</p></div>
+                      {selectedDeal.stage === 'lost' && (<div className="bg-warm-red/10 p-4 rounded-2xl border border-warm-red/20 shadow-clay-inner"><label className="text-xs font-bold text-warm-red uppercase flex items-center mb-1"><XCircle size={14} className="mr-2" /> Lost Reason</label><p className="text-base text-warm-red-dark font-bold">{selectedDeal.lostReason}</p></div>)}
+                    </div>
+
+                    {selectedDeal.stage !== 'lost' && selectedDeal.stage !== 'won' && (<div className="mt-6 pt-6 border-t border-gray-200"><button onClick={() => setIsLostModalOpen(true)} className="w-full py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium transition-colors">แจ้งเคสหลุด (Mark as Lost)</button></div>)}
+                  </>
+                ) : (
+                  <form onSubmit={handleSaveDealDetails} className="flex flex-col h-full">
+                    <div className="flex justify-between items-center mb-6">
+                      <h3 className="font-black text-lg text-text-main flex items-center"><Pencil className="mr-2 text-accent" size={20} /> Edit Deal</h3>
+                      <button type="button" onClick={() => setIsEditingDetails(false)} className="text-text-muted hover:text-warm-red"><X size={20} /></button>
+                    </div>
+                    <div className="space-y-4 flex-1 overflow-y-auto pr-2">
+                      <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Deal Title</label><input required name="title" defaultValue={selectedDeal.title} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
+                      <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Value (THB)</label><input required name="value" type="number" defaultValue={selectedDeal.value} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
+                      <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Contact Name</label><input required name="contact" defaultValue={selectedDeal.contact} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
+                      <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Company</label><input required name="company" defaultValue={selectedDeal.company} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-gray-200 flex gap-2">
+                      <Button type="button" variant="secondary" onClick={() => setIsEditingDetails(false)} className="flex-1">Cancel</Button>
+                      <Button type="submit" variant="primary" icon={Save} className="flex-1">Save</Button>
+                    </div>
+                  </form>
+                )}
               </div>
               <div className="w-full md:w-2/3 flex flex-col h-[80vh] md:h-auto">
                 <div className="flex items-center justify-between p-4 border-b border-gray-100"><div className="flex space-x-4"><div className="flex items-center text-gray-800 font-bold border-b-2 border-blue-500 pb-1 px-1"><FileText size={16} className="mr-2" /> กิจกรรม & Tasks</div></div><button onClick={() => setSelectedDeal(null)} className="hidden md:block text-gray-400 hover:text-gray-600"><X size={24} /></button></div>
@@ -1349,7 +1600,24 @@ const App = () => {
           <div className="fixed inset-0 bg-bg/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
             <div className="bg-surface rounded-3xl w-full max-w-sm p-6 shadow-clay-lg animate-in zoom-in-95 border border-white/50">
               <div className="flex items-center mb-6 text-warm-red"><AlertCircle size={28} className="mr-3" /><h3 className="text-xl font-black text-text-main">Mark as Lost</h3></div>
-              <form onSubmit={handleMarkLost}><div className="space-y-4 mb-8">{['Price too high', 'Competitor selected', 'Project delayed', 'Unreachable', 'Product mismatch'].map(reason => (<label key={reason} className="flex items-center p-4 border border-white/50 bg-bg/30 rounded-2xl hover:bg-warm-red/10 cursor-pointer transition-all has-[:checked]:bg-warm-red/20 has-[:checked]:border-warm-red/30 has-[:checked]:shadow-clay-inner"><input type="radio" name="reason" value={reason} className="text-warm-red focus:ring-warm-red w-5 h-5 bg-surface border-none shadow-clay-inner" required /><span className="ml-3 text-sm font-bold text-text-main">{reason}</span></label>))}</div><div className="flex gap-4"><Button fullWidth variant="secondary" onClick={() => setIsLostModalOpen(false)} type="button">Cancel</Button><Button fullWidth variant="danger" type="submit">Confirm</Button></div></form>
+              <form onSubmit={handleMarkLost}>
+                <div className="space-y-4 mb-4">
+                  <label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-2">Lost Reason</label>
+                  {['Price too high', 'Competitor selected', 'Project delayed', 'Unreachable', 'Product mismatch'].map(reason => (<label key={reason} className="flex items-center p-3 border border-white/50 bg-bg/30 rounded-xl hover:bg-warm-red/10 cursor-pointer transition-all has-[:checked]:bg-warm-red/20 has-[:checked]:border-warm-red/30 has-[:checked]:shadow-clay-inner"><input type="radio" name="reason" value={reason} className="text-warm-red focus:ring-warm-red w-4 h-4 bg-surface border-none shadow-clay-inner" required /><span className="ml-3 text-sm font-bold text-text-main">{reason}</span></label>))}
+                </div>
+
+                <div className="mb-8">
+                  <label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-2">Win-Back: Follow up in?</label>
+                  <select name="followUp" className="w-full px-4 py-3 bg-bg/50 border-none shadow-clay-inner rounded-xl focus:outline-none text-text-main font-bold">
+                    <option value="no">No Reminder</option>
+                    <option value="1">1 Month (Cool Down)</option>
+                    <option value="3">3 Months (Quarterly Review) 🔥 Recommended</option>
+                    <option value="6">6 Months (New Budget)</option>
+                  </select>
+                </div>
+
+                <div className="flex gap-4"><Button fullWidth variant="secondary" onClick={() => setIsLostModalOpen(false)} type="button">Cancel</Button><Button fullWidth variant="danger" type="submit">Confirm</Button></div>
+              </form>
             </div>
           </div>
         )
