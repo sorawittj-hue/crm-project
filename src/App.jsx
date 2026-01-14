@@ -5,7 +5,7 @@ import {
   CheckCircle2, Upload, Download, FileSpreadsheet, AlertCircle,
   FileText, CheckSquare, MessageSquare, Trash2, XCircle, Clock, ArrowRight,
   Cpu, Calculator, Server, HardDrive, Wrench, ChevronRight, RotateCcw,
-  Battery, Zap, Signal, PieChart, BarChart3, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save
+  Battery, Zap, Signal, PieChart, BarChart3, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save, ArrowRightCircle
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
@@ -175,7 +175,9 @@ const App = () => {
   const [filterDate, setFilterDate] = useState(''); // State for date filter
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedDealForMove, setSelectedDealForMove] = useState(null);
+  const [selectedDealForMove, setSelectedDealForMove] = useState(null); // Keep this if existing or remove if unused, but I'll add a new clear one or use this one. 
+  // Wait, I see selectedDealForMove on line 177 in previous reads (Step 269). Let's use that if it exists.
+  const [movingDeal, setMovingDeal] = useState(null);
   const fileInputRef = useRef(null);
   const [importStatus, setImportStatus] = useState(null);
 
@@ -860,6 +862,13 @@ const App = () => {
                                 title="Delete Deal"
                               >
                                 <Trash2 size={14} />
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setMovingDeal(deal); }}
+                                className="text-text-muted hover:text-accent hover:bg-accent/10 p-1.5 rounded-lg transition-colors group/move lg:hidden"
+                                title="Move Deal"
+                              >
+                                <ArrowRightCircle size={14} />
                               </button>
                             </div>
                           </div>
@@ -1642,6 +1651,39 @@ const App = () => {
             <div className="bg-surface rounded-t-3xl md:rounded-3xl w-full max-w-md shadow-clay-lg transform transition-all animate-in slide-in-from-bottom duration-300 border border-white/50">
               <div className="flex justify-between items-center p-8 border-b border-black/5"><h3 className="text-2xl font-black text-text-main">New Deal</h3><button onClick={() => setIsModalOpen(false)} className="text-text-muted hover:text-warm-red bg-bg rounded-full p-2 hover:shadow-clay-sm transition-all"><X size={20} /></button></div>
               <form onSubmit={handleAddDeal} className="p-8 space-y-6"><div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Deal Title</label><input required name="title" type="text" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="e.g. Website Redesign" /></div><div className="grid grid-cols-2 gap-6"><div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Value (THB)</label><input required name="value" type="number" min="0" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="0" /></div><div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Contact Person</label><input required name="contact" type="text" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="Client Name" /></div></div><div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Company</label><div className="relative"><Building2 size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" /><input required name="company" type="text" className="w-full pl-12 pr-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="Company Name" /></div></div><div className="pt-6 flex justify-end space-x-4 pb-4 md:pb-0"><Button variant="secondary" onClick={() => setIsModalOpen(false)} type="button" className="flex-1 md:flex-none">Cancel</Button><Button variant="primary" type="submit" className="flex-1 md:flex-none">Save Deal</Button></div></form>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Move Deal Modal (Tablet/Mobile Friendly) */}
+      {
+        movingDeal && (
+          <div className="fixed inset-0 bg-bg/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+            <div className="bg-surface rounded-3xl w-full max-w-sm p-6 shadow-clay-lg animate-in zoom-in-95 border border-white/50">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-text-main">Move Deal</h3>
+                <button onClick={() => setMovingDeal(null)} className="text-text-muted hover:text-warm-red"><X size={24} /></button>
+              </div>
+              <p className="text-sm text-text-muted font-bold mb-4">Select destination stage for <span className="text-accent">"{movingDeal.title}"</span>:</p>
+              <div className="space-y-3">
+                {stages.map(stage => (
+                  <button
+                    key={stage.id}
+                    onClick={async () => {
+                      await handleUpdateDeal(movingDeal.id, { stage: stage.id });
+                      setMovingDeal(null);
+                    }}
+                    className={`w-full p-4 rounded-xl font-bold text-left flex items-center justify-between border-2 transition-all
+                       ${movingDeal.stage === stage.id ? 'bg-accent/10 border-accent text-accent cursor-default' : 'bg-bg/50 border-transparent hover:bg-white text-text-main shadow-clay-inner hover:shadow-clay-sm'}
+                     `}
+                    disabled={movingDeal.stage === stage.id}
+                  >
+                    <span>{stage.title}</span>
+                    {movingDeal.stage === stage.id && <CheckCircle2 size={18} />}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )
