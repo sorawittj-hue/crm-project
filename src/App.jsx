@@ -566,20 +566,36 @@ const App = () => {
         const dataLines = lines.slice(1).filter(line => line.trim() !== '');
 
         const newDeals = [];
+        let duplicateCount = 0;
 
         for (const line of dataLines) {
-          // Simple CSV split (Note: does not handle commas inside quotes)
           const cols = line.split(',').map(item => item.trim());
           if (cols.length >= 2) {
             const [title, valueStr, contact, company, stageStr] = cols;
+            const cleanTitle = title || 'No Title';
+            const cleanCompany = company || '';
+            const cleanContact = contact || '';
+
+            // Check if this deal already exists in the current 'deals' state
+            const isDuplicate = deals.some(d =>
+              d.title === cleanTitle &&
+              d.company === cleanCompany &&
+              d.contact === cleanContact
+            );
+
+            if (isDuplicate) {
+              duplicateCount++;
+              continue;
+            }
+
             let stage = 'lead';
             if (stageStr && stages.find(s => s.id === stageStr.toLowerCase())) stage = stageStr.toLowerCase();
 
             newDeals.push({
-              title: title || 'No Title',
+              title: cleanTitle,
               value: Number(valueStr) || 0,
-              contact: contact || '',
-              company: company || '',
+              contact: cleanContact,
+              company: cleanCompany,
               stage: stage,
               probability: 20,
               lastActivity: new Date().toISOString(),
@@ -608,8 +624,15 @@ const App = () => {
             });
           }
 
-          setImportStatus(`success:${newDeals.length}`);
-          setTimeout(() => { setImportStatus(null); setIsImportModalOpen(false); }, 2000);
+          const message = duplicateCount > 0
+            ? `success:${newDeals.length} (Skipped ${duplicateCount} duplicates)`
+            : `success:${newDeals.length}`;
+
+          setImportStatus(message);
+          setTimeout(() => { setImportStatus(null); setIsImportModalOpen(false); }, 3000);
+        } else if (duplicateCount > 0) {
+          setImportStatus(`success:0 (All ${duplicateCount} items were duplicates)`);
+          setTimeout(() => { setImportStatus(null); setIsImportModalOpen(false); }, 3000);
         } else {
           setImportStatus('error');
         }
