@@ -180,6 +180,7 @@ const App = () => {
   const [movingDeal, setMovingDeal] = useState(null);
   const fileInputRef = useRef(null);
   const [importStatus, setImportStatus] = useState(null);
+  const [visibleStages, setVisibleStages] = useState(['lead', 'contact', 'proposal', 'negotiation', 'won', 'lost']);
 
   // Persist Goal to Supabase
   const [monthlyGoal, setMonthlyGoal] = useState(1000000);
@@ -543,6 +544,29 @@ const App = () => {
   };
 
   // Helper Functions
+  const exportToCSV = () => {
+    if (!deals.length) return alert("ไม่มีข้อมูลสำหรับส่งออก");
+    const headers = ["Title", "Company", "Contact", "Value", "Stage", "Probability", "Created At"];
+    const rows = deals.map(d => [
+      `"${d.title?.replace(/"/g, '""') || ''}"`,
+      `"${d.company?.replace(/"/g, '""') || ''}"`,
+      `"${d.contact?.replace(/"/g, '""') || ''}"`,
+      d.value || 0,
+      d.stage || '',
+      `${d.probability || 0}%`,
+      d.createdAt || ''
+    ]);
+    const csvContent = "\uFEFF" + [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `crm_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click(); document.body.removeChild(link);
+    showToast("ส่งออกข้อมูลสำเร็จ", "success");
+  };
+
   const downloadTemplate = () => {
     const csvContent = "\uFEFFTitle,Value,Contact,Company,Stage\nออกแบบเว็บไซต์,50000,คุณวิชัย,Tech Corp,lead\nติดตั้ง Server,120000,คุณสมศรี,Bank inc.,negotiation\nดูแลระบบรายปี,25000,คุณจอร์น,StartUp,won";
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -764,6 +788,14 @@ const App = () => {
         {/* Footer Actions */}
         <div className="p-6 mt-auto">
           <button
+            onClick={exportToCSV}
+            className="w-full flex items-center justify-center px-4 py-4 bg-surface text-text-muted rounded-2xl text-sm font-bold transition-all duration-300 shadow-clay-sm hover:shadow-clay-md hover:text-accent mb-6 group border border-white/50"
+          >
+            <Download size={20} className="mr-3 text-accent group-hover:scale-110 transition-transform" />
+            Export Data
+          </button>
+
+          <button
             onClick={() => setIsImportModalOpen(true)}
             className="w-full flex items-center justify-center px-4 py-4 bg-surface text-text-muted rounded-2xl text-sm font-bold transition-all duration-300 shadow-clay-sm hover:shadow-clay-md hover:text-accent mb-6 group border border-white/50"
           >
@@ -801,6 +833,19 @@ const App = () => {
             {loading && <Loader2 size={16} className="animate-spin text-accent hidden md:block" />}
           </div>
           <div className="flex items-center gap-2 md:gap-4">
+            {activeTab === 'pipeline' && (
+              <div className="hidden lg:flex items-center gap-1 bg-surface shadow-clay-inner p-1 rounded-2xl mr-2">
+                {stages.map(s => (
+                  <button
+                    key={s.id}
+                    onClick={() => setVisibleStages(prev => prev.includes(s.id) ? prev.filter(x => x !== s.id) : [...prev, s.id])}
+                    className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${visibleStages.includes(s.id) ? 'bg-accent text-white shadow-clay-btn' : 'text-text-muted hover:bg-bg'}`}
+                  >
+                    {s.id}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="relative hidden md:block group">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-muted group-hover:text-accent transition-colors" size={20} />
               <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-12 pr-6 py-3 bg-surface border-none shadow-clay-inner rounded-xl focus:outline-none focus:ring-0 text-sm w-48 lg:w-64 transition-all placeholder-text-muted/50 text-text-main" />
@@ -826,7 +871,7 @@ const App = () => {
         <div className={`flex-1 bg-bg p-4 md:p-6 xl:p-8 ${activeTab === 'pipeline' ? 'overflow-x-auto overflow-y-hidden' : 'overflow-y-auto overflow-x-hidden'}`}>
           {activeTab === 'pipeline' && (
             <div className="flex overflow-x-auto pb-4 h-full gap-4 items-start snap-x snap-mandatory">
-              {stages.map(stage => (
+              {stages.filter(s => visibleStages.includes(s.id)).map(stage => (
                 <div key={stage.id} className={`min-w-[85vw] md:min-w-[320px] lg:min-w-[320px] xl:min-w-[340px] w-[85vw] md:w-[320px] lg:w-[320px] xl:w-[340px] flex-shrink-0 flex flex-col max-h-full snap-center px-2 ${stage.id === 'lost' ? 'opacity-70 hover:opacity-100' : ''}`} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, stage.id)}>
                   <div className={`p-4 mb-4 rounded-2xl bg-surface/40 backdrop-blur-sm border border-white/40 sticky top-0 z-10`}>
                     <div className="flex justify-between items-center mb-1">
@@ -996,8 +1041,8 @@ const App = () => {
                 </Card>
                 <Card className="p-6 border-l-4 border-l-warm-purple relative overflow-hidden group">
                   <div className="absolute right-0 top-0 w-24 h-24 bg-warm-purple/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                  <p className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">Win Rate</p>
-                  <h3 className="text-2xl font-black text-warm-purple">{deals.length ? Math.round((deals.filter(d => d.stage === 'won').length / deals.length) * 100) : 0}%</h3>
+                  <p className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">Forecast Revenue</p>
+                  <h3 className="text-2xl font-black text-warm-purple">{formatCurrency(deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').reduce((acc, d) => acc + (d.value * (d.probability / 100)), 0))}</h3>
                 </Card>
                 <Card className="p-6 border-l-4 border-l-warm-yellow relative overflow-hidden group">
                   <div className="absolute right-0 top-0 w-24 h-24 bg-warm-yellow/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
