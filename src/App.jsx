@@ -1025,16 +1025,17 @@ const App = () => {
                 <Card className="p-6 md:col-span-1 lg:col-span-2">
                   <h3 className="font-bold text-lg mb-6 text-text-main flex items-center gap-2"><BarChart3 size={20} className="text-warm-blue" /> Pipeline Health</h3>
                   <div className="grid grid-cols-5 gap-4 h-32 items-end">
-                    {['lead', 'contact', 'quotation', 'negotiation', 'won'].map(stage => {
-                      const count = deals.filter(d => d.stage === stage).length;
-                      const max = Math.max(...['lead', 'contact', 'quotation', 'negotiation', 'won'].map(s => deals.filter(d => d.stage === s).length), 1);
+                    {['lead', 'contact', 'proposal', 'negotiation', 'won'].map(stageId => {
+                      const stageInfo = stages.find(s => s.id === stageId);
+                      const count = deals.filter(d => d.stage === stageId).length;
+                      const max = Math.max(...['lead', 'contact', 'proposal', 'negotiation', 'won'].map(s => deals.filter(d => d.stage === s).length), 1);
                       const height = Math.max(10, (count / max) * 100);
-                      const colors = { 'lead': 'bg-gray-400', 'contact': 'bg-blue-400', 'quotation': 'bg-indigo-400', 'negotiation': 'bg-purple-400', 'won': 'bg-green-400' };
+                      const colors = { 'lead': 'bg-primary/50', 'contact': 'bg-warm-blue/50', 'proposal': 'bg-warm-yellow/50', 'negotiation': 'bg-orange-400', 'won': 'bg-warm-green/50' };
                       return (
-                        <div key={stage} className="flex flex-col items-center group cursor-help">
+                        <div key={stageId} className="flex flex-col items-center group cursor-help">
                           <div className="text-xs font-bold text-text-main mb-2 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">{count} Deals</div>
-                          <div className={`w-full ${colors[stage]} rounded-t-lg transition-all duration-500 hover:brightness-110`} style={{ height: `${height}%` }}></div>
-                          <div className="mt-2 text-[10px] font-bold uppercase text-text-muted tracking-wider">{stage.substring(0, 4)}</div>
+                          <div className={`w-full ${colors[stageId]} rounded-t-lg transition-all duration-500 hover:brightness-110 shadow-sm`} style={{ height: `${height}%` }}></div>
+                          <div className="mt-2 text-[10px] font-bold uppercase text-text-muted tracking-wider text-center w-full truncate" title={stageInfo?.title}>{stageId.substring(0, 4)}</div>
                         </div>
                       )
                     })}
