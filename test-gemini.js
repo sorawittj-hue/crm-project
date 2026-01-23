@@ -6,7 +6,7 @@ try {
     const envContent = fs.readFileSync('.env', 'utf-8');
     const match = envContent.match(/VITE_GEMINI_API_KEY=(.*)/);
     if (match) apiKey = match[1].trim();
-} catch (e) {
+} catch {
     console.log("Could not read .env file");
 }
 
@@ -33,8 +33,8 @@ async function test() {
                 console.log("Response available.");
                 return;
             }
-        } catch (e) {
-            console.log("FETCH ERROR:", e.message);
+        } catch (_e) {
+            console.log("FETCH ERROR:", _e.message);
         }
     }
 }

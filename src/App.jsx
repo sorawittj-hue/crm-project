@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
-  LayoutDashboard, KanbanSquare, Users, Plus, Search, MoreHorizontal,
-  Building2, DollarSign, Calendar, Trophy, X, Loader2, Database, Menu,
+  LayoutDashboard, KanbanSquare, Users, Plus, Search,
+  Building2, DollarSign, Trophy, X, Loader2, Database, Menu,
   CheckCircle2, Upload, Download, FileSpreadsheet, AlertCircle,
   FileText, CheckSquare, MessageSquare, Trash2, XCircle, Clock, ArrowRight,
-  Cpu, Calculator, Server, HardDrive, Wrench, ChevronRight, RotateCcw,
-  Battery, Zap, Signal, PieChart, BarChart3, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save, ArrowRightCircle,
-  Sun, Moon, CheckSquare as CheckSquareIcon, Filter, ChevronDown, Activity, CalendarDays
+  Cpu, Server, HardDrive, Wrench, ChevronRight, RotateCcw,
+  Zap, Signal, PieChart, BarChart3, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save, ArrowRightCircle,
+  Sun, Moon, CheckSquare as CheckSquareIcon, Filter, Activity, CalendarDays
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
@@ -53,7 +53,7 @@ const App = () => {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedDealIds, setSelectedDealIds] = useState(new Set());
-  const [isDbReady, setIsDbReady] = useState(true); // Always ready in Local Mode
+  const [isDbReady] = useState(true); // Always ready in Local Mode
   const [specBudget, setSpecBudget] = useState(50000);
   const [specUseCase, setSpecUseCase] = useState('general');
   const [recommendedSpecs, setRecommendedSpecs] = useState([]);
@@ -181,16 +181,15 @@ const App = () => {
   const [filterValueMax, setFilterValueMax] = useState('');
   const [filterStage, setFilterStage] = useState('all');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [calendarView, setCalendarView] = useState('month'); // 'month' | 'week' | 'day'
   const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedDealForMove, setSelectedDealForMove] = useState(null); // Keep this if existing or remove if unused, but I'll add a new clear one or use this one. 
   // Wait, I see selectedDealForMove on line 177 in previous reads (Step 269). Let's use that if it exists.
   const [movingDeal, setMovingDeal] = useState(null);
   const fileInputRef = useRef(null);
   const [importStatus, setImportStatus] = useState(null);
   const [visibleStages, setVisibleStages] = useState(['lead', 'contact', 'proposal', 'negotiation', 'won', 'lost']);
+  const [globalActivities, setGlobalActivities] = useState([]);
 
   // Persist Goal to Supabase
   const [monthlyGoal, setMonthlyGoal] = useState(1000000);
@@ -428,7 +427,7 @@ const App = () => {
     const timeoutId = setTimeout(checkInactivity, 2000); // Small delay to ensure data is ready
     return () => clearTimeout(timeoutId);
 
-  }, [loading /* Only Re-run if loading changes (initial load), NOT on every deal change to avoid loops */]);
+  }, [loading, deals]);
 
   const handleAddNote = async (e) => {
     e.preventDefault();
@@ -1226,8 +1225,8 @@ const App = () => {
                     <Card key={activity.id} className="p-4 hover:shadow-clay-md transition-shadow">
                       <div className="flex items-start gap-4">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 ${activity.type === 'note' ? 'bg-warm-blue' :
-                            activity.type === 'task' ? (activity.completed ? 'bg-warm-green' : 'bg-warm-yellow') :
-                              activity.type === 'deal_created' ? 'bg-accent' : 'bg-text-muted'
+                          activity.type === 'task' ? (activity.completed ? 'bg-warm-green' : 'bg-warm-yellow') :
+                            activity.type === 'deal_created' ? 'bg-accent' : 'bg-text-muted'
                           }`}>
                           {activity.type === 'note' && <MessageSquare size={20} />}
                           {activity.type === 'task' && <CheckSquare size={20} />}
@@ -1345,7 +1344,7 @@ const App = () => {
                             </div>
                           </div>
                           <h4 className="font-bold text-lg text-text-main mb-1 leading-tight relative z-10">{deal.title}</h4>
-                          {deal.ai_insight && <p className="text-[10px] text-text-muted mb-2 relative z-10 italic">" {deal.ai_insight} "</p>}
+                          {deal.ai_insight && <p className="text-[10px] text-text-muted mb-2 relative z-10 italic">&quot; {deal.ai_insight} &quot;</p>}
                           <div className="flex items-center text-sm text-text-muted mb-4 relative z-10"><Users size={16} className="mr-2" />{deal.contact}</div>
                           <div className="border-t border-black/5 pt-3 flex justify-between items-center relative z-10">
                             <span className="font-extrabold text-text-main text-lg">{formatCurrency(deal.value)}</span>
@@ -1480,7 +1479,7 @@ const App = () => {
                   <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden relative z-10">
                     <div className="bg-gradient-to-r from-accent to-warm-red h-4 rounded-full transition-all duration-1000 ease-out" style={{ width: `${Math.min(100, (deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) / monthlyGoal) * 100)}%` }}></div>
                   </div>
-                  <p className="text-center text-xs text-text-muted mt-4 font-bold">Keep pushing! You're doing great.</p>
+                  <p className="text-center text-xs text-text-muted mt-4 font-bold">Keep pushing! You&rsquo;re doing great.</p>
                 </Card>
 
                 {/* Pipeline Health (Bar Chart) */}
@@ -1619,7 +1618,7 @@ const App = () => {
                               </div>
                             </div>
                           ) : (
-                            <div className="col-span-full text-center p-12 bg-bg/50 rounded-3xl border border-dashed border-text-muted">
+                            <div key={idx} className="col-span-full text-center p-12 bg-bg/50 rounded-3xl border border-dashed border-text-muted">
                               <AlertCircle className="mx-auto text-text-muted mb-2" size={32} />
                               <p className="text-text-muted font-bold">{spec.name}</p>
                             </div>
@@ -2150,7 +2149,7 @@ const App = () => {
                 <h3 className="text-xl font-black text-text-main">Move Deal</h3>
                 <button onClick={() => setMovingDeal(null)} className="text-text-muted hover:text-warm-red"><X size={24} /></button>
               </div>
-              <p className="text-sm text-text-muted font-bold mb-4">Select destination stage for <span className="text-accent">"{movingDeal.title}"</span>:</p>
+              <p className="text-sm text-text-muted font-bold mb-4">Select destination stage for <span className="text-accent">&quot;{movingDeal.title}&quot;</span>:</p>
               <div className="space-y-3">
                 {stages.map(stage => (
                   <button
