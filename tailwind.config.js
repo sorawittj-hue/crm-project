@@ -8,12 +8,16 @@ export default {
     extend: {
       colors: {
         bg: '#F3F0EB', // Warm light beige
+        'bg-dark': '#1a1a2e', // Dark background
         surface: '#FAF9F6', // Off-white/Cream
+        'surface-dark': '#252542', // Dark surface
         primary: '#A89F91', // Warm Gry
         'primary-dark': '#8C857B',
         accent: '#D4A373', // Soft Brown/Bronze
         'text-main': '#4A4238', // Dark Coffee
         'text-muted': '#8C857B',
+        'text-main-dark': '#e2e8f0', // Dark mode text
+        'text-muted-dark': '#94a3b8', // Dark mode muted text
         // Semantic Warm Colors
         'warm-blue': '#8DA9C4',
         'warm-blue-dark': '#4A6Fa5',
@@ -25,6 +29,9 @@ export default {
         'warm-yellow-dark': '#C99A2E',
         'warm-purple': '#BFA6C7',
         'warm-purple-dark': '#895F96',
+        // Dark mode specific colors
+        'dark-border': '#3f3f5f',
+        'dark-surface': '#2d2d4a',
       },
       boxShadow: {
         'clay-sm': '4px 4px 8px #d1cfc9, -4px -4px 8px #ffffff',

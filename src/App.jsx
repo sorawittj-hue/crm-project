@@ -5,7 +5,8 @@ import {
   CheckCircle2, Upload, Download, FileSpreadsheet, AlertCircle,
   FileText, CheckSquare, MessageSquare, Trash2, XCircle, Clock, ArrowRight,
   Cpu, Calculator, Server, HardDrive, Wrench, ChevronRight, RotateCcw,
-  Battery, Zap, Signal, PieChart, BarChart3, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save, ArrowRightCircle
+  Battery, Zap, Signal, PieChart, BarChart3, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save, ArrowRightCircle,
+  Sun, Moon, CheckSquare as CheckSquareIcon, Filter, ChevronDown, Activity, CalendarDays
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
@@ -48,7 +49,10 @@ const App = () => {
   // const isDemoMode = true; // FORCE DEMO MODE (Local Storage)
   const isDemoMode = false; // Real Supabase Mode
   // ---/ State /---
-  const [activeTab, setActiveTab] = useState('pipeline'); // 'pipeline' | 'dashboard' | 'contacts' | 'spec-setup' | 'tools'
+  const [activeTab, setActiveTab] = useState('pipeline'); // 'pipeline' | 'dashboard' | 'contacts' | 'spec-setup' | 'tools' | 'calendar' | 'activity'
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
+  const [bulkMode, setBulkMode] = useState(false);
+  const [selectedDealIds, setSelectedDealIds] = useState(new Set());
   const [isDbReady, setIsDbReady] = useState(true); // Always ready in Local Mode
   const [specBudget, setSpecBudget] = useState(50000);
   const [specUseCase, setSpecUseCase] = useState('general');
@@ -173,6 +177,12 @@ const App = () => {
   const [draggedDeal, setDraggedDeal] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDate, setFilterDate] = useState(''); // State for date filter
+  const [filterValueMin, setFilterValueMin] = useState('');
+  const [filterValueMax, setFilterValueMax] = useState('');
+  const [filterStage, setFilterStage] = useState('all');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [calendarView, setCalendarView] = useState('month'); // 'month' | 'week' | 'day'
+  const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedDealForMove, setSelectedDealForMove] = useState(null); // Keep this if existing or remove if unused, but I'll add a new clear one or use this one. 
@@ -186,6 +196,17 @@ const App = () => {
   const [monthlyGoal, setMonthlyGoal] = useState(1000000);
   const [isEditingGoal, setIsEditingGoal] = useState(false);
 
+  // Dark Mode Effect
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('darkMode', 'false');
+    }
+  }, [darkMode]);
+
   useEffect(() => {
     const fetchSettings = async () => {
       const { data } = await supabase.from('settings').select('value').eq('key', 'monthly_goal').single();
@@ -193,6 +214,56 @@ const App = () => {
     };
     fetchSettings();
   }, []);
+
+  // Build Global Activities Feed
+  useEffect(() => {
+    const activities = [];
+    deals.forEach(deal => {
+      // Add notes as activities
+      if (deal.notes) {
+        deal.notes.forEach(note => {
+          activities.push({
+            id: `note-${deal.id}-${note.id}`,
+            type: 'note',
+            dealId: deal.id,
+            dealTitle: deal.title,
+            company: deal.company,
+            text: note.text,
+            date: note.date,
+            user: note.user || 'User'
+          });
+        });
+      }
+      // Add tasks as activities
+      if (deal.tasks) {
+        deal.tasks.forEach(task => {
+          activities.push({
+            id: `task-${deal.id}-${task.id}`,
+            type: 'task',
+            dealId: deal.id,
+            dealTitle: deal.title,
+            company: deal.company,
+            text: task.text,
+            date: task.date,
+            completed: task.completed
+          });
+        });
+      }
+      // Add deal creation as activity
+      activities.push({
+        id: `deal-${deal.id}`,
+        type: 'deal_created',
+        dealId: deal.id,
+        dealTitle: deal.title,
+        company: deal.company,
+        text: `Deal created with value ${formatCurrency(deal.value)}`,
+        date: deal.createdAt,
+        stage: deal.stage
+      });
+    });
+    // Sort by date descending
+    setGlobalActivities(activities.sort((a, b) => new Date(b.date) - new Date(a.date)));
+  }, [deals]);
 
   const handleSaveGoal = async () => {
     setIsEditingGoal(false);
@@ -678,9 +749,112 @@ const App = () => {
     const matchesSearch = deal.title?.toLowerCase().includes(searchTerm.toLowerCase()) || deal.company?.toLowerCase().includes(searchTerm.toLowerCase());
     // 2. Date Filter
     const matchesDate = !filterDate || (deal.createdAt && new Date(deal.createdAt).toLocaleDateString('en-CA') === filterDate);
+    // 3. Value Range Filter
+    const matchesValueMin = !filterValueMin || deal.value >= Number(filterValueMin);
+    const matchesValueMax = !filterValueMax || deal.value <= Number(filterValueMax);
+    // 4. Stage Filter
+    const matchesStage = filterStage === 'all' || deal.stage === filterStage;
 
-    return matchesSearch && matchesDate;
+    return matchesSearch && matchesDate && matchesValueMin && matchesValueMax && matchesStage;
   });
+
+  // Bulk Action Handlers
+  const toggleBulkSelection = (dealId) => {
+    const newSelection = new Set(selectedDealIds);
+    if (newSelection.has(dealId)) {
+      newSelection.delete(dealId);
+    } else {
+      newSelection.add(dealId);
+    }
+    setSelectedDealIds(newSelection);
+  };
+
+  const selectAllVisible = () => {
+    const allIds = new Set(filteredDeals.map(d => d.id));
+    setSelectedDealIds(allIds);
+  };
+
+  const clearBulkSelection = () => {
+    setSelectedDealIds(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Delete ${selectedDealIds.size} deals?`)) return;
+
+    try {
+      const { error } = await supabase.from('deals').delete().in('id', Array.from(selectedDealIds));
+      if (!error) {
+        setDeals(prev => prev.filter(d => !selectedDealIds.has(d.id)));
+        setSelectedDealIds(new Set());
+        setBulkMode(false);
+        showToast(`Deleted ${selectedDealIds.size} deals`, 'success');
+      }
+    } catch (error) {
+      console.error('Bulk delete error:', error);
+      showToast('Failed to delete deals', 'error');
+    }
+  };
+
+  const handleBulkMove = async (targetStage) => {
+    try {
+      const { error } = await supabase.from('deals').update({ stage: targetStage }).in('id', Array.from(selectedDealIds));
+      if (!error) {
+        setDeals(prev => prev.map(d => selectedDealIds.has(d.id) ? { ...d, stage: targetStage } : d));
+        setSelectedDealIds(new Set());
+        setBulkMode(false);
+        showToast(`Moved ${selectedDealIds.size} deals to ${stages.find(s => s.id === targetStage)?.title}`, 'success');
+      }
+    } catch (error) {
+      console.error('Bulk move error:', error);
+      showToast('Failed to move deals', 'error');
+    }
+  };
+
+  // Calendar Helpers
+  const getCalendarDays = () => {
+    const date = new Date(currentCalendarDate);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDay = firstDay.getDay();
+    const totalDays = lastDay.getDate();
+
+    const days = [];
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < startDay; i++) {
+      days.push(null);
+    }
+    // Add days of the month
+    for (let i = 1; i <= totalDays; i++) {
+      days.push(new Date(year, month, i));
+    }
+    return days;
+  };
+
+  const getTasksForDate = (date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    const tasks = [];
+    deals.forEach(deal => {
+      if (deal.tasks) {
+        deal.tasks.forEach(task => {
+          const taskDate = new Date(task.date).toISOString().split('T')[0];
+          if (taskDate === dateStr && !task.completed) {
+            tasks.push({ ...task, dealTitle: deal.title, dealId: deal.id });
+          }
+        });
+      }
+    });
+    return tasks;
+  };
+
+  const getDealsForDate = (date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return deals.filter(deal => {
+      const dealDate = new Date(deal.createdAt).toISOString().split('T')[0];
+      return dealDate === dateStr;
+    });
+  };
 
   const getStageTotal = (stageId) => filteredDeals.filter(d => d.stage === stageId).reduce((sum, d) => sum + d.value, 0);
 
@@ -737,7 +911,7 @@ const App = () => {
         {/* Navigation Links */}
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
           <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Menu</p>
-          {['pipeline', 'overview', 'dashboard', 'contacts'].map(tab => {
+          {['pipeline', 'overview', 'dashboard', 'contacts', 'calendar', 'activity'].map(tab => {
             const isActive = activeTab === tab;
             return (
               <button
@@ -754,6 +928,8 @@ const App = () => {
                 {tab === 'overview' && <PieChart size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
                 {tab === 'dashboard' && <LayoutDashboard size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
                 {tab === 'contacts' && <Users size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
+                {tab === 'calendar' && <CalendarDays size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
+                {tab === 'activity' && <Activity size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
                 <span className="text-base capitalize">
                   {tab === 'spec-setup' ? 'Spec AI' : tab}
                 </span>
@@ -784,6 +960,17 @@ const App = () => {
             );
           })}
         </nav>
+
+        {/* Dark Mode Toggle */}
+        <div className="px-6 py-4 border-t border-black/5">
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="w-full flex items-center justify-center px-4 py-3 bg-surface text-text-muted rounded-2xl text-sm font-bold transition-all duration-300 shadow-clay-sm hover:shadow-clay-md hover:text-accent border border-white/50"
+          >
+            {darkMode ? <Sun size={20} className="mr-3" /> : <Moon size={20} className="mr-3" />}
+            {darkMode ? 'Light Mode' : 'Dark Mode'}
+          </button>
+        </div>
 
         {/* Footer Actions */}
         <div className="p-6 mt-auto">
@@ -828,47 +1015,244 @@ const App = () => {
                 activeTab === 'overview' ? 'Sales Overview' :
                   activeTab === 'dashboard' ? 'Dashboard Analysis' :
                     activeTab === 'contacts' ? 'Contacts List' :
-                      activeTab === 'spec-setup' ? 'Smart Spec Recommendation' : 'Professional IT Tools'}
+                      activeTab === 'calendar' ? 'Calendar View' :
+                        activeTab === 'activity' ? 'Activity Feed' :
+                          activeTab === 'spec-setup' ? 'Smart Spec Recommendation' : 'Professional IT Tools'}
             </h1>
             {loading && <Loader2 size={16} className="animate-spin text-accent hidden md:block" />}
           </div>
           <div className="flex items-center gap-2 md:gap-4">
             {activeTab === 'pipeline' && (
-              <div className="hidden lg:flex items-center gap-1 bg-surface shadow-clay-inner p-1 rounded-2xl mr-2">
-                {stages.map(s => (
-                  <button
-                    key={s.id}
-                    onClick={() => setVisibleStages(prev => prev.includes(s.id) ? prev.filter(x => x !== s.id) : [...prev, s.id])}
-                    className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${visibleStages.includes(s.id) ? 'bg-accent text-white shadow-clay-btn' : 'text-text-muted hover:bg-bg'}`}
-                  >
-                    {s.id}
-                  </button>
-                ))}
-              </div>
+              <>
+                {/* Bulk Mode Toggle */}
+                <button
+                  onClick={() => { setBulkMode(!bulkMode); setSelectedDealIds(new Set()); }}
+                  className={`hidden md:flex items-center px-4 py-2 rounded-xl text-xs font-bold transition-all ${bulkMode ? 'bg-accent text-white shadow-clay-btn' : 'bg-surface text-text-muted hover:bg-white shadow-clay-sm'}`}
+                >
+                  <CheckSquareIcon size={16} className="mr-2" />
+                  {bulkMode ? 'Exit Bulk' : 'Bulk Select'}
+                </button>
+                {/* Stage Visibility Toggle */}
+                <div className="hidden lg:flex items-center gap-1 bg-surface shadow-clay-inner p-1 rounded-2xl mr-2">
+                  {stages.map(s => (
+                    <button
+                      key={s.id}
+                      onClick={() => setVisibleStages(prev => prev.includes(s.id) ? prev.filter(x => x !== s.id) : [...prev, s.id])}
+                      className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${visibleStages.includes(s.id) ? 'bg-accent text-white shadow-clay-btn' : 'text-text-muted hover:bg-bg'}`}
+                    >
+                      {s.id}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
             <div className="relative hidden md:block group">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-muted group-hover:text-accent transition-colors" size={20} />
               <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-12 pr-6 py-3 bg-surface border-none shadow-clay-inner rounded-xl focus:outline-none focus:ring-0 text-sm w-48 lg:w-64 transition-all placeholder-text-muted/50 text-text-main" />
             </div>
-            {/* Date Filter Input */}
-            <div className="flex items-center space-x-2 bg-surface shadow-clay-inner rounded-xl px-2">
-              <input
-                type="date"
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
-                className="px-3 py-2 bg-transparent border-none focus:ring-0 text-sm text-text-main focus:outline-none"
-              />
-              {filterDate && (
-                <button onClick={() => setFilterDate('')} className="text-xs text-warm-red hover:text-red-700 underline whitespace-nowrap p-2">
-                  Clear
-                </button>
-              )}
-            </div>
+            {/* Advanced Filters Toggle */}
+            <button
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className={`hidden md:flex items-center px-4 py-2 rounded-xl text-xs font-bold transition-all ${showAdvancedFilters ? 'bg-accent text-white shadow-clay-btn' : 'bg-surface text-text-muted hover:bg-white shadow-clay-sm'}`}
+            >
+              <Filter size={16} className="mr-2" />
+              Filters
+            </button>
             <Button onClick={() => setIsModalOpen(true)} icon={Plus} variant="primary" className="whitespace-nowrap"><span className="hidden md:inline">New Deal</span><span className="md:hidden">Add</span></Button>
           </div>
         </header>
 
+        {/* Advanced Filters Panel */}
+        {showAdvancedFilters && (
+          <div className="bg-surface border-b border-black/5 px-4 md:px-6 xl:px-8 py-4 animate-in fade-in slide-in-from-top duration-300">
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-bold text-text-muted uppercase">Value Range:</label>
+                <input
+                  type="number"
+                  placeholder="Min"
+                  value={filterValueMin}
+                  onChange={(e) => setFilterValueMin(e.target.value)}
+                  className="w-24 px-3 py-2 bg-bg/50 border-none shadow-clay-inner rounded-lg focus:outline-none text-sm text-text-main"
+                />
+                <span className="text-text-muted">-</span>
+                <input
+                  type="number"
+                  placeholder="Max"
+                  value={filterValueMax}
+                  onChange={(e) => setFilterValueMax(e.target.value)}
+                  className="w-24 px-3 py-2 bg-bg/50 border-none shadow-clay-inner rounded-lg focus:outline-none text-sm text-text-main"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-bold text-text-muted uppercase">Stage:</label>
+                <select
+                  value={filterStage}
+                  onChange={(e) => setFilterStage(e.target.value)}
+                  className="px-3 py-2 bg-bg/50 border-none shadow-clay-inner rounded-lg focus:outline-none text-sm text-text-main"
+                >
+                  <option value="all">All Stages</option>
+                  {stages.map(s => (
+                    <option key={s.id} value={s.id}>{s.title}</option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={() => { setFilterValueMin(''); setFilterValueMax(''); setFilterStage('all'); }}
+                className="text-xs text-warm-red hover:text-red-700 underline font-bold"
+              >
+                Clear All Filters
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Bulk Actions Bar */}
+        {bulkMode && selectedDealIds.size > 0 && (
+          <div className="bg-accent text-white px-4 md:px-6 xl:px-8 py-3 flex items-center justify-between animate-in slide-in-from-top duration-300">
+            <div className="flex items-center gap-4">
+              <span className="font-bold">{selectedDealIds.size} deals selected</span>
+              <button onClick={selectAllVisible} className="text-xs underline hover:opacity-80">Select All Visible</button>
+              <button onClick={clearBulkSelection} className="text-xs underline hover:opacity-80">Clear Selection</button>
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                onChange={(e) => handleBulkMove(e.target.value)}
+                className="px-3 py-2 bg-white text-accent rounded-lg focus:outline-none text-sm font-bold"
+              >
+                <option value="">Move to Stage...</option>
+                {stages.map(s => (
+                  <option key={s.id} value={s.id}>{s.title}</option>
+                ))}
+              </select>
+              <button onClick={handleBulkDelete} className="px-4 py-2 bg-warm-red rounded-lg text-xs font-bold hover:bg-red-600 transition-colors">
+                Delete Selected
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className={`flex-1 bg-bg p-4 md:p-6 xl:p-8 ${activeTab === 'pipeline' ? 'overflow-x-auto overflow-y-hidden' : 'overflow-y-auto overflow-x-hidden'}`}>
+          {/* Calendar View */}
+          {activeTab === 'calendar' && (
+            <div className="max-w-6xl mx-auto space-y-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-black text-text-main">Calendar</h2>
+                <div className="flex items-center gap-4">
+                  <button onClick={() => setCurrentCalendarDate(new Date(currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1)))} className="p-2 bg-surface rounded-xl hover:bg-white shadow-clay-sm transition-all">
+                    <ChevronRight size={20} className="rotate-180" />
+                  </button>
+                  <span className="text-lg font-bold text-text-main min-w-[150px] text-center">
+                    {currentCalendarDate.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
+                  </span>
+                  <button onClick={() => setCurrentCalendarDate(new Date(currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1)))} className="p-2 bg-surface rounded-xl hover:bg-white shadow-clay-sm transition-all">
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+              </div>
+              <Card className="p-6">
+                <div className="grid grid-cols-7 gap-2 mb-4">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                    <div key={day} className="text-center text-xs font-bold text-text-muted uppercase py-2">{day}</div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 gap-2">
+                  {getCalendarDays().map((date, idx) => {
+                    if (!date) {
+                      return <div key={`empty-${idx}`} className="min-h-[100px]"></div>;
+                    }
+                    const tasks = getTasksForDate(date);
+                    const dealsOnDate = getDealsForDate(date);
+                    const isToday = new Date().toDateString() === date.toDateString();
+                    return (
+                      <div
+                        key={date.toISOString()}
+                        className={`min-h-[100px] p-2 rounded-xl border transition-all cursor-pointer hover:shadow-clay-sm ${isToday ? 'bg-accent/10 border-accent' : 'bg-surface border-black/5'
+                          }`}
+                        onClick={() => {
+                          const dateStr = date.toISOString().split('T')[0];
+                          setFilterDate(dateStr);
+                          setActiveTab('pipeline');
+                        }}
+                      >
+                        <div className="text-sm font-bold text-text-main mb-1">{date.getDate()}</div>
+                        {tasks.length > 0 && (
+                          <div className="space-y-1">
+                            {tasks.slice(0, 2).map((task, i) => (
+                              <div key={i} className="text-[10px] bg-warm-yellow/20 text-warm-yellow-dark px-1 py-0.5 rounded truncate" title={task.text}>
+                                {task.text}
+                              </div>
+                            ))}
+                            {tasks.length > 2 && (
+                              <div className="text-[10px] text-text-muted">+{tasks.length - 2} more</div>
+                            )}
+                          </div>
+                        )}
+                        {dealsOnDate.length > 0 && (
+                          <div className="space-y-1 mt-1">
+                            {dealsOnDate.slice(0, 1).map((deal, i) => (
+                              <div key={i} className="text-[10px] bg-accent/20 text-accent px-1 py-0.5 rounded truncate" title={deal.title}>
+                                {deal.title}
+                              </div>
+                            ))}
+                            {dealsOnDate.length > 1 && (
+                              <div className="text-[10px] text-text-muted">+{dealsOnDate.length - 1} deal</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {/* Activity Feed */}
+          {activeTab === 'activity' && (
+            <div className="max-w-4xl mx-auto space-y-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-black text-text-main">Activity Feed</h2>
+                <div className="text-sm text-text-muted">{globalActivities.length} activities</div>
+              </div>
+              <div className="space-y-4">
+                {globalActivities.length === 0 ? (
+                  <Card className="p-12 text-center">
+                    <Activity size={48} className="mx-auto mb-4 text-text-muted opacity-50" />
+                    <p className="text-text-muted font-bold">No activities yet</p>
+                  </Card>
+                ) : (
+                  globalActivities.map((activity) => (
+                    <Card key={activity.id} className="p-4 hover:shadow-clay-md transition-shadow">
+                      <div className="flex items-start gap-4">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 ${activity.type === 'note' ? 'bg-warm-blue' :
+                            activity.type === 'task' ? (activity.completed ? 'bg-warm-green' : 'bg-warm-yellow') :
+                              activity.type === 'deal_created' ? 'bg-accent' : 'bg-text-muted'
+                          }`}>
+                          {activity.type === 'note' && <MessageSquare size={20} />}
+                          {activity.type === 'task' && <CheckSquare size={20} />}
+                          {activity.type === 'deal_created' && <Trophy size={20} />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-bold text-text-main">{activity.dealTitle}</span>
+                            <span className="text-xs text-text-muted">•</span>
+                            <span className="text-xs text-text-muted">{activity.company}</span>
+                          </div>
+                          <p className="text-sm text-text-muted mb-2">{activity.text}</p>
+                          <div className="text-xs text-text-muted font-bold">
+                            {formatDate(activity.date)}
+                            {activity.user && ` • ${activity.user}`}
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
           {activeTab === 'pipeline' && (
             <div className="flex overflow-x-auto pb-4 h-full gap-4 items-start snap-x snap-mandatory">
               {stages.filter(s => visibleStages.includes(s.id)).map(stage => (
@@ -882,6 +1266,7 @@ const App = () => {
                   </div>
                   <div className="p-2 overflow-y-auto flex-1 space-y-4 custom-scrollbar touch-pan-y pb-20">
                     {filteredDeals.filter(deal => deal.stage === stage.id).map(deal => {
+                      const isSelected = selectedDealIds.has(deal.id);
                       // --- Stale Deal Alert Logic ---
                       let lastActive = new Date(deal.lastActivity); // Try lastActivity
                       if (isNaN(lastActive.getTime())) lastActive = new Date(deal.createdAt); // Fallback if invalid (e.g. old string format)
@@ -905,16 +1290,25 @@ const App = () => {
                       return (
                         <div
                           key={deal.id}
-                          draggable="true"
+                          draggable={!bulkMode}
                           onDragStart={(e) => handleDragStart(e, deal.id)}
-                          onClick={() => handleDealClick(deal)}
+                          onClick={() => bulkMode ? toggleBulkSelection(deal.id) : handleDealClick(deal)}
                           onContextMenu={(e) => e.preventDefault()} // Block native popup
                           style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
-                          className={`${staleStyle} p-5 rounded-3xl shadow-clay-sm border hover:shadow-clay-md cursor-pointer hover:-translate-y-1 transition-all active:scale-95 group relative overflow-hidden`}
+                          className={`${staleStyle} p-5 rounded-3xl shadow-clay-sm border transition-all group relative overflow-hidden ${bulkMode ? 'cursor-pointer hover:bg-accent/5' : 'cursor-pointer hover:shadow-clay-md hover:-translate-y-1 active:scale-95'
+                            } ${isSelected ? 'ring-2 ring-accent ring-offset-2' : ''}`}
                         >
+                          {/* Bulk Selection Checkbox */}
+                          {bulkMode && (
+                            <div className="absolute top-3 left-3 z-30">
+                              <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-all ${isSelected ? 'bg-accent border-accent text-white' : 'bg-white border-gray-300'}`}>
+                                {isSelected && <CheckSquareIcon size={12} />}
+                              </div>
+                            </div>
+                          )}
                           {staleBadge}
-                          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/80 to-transparent rounded-bl-full pointer-events-none opacity-50"></div>
-                          <div className="flex justify-between items-start mb-3 relative z-10">
+                          <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/80 to-transparent rounded-bl-full pointer-events-none opacity-50`}></div>
+                          <div className={`flex justify-between items-start mb-3 relative z-10 ${bulkMode ? 'ml-8' : ''}`}>
                             <div className="flex flex-col gap-1 max-w-[60%]">
                               <span className="text-xs font-bold text-accent bg-accent/10 px-3 py-1 rounded-lg truncate">{deal.company}</span>
                               {deal.ai_score !== undefined && deal.ai_score !== null && (
