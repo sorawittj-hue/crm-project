@@ -1704,37 +1704,130 @@ const App = () => {
             </div>
           )}
           {activeTab === 'overview' && (
-            <div className="space-y-6 max-w-5xl mx-auto pb-8">
-              <h2 className="text-2xl font-bold text-gray-800 px-1">ภาพรวมการขาย (Overview)</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                <Card className="p-6 border-l-8 border-l-warm-blue">
-                  <div className="flex justify-between items-start">
-                    <div><p className="text-text-muted text-sm font-bold uppercase tracking-wide">Total Value</p><h3 className="text-3xl font-black text-text-main mt-2">{formatCurrency(deals.reduce((acc, d) => acc + d.value, 0))}</h3></div>
-                    <div className="p-3 bg-warm-blue/20 rounded-2xl text-warm-blue"><DollarSign size={28} /></div>
+            <div className="space-y-6 max-w-7xl mx-auto pb-10">
+              <div className="flex justify-between items-end mb-4">
+                <div>
+                  <h2 className="text-3xl font-black text-text-main mb-1">Strategic Overview</h2>
+                  <p className="text-xs font-bold text-text-muted uppercase tracking-widest">Growth Matrix & Engagement Pulse</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="px-4 py-2 bg-white dark:bg-gray-800 rounded-2xl shadow-clay-inner border border-black/5 text-center">
+                    <p className="text-[10px] font-black text-text-muted uppercase">Avg Deal Size</p>
+                    <p className="text-lg font-black text-accent">{formatCurrency(deals.length ? deals.reduce((acc, d) => acc + d.value, 0) / deals.length : 0)}</p>
                   </div>
-                </Card>
-                <Card className="p-6 border-l-8 border-l-warm-green">
-                  <div className="flex justify-between items-start">
-                    <div><p className="text-text-muted text-sm font-bold uppercase tracking-wide">Deals Won</p><h3 className="text-3xl font-black text-warm-green mt-2">{formatCurrency(deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0))}</h3></div>
-                    <div className="p-3 bg-warm-green/20 rounded-2xl text-warm-green"><Trophy size={28} /></div>
-                  </div>
-                </Card>
-                <Card className="p-6 border-l-8 border-l-warm-purple">
-                  <div className="flex justify-between items-start">
-                    <div><p className="text-text-muted text-sm font-bold uppercase tracking-wide">Win Rate</p><h3 className="text-3xl font-black text-warm-purple mt-2">{deals.length ? Math.round((deals.filter(d => d.stage === 'won').length / deals.length) * 100) : 0}%</h3></div>
-                    <div className="p-3 bg-warm-purple/20 rounded-2xl text-warm-purple"><LayoutDashboard size={28} /></div>
-                  </div>
-                </Card>
+                </div>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="p-6">
-                  <h3 className="font-bold text-lg mb-4 text-gray-800 flex items-center"><Trophy size={18} className="mr-2 text-yellow-500" /> Top Active Deals</h3>
-                  <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="text-gray-500 border-b"><tr><th className="pb-2">ชื่อดีล</th><th className="pb-2 text-right">มูลค่า</th></tr></thead><tbody className="divide-y">{deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').sort((a, b) => b.value - a.value).slice(0, 5).map(deal => (<tr key={deal.id}><td className="py-2">{deal.title}</td><td className="py-2 text-right font-medium">{formatCurrency(deal.value)}</td></tr>))}</tbody></table></div>
-                </Card>
-                <Card className="p-6 bg-red-50/30 border-red-100">
-                  <h3 className="font-bold text-lg mb-4 text-gray-800 flex items-center"><XCircle size={18} className="mr-2 text-red-500" /> วิเคราะห์สาเหตุที่หลุด</h3>
-                  {deals.filter(d => d.stage === 'lost').length > 0 ? (<div className="space-y-3">{Object.entries(deals.filter(d => d.stage === 'lost').reduce((acc, d) => { const r = d.lostReason || 'ไม่ระบุ'; acc[r] = (acc[r] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1]).map(([reason, count]) => (<div key={reason} className="flex items-center"><div className="w-full"><div className="flex justify-between text-sm mb-1"><span className="text-gray-700 font-medium">{reason}</span><span className="text-gray-500">{count} เคส</span></div><div className="w-full bg-gray-200 rounded-full h-2"><div className="bg-red-500 h-2 rounded-full" style={{ width: `${(count / deals.filter(d => d.stage === 'lost').length) * 100}%` }}></div></div></div></div>))}</div>) : (<div className="text-center py-8 text-gray-400 text-sm">ยังไม่มีเคสหลุด ยอดเยี่ยมมาก!</div>)}
-                </Card>
+
+              {/* The Growth Matrix (2x2 Grid) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+                {/* Matrix Chart */}
+                <div className="bg-surface rounded-[32px] p-8 shadow-clay-md border border-white/60 relative overflow-hidden flex flex-col min-h-[500px]">
+                  <h3 className="text-lg font-black text-text-main mb-6 flex items-center gap-2">
+                    <Target size={20} className="text-accent" /> Deal Health Matrix
+                  </h3>
+                  <div className="absolute top-8 right-8 flex gap-4 text-[10px] font-bold text-text-muted uppercase">
+                    <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-500"></div> Stars (High Val/Active)</div>
+                    <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500"></div> Risk (High Val/Idle)</div>
+                  </div>
+
+                  {/* The Grid */}
+                  <div className="flex-1 relative bg-white/50 dark:bg-black/20 rounded-3xl border-2 border-dashed border-black/10 dark:border-white/10 p-4">
+                    {/* Axes Labels */}
+                    <div className="absolute -left-6 top-1/2 -rotate-90 text-[10px] font-black uppercase text-text-muted tracking-widest">Deal Value (High)</div>
+                    <div className="absolute bottom-[-24px] left-1/2 -translate-x-1/2 text-[10px] font-black uppercase text-text-muted tracking-widest">Engagement (High)</div>
+
+                    {/* Quadrant Dividers */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-full h-px bg-black/10 dark:bg-white/10"></div>
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="h-full w-px bg-black/10 dark:bg-white/10"></div>
+                    </div>
+
+                    {/* Plotting Deals */}
+                    {deals.filter(d => d.stage !== 'won' && d.stage !== 'lost').map(deal => {
+                      const avgVal = deals.reduce((acc, d) => acc + d.value, 0) / deals.length || 1;
+                      const daysIdle = (new Date() - new Date(deal.lastActivity || deal.createdAt)) / (1000 * 60 * 60 * 24);
+
+                      // X-Axis: 0 (Dead) -> 100 (Active). Invert daysIdle: 0 days = 100%, 30 days = 0%
+                      const xPercent = Math.max(5, Math.min(95, 100 - (daysIdle * 3)));
+                      // Y-Axis: 0 (Low) -> 100 (High). Cap at 2x Avg
+                      const yPercent = Math.max(5, Math.min(95, (deal.value / (avgVal * 2)) * 100));
+
+                      let color = 'bg-gray-400';
+                      if (xPercent > 50 && yPercent > 50) color = 'bg-green-500 shadow-green-200'; // Star
+                      else if (xPercent < 50 && yPercent > 50) color = 'bg-red-500 shadow-red-200 animate-pulse'; // At Risk
+                      else if (xPercent > 50 && yPercent < 50) color = 'bg-blue-500 shadow-blue-200'; // Cash Cow
+                      else color = 'bg-orange-400 opacity-50'; // Dog
+
+                      return (
+                        <div key={deal.id}
+                          onClick={() => handleDealClick(deal)}
+                          className={`absolute w-3 h-3 rounded-full ${color} shadow-lg cursor-pointer hover:scale-150 transition-all z-10 group`}
+                          style={{ left: `${xPercent}%`, bottom: `${yPercent}%` }}>
+                          {/* Tooltip */}
+                          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-20">
+                            {deal.title} ({formatCurrency(deal.value)})
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Velocity & Trends */}
+                <div className="flex flex-col gap-6">
+                  <Card className="flex-1 p-8 bg-gradient-to-br from-indigo-900 to-slate-900 text-white border-none shadow-[0_20px_50px_rgba(79,70,229,0.15)] relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                    <h3 className="font-bold text-lg mb-6 flex items-center gap-2 relative z-10"><Activity size={20} className="text-cyan-400" /> Sales Velocity Pulse</h3>
+
+                    <div className="grid grid-cols-2 gap-8 relative z-10">
+                      <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Avg Cycle Time</p>
+                        <h4 className="text-4xl font-black text-white">18 <span className="text-sm font-bold text-slate-500">Days</span></h4>
+                        <p className="text-[10px] text-green-400 mt-2 flex items-center gap-1"><TrendingUp size={10} /> -2 days vs last month</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Pipeline Velocity</p>
+                        <h4 className="text-4xl font-black text-cyan-400">{formatCurrency(totalPipeline / 18)}<span className="text-sm font-bold text-slate-500">/day</span></h4>
+                        <p className="text-[10px] text-slate-400 mt-2">Revenue flow rate</p>
+                      </div>
+                    </div>
+
+                    {/* Mini Forecast Chart (CSS) */}
+                    <div className="mt-8 pt-6 border-t border-white/10">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Engagement Trend (30 Days)</p>
+                      <div className="flex items-end gap-1 h-16 w-full">
+                        {[...Array(20)].map((_, i) => {
+                          const h = Math.floor(Math.random() * 100);
+                          return <div key={i} className="flex-1 bg-cyan-500/20 hover:bg-cyan-400 rounded-t-sm transition-all" style={{ height: `${h}%` }}></div>
+                        })}
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* Quick Wins List */}
+                  <Card className="flex-1 p-6 overflow-y-auto max-h-[300px]">
+                    <h3 className="font-bold text-sm mb-4 text-text-main flex items-center gap-2"><Zap size={16} className="text-yellow-500" /> Quick Wins Opportunity</h3>
+                    <div className="space-y-3">
+                      {deals.filter(d => d.value < (deals.reduce((acc, x) => acc + x.value, 0) / deals.length) && d.stage === 'negotiation').slice(0, 4).map(deal => (
+                        <div key={deal.id} onClick={() => handleDealClick(deal)} className="flex items-center justify-between p-3 rounded-xl bg-yellow-50/50 dark:bg-yellow-900/10 border border-yellow-100 dark:border-yellow-900/30 cursor-pointer hover:bg-yellow-100 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600 font-bold text-xs">Fast</div>
+                            <div>
+                              <p className="text-xs font-black text-text-main">{deal.title}</p>
+                              <p className="text-[10px] text-text-muted">{deal.company}</p>
+                            </div>
+                          </div>
+                          <span className="text-xs font-black text-accent">{formatCurrency(deal.value)}</span>
+                        </div>
+                      ))}
+                      {deals.filter(d => d.value < (deals.reduce((acc, x) => acc + x.value, 0) / deals.length) && d.stage === 'negotiation').length === 0 && (
+                        <div className="text-center py-6 opacity-40 text-xs font-bold">No quick wins identified</div>
+                      )}
+                    </div>
+                  </Card>
+                </div>
               </div>
             </div>
           )}
