@@ -1256,33 +1256,36 @@ const App = () => {
           )}
 
           {activeTab === 'pipeline' && (
-            <div className="flex overflow-x-auto pb-6 h-full gap-5 items-start snap-x snap-mandatory pt-2">
+            <div className="flex overflow-x-auto pb-8 h-full gap-6 items-start snap-x snap-mandatory pt-4 px-2">
               {stages.filter(s => visibleStages.includes(s.id)).map(stage => {
                 const stageColors = {
-                  lead: 'border-t-blue-500',
-                  contact: 'border-t-purple-500',
-                  proposal: 'border-t-orange-500',
-                  negotiation: 'border-t-yellow-500',
-                  won: 'border-t-green-500',
-                  lost: 'border-t-red-500'
+                  lead: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
+                  contact: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800',
+                  proposal: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800',
+                  negotiation: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800',
+                  won: 'text-green-600 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
+                  lost: 'text-red-600 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
                 };
 
                 return (
                   <div key={stage.id}
-                    className={`min-w-[300px] max-w-[320px] flex-shrink-0 flex flex-col max-h-full snap-center bg-gray-50/50 dark:bg-gray-900/30 rounded-3xl border border-black/5 dark:border-white/5 overflow-hidden shadow-sm`}
+                    className={`min-w-[320px] max-w-[340px] flex-shrink-0 flex flex-col max-h-full snap-center bg-gray-50/80 dark:bg-black/20 rounded-[32px] border border-black/5 dark:border-white/5 overflow-hidden shadow-sm`}
                     onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, stage.id)}
                   >
-                    <div className={`p-4 border-t-4 ${stageColors[stage.id] || 'border-t-gray-400'} bg-white dark:bg-gray-800 shadow-sm z-10`}>
-                      <div className="flex justify-between items-center mb-1">
-                        <h3 className={`font-black text-sm text-text-main uppercase tracking-widest`}>{stage.title}</h3>
-                        <span className="bg-gray-100 dark:bg-gray-700 text-text-muted text-[10px] font-black px-2 py-0.5 rounded-full">{deals.filter(d => d.stage === stage.id).length}</span>
+                    <div className={`p-5 flex flex-col gap-2`}>
+                      <div className="flex justify-between items-center">
+                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${stageColors[stage.id]}`}>
+                          <div className={`w-2 h-2 rounded-full bg-current shadow-[0_0_8px_rgba(0,0,0,0.2)]`}></div>
+                          <h3 className={`font-black text-xs uppercase tracking-widest`}>{stage.title}</h3>
+                        </div>
+                        <span className="bg-white dark:bg-gray-800 shadow-clay-sm text-text-muted text-[10px] font-black px-2.5 py-1 rounded-lg border border-black/5">{deals.filter(d => d.stage === stage.id).length}</span>
                       </div>
-                      <div className="text-[10px] text-text-muted font-bold flex justify-between">
-                        <span>Value Pool:</span>
-                        <span className="text-text-main">{formatCurrency(getStageTotal(stage.id))}</span>
+                      <div className="px-1 flex justify-between items-end mt-1">
+                        <span className="text-[10px] text-text-muted font-bold uppercase tracking-tighter opacity-60">Value Pool</span>
+                        <span className="text-sm font-black text-text-main">{formatCurrency(getStageTotal(stage.id))}</span>
                       </div>
                     </div>
-                    <div className="p-3 overflow-y-auto flex-1 space-y-3 custom-scrollbar touch-pan-y pb-10">
+                    <div className="p-4 pt-0 overflow-y-auto flex-1 space-y-4 custom-scrollbar touch-pan-y pb-20">
                       {filteredDeals.filter(deal => deal.stage === stage.id).map(deal => {
                         const isSelected = selectedDealIds.has(deal.id);
                         // --- Stale Deal Alert Logic ---
@@ -1308,7 +1311,16 @@ const App = () => {
                         const nextTask = deal.tasks?.find(t => !t.completed);
                         const isOverdue = nextTask && nextTask.date && new Date(nextTask.date) < new Date();
 
-                        const meddpiccKeys = ['Metrics', 'Economic Buyer', 'Criteria', 'Process', 'Pain', 'Champion', 'Competition'];
+                        const meddpiccLabels = {
+                          Metrics: 'วัดผลได้ (Metrics)',
+                          Economic: 'ผู้มีอำนาจ (Buyer)',
+                          Criteria: 'เกณฑ์เลือก (Criteria)',
+                          Process: 'กระบวนการ (Process)',
+                          Pain: 'ระบุปัญหา (Pain)',
+                          Champion: 'ผู้สนับสนุน (Champion)',
+                          Competition: 'รู้คู่แข่ง (Competition)'
+                        };
+                        const meddpiccKeys = Object.keys(meddpiccLabels);
                         const qualifiedCount = (deal.tasks || []).filter(t => meddpiccKeys.some(k => t.text.includes(k))).length;
 
                         return (
@@ -1318,11 +1330,17 @@ const App = () => {
                             onDragStart={(e) => handleDragStart(e, deal.id)}
                             onClick={() => bulkMode ? toggleBulkSelection(deal.id) : handleDealClick(deal)}
                             style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
-                            className={`bg-white dark:bg-gray-900 p-4 rounded-xl border ${statusBorder} shadow-sm group relative transition-all 
-                            ${bulkMode ? 'cursor-pointer hover:bg-accent/5' : 'cursor-pointer hover:shadow-md hover:-translate-y-0.5'}
+                            className={`bg-white dark:bg-gray-900 p-5 rounded-[24px] border ${statusBorder} shadow-clay-sm group relative transition-all 
+                            ${bulkMode ? 'cursor-pointer hover:bg-accent/5' : 'cursor-pointer hover:shadow-clay-md hover:-translate-y-1'}
                             ${isSelected ? 'ring-2 ring-accent ring-offset-2' : ''}
                           `}
                           >
+                            {/* Actions Overlay (Visible on Hover) */}
+                            <div className="absolute top-4 right-4 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 z-20">
+                              <button onClick={(e) => handleAnalyzeDeal(deal, e)} className="w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-800 shadow-clay-sm hover:shadow-clay-inner rounded-xl text-accent transition-all"><Wand2 size={14} /></button>
+                              <button onClick={(e) => handleDeleteDeal(deal.id, e)} className="w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-800 shadow-clay-sm hover:text-red-500 rounded-xl text-text-muted transition-all"><Trash2 size={14} /></button>
+                            </div>
+
                             {/* Bulk Selection Checkbox */}
                             {bulkMode && (
                               <div className="absolute top-3 left-3 z-30">
@@ -1332,56 +1350,60 @@ const App = () => {
                               </div>
                             )}
 
-                            <div className="flex justify-between items-start mb-2">
-                              <div className="flex flex-col gap-0.5">
-                                <span className="text-[10px] font-black text-accent uppercase tracking-tight">{deal.company}</span>
+                            <div className="mb-3">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-[11px] font-black text-accent bg-accent/5 px-2 py-0.5 rounded-lg truncate max-w-[70%]">{deal.company}</span>
                                 {staleMarker}
                               </div>
-
-                              {/* Action Buttons (Visible on Hover) */}
-                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={(e) => handleAnalyzeDeal(deal, e)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-text-muted hover:text-accent"><Wand2 size={12} /></button>
-                                <button onClick={(e) => handleDeleteDeal(deal.id, e)} className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded text-text-muted hover:text-red-500"><Trash2 size={12} /></button>
-                              </div>
+                              <h4 className="font-extrabold text-[15px] text-text-main leading-tight group-hover:text-accent transition-colors">{deal.title}</h4>
                             </div>
 
-                            <h4 className="font-bold text-sm text-text-main mb-2 leading-snug line-clamp-1">{deal.title}</h4>
+                            <div className="flex items-center gap-2 text-[11px] text-text-muted font-medium mb-4">
+                              <Users size={14} className="opacity-40" />
+                              <span className="truncate">{deal.contact}</span>
+                            </div>
 
-                            {deal.ai_insight && <p className="text-[10px] text-text-muted mb-2 relative z-10 italic">&quot; {deal.ai_insight} &quot;</p>}
-
-                            {/* Next Action */}
+                            {/* Next Action Badge */}
                             {nextTask ? (
-                              <div className={`mb-3 p-1.5 rounded-lg text-[9px] font-black flex items-center gap-2 border ${isOverdue ? 'bg-red-50 border-red-100 text-red-600 animate-pulse' : 'bg-gray-50 border-gray-100 text-gray-500'}`}>
-                                <Clock size={10} />
-                                <span className="truncate">{nextTask.text}</span>
+                              <div className={`mb-4 p-3 rounded-2xl flex flex-col gap-1 border ${isOverdue ? 'bg-red-50 border-red-100' : 'bg-bg dark:bg-white/5 border-black/5'}`}>
+                                <span className={`text-[8px] font-black uppercase tracking-widest ${isOverdue ? 'text-red-500 animate-pulse' : 'text-text-muted opacity-50'}`}>
+                                  Next Action
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <Clock size={12} className={isOverdue ? 'text-red-500' : 'text-accent'} />
+                                  <span className={`text-[11px] font-bold truncate ${isOverdue ? 'text-red-700' : 'text-text-main'}`}>{nextTask.text}</span>
+                                </div>
                               </div>
                             ) : (
-                              <div className="mb-3 p-1.5 rounded-lg text-[9px] font-bold flex items-center gap-2 bg-gray-50/50 text-gray-300 italic border border-dashed border-gray-100">
-                                <Plus size={10} /> Next activity?
+                              <div className="mb-4 p-2.5 rounded-2xl border border-dashed border-black/10 dark:border-white/10 flex items-center gap-2 text-[10px] font-bold text-text-muted/40 italic">
+                                <Plus size={12} /> Add next activity
                               </div>
                             )}
 
-                            <div className="flex items-center justify-between text-[11px] font-bold text-text-muted">
-                              <div className="flex items-center gap-1.5">
-                                <div className="w-5 h-5 bg-accent/10 text-accent rounded-full flex items-center justify-center text-[8px]">{deal.contact?.charAt(0)}</div>
-                                <span className="max-w-[80px] truncate">{deal.contact}</span>
+                            <div className="flex items-center justify-between pt-1">
+                              <div className="flex flex-col">
+                                <span className="text-[10px] text-text-muted font-black uppercase opacity-40 leading-none mb-1">Deal Value</span>
+                                <span className="text-lg font-black text-text-main tracking-tight">{formatCurrency(deal.value)}</span>
                               </div>
 
-                              <div className="flex items-center gap-2">
-                                {deal.ai_score && (
-                                  <span className={`px-1.5 rounded-full text-[8px] flex items-center gap-0.5 ${deal.ai_score >= 70 ? 'text-green-500' : 'text-orange-500'}`}>
-                                    <TrendingUp size={8} />{deal.ai_score}%
-                                  </span>
-                                )}
-                                <span className="text-text-main font-black underline decoration-accent/30">{formatCurrency(deal.value)}</span>
-                              </div>
+                              {deal.ai_score && (
+                                <div className={`px-2.5 py-1 rounded-xl text-[10px] font-black flex items-center gap-1.5 shadow-clay-inner ${deal.ai_score >= 70 ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
+                                  <TrendingUp size={12} />{deal.ai_score}%
+                                </div>
+                              )}
                             </div>
 
-                            {/* MEDDPICC Progress bar (Condensed) */}
-                            <div className="mt-3 flex gap-0.5 h-0.5">
-                              {[...Array(7)].map((_, i) => (
-                                <div key={i} className={`flex-1 rounded-full ${i < qualifiedCount ? 'bg-accent' : 'bg-gray-100 dark:bg-gray-800'}`}></div>
-                              ))}
+                            {/* Qualification Tracker (MEDDPICC) */}
+                            <div className="mt-4 pt-3 border-t border-black/5 flex flex-col gap-2">
+                              <div className="flex justify-between items-center">
+                                <span className="text-[9px] font-black text-text-muted uppercase tracking-wider opacity-60">Qualification (MEDDPICC)</span>
+                                <span className="text-[10px] font-black text-text-main">{Math.round((qualifiedCount / 7) * 100)}%</span>
+                              </div>
+                              <div className="flex gap-1 h-1.5">
+                                {[...Array(7)].map((_, i) => (
+                                  <div key={i} className={`flex-1 rounded-full transition-all duration-500 ${i < qualifiedCount ? 'bg-accent' : 'bg-gray-100 dark:bg-gray-800'}`}></div>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         );
@@ -2078,31 +2100,38 @@ const App = () => {
                       {/* Qualification Checklist (MEDDPICC) */}
                       <div className="pt-4 border-t border-black/5">
                         <label className="text-xs font-black text-accent uppercase tracking-widest block mb-3 flex items-center justify-between">
-                          Qualification Checklist
+                          รายการตรวจสอบ (Qualify)
                           <span className="text-[10px] text-text-muted normal-case font-bold">(MEDDPICC)</span>
                         </label>
                         <div className="space-y-2">
-                          {['Metrics Identified', 'Economic Buyer Meta', 'Decision Criteria Set', 'Decision Process Mapped', 'Identify Pain Points', 'Champion Found', 'Competition Analysis'].map((item) => {
-                            const isDone = selectedDeal.tasks?.some(t => t.text.includes(item.split(' ')[0]) && t.completed);
+                          {[
+                            { key: 'Metrics', label: 'วัดผลความสำเร็จได้ (Metrics)' },
+                            { key: 'Economic', label: 'พบผู้มีอำนาจตัดสินใจ (Buyer)' },
+                            { key: 'Criteria', label: 'ทราบเกณฑ์การเลือกซื้อ (Criteria)' },
+                            { key: 'Process', label: 'เข้าใจกระบวนการตัดสินใจ (Process)' },
+                            { key: 'Pain', label: 'ระบุปัญหาที่ชัดเจนได้ (Pain)' },
+                            { key: 'Champion', label: 'มีผู้สนับสนุนภายใน (Champion)' },
+                            { key: 'Competition', label: 'วิเคราะห์คู่แข่งแล้ว (Competition)' }
+                          ].map((item) => {
+                            const isDone = selectedDeal.tasks?.some(t => t.text.includes(item.key) && t.completed);
                             return (
                               <button
-                                key={item}
+                                key={item.key}
                                 onClick={async () => {
-                                  const keyword = item.split(' ')[0];
-                                  const existingTask = selectedDeal.tasks?.find(t => t.text.includes(keyword));
+                                  const existingTask = selectedDeal.tasks?.find(t => t.text.includes(item.key));
                                   if (existingTask) {
                                     await handleToggleTask(existingTask.id);
                                   } else {
-                                    const task = { id: Date.now(), text: `[MEDDPICC] ${item}`, date: new Date().toISOString(), completed: true };
+                                    const task = { id: Date.now(), text: `[MEDDPICC] ${item.key}: ${item.label}`, date: new Date().toISOString(), completed: true };
                                     const updatedTasks = [...(selectedDeal.tasks || []), task];
                                     await handleUpdateDeal(selectedDeal.id, { tasks: updatedTasks });
                                     setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
                                   }
                                 }}
-                                className={`w-full flex items-center gap-3 p-2 rounded-xl border text-left transition-all ${isDone ? 'bg-warm-green/10 border-warm-green/30 text-warm-green-dark' : 'bg-white border-black/5 text-text-muted hover:border-accent/40'}`}
+                                className={`w-full flex items-center gap-3 p-2.5 rounded-xl border text-left transition-all ${isDone ? 'bg-warm-green/10 border-warm-green/30 text-warm-green-dark shadow-clay-inner' : 'bg-white border-black/5 text-text-muted hover:border-accent/40 shadow-sm'}`}
                               >
                                 {isDone ? <CheckCircle2 size={14} /> : <div className="w-3.5 h-3.5 rounded-full border-2 border-current opacity-30" />}
-                                <span className="text-[11px] font-bold">{item}</span>
+                                <span className="text-[11px] font-bold">{item.label}</span>
                               </button>
                             );
                           })}
