@@ -1429,6 +1429,58 @@ const App = () => {
 
           {activeTab === 'pipeline' && (
             <div className="flex flex-col h-full gap-4 overflow-hidden">
+              {/* Hot Deals (>100k) Ticker */}
+              <div className="mx-2 mb-2 px-4 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-[24px] border border-orange-200/50 shadow-clay-sm shrink-0">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full shadow-lg shadow-orange-500/30 animate-pulse">
+                    <Flame size={14} fill="currentColor" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Hot Deals {'>'}100k</span>
+                  </div>
+                  <span className="text-[10px] text-text-muted font-bold opacity-70">โฟกัสดีลเหล่านี้เพื่อปิดยอดให้เร็วที่สุด!</span>
+                </div>
+
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
+                  {deals.filter(d => d.value >= 100000 && d.stage !== 'won' && d.stage !== 'lost').length === 0 && (
+                    <div className="text-xs text-text-muted italic opacity-50 py-2 w-full text-center">ยังไม่มีดีลร้อนแรงในขณะนี้ (No Hot Deals)</div>
+                  )}
+                  {deals.filter(d => d.value >= 100000 && d.stage !== 'won' && d.stage !== 'lost')
+                    .sort((a, b) => b.value - a.value)
+                    .map(deal => {
+                      const lastActive = new Date(deal.lastActivity || deal.createdAt);
+                      const hoursDiff = (new Date() - lastActive) / (1000 * 60 * 60);
+                      const isQuoteSent = ['proposal', 'negotiation'].includes(deal.stage);
+                      const isCritical = isQuoteSent && hoursDiff > 48;
+
+                      return (
+                        <div key={`hot-${deal.id}`} onClick={() => handleDealClick(deal)}
+                          className={`min-w-[240px] p-3.5 rounded-2xl border cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md flex flex-col gap-1.5 snap-start bg-white dark:bg-gray-900 group
+                               ${isCritical
+                              ? 'border-red-500 dark:border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.2)] animate-[pulse_3s_ease-in-out_infinite]'
+                              : 'border-orange-100 dark:border-white/10 hover:border-orange-300'}
+                             `}>
+                          <div className="flex justify-between items-center mb-0.5">
+                            <div className="flex items-center gap-1.5 overflow-hidden">
+                              <span className="w-1.5 h-1.5 rounded-full bg-accent inline-block"></span>
+                              <span className="text-[10px] font-black uppercase text-text-muted truncate max-w-[120px] tracking-wider">{deal.company}</span>
+                            </div>
+                            {isCritical && <div className="px-1.5 py-0.5 bg-red-100 text-red-600 rounded text-[9px] font-black flex items-center gap-1 animate-bounce"><AlertTriangle size={8} /> 48h+ Delay</div>}
+                          </div>
+                          <h4 className="text-sm font-extrabold text-text-main truncate group-hover:text-accent transition-colors">{deal.title}</h4>
+                          <div className="flex justify-between items-center mt-1">
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-lg border flex items-center gap-1 ${deal.stage === 'proposal' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                deal.stage === 'negotiation' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                  'bg-gray-50 text-gray-500 border-gray-100'
+                              }`}>
+                              {stages.find(s => s.id === deal.stage)?.title?.split(' ')[0] || deal.stage}
+                            </span>
+                            <span className="text-base font-black text-accent">{formatCurrency(deal.value)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
               {/* Pipeline Management Header (High Volume Solution) */}
               <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 bg-white/40 backdrop-blur-md rounded-3xl border border-white/60 mx-2 shadow-clay-inner">
                 <div className="flex items-center gap-2">
