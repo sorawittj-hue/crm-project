@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  LayoutDashboard, KanbanSquare, Users, Plus, Search,
+  LayoutDashboard, Users, Plus, Search,
   Building2, DollarSign, Trophy, X, Loader2, Database, Menu,
   CheckCircle2, Upload, Download, FileSpreadsheet, AlertCircle,
   FileText, CheckSquare, MessageSquare, Trash2, XCircle, Clock, ArrowRight,
   Cpu, Server, HardDrive, Wrench, ChevronRight, RotateCcw,
   Zap, Signal, PieChart, BarChart3, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save,
-  Sun, Moon, CheckSquare as CheckSquareIcon, Filter, Activity, CalendarDays
+  Sun, Moon, CheckSquare as CheckSquareIcon, Filter, Activity
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import SolutionLayout from './components/solution-designer/SolutionLayout';
@@ -185,6 +185,8 @@ const App = () => {
   const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [pipelineViewMode, setPipelineViewMode] = useState('active'); // 'active', 'recent', 'all'
+  const [pipelineSortMode, setPipelineSortMode] = useState('value'); // 'value', 'activity', 'newest'
   // Wait, I see selectedDealForMove on line 177 in previous reads (Step 269). Let's use that if it exists.
   const [movingDeal, setMovingDeal] = useState(null);
   const fileInputRef = useRef(null);
@@ -452,12 +454,14 @@ const App = () => {
     if (!selectedDeal) return;
     const updatedTasks = selectedDeal.tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t);
     await handleUpdateDeal(selectedDeal.id, { tasks: updatedTasks });
+    setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
   };
 
   const handleDeleteTask = async (taskId) => {
     if (!selectedDeal) return;
     const updatedTasks = selectedDeal.tasks.filter(t => t.id !== taskId);
     await handleUpdateDeal(selectedDeal.id, { tasks: updatedTasks });
+    setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
   };
 
   const handleDragStart = (e, dealId) => { setDraggedDeal(dealId); e.dataTransfer.effectAllowed = 'move'; };
@@ -885,7 +889,7 @@ const App = () => {
       {/* Sidebar Navigation */}
       <aside className={`
         fixed xl:static inset-y-0 left-0 z-40 
-        w-[280px] min-w-[280px]
+        w-[240px] min-w-[240px]
         bg-surface text-text-muted 
         flex flex-col m-0 xl:m-4 xl:rounded-3xl xl:shadow-clay-lg border border-white/50
         transition-transform duration-300 ease-in-out font-sans
@@ -893,68 +897,62 @@ const App = () => {
         xl:translate-x-0 
       `}>
         {/* Header / Logo */}
-        <div className="h-24 flex items-center justify-between px-8">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-12 h-12 bg-accent rounded-2xl flex items-center justify-center text-white shadow-clay-btn transform rotate-3 flex-shrink-0">
-              <span className="font-extrabold text-2xl">S</span>
+        <div className="h-20 flex items-center justify-between px-6">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-white shadow-clay-btn transform rotate-3 flex-shrink-0">
+              <span className="font-extrabold text-xl">S</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-text-main font-black text-xl tracking-tight whitespace-nowrap leading-tight">Sales CRM</span>
-              <span className="text-accent text-xs font-bold tracking-widest uppercase">Professional</span>
+            <div className="flex flex-col leading-tight">
+              <span className="font-black text-sm text-text-main whitespace-nowrap tracking-tighter">Sales CRM</span>
+              <span className="text-[9px] font-bold text-accent uppercase tracking-widest opacity-70">Professional</span>
             </div>
           </div>
-          <button onClick={() => setIsSidebarOpen(false)} className="xl:hidden text-text-muted hover:text-accent transition-colors p-1">
-            <X size={24} />
-          </button>
+          <button onClick={() => setIsSidebarOpen(false)} className="xl:hidden text-text-muted p-2"><X size={20} /></button>
         </div>
 
-        {/* Navigation Links */}
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-          <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Menu</p>
-          {['pipeline', 'overview', 'dashboard', 'contacts', 'calendar', 'activity'].map(tab => {
+        <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
+          <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 opacity-60">Menu</p>
+          {['pipeline', 'overview', 'dashboard', 'contacts'].map((tab) => {
             const isActive = activeTab === tab;
             return (
               <button
                 key={tab}
-                onClick={() => { setActiveTab(tab); setIsSidebarOpen(false); }}
+                onClick={() => setActiveTab(tab)}
                 className={`
-                  w-full flex items-center px-6 py-4 rounded-2xl transition-all duration-300 group mb-2
+                  w-full flex items-center px-4 py-3 rounded-2xl transition-all duration-300 group
                   ${isActive
-                    ? 'bg-surface shadow-clay-inner text-accent font-bold translate-x-2'
-                    : 'text-text-muted hover:bg-surface hover:shadow-clay-sm hover:text-text-main hover:translate-x-1'}
+                    ? 'bg-surface shadow-clay-inner text-accent font-bold scale-[0.98]'
+                    : 'text-text-muted hover:bg-surface/50 hover:text-text-main hover:translate-x-1'}
                 `}
               >
-                {tab === 'pipeline' && <KanbanSquare size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
-                {tab === 'overview' && <PieChart size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
-                {tab === 'dashboard' && <LayoutDashboard size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
-                {tab === 'contacts' && <Users size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
-                {tab === 'calendar' && <CalendarDays size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
-                {tab === 'activity' && <Activity size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
-                <span className="text-base capitalize">
-                  {tab === 'spec-setup' ? 'Spec AI' : tab}
-                </span>
+                {tab === 'pipeline' && <LayoutDashboard size={20} className={`mr-3 ${isActive ? 'text-accent' : 'text-text-muted opacity-60'}`} />}
+                {tab === 'overview' && <PieChart size={20} className={`mr-3 ${isActive ? 'text-accent' : 'text-text-muted opacity-60'}`} />}
+                {tab === 'dashboard' && <BarChart3 size={20} className={`mr-3 ${isActive ? 'text-accent' : 'text-text-muted opacity-60'}`} />}
+                {tab === 'contacts' && <Users size={20} className={`mr-3 ${isActive ? 'text-accent' : 'text-text-muted opacity-60'}`} />}
+                <span className="text-[13px] capitalize">{tab}</span>
               </button>
             );
           })}
 
-          <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6">Features</p>
-          {['spec-setup', 'solution', 'tools'].map(tab => {
+          <div className="my-6 border-t border-black/5 opacity-50 mx-4"></div>
+          <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 opacity-60">Architect Tools</p>
+          {['spec-setup', 'solution', 'tools'].map((tab) => {
             const isActive = activeTab === tab;
             return (
               <button
                 key={tab}
-                onClick={() => { setActiveTab(tab); setIsSidebarOpen(false); }}
+                onClick={() => setActiveTab(tab)}
                 className={`
-                  w-full flex items-center px-6 py-4 rounded-2xl transition-all duration-300 group mb-2
+                  w-full flex items-center px-4 py-3 rounded-2xl transition-all duration-300 group
                   ${isActive
-                    ? 'bg-surface shadow-clay-inner text-accent font-bold translate-x-2'
-                    : 'text-text-muted hover:bg-surface hover:shadow-clay-sm hover:text-text-main hover:translate-x-1'}
+                    ? 'bg-surface shadow-clay-inner text-accent font-bold scale-[0.98]'
+                    : 'text-text-muted hover:bg-surface/50 hover:text-text-main hover:translate-x-1'}
                 `}
               >
-                {tab === 'spec-setup' && <Cpu size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
-                {tab === 'tools' && <Wrench size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
-                {tab === 'solution' && <Server size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
-                <span className="text-base">
+                {tab === 'spec-setup' && <Cpu size={20} className={`mr-3 ${isActive ? 'text-accent' : 'text-text-muted opacity-60'}`} />}
+                {tab === 'tools' && <Wrench size={20} className={`mr-3 ${isActive ? 'text-accent' : 'text-text-muted opacity-60'}`} />}
+                {tab === 'solution' && <Server size={20} className={`mr-3 ${isActive ? 'text-accent' : 'text-text-muted opacity-60'}`} />}
+                <span className="text-[13px]">
                   {tab === 'spec-setup' ? 'Spec AI' : tab === 'solution' ? 'Solution Designer' : 'IT Tools'}
                 </span>
               </button>
@@ -963,42 +961,34 @@ const App = () => {
         </nav>
 
         {/* Dark Mode Toggle */}
-        <div className="px-6 py-4 border-t border-black/5">
+        <div className="px-4 py-4 border-t border-black/5 flex flex-col gap-2">
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className="w-full flex items-center justify-center px-4 py-3 bg-surface text-text-muted rounded-2xl text-sm font-bold transition-all duration-300 shadow-clay-sm hover:shadow-clay-md hover:text-accent border border-white/50"
+            className="w-full flex items-center justify-center px-4 py-2.5 bg-surface text-text-muted rounded-xl text-xs font-bold transition-all shadow-clay-sm hover:text-accent border border-white/50"
           >
-            {darkMode ? <Sun size={20} className="mr-3" /> : <Moon size={20} className="mr-3" />}
-            {darkMode ? 'Light Mode' : 'Dark Mode'}
+            {darkMode ? <Sun size={16} className="mr-2" /> : <Moon size={16} className="mr-2" />}
+            {darkMode ? 'Light' : 'Dark'} Mode
+          </button>
+
+          <button
+            onClick={exportToCSV}
+            className="w-full flex items-center justify-center px-4 py-2.5 bg-surface text-text-muted rounded-xl text-xs font-bold transition-all shadow-clay-sm hover:text-accent border border-white/50"
+          >
+            <Download size={16} className="mr-2" /> Export Data
           </button>
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 mt-auto">
-          <button
-            onClick={exportToCSV}
-            className="w-full flex items-center justify-center px-4 py-4 bg-surface text-text-muted rounded-2xl text-sm font-bold transition-all duration-300 shadow-clay-sm hover:shadow-clay-md hover:text-accent mb-6 group border border-white/50"
-          >
-            <Download size={20} className="mr-3 text-accent group-hover:scale-110 transition-transform" />
-            Export Data
-          </button>
-
-          <button
-            onClick={() => setIsImportModalOpen(true)}
-            className="w-full flex items-center justify-center px-4 py-4 bg-surface text-text-muted rounded-2xl text-sm font-bold transition-all duration-300 shadow-clay-sm hover:shadow-clay-md hover:text-accent mb-6 group border border-white/50"
-          >
-            <FileSpreadsheet size={20} className="mr-3 text-warm-green group-hover:scale-110 transition-transform" />
-            Import Data
-          </button>
-
-          <div className="flex items-center gap-2 px-2 py-3 mt-2 bg-gradient-to-r from-accent/10 to-transparent rounded-2xl border border-accent/20 relative group overflow-hidden">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-accent/10 blur-xl rounded-full -mr-8 -mt-8 pointer-events-none"></div>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-[#C08C60] flex items-center justify-center text-white shadow-clay-sm transform group-hover:scale-110 transition-transform duration-300 shrink-0">
-              <span className="font-black text-[10px]">DEV</span>
-            </div>
-            <div className="flex-1 min-w-0 relative z-10">
-              <p className="text-[10px] font-black text-accent uppercase tracking-wide mb-0.5">Creator & Developer</p>
-              <p className="text-[13px] font-black text-text-main whitespace-nowrap tracking-tight group-hover:text-accent transition-colors">SORAWIT THUNTHAKIJ</p>
+        <div className="px-4 pb-6">
+          <div className="p-3 bg-gradient-to-br from-accent/10 to-transparent rounded-2xl border border-accent/20 relative group overflow-hidden">
+            <div className="flex items-center gap-2 relative z-10">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-[#C08C60] flex items-center justify-center text-white shadow-clay-sm shrink-0">
+                <span className="font-black text-[8px]">DEV</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[8px] font-black text-accent uppercase tracking-wide opacity-70">Developer</p>
+                <p className="text-[11px] font-black text-text-main whitespace-nowrap truncate tracking-tighter">SORAWIT THUNTHAKIJ</p>
+              </div>
             </div>
           </div>
         </div>
@@ -1256,162 +1246,227 @@ const App = () => {
           )}
 
           {activeTab === 'pipeline' && (
-            <div className="flex overflow-x-auto pb-8 h-full gap-6 items-start snap-x snap-mandatory pt-4 px-2">
-              {stages.filter(s => visibleStages.includes(s.id)).map(stage => {
-                const stageColors = {
-                  lead: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
-                  contact: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800',
-                  proposal: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800',
-                  negotiation: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800',
-                  won: 'text-green-600 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
-                  lost: 'text-red-600 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                };
+            <div className="flex flex-col h-full gap-4 overflow-hidden">
+              {/* Pipeline Management Header (High Volume Solution) */}
+              <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 bg-white/40 backdrop-blur-md rounded-3xl border border-white/60 mx-2 shadow-clay-inner">
+                <div className="flex items-center gap-2">
+                  <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl shadow-clay-inner">
+                    {[
+                      { id: 'active', label: 'กำลังเจรจา (Active)', icon: Activity },
+                      { id: 'recent', label: 'ล่าสุด (30d)', icon: Clock },
+                      { id: 'all', label: 'ทั้งหมด (Archived)', icon: LayoutDashboard }
+                    ].map(mode => (
+                      <button
+                        key={mode.id}
+                        onClick={() => setPipelineViewMode(mode.id)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${pipelineViewMode === mode.id ? 'bg-white shadow-clay-sm text-accent' : 'text-text-muted hover:text-text-main'}`}
+                      >
+                        <mode.icon size={12} /> {mode.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-                return (
-                  <div key={stage.id}
-                    className={`min-w-[320px] max-w-[340px] flex-shrink-0 flex flex-col max-h-full snap-center bg-gray-50/80 dark:bg-black/20 rounded-[32px] border border-black/5 dark:border-white/5 overflow-hidden shadow-sm`}
-                    onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, stage.id)}
+                <div className="flex items-center gap-4">
+                  <select
+                    value={pipelineSortMode}
+                    onChange={(e) => setPipelineSortMode(e.target.value)}
+                    className="bg-transparent border-none text-[10px] font-black text-text-muted uppercase tracking-widest focus:ring-0 cursor-pointer hover:text-accent"
                   >
-                    <div className={`p-5 flex flex-col gap-2`}>
-                      <div className="flex justify-between items-center">
-                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${stageColors[stage.id]}`}>
-                          <div className={`w-2 h-2 rounded-full bg-current shadow-[0_0_8px_rgba(0,0,0,0.2)]`}></div>
-                          <h3 className={`font-black text-xs uppercase tracking-widest`}>{stage.title}</h3>
+                    <option value="value">Sort: มูลค่าสูงสุด</option>
+                    <option value="activity">Sort: กิจกรรมล่าสุด</option>
+                    <option value="newest">Sort: ใหม่ล่าสุด</option>
+                  </select>
+                  <div className="w-px h-6 bg-black/5"></div>
+                  <div className="text-[10px] font-black text-text-muted">
+                    แสดงผล: <span className="text-text-main">{filteredDeals.length}</span> จาก <span className="text-text-main">{deals.length}</span> ดีล
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex overflow-x-auto pb-8 h-full gap-6 items-start snap-x snap-mandatory pt-2 px-2">
+                {stages.filter(s => {
+                  // High Volume Logic: Auto-hide Won/Lost in 'active' mode
+                  if (pipelineViewMode === 'active' && (s.id === 'won' || s.id === 'lost')) return false;
+                  return visibleStages.includes(s.id);
+                }).map(stage => {
+                  const stageColors = {
+                    lead: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
+                    contact: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800',
+                    proposal: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800',
+                    negotiation: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800',
+                    won: 'text-green-600 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
+                    lost: 'text-red-600 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                  };
+
+                  return (
+                    <div key={stage.id}
+                      className={`min-w-[320px] max-w-[340px] flex-shrink-0 flex flex-col max-h-full snap-center bg-gray-50/80 dark:bg-black/20 rounded-[32px] border border-black/5 dark:border-white/5 overflow-hidden shadow-sm`}
+                      onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, stage.id)}
+                    >
+                      <div className={`p-5 flex flex-col gap-2`}>
+                        <div className="flex justify-between items-center">
+                          <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${stageColors[stage.id]}`}>
+                            <div className={`w-2 h-2 rounded-full bg-current shadow-[0_0_8px_rgba(0,0,0,0.2)]`}></div>
+                            <h3 className={`font-black text-xs uppercase tracking-widest`}>{stage.title}</h3>
+                          </div>
+                          <span className="bg-white dark:bg-gray-800 shadow-clay-sm text-text-muted text-[10px] font-black px-2.5 py-1 rounded-lg border border-black/5">{deals.filter(d => d.stage === stage.id).length}</span>
                         </div>
-                        <span className="bg-white dark:bg-gray-800 shadow-clay-sm text-text-muted text-[10px] font-black px-2.5 py-1 rounded-lg border border-black/5">{deals.filter(d => d.stage === stage.id).length}</span>
+                        <div className="px-1 flex justify-between items-end mt-1">
+                          <span className="text-[10px] text-text-muted font-bold uppercase tracking-tighter opacity-60">Value Pool</span>
+                          <span className="text-sm font-black text-text-main">{formatCurrency(getStageTotal(stage.id))}</span>
+                        </div>
                       </div>
-                      <div className="px-1 flex justify-between items-end mt-1">
-                        <span className="text-[10px] text-text-muted font-bold uppercase tracking-tighter opacity-60">Value Pool</span>
-                        <span className="text-sm font-black text-text-main">{formatCurrency(getStageTotal(stage.id))}</span>
-                      </div>
-                    </div>
-                    <div className="p-4 pt-0 overflow-y-auto flex-1 space-y-4 custom-scrollbar touch-pan-y pb-20">
-                      {filteredDeals.filter(deal => deal.stage === stage.id).map(deal => {
-                        const isSelected = selectedDealIds.has(deal.id);
-                        // --- Stale Deal Alert Logic ---
-                        let lastActive = new Date(deal.lastActivity); // Try lastActivity
-                        if (isNaN(lastActive.getTime())) lastActive = new Date(deal.createdAt); // Fallback if invalid (e.g. old string format)
-                        const diffHours = (new Date() - lastActive) / (1000 * 60 * 60);
-                        const diffDays = Math.ceil(diffHours / 24);
+                      <div className="p-4 pt-0 overflow-y-auto flex-1 space-y-4 custom-scrollbar touch-pan-y pb-20">
+                        {filteredDeals
+                          .filter(deal => deal.stage === stage.id)
+                          .filter(deal => {
+                            // Recent mode: Only 30 days
+                            if (pipelineViewMode === 'recent') {
+                              const dealDate = new Date(deal.createdAt);
+                              const daysOld = (new Date() - dealDate) / (1000 * 60 * 60 * 24);
+                              return daysOld <= 30;
+                            }
+                            return true;
+                          })
+                          .sort((a, b) => {
+                            if (pipelineSortMode === 'value') return b.value - a.value;
+                            if (pipelineSortMode === 'activity') return new Date(b.lastActivity || 0) - new Date(a.lastActivity || 0);
+                            return new Date(b.createdAt) - new Date(a.createdAt);
+                          })
+                          .map(deal => {
+                            const isSelected = selectedDealIds.has(deal.id);
+                            // --- Stale Deal Alert Logic ---
+                            let lastActive = new Date(deal.lastActivity); // Try lastActivity
+                            if (isNaN(lastActive.getTime())) lastActive = new Date(deal.createdAt); // Fallback if invalid (e.g. old string format)
+                            const diffHours = (new Date() - lastActive) / (1000 * 60 * 60);
+                            const diffDays = Math.ceil(diffHours / 24);
 
-                        let staleMarker = null;
-                        let statusBorder = "border-gray-100 dark:border-gray-800";
+                            let staleMarker = null;
+                            let statusBorder = "border-gray-100 dark:border-gray-800";
 
-                        if (stage.id === 'lead' && diffHours > 24) {
-                          statusBorder = "border-l-4 border-l-orange-500";
-                          staleMarker = (<div className="flex items-center gap-1 text-orange-500 text-[9px] font-bold animate-pulse"><Zap size={10} /> {Math.floor(diffHours)}h stall</div>);
-                        } else if (stage.id === 'proposal' && diffDays > 3) {
-                          statusBorder = "border-l-4 border-l-red-500";
-                          staleMarker = (<div className="flex items-center gap-1 text-red-500 text-[9px] font-bold"><Flame size={10} /> {diffDays}d heat</div>);
-                        } else if (stage.id === 'negotiation' && diffDays > 7) {
-                          statusBorder = "border-l-4 border-l-yellow-600";
-                          staleMarker = (<div className="flex items-center gap-1 text-yellow-600 text-[9px] font-bold"><AlertTriangle size={10} /> {diffDays}d idle</div>);
-                        }
+                            if (stage.id === 'lead' && diffHours > 24) {
+                              statusBorder = "border-l-4 border-l-orange-500";
+                              staleMarker = (<div className="flex items-center gap-1 text-orange-500 text-[9px] font-bold animate-pulse"><Zap size={10} /> {Math.floor(diffHours)}h stall</div>);
+                            } else if (stage.id === 'proposal' && diffDays > 3) {
+                              statusBorder = "border-l-4 border-l-red-500";
+                              staleMarker = (<div className="flex items-center gap-1 text-red-500 text-[9px] font-bold"><Flame size={10} /> {diffDays}d heat</div>);
+                            } else if (stage.id === 'negotiation' && diffDays > 7) {
+                              statusBorder = "border-l-4 border-l-yellow-600";
+                              staleMarker = (<div className="flex items-center gap-1 text-yellow-600 text-[9px] font-bold"><AlertTriangle size={10} /> {diffDays}d idle</div>);
+                            }
 
-                        const nextTask = deal.tasks?.find(t => !t.completed);
-                        const isOverdue = nextTask && nextTask.date && new Date(nextTask.date) < new Date();
+                            const nextTask = deal.tasks?.find(t => !t.completed);
+                            const isOverdue = nextTask && nextTask.date && new Date(nextTask.date) < new Date();
 
-                        const meddpiccLabels = {
-                          Metrics: 'วัดผลได้ (Metrics)',
-                          Economic: 'ผู้มีอำนาจ (Buyer)',
-                          Criteria: 'เกณฑ์เลือก (Criteria)',
-                          Process: 'กระบวนการ (Process)',
-                          Pain: 'ระบุปัญหา (Pain)',
-                          Champion: 'ผู้สนับสนุน (Champion)',
-                          Competition: 'รู้คู่แข่ง (Competition)'
-                        };
-                        const meddpiccKeys = Object.keys(meddpiccLabels);
-                        const qualifiedCount = (deal.tasks || []).filter(t => meddpiccKeys.some(k => t.text.includes(k))).length;
+                            const meddpiccLabels = {
+                              Metrics: 'วัดผลได้ (Metrics)',
+                              Economic: 'ผู้มีอำนาจ (Buyer)',
+                              Criteria: 'เกณฑ์เลือก (Criteria)',
+                              Process: 'กระบวนการ (Process)',
+                              Pain: 'ระบุปัญหา (Pain)',
+                              Champion: 'ผู้สนับสนุน (Champion)',
+                              Competition: 'รู้คู่แข่ง (Competition)'
+                            };
+                            const meddpiccKeys = Object.keys(meddpiccLabels);
+                            const qualifiedCount = (deal.tasks || []).filter(t => meddpiccKeys.some(k => t.text.includes(k))).length;
 
-                        return (
-                          <div
-                            key={deal.id}
-                            draggable={!bulkMode}
-                            onDragStart={(e) => handleDragStart(e, deal.id)}
-                            onClick={() => bulkMode ? toggleBulkSelection(deal.id) : handleDealClick(deal)}
-                            style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
-                            className={`bg-white dark:bg-gray-900 p-5 rounded-[24px] border ${statusBorder} shadow-clay-sm group relative transition-all 
+                            return (
+                              <div
+                                key={deal.id}
+                                draggable={!bulkMode}
+                                onDragStart={(e) => handleDragStart(e, deal.id)}
+                                onClick={() => bulkMode ? toggleBulkSelection(deal.id) : handleDealClick(deal)}
+                                style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
+                                className={`bg-white dark:bg-gray-900 p-5 rounded-[24px] border ${statusBorder} shadow-clay-sm group relative transition-all 
                             ${bulkMode ? 'cursor-pointer hover:bg-accent/5' : 'cursor-pointer hover:shadow-clay-md hover:-translate-y-1'}
                             ${isSelected ? 'ring-2 ring-accent ring-offset-2' : ''}
                           `}
-                          >
-                            {/* Actions Overlay (Visible on Hover) */}
-                            <div className="absolute top-4 right-4 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 z-20">
-                              <button onClick={(e) => handleAnalyzeDeal(deal, e)} className="w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-800 shadow-clay-sm hover:shadow-clay-inner rounded-xl text-accent transition-all"><Wand2 size={14} /></button>
-                              <button onClick={(e) => handleDeleteDeal(deal.id, e)} className="w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-800 shadow-clay-sm hover:text-red-500 rounded-xl text-text-muted transition-all"><Trash2 size={14} /></button>
-                            </div>
+                              >
+                                {/* Actions Overlay (Visible on Hover) */}
+                                <div className="absolute top-4 right-4 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 z-20">
+                                  <button onClick={(e) => handleAnalyzeDeal(deal, e)} className="w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-800 shadow-clay-sm hover:shadow-clay-inner rounded-xl text-accent transition-all"><Wand2 size={14} /></button>
+                                  <button onClick={(e) => handleDeleteDeal(deal.id, e)} className="w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-800 shadow-clay-sm hover:text-red-500 rounded-xl text-text-muted transition-all"><Trash2 size={14} /></button>
+                                </div>
 
-                            {/* Bulk Selection Checkbox */}
-                            {bulkMode && (
-                              <div className="absolute top-3 left-3 z-30">
-                                <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-all ${isSelected ? 'bg-accent border-accent text-white' : 'bg-white border-gray-300'}`}>
-                                  {isSelected && <CheckSquareIcon size={12} />}
+                                {/* Bulk Selection Checkbox */}
+                                {bulkMode && (
+                                  <div className="absolute top-3 left-3 z-30">
+                                    <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-all ${isSelected ? 'bg-accent border-accent text-white' : 'bg-white border-gray-300'}`}>
+                                      {isSelected && <CheckSquareIcon size={12} />}
+                                    </div>
+                                  </div>
+                                )}
+
+                                <div className="mb-3">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-[11px] font-black text-accent bg-accent/5 px-2 py-0.5 rounded-lg truncate max-w-[70%]">{deal.company}</span>
+                                    {staleMarker}
+                                  </div>
+                                  <h4 className="font-extrabold text-[15px] text-text-main leading-tight group-hover:text-accent transition-colors">{deal.title}</h4>
+                                </div>
+
+                                <div className="flex items-center gap-2 text-[11px] text-text-muted font-medium mb-4">
+                                  <Users size={14} className="opacity-40" />
+                                  <span className="truncate">{deal.contact}</span>
+                                </div>
+
+                                {/* Next Action Badge */}
+                                {nextTask ? (
+                                  <div className={`mb-4 p-3 rounded-2xl flex flex-col gap-1 border ${isOverdue ? 'bg-red-50 border-red-100' : 'bg-bg dark:bg-white/5 border-black/5'}`}>
+                                    <span className={`text-[8px] font-black uppercase tracking-widest ${isOverdue ? 'text-red-500 animate-pulse' : 'text-text-muted opacity-50'}`}>
+                                      Next Action
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                      <Clock size={12} className={isOverdue ? 'text-red-500' : 'text-accent'} />
+                                      <span className={`text-[11px] font-bold truncate ${isOverdue ? 'text-red-700' : 'text-text-main'}`}>{nextTask.text}</span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="mb-4 p-2.5 rounded-2xl border border-dashed border-black/10 dark:border-white/10 flex items-center gap-2 text-[10px] font-bold text-text-muted/40 italic">
+                                    <Plus size={12} /> Add next activity
+                                  </div>
+                                )}
+
+                                <div className="flex items-center justify-between pt-1">
+                                  <div className="flex flex-col">
+                                    <span className="text-[10px] text-text-muted font-black uppercase opacity-40 leading-none mb-1">Deal Value</span>
+                                    <span className="text-lg font-black text-text-main tracking-tight">{formatCurrency(deal.value)}</span>
+                                  </div>
+
+                                  {deal.ai_score && (
+                                    <div className={`px-2.5 py-1 rounded-xl text-[10px] font-black flex items-center gap-1.5 shadow-clay-inner ${deal.ai_score >= 70 ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
+                                      <TrendingUp size={12} />{deal.ai_score}%
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Qualification Tracker (MEDDPICC) */}
+                                <div className="mt-4 pt-3 border-t border-black/5 flex flex-col gap-2">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-[9px] font-black text-text-muted uppercase tracking-wider opacity-60">Qualification (MEDDPICC)</span>
+                                    <span className="text-[10px] font-black text-text-main">{Math.round((qualifiedCount / 7) * 100)}%</span>
+                                  </div>
+                                  <div className="flex gap-1 h-1.5">
+                                    {[...Array(7)].map((_, i) => (
+                                      <div key={i} className={`flex-1 rounded-full transition-all duration-500 ${i < qualifiedCount ? 'bg-accent' : 'bg-gray-100 dark:bg-gray-800'}`}></div>
+                                    ))}
+                                  </div>
                                 </div>
                               </div>
-                            )}
-
-                            <div className="mb-3">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-[11px] font-black text-accent bg-accent/5 px-2 py-0.5 rounded-lg truncate max-w-[70%]">{deal.company}</span>
-                                {staleMarker}
-                              </div>
-                              <h4 className="font-extrabold text-[15px] text-text-main leading-tight group-hover:text-accent transition-colors">{deal.title}</h4>
-                            </div>
-
-                            <div className="flex items-center gap-2 text-[11px] text-text-muted font-medium mb-4">
-                              <Users size={14} className="opacity-40" />
-                              <span className="truncate">{deal.contact}</span>
-                            </div>
-
-                            {/* Next Action Badge */}
-                            {nextTask ? (
-                              <div className={`mb-4 p-3 rounded-2xl flex flex-col gap-1 border ${isOverdue ? 'bg-red-50 border-red-100' : 'bg-bg dark:bg-white/5 border-black/5'}`}>
-                                <span className={`text-[8px] font-black uppercase tracking-widest ${isOverdue ? 'text-red-500 animate-pulse' : 'text-text-muted opacity-50'}`}>
-                                  Next Action
-                                </span>
-                                <div className="flex items-center gap-2">
-                                  <Clock size={12} className={isOverdue ? 'text-red-500' : 'text-accent'} />
-                                  <span className={`text-[11px] font-bold truncate ${isOverdue ? 'text-red-700' : 'text-text-main'}`}>{nextTask.text}</span>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="mb-4 p-2.5 rounded-2xl border border-dashed border-black/10 dark:border-white/10 flex items-center gap-2 text-[10px] font-bold text-text-muted/40 italic">
-                                <Plus size={12} /> Add next activity
-                              </div>
-                            )}
-
-                            <div className="flex items-center justify-between pt-1">
-                              <div className="flex flex-col">
-                                <span className="text-[10px] text-text-muted font-black uppercase opacity-40 leading-none mb-1">Deal Value</span>
-                                <span className="text-lg font-black text-text-main tracking-tight">{formatCurrency(deal.value)}</span>
-                              </div>
-
-                              {deal.ai_score && (
-                                <div className={`px-2.5 py-1 rounded-xl text-[10px] font-black flex items-center gap-1.5 shadow-clay-inner ${deal.ai_score >= 70 ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
-                                  <TrendingUp size={12} />{deal.ai_score}%
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Qualification Tracker (MEDDPICC) */}
-                            <div className="mt-4 pt-3 border-t border-black/5 flex flex-col gap-2">
-                              <div className="flex justify-between items-center">
-                                <span className="text-[9px] font-black text-text-muted uppercase tracking-wider opacity-60">Qualification (MEDDPICC)</span>
-                                <span className="text-[10px] font-black text-text-main">{Math.round((qualifiedCount / 7) * 100)}%</span>
-                              </div>
-                              <div className="flex gap-1 h-1.5">
-                                {[...Array(7)].map((_, i) => (
-                                  <div key={i} className={`flex-1 rounded-full transition-all duration-500 ${i < qualifiedCount ? 'bg-accent' : 'bg-gray-100 dark:bg-gray-800'}`}></div>
-                                ))}
-                              </div>
-                            </div>
+                            );
+                          })}
+                        {filteredDeals.filter(deal => deal.stage === stage.id).length === 0 && (
+                          <div className="flex flex-col items-center justify-center py-20 opacity-20 filter grayscale">
+                            <LayoutDashboard size={48} className="mb-4" />
+                            <p className="text-xs font-bold uppercase tracking-widest text-center">No deals in this stage</p>
                           </div>
-                        );
-                      })}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
           {activeTab === 'overview' && (
@@ -1500,76 +1555,252 @@ const App = () => {
                 </Card>
               </div>
 
-              {/* 2. Monthly Goal & Pipeline Health */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Monthly Goal */}
-                <Card className="p-8 lg:col-span-1 flex flex-col justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent pointer-events-none"></div>
-                  <div className="flex justify-between items-end mb-4 relative z-10 w-full">
-                    <div className="w-full">
-                      <h3 className="font-black text-lg text-text-main flex items-center gap-2"><Target size={20} className="text-red-500" /> Monthly Goal</h3>
+              {/* 2. Revenue Performance Center (Beyond World Class) */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                      <div className="flex items-center mt-1">
-                        <span className="text-xs text-text-muted font-bold mr-2">Target:</span>
+                {/* Achievement Gauge */}
+                <Card className="p-8 lg:col-span-1 border-none shadow-clay-lg bg-white dark:bg-gray-800 flex flex-col items-center justify-center relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Target size={120} className="text-accent" />
+                  </div>
+
+                  <div className="relative w-48 h-48 mb-6">
+                    {/* Background Circle */}
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-gray-100 dark:text-gray-700" />
+                      {/* Progress Circle with Gradient filter */}
+                      <circle
+                        cx="96" cy="96" r="80" stroke="url(#achievementGradient)" strokeWidth="12" fill="transparent"
+                        strokeDasharray={2 * Math.PI * 80}
+                        strokeDashoffset={2 * Math.PI * 80 * (1 - Math.min(1, deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) / monthlyGoal))}
+                        strokeLinecap="round"
+                        className="transition-all duration-1000 ease-out"
+                      />
+                      <defs>
+                        <linearGradient id="achievementGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="var(--accent-color, #C08C60)" />
+                          <stop offset="100%" stopColor="#ef4444" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-4xl font-black text-text-main">{Math.round((deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) / monthlyGoal) * 100)}%</span>
+                      <span className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Reached</span>
+                    </div>
+                  </div>
+
+                  <div className="text-center w-full">
+                    <h3 className="font-black text-sm text-text-main mb-3 uppercase tracking-widest flex items-center justify-center gap-2">
+                      รายได้เทียบเป้าหมาย (Monthly Target)
+                    </h3>
+                    <div className="flex justify-between items-end px-4">
+                      <div className="text-left">
+                        <p className="text-[9px] font-black text-text-muted uppercase">Achieved</p>
+                        <p className="text-sm font-black text-warm-green">{formatCurrency(deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0))}</p>
+                      </div>
+                      <div className="text-right flex flex-col items-end">
                         {isEditingGoal ? (
                           <div className="flex items-center gap-1">
                             <input
                               type="number"
                               value={monthlyGoal}
                               onChange={(e) => setMonthlyGoal(Number(e.target.value))}
-                              className="w-24 px-2 py-0.5 text-xs font-bold border border-accent rounded focus:outline-none focus:ring-1 focus:ring-accent bg-white"
+                              className="w-20 px-2 py-0.5 text-[10px] font-black border border-accent rounded bg-white focus:outline-none"
                               autoFocus
+                              onBlur={handleSaveGoal}
+                              onKeyDown={(e) => e.key === 'Enter' && handleSaveGoal()}
                             />
-                            <button onClick={handleSaveGoal} className="text-warm-green hover:bg-warm-green/10 p-0.5 rounded"><CheckCircle2 size={14} /></button>
+                            <button onClick={handleSaveGoal} className="text-warm-green"><Save size={10} /></button>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-1 group/edit cursor-pointer" onClick={() => setIsEditingGoal(true)}>
-                            <span className="text-xs text-text-muted font-bold hover:text-accent transition-colors">฿{monthlyGoal.toLocaleString()}</span>
-                            <Wrench size={10} className="text-text-muted opacity-0 group-hover/edit:opacity-100 transition-opacity" />
-                          </div>
+                          <button onClick={() => setIsEditingGoal(true)} className="text-[9px] font-black text-accent uppercase flex items-center gap-1 hover:underline">
+                            Target <Pencil size={8} />
+                          </button>
                         )}
+                        <p className="text-sm font-black text-text-main">/ {formatCurrency(monthlyGoal)}</p>
                       </div>
                     </div>
-                    <span className="text-3xl font-black text-accent">{Math.min(100, Math.round((deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) / monthlyGoal) * 100))}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden relative z-10">
-                    <div className="bg-gradient-to-r from-accent to-warm-red h-4 rounded-full transition-all duration-1000 ease-out" style={{ width: `${Math.min(100, (deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) / monthlyGoal) * 100)}%` }}></div>
-                  </div>
-                  <p className="text-center text-xs text-text-muted mt-4 font-bold">Keep pushing! You&rsquo;re doing great.</p>
                 </Card>
 
-                {/* Pipeline Health (Bar Chart) */}
-                <Card className="p-6 md:col-span-1 lg:col-span-2">
-                  <h3 className="font-bold text-lg mb-6 text-text-main flex items-center gap-2"><BarChart3 size={20} className="text-warm-blue" /> Pipeline Health</h3>
-                  <div className="grid grid-cols-5 gap-4 h-32 items-end">
-                    {['lead', 'contact', 'proposal', 'negotiation', 'won'].map(stageId => {
-                      const stageInfo = stages.find(s => s.id === stageId);
-                      const count = deals.filter(d => d.stage === stageId).length;
-                      const max = Math.max(...['lead', 'contact', 'proposal', 'negotiation', 'won'].map(s => deals.filter(d => d.stage === s).length), 1);
-                      const height = Math.max(10, (count / max) * 100);
-                      const colors = { 'lead': 'bg-primary/50', 'contact': 'bg-warm-blue/50', 'proposal': 'bg-warm-yellow/50', 'negotiation': 'bg-orange-400', 'won': 'bg-warm-green/50' };
-                      return (
-                        <div key={stageId} className="flex flex-col items-center group cursor-help">
-                          <div className="text-xs font-bold text-text-main mb-2 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">{count} Deals</div>
-                          <div className={`w-full ${colors[stageId]} rounded-t-lg transition-all duration-500 hover:brightness-110 shadow-sm`} style={{ height: `${height}%` }}></div>
-                          <div className="mt-2 text-[10px] font-bold uppercase text-text-muted tracking-wider text-center w-full truncate" title={stageInfo?.title}>{stageId.substring(0, 4)}</div>
-                        </div>
-                      )
-                    })}
+                {/* Forecast & Gap Analysis */}
+                <Card className="p-8 lg:col-span-2 border-none shadow-clay-lg bg-white dark:bg-gray-800 flex flex-col">
+                  <div className="flex justify-between items-start mb-8">
+                    <div>
+                      <h3 className="font-black text-lg text-text-main">วิเคราะห์ยอดขายและคาดการณ์ (Sales Forecast)</h3>
+                      <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1">Comparing Actual, Weighted Pipeline, and TargetGap</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-warm-green"></div><span className="text-[9px] font-black text-text-muted">WON</span></div>
+                      <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-accent"></div><span className="text-[9px] font-black text-text-muted">WEIGHTED</span></div>
+                      <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-gray-200"></div><span className="text-[9px] font-black text-text-muted">GAP</span></div>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex flex-col justify-end gap-1">
+                    {/* Multi-layered Progress Bar */}
+                    <div className="w-full h-12 bg-gray-50 dark:bg-gray-900 rounded-2xl flex overflow-hidden p-1 shadow-clay-inner border border-black/5">
+                      {/* Won Portion */}
+                      <div
+                        className="h-full bg-warm-green rounded-xl transition-all duration-1000 shadow-[2px_0_10px_rgba(34,197,94,0.3)] z-30"
+                        style={{ width: `${Math.min(100, (deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) / monthlyGoal) * 100)}%` }}
+                      ></div>
+                      {/* Weighted Pipeline Portion */}
+                      <div
+                        className="h-full bg-accent rounded-xl -ml-2 transition-all duration-1000 shadow-[2px_0_10px_rgba(192,140,96,0.2)] z-20"
+                        style={{ width: `${Math.min(100 - (deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) / monthlyGoal * 100), (deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').reduce((acc, d) => acc + (d.value * (d.probability / 100)), 0) / monthlyGoal) * 100)}%` }}
+                      ></div>
+                      {/* Gap Portion */}
+                      <div className="h-full flex-1 bg-transparent"></div>
+                    </div>
+
+                    {/* Markers / Labels */}
+                    <div className="flex justify-between text-[10px] font-black text-text-muted uppercase mt-4">
+                      <div className="space-y-1">
+                        <p>ยอดปิดได้แล้ว (Won)</p>
+                        <p className="text-lg text-warm-green">{Math.round((deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) / monthlyGoal) * 100)}%</p>
+                      </div>
+                      <div className="text-center space-y-1">
+                        <p>รวมคาดการณ์ (Total Projection)</p>
+                        <p className="text-lg text-accent">
+                          {Math.round(((deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) + deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').reduce((acc, d) => acc + (d.value * (d.probability / 100)), 0)) / monthlyGoal) * 100)}%
+                        </p>
+                      </div>
+                      <div className="text-right space-y-1">
+                        <p>ยอดที่ยังขาด (Gap to Goal)</p>
+                        <p className="text-lg text-text-main">
+                          {formatCurrency(Math.max(0, monthlyGoal - (deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) + deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').reduce((acc, d) => acc + (d.value * (d.probability / 100)), 0))))}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 pt-6 border-t border-black/5 grid grid-cols-2 gap-8">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-warm-blue/10 rounded-2xl text-warm-blue"><Activity size={20} /></div>
+                      <div>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-wider">Pipeline Health</p>
+                        <p className="text-sm font-black text-text-main">Velocity: {deals.length ? (deals.filter(d => d.stage === 'won').length / Math.max(1, deals.length) * 100).toFixed(1) : 0}% Win Rate</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-warm-purple/10 rounded-2xl text-warm-purple"><Sparkles size={20} /></div>
+                      <div>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-wider">AI Insight</p>
+                        <p className="text-sm font-black text-text-main">
+                          {(deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) + deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').reduce((acc, d) => acc + (d.value * (d.probability / 100)), 0)) >= monthlyGoal
+                            ? 'On track to hit target!'
+                            : 'Needs more pipeline volume.'}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </Card>
               </div>
 
-              {/* 3. Top Deals & Loss Analysis */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                <Card className="p-6">
-                  <h3 className="font-bold text-lg mb-4 text-text-main flex items-center"><Trophy size={18} className="mr-2 text-yellow-500" /> Top Opportunities</h3>
-                  <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="text-text-muted border-b border-gray-100"><tr><th className="pb-3 pl-2">Deal Name</th><th className="pb-3 text-right pr-2">Value</th></tr></thead><tbody className="divide-y divide-gray-50">{deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').sort((a, b) => b.value - a.value).slice(0, 5).map(deal => (<tr key={deal.id} className="group hover:bg-gray-50 transition-colors"><td className="py-3 pl-2 font-medium text-text-main">{deal.title}<div className="text-[10px] text-text-muted">{deal.company}</div></td><td className="py-3 text-right pr-2 font-bold text-accent">{formatCurrency(deal.value)}</td></tr>))}</tbody></table></div>
+              {/* 3. Pipeline Intelligence (Beyond World Class Funnel) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                {/* Conversion Funnel */}
+                <Card className="p-8 border-none shadow-clay-lg bg-white dark:bg-gray-800 flex flex-col h-full uppercase tracking-tighter">
+                  <div className="flex justify-between items-start mb-10">
+                    <div>
+                      <h3 className="font-black text-lg text-text-main flex items-center gap-2">
+                        <TrendingUp size={20} className="text-accent" /> วิเคราะห์กรวยการขาย (Sales Funnel)
+                      </h3>
+                      <p className="text-[10px] font-bold text-text-muted mt-1">Lead to Conversion Drop-off Analysis</p>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex flex-col gap-1 pr-4">
+                    {['lead', 'contact', 'proposal', 'negotiation', 'won'].map((stageId, idx) => {
+                      const stage = stages.find(s => s.id === stageId);
+                      const count = deals.filter(d => d.stage === stageId).length;
+                      const totalVal = deals.filter(d => d.stage === stageId).reduce((acc, d) => acc + d.value, 0);
+
+                      // Width calculation (decreasing funnel)
+                      const widths = [100, 85, 70, 55, 40];
+                      const colors = [
+                        'bg-blue-500/80',
+                        'bg-purple-500/80',
+                        'bg-orange-500/80',
+                        'bg-yellow-500/80',
+                        'bg-green-500/80'
+                      ];
+
+                      // Conversion rate (compare to lead stage or previous stage)
+                      const leadCount = deals.filter(d => d.stage === 'lead').length || 1;
+                      const convRate = Math.round((count / leadCount) * 100);
+
+                      return (
+                        <div key={stageId} className="relative group mb-1">
+                          <div className="flex items-center gap-4">
+                            <div className="w-24 text-[9px] font-black text-text-muted text-right truncate">
+                              {stage?.title}
+                            </div>
+                            <div className="flex-1 h-10 relative">
+                              <div
+                                className={`absolute inset-y-0 left-0 ${colors[idx]} rounded-r-lg transition-all duration-700 shadow-sm group-hover:scale-y-105 group-hover:brightness-110 flex items-center px-4`}
+                                style={{ width: `${widths[idx]}%` }}
+                              >
+                                <span className="text-white text-[10px] font-black">{count} Deals</span>
+                              </div>
+                            </div>
+                            <div className="w-24">
+                              <p className="text-[11px] font-black text-text-main">{formatCurrency(totalVal)}</p>
+                              <p className="text-[8px] font-bold text-text-muted">{idx === 0 ? 'SOURCE' : `CONV. ${convRate}%`}</p>
+                            </div>
+                          </div>
+                          {idx < 4 && (
+                            <div className="ml-28 h-4 border-l-2 border-dashed border-gray-200 dark:border-gray-700 my-0.5 opacity-50"></div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </Card>
-                <Card className="p-6 bg-red-50/30 border-red-100">
-                  <h3 className="font-bold text-lg mb-4 text-gray-800 flex items-center"><XCircle size={18} className="mr-2 text-red-500" /> Loss Analysis</h3>
-                  {deals.filter(d => d.stage === 'lost').length > 0 ? (<div className="space-y-3">{Object.entries(deals.filter(d => d.stage === 'lost').reduce((acc, d) => { const r = d.lostReason || 'Unspecified'; acc[r] = (acc[r] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1]).map(([reason, count]) => (<div key={reason} className="flex items-center"><div className="w-full"><div className="flex justify-between text-sm mb-1"><span className="text-gray-700 font-bold text-xs uppercase">{reason}</span><span className="text-gray-500 text-xs font-bold">{count}</span></div><div className="w-full bg-red-100 rounded-full h-1.5"><div className="bg-red-500 h-1.5 rounded-full" style={{ width: `${(count / deals.filter(d => d.stage === 'lost').length) * 100}%` }}></div></div></div></div>))}</div>) : (<div className="text-center py-8 text-text-muted text-sm italic">No lost deals yet. Keep it up!</div>)}
-                </Card>
+
+                <div className="grid grid-cols-1 gap-6">
+                  {/* Top Opportunities Mini-Table */}
+                  <Card className="p-6 border-none shadow-clay-lg bg-white dark:bg-gray-800">
+                    <h3 className="font-bold text-sm mb-4 text-text-main flex items-center gap-2"><Trophy size={16} className="text-yellow-500" /> TOP OPPORTUNITIES</h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-[11px]">
+                        <thead className="text-text-muted border-b border-gray-100">
+                          <tr><th className="pb-3 pl-2">DEAL NAME</th><th className="pb-3 text-right pr-2">VALUE</th></tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').sort((a, b) => b.value - a.value).slice(0, 3).map(deal => (
+                            <tr key={deal.id} className="group hover:bg-gray-50 transition-colors">
+                              <td className="py-2.5 pl-2 font-black text-text-main">{deal.title}<div className="text-[9px] text-text-muted opacity-60 uppercase">{deal.company}</div></td>
+                              <td className="py-2.5 text-right pr-2 font-black text-accent">{formatCurrency(deal.value)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </Card>
+
+                  {/* Loss Analysis Mini-Graph */}
+                  <Card className="p-6 border-none shadow-clay-lg bg-red-50/20 dark:bg-red-900/10">
+                    <h3 className="font-bold text-sm mb-4 text-text-main flex items-center gap-2"><XCircle size={16} className="text-red-500" /> LOSS REASON ANALYSIS</h3>
+                    {deals.filter(d => d.stage === 'lost').length > 0 ? (
+                      <div className="space-y-4">
+                        {Object.entries(deals.filter(d => d.stage === 'lost').reduce((acc, d) => { const r = d.lostReason || 'Unspecified'; acc[r] = (acc[r] || 0) + 1; return acc; }, {}))
+                          .sort((a, b) => b[1] - a[1]).slice(0, 2).map(([reason, count]) => (
+                            <div key={reason} className="flex items-center">
+                              <div className="w-full">
+                                <div className="flex justify-between text-[10px] mb-1"><span className="text-red-700 font-black uppercase">{reason}</span><span className="text-text-muted font-bold">{count} CASES</span></div>
+                                <div className="w-full bg-red-100 dark:bg-red-900/30 rounded-full h-1.5"><div className="bg-red-500 h-1.5 rounded-full" style={{ width: `${(count / deals.filter(d => d.stage === 'lost').length) * 100}%` }}></div></div>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 text-text-muted text-xs italic">No losses yet. Maintaining 100% velocity!</div>
+                    )}
+                  </Card>
+                </div>
               </div>
             </div>
           )}
@@ -2120,7 +2351,10 @@ const App = () => {
                                 onClick={async () => {
                                   const existingTask = selectedDeal.tasks?.find(t => t.text.includes(item.key));
                                   if (existingTask) {
-                                    await handleToggleTask(existingTask.id);
+                                    // If already exists, we REMOVE it (true toggle logic as requested for deletion)
+                                    const updatedTasks = selectedDeal.tasks.filter(t => t.id !== existingTask.id);
+                                    await handleUpdateDeal(selectedDeal.id, { tasks: updatedTasks });
+                                    setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
                                   } else {
                                     const task = { id: Date.now(), text: `[MEDDPICC] ${item.key}: ${item.label}`, date: new Date().toISOString(), completed: true };
                                     const updatedTasks = [...(selectedDeal.tasks || []), task];
