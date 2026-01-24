@@ -93,6 +93,32 @@ export const IT_PRODUCTS = [
         color: '#007db8'
     },
     {
+        id: 'soft-ms-win',
+        name: 'Windows Server 2022 Standard',
+        description: '16-Core License Pack (Base)',
+        category: 'Software',
+        u_height: 1, // Visual representation only
+        watts: 0,
+        btu: 0,
+        weight_kg: 0,
+        price: 32000,
+        image: 'https://images.unsplash.com/photo-1633419461186-7d40a38105ec?w=100&h=40&fit=crop&q=80',
+        color: '#00a4ef'
+    },
+    {
+        id: 'soft-sophos',
+        name: 'Sophos Intercept X Endpoint',
+        description: 'Next-Gen Antivirus + EDR (25 Users)',
+        category: 'Software',
+        u_height: 1,
+        watts: 0,
+        btu: 0,
+        weight_kg: 0,
+        price: 45000,
+        image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=100&h=40&fit=crop&q=80',
+        color: '#2a5cdb'
+    },
+    {
         id: 'patch-panel',
         name: '24-Port Patch Panel',
         description: '1U Cable Management',

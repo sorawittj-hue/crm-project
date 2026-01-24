@@ -1,29 +1,28 @@
-import React, { useState, useMemo } from 'react';
-import { Server, Save, RotateCcw, Download, Cpu, Activity, Zap, Scale, Box, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import { Save, RotateCcw, Download, Activity, Zap, Box } from 'lucide-react';
 import { IT_PRODUCTS } from './data/products';
 import RackVisualizer from './RackVisualizer';
 import ProductLibrary from './ProductLibrary';
 import SolutionStats from './SolutionStats';
+import BundleLibrary from './BundleLibrary';
 
 const SolutionLayout = ({ deals, onUpdateDeal }) => {
     // Rack State: Array of 42 slots (1 to 42). 
     // Each slot can hold a reference to an item.
-    // Items larger than 1U will occupy multiple slots.
-    const [rackItems, setRackItems] = useState([]); // { id: uniqueId, productId: '...', uPosition: 1, ...productData }
+    const [rackItems, setRackItems] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+    const [leftPanelTab, setLeftPanelTab] = useState('library'); // 'library' | 'bundles'
 
     const handleDropItem = (productId, targetU) => {
         const product = IT_PRODUCTS.find(p => p.id === productId);
         if (!product) return;
 
-        // Validation: Check boundary
         if (targetU + product.u_height - 1 > 42) {
             alert("Not enough space at top of rack!");
             return;
         }
 
-        // Validation: Check overlap
         const occupied = rackItems.some(item => {
             const itemStart = item.uPosition;
             const itemEnd = item.uPosition + item.u_height - 1;
@@ -32,10 +31,7 @@ const SolutionLayout = ({ deals, onUpdateDeal }) => {
             return (newStart <= itemEnd && newEnd >= itemStart);
         });
 
-        if (occupied) {
-            // alert("Slot is already occupied!"); // Optional: Silent fail or toast
-            return;
-        }
+        if (occupied) return;
 
         const newItem = {
             ...product,
@@ -87,14 +83,12 @@ const SolutionLayout = ({ deals, onUpdateDeal }) => {
         const deal = deals.find(d => d.id === dealId);
         if (!deal) return;
 
-        // Calculate Totals
         const totals = rackItems.reduce((acc, item) => ({
             watts: acc.watts + item.watts,
             weight: acc.weight + item.weight_kg,
             price: acc.price + item.price
         }), { watts: 0, weight: 0, price: 0 });
 
-        // Create Summary String
         const summary = `
 [Rack Design Summary]
 Total Items: ${rackItems.length}
@@ -106,24 +100,21 @@ Items:
 ${rackItems.sort((a, b) => b.uPosition - a.uPosition).map(i => `- [U${i.uPosition}] ${i.name} (${i.id})`).join('\n')}
         `.trim();
 
-        // Create Note Object
+        // eslint-disable-next-line react-hooks/purity
+        const uniqueNoteId = Date.now();
         const newNote = {
-            id: Date.now(),
+            id: uniqueNoteId,
             text: summary,
             date: new Date().toISOString(),
             user: 'Solution Architect'
         };
 
-        // Update Deal
         const updatedNotes = [...(deal.notes || []), newNote];
 
-        // If the update function supports passing just the changes
         if (onUpdateDeal) {
             await onUpdateDeal(dealId, { notes: updatedNotes });
             alert("Rack Design saved to Deal notes successfully!");
             setIsSaveModalOpen(false);
-        } else {
-            alert("Error: Cannot save to deal (Update function missing)");
         }
     };
 
@@ -140,6 +131,46 @@ ${rackItems.sort((a, b) => b.uPosition - a.uPosition).map(i => `- [U${i.uPositio
         if (rackItems.length > 30) return "ℹ️ Optimization: High density rack. Verify rear airflow clearance > 30cm.";
 
         return "✅ System Optimal: Power redundancy and distribution efficiency are within Enterprise Grade standards.";
+    };
+
+    const handleApplyRackTemplate = (templateItems) => {
+        if (rackItems.length > 0 && !window.confirm("This will replace your current rack design. Continue?")) return;
+
+        const newRackItems = templateItems.map(ti => {
+            const product = IT_PRODUCTS.find(p => p.id === ti.id);
+            return {
+                ...product,
+                uniqueId: Date.now() + Math.random(),
+                uPosition: ti.uPosition
+            };
+        });
+        setRackItems(newRackItems);
+    };
+
+    const handleExportBundleBOM = (bundle) => {
+        const headers = ["Item Name", "Specs", "Quantity", "Price", "Subtotal"];
+        const rows = bundle.items.map(item => [
+            `"${item.name}"`,
+            `"${item.specs}"`,
+            item.qty,
+            item.price,
+            item.price * item.qty
+        ]);
+
+        const summary = [
+            [],
+            ["Total Price", "", "", "", bundle.totalPrice]
+        ];
+
+        const csvContent = "\uFEFF" + [headers, ...rows, ...summary].map(e => e.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `solution_bom_${bundle.name.replace(/ /g, '_')}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     return (
@@ -167,13 +198,33 @@ ${rackItems.sort((a, b) => b.uPosition - a.uPosition).map(i => `- [U${i.uPositio
                 </div>
             )}
 
-            {/* LEFT: Product Library */}
-            <div className="w-1/4 min-w-[300px] flex flex-col gap-4">
+            <div className="w-1/4 min-w-[320px] flex flex-col gap-4">
                 <div className="bg-surface rounded-3xl p-6 shadow-clay-md border border-white/60 h-full overflow-hidden flex flex-col">
-                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                        <Server className="text-accent" /> Component Library
-                    </h2>
-                    <ProductLibrary />
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex bg-gray-100 dark:bg-gray-900 p-1 rounded-xl w-full">
+                            <button
+                                onClick={() => setLeftPanelTab('library')}
+                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-black transition-all ${leftPanelTab === 'library' ? 'bg-white dark:bg-gray-800 shadow-sm text-accent' : 'text-text-muted hover:text-text-main'}`}
+                            >
+                                COMPONENTS
+                            </button>
+                            <button
+                                onClick={() => setLeftPanelTab('bundles')}
+                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-black transition-all ${leftPanelTab === 'bundles' ? 'bg-white dark:bg-gray-800 shadow-sm text-accent' : 'text-text-muted hover:text-text-main'}`}
+                            >
+                                SOLUTION SETS
+                            </button>
+                        </div>
+                    </div>
+
+                    {leftPanelTab === 'library' ? (
+                        <ProductLibrary />
+                    ) : (
+                        <BundleLibrary
+                            onApplyRackTemplate={handleApplyRackTemplate}
+                            onExportBOM={handleExportBundleBOM}
+                        />
+                    )}
                 </div>
             </div>
 

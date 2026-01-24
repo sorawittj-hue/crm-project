@@ -1,4 +1,3 @@
-import React from 'react';
 import { Zap, Weight, Thermometer, AlertCircle, CircleDollarSign } from 'lucide-react';
 
 const SolutionStats = ({ rackItems }) => {

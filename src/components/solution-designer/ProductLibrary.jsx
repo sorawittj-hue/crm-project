@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { IT_PRODUCTS } from './data/products';
 import { Search } from 'lucide-react';
 
@@ -6,7 +6,7 @@ const ProductLibrary = () => {
     const [filter, setFilter] = useState('All');
     const [search, setSearch] = useState('');
 
-    const categories = ['All', 'Server', 'Network', 'Storage', 'UPS'];
+    const categories = ['All', 'Server', 'Network', 'Storage', 'UPS', 'Software'];
 
     const filteredProducts = IT_PRODUCTS.filter(p => {
         const matchesCategory = filter === 'All' || p.category === filter;
@@ -42,8 +42,8 @@ const ProductLibrary = () => {
                         key={c}
                         onClick={() => setFilter(c)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${filter === c
-                                ? 'bg-accent text-white shadow-clay-sm'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200'
+                            ? 'bg-accent text-white shadow-clay-sm'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200'
                             }`}
                     >
                         {c}

@@ -1289,6 +1289,14 @@ const App = () => {
                         staleBadge = (<div className="absolute top-2 right-2 z-20 flex items-center gap-1 bg-yellow-100/90 backdrop-blur-sm text-yellow-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-yellow-200 shadow-sm"><AlertTriangle size={10} fill="currentColor" /> เงียบ {diffDays} วัน</div>);
                       }
 
+                      const nextTask = deal.tasks?.find(t => !t.completed);
+                      const isOverdue = nextTask && nextTask.date && new Date(nextTask.date) < new Date();
+
+                      // MEDDPICC Progress (Simulated or calculated if field exists)
+                      // In a real app, this would be a real object, for now we calculate based on tasks/notes keywords
+                      const meddpiccKeys = ['Metrics', 'Economic Buyer', 'Criteria', 'Process', 'Pain', 'Champion', 'Competition'];
+                      const qualifiedCount = (deal.tasks || []).filter(t => meddpiccKeys.some(k => t.text.includes(k))).length;
+
                       return (
                         <div
                           key={deal.id}
@@ -1298,7 +1306,9 @@ const App = () => {
                           onContextMenu={(e) => e.preventDefault()} // Block native popup
                           style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
                           className={`${staleStyle} p-5 rounded-3xl shadow-clay-sm border transition-all group relative overflow-hidden ${bulkMode ? 'cursor-pointer hover:bg-accent/5' : 'cursor-pointer hover:shadow-clay-md hover:-translate-y-1 active:scale-95'
-                            } ${isSelected ? 'ring-2 ring-accent ring-offset-2' : ''}`}
+                            } ${isSelected ? 'ring-2 ring-accent ring-offset-2' : ''}
+                            ${qualifiedCount >= 4 ? 'border-l-4 border-l-warm-green' : ''}
+                          `}
                         >
                           {/* Bulk Selection Checkbox */}
                           {bulkMode && (
@@ -1346,9 +1356,35 @@ const App = () => {
                               </button>
                             </div>
                           </div>
-                          <h4 className="font-bold text-lg text-text-main mb-1 leading-tight relative z-10">{deal.title}</h4>
+                          <h4 className="font-bold text-lg text-text-main mb-1 leading-tight relative z-10 truncate">{deal.title}</h4>
                           {deal.ai_insight && <p className="text-[10px] text-text-muted mb-2 relative z-10 italic">&quot; {deal.ai_insight} &quot;</p>}
+
+                          {/* Next Action Focus */}
+                          {nextTask ? (
+                            <div className={`mb-3 p-2 rounded-xl text-[10px] font-bold flex items-center gap-2 relative z-10 ${isOverdue ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-warm-blue/10 text-warm-blue-dark'}`}>
+                              <Clock size={12} />
+                              <span className="truncate">Next Action: {nextTask.text}</span>
+                            </div>
+                          ) : (
+                            <div className="mb-3 p-2 rounded-xl text-[10px] font-bold flex items-center gap-2 bg-gray-100 text-gray-400 relative z-10 italic">
+                              <Plus size={12} /> Plan next activity...
+                            </div>
+                          )}
+
                           <div className="flex items-center text-sm text-text-muted mb-4 relative z-10"><Users size={16} className="mr-2" />{deal.contact}</div>
+
+                          {/* Qualification Tracker (MEDDPICC) */}
+                          <div className="mb-4 relative z-10">
+                            <div className="flex justify-between items-center text-[8px] font-black text-gray-400 uppercase mb-1">
+                              <span>Qualification (MEDDPICC)</span>
+                              <span>{qualifiedCount}/7</span>
+                            </div>
+                            <div className="flex gap-0.5 h-1">
+                              {[...Array(7)].map((_, i) => (
+                                <div key={i} className={`flex-1 rounded-full ${i < qualifiedCount ? 'bg-warm-green' : 'bg-gray-200'}`}></div>
+                              ))}
+                            </div>
+                          </div>
                           <div className="border-t border-black/5 pt-3 flex justify-between items-center relative z-10">
                             <span className="font-extrabold text-text-main text-lg">{formatCurrency(deal.value)}</span>
                             {stage.id === 'lost' ? <span className="text-xs text-warm-red bg-warm-red/10 px-2 py-1 rounded-lg font-bold">{deal.lostReason || 'N/A'}</span> : stage.id !== 'won' && <div className="flex items-center text-xs text-warm-yellow font-bold bg-warm-yellow/10 px-2 py-1 rounded-lg"><Trophy size={14} className="mr-1" />{deal.probability}%</div>}
@@ -2040,10 +2076,66 @@ const App = () => {
                     <h2 className="text-xl font-bold text-gray-900 mb-1 leading-tight">{selectedDeal.title}</h2>
                     <p className="text-2xl font-mono text-gray-700 mb-6">{formatCurrency(selectedDeal.value)}</p>
 
-                    <div className="space-y-4 flex-1 overflow-y-auto pr-2">
+                    <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
                       <div><label className="text-xs font-bold text-text-muted uppercase tracking-wide">Contact Person</label><div className="flex items-center mt-2"><div className="w-10 h-10 bg-warm-blue/20 rounded-xl flex items-center justify-center text-warm-blue-dark text-sm font-bold mr-4 shadow-clay-sm flex-shrink-0">{selectedDeal.contact?.charAt(0)}</div><div className="min-w-0"><p className="font-bold text-text-main text-lg truncate">{selectedDeal.contact}</p><p className="text-sm text-text-muted font-medium truncate">{selectedDeal.company}</p></div></div></div>
                       <div><label className="text-xs font-bold text-text-muted uppercase tracking-wide">Created At</label><p className="text-sm font-bold text-text-main mt-1 bg-surface inline-block px-3 py-1 rounded-lg shadow-clay-sm">{formatDate(selectedDeal.createdAt)}</p></div>
+
+                      {/* Qualification Checklist (MEDDPICC) */}
+                      <div className="pt-4 border-t border-black/5">
+                        <label className="text-xs font-black text-accent uppercase tracking-widest block mb-3 flex items-center justify-between">
+                          Qualification Checklist
+                          <span className="text-[10px] text-text-muted normal-case font-bold">(MEDDPICC)</span>
+                        </label>
+                        <div className="space-y-2">
+                          {['Metrics Identified', 'Economic Buyer Meta', 'Decision Criteria Set', 'Decision Process Mapped', 'Identify Pain Points', 'Champion Found', 'Competition Analysis'].map((item) => {
+                            const isDone = selectedDeal.tasks?.some(t => t.text.includes(item.split(' ')[0]) && t.completed);
+                            return (
+                              <button
+                                key={item}
+                                onClick={async () => {
+                                  const keyword = item.split(' ')[0];
+                                  const existingTask = selectedDeal.tasks?.find(t => t.text.includes(keyword));
+                                  if (existingTask) {
+                                    await handleToggleTask(existingTask.id);
+                                  } else {
+                                    const task = { id: Date.now(), text: `[MEDDPICC] ${item}`, date: new Date().toISOString(), completed: true };
+                                    const updatedTasks = [...(selectedDeal.tasks || []), task];
+                                    await handleUpdateDeal(selectedDeal.id, { tasks: updatedTasks });
+                                    setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
+                                  }
+                                }}
+                                className={`w-full flex items-center gap-3 p-2 rounded-xl border text-left transition-all ${isDone ? 'bg-warm-green/10 border-warm-green/30 text-warm-green-dark' : 'bg-white border-black/5 text-text-muted hover:border-accent/40'}`}
+                              >
+                                {isDone ? <CheckCircle2 size={14} /> : <div className="w-3.5 h-3.5 rounded-full border-2 border-current opacity-30" />}
+                                <span className="text-[11px] font-bold">{item}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
                       {selectedDeal.stage === 'lost' && (<div className="bg-warm-red/10 p-4 rounded-2xl border border-warm-red/20 shadow-clay-inner"><label className="text-xs font-bold text-warm-red uppercase flex items-center mb-1"><XCircle size={14} className="mr-2" /> Lost Reason</label><p className="text-base text-warm-red-dark font-bold">{selectedDeal.lostReason}</p></div>)}
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-black/5">
+                      <button
+                        onClick={async () => {
+                          const prompt = `Act as an Enterprise Sales Coach (MEDDPICC Expert). This deal is in stage '${selectedDeal.stage}' with value ${selectedDeal.value}.
+                             Current qualification state: ${(selectedDeal.tasks || []).filter(t => t.text.includes('[MEDDPICC]')).map(t => t.text).join(', ')}.
+                             
+                             Provide a Win-Strategy in 3 bullet points (Thai language):
+                             1. Tactical Next Step
+                             2. Relationship Strategy
+                             3. Risk to Mitigate
+                             `;
+                          showToast("Consulting Sales Coach AI...", "info");
+                          const res = await callGeminiAPI(prompt);
+                          if (res) alert("Sales Coach AI Strategy:\n\n" + (typeof res === 'string' ? res : JSON.stringify(res)));
+                        }}
+                        className="w-full py-3 bg-gradient-to-r from-accent to-[#C08C60] text-white rounded-2xl font-black text-xs shadow-clay-btn hover:scale-[1.02] transition-all flex items-center justify-center gap-2 mb-3"
+                      >
+                        <Target size={16} /> WIN-STRATEGY AI COACH
+                      </button>
                     </div>
 
                     {selectedDeal.stage !== 'lost' && selectedDeal.stage !== 'won' && (<div className="mt-6 pt-6 border-t border-gray-200"><button onClick={() => setIsLostModalOpen(true)} className="w-full py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium transition-colors">แจ้งเคสหลุด (Mark as Lost)</button></div>)}
