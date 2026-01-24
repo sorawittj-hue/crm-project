@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   LayoutDashboard, Users, Plus, Search,
   Building2, DollarSign, Trophy, X, Loader2, Database, Menu,
   CheckCircle2, Upload, Download, FileSpreadsheet, AlertCircle,
   FileText, CheckSquare, MessageSquare, Trash2, XCircle, Clock, ArrowRight,
   Cpu, Server, HardDrive, Wrench, ChevronRight, RotateCcw,
-  Zap, Signal, PieChart, BarChart3, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save,
+  Zap, Signal, PieChart, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save,
   Sun, Moon, CheckSquare as CheckSquareIcon, Filter, Activity
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
@@ -196,7 +196,7 @@ const App = () => {
 
   // Persist Goal to Supabase
   const [monthlyGoal, setMonthlyGoal] = useState(1000000);
-  const [isEditingGoal, setIsEditingGoal] = useState(false);
+  const [expandedCompany, setExpandedCompany] = useState(null);
 
   // Dark Mode Effect
   useEffect(() => {
@@ -209,13 +209,110 @@ const App = () => {
     }
   }, [darkMode]);
 
+  // --- Unified Data Engine (Optimized & Interconnected) ---
+  const masterData = useMemo(() => {
+    // 1. Basic Filtering (Search & Stage Filter)
+    const filtered = deals.filter(deal => {
+      const matchSearch = deal.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        deal.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        deal.contact?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchStage = filterStage === 'all' || deal.stage === filterStage;
+
+      const val = deal.value || 0;
+      const matchMin = filterValueMin === '' || val >= Number(filterValueMin);
+      const matchMax = filterValueMax === '' || val <= Number(filterValueMax);
+
+      const matchDate = !filterDate || (deal.createdAt && deal.createdAt.startsWith(filterDate));
+
+      return matchSearch && matchStage && matchMin && matchMax && matchDate;
+    });
+
+    // 2. Customer Master (Unique Entities)
+    const customers = Object.entries(deals.reduce((acc, d) => {
+      const key = d.company?.trim() || 'No Company';
+      if (!acc[key]) {
+        acc[key] = {
+          name: key,
+          contact: d.contact,
+          ltv: 0,
+          count: 0,
+          activeDeals: 0,
+          lastDate: d.createdAt,
+          status: d.stage,
+          deals: []
+        };
+      }
+      acc[key].deals.push(d);
+      if (d.stage === 'won') acc[key].ltv += d.value;
+      if (d.stage !== 'won' && d.stage !== 'lost') acc[key].activeDeals += 1;
+      if (new Date(d.createdAt) > new Date(acc[key].lastDate)) {
+        acc[key].lastDate = d.createdAt;
+        acc[key].status = d.stage;
+      }
+      return acc;
+    }, {}))
+      .map(([, val]) => val)
+      .sort((a, b) => b.ltv - a.ltv);
+
+    // 3. The Golden List (Strategic Targets)
+    const goldenList = deals.filter(d => {
+      const daysOld = (new Date() - new Date(d.lastActivity || d.createdAt)) / (1000 * 60 * 60 * 24);
+      return d.value >= 100000 && d.stage === 'proposal' && daysOld >= 2 && daysOld <= 5;
+    }).sort((a, b) => b.value - a.value);
+
+    // 4. Metrics & Funnel
+    const totalPipeline = deals.reduce((acc, d) => acc + (d.value || 0), 0);
+    const wonRevenue = deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0);
+    const funnel = ['lead', 'contact', 'proposal', 'negotiation', 'won'].map(sid => ({
+      id: sid,
+      count: deals.filter(d => d.stage === sid).length,
+      value: deals.filter(d => d.stage === sid).reduce((acc, d) => acc + d.value, 0)
+    }));
+
+    return { filteredDeals: filtered, customers, goldenList, totalPipeline, wonRevenue, funnel };
+  }, [deals, searchTerm, filterStage, filterValueMin, filterValueMax, filterDate]);
+
+  const { filteredDeals: memoFilteredDeals, customers: customerMaster, goldenList, totalPipeline, wonRevenue, funnel: funnelStats } = masterData;
+
+
   useEffect(() => {
     const fetchSettings = async () => {
       const { data } = await supabase.from('settings').select('value').eq('key', 'monthly_goal').single();
       if (data && data.value) setMonthlyGoal(Number(data.value));
     };
     fetchSettings();
+
+    // 72-Hour Aggressive Nudge: Request Notification Permission
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
   }, []);
+
+  // Aggressive Nudge: Periodic Check (Every 1 hour while tab is open)
+  useEffect(() => {
+    const checkAggressiveNudge = () => {
+      if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+      const now = new Date();
+      deals.forEach(deal => {
+        if (deal.value >= 100000 && deal.stage === 'proposal') {
+          const lastActivity = new Date(deal.lastActivity || deal.createdAt);
+          const diffHours = (now - lastActivity) / (1000 * 60 * 60);
+
+          if (diffHours >= 48) {
+            new Notification("🔥 URGENT: High Value Deal Stalled!", {
+              body: `ดีล ${deal.title} (฿${deal.value.toLocaleString()}) เงียบไปเกิน 48 ชม. แล้ว! รีบตามด่วนก่อนหลุด!`,
+              icon: '/favicon.ico'
+            });
+          }
+        }
+      });
+    };
+
+    const interval = setInterval(checkAggressiveNudge, 1000 * 60 * 60 * 2); // Every 2 hours
+    return () => clearInterval(interval);
+  }, [deals]);
 
   // Build Global Activities Feed
   useEffect(() => {
@@ -267,10 +364,6 @@ const App = () => {
     setGlobalActivities(activities.sort((a, b) => new Date(b.date) - new Date(a.date)));
   }, [deals]);
 
-  const handleSaveGoal = async () => {
-    setIsEditingGoal(false);
-    await supabase.from('settings').upsert({ key: 'monthly_goal', value: String(monthlyGoal) }, { onConflict: 'key' });
-  };
 
   // Detail View Inputs
   const [newNote, setNewNote] = useState('');
@@ -860,7 +953,7 @@ const App = () => {
     });
   };
 
-  const getStageTotal = (stageId) => filteredDeals.filter(d => d.stage === stageId).reduce((sum, d) => sum + d.value, 0);
+  const getStageTotal = (stageId) => memoFilteredDeals.filter(d => d.stage === stageId).reduce((sum, d) => sum + d.value, 0);
 
   // Render Views
   // Render Views
@@ -912,24 +1005,35 @@ const App = () => {
 
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
           <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 opacity-60">Menu</p>
-          {['pipeline', 'overview', 'dashboard', 'contacts'].map((tab) => {
+          {['pipeline', 'overview', 'dashboard', 'customers', 'clients'].map((tab) => {
             const isActive = activeTab === tab;
+            const tabIcons = {
+              pipeline: <Activity size={18} />,
+              overview: <PieChart size={18} />,
+              dashboard: <LayoutDashboard size={18} />,
+              customers: <Users size={18} />,
+              clients: <Trophy size={18} className="text-yellow-500" />
+            };
+            const tabLabels = {
+              pipeline: 'Sales Pipeline',
+              overview: 'Sales Overview',
+              dashboard: 'Strategic Dash',
+              customers: 'Customer Master',
+              clients: 'Key VIP Clients'
+            };
             return (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`
-                  w-full flex items-center px-4 py-3 rounded-2xl transition-all duration-300 group
+                  w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300
                   ${isActive
-                    ? 'bg-surface shadow-clay-inner text-accent font-bold scale-[0.98]'
-                    : 'text-text-muted hover:bg-surface/50 hover:text-text-main hover:translate-x-1'}
+                    ? 'bg-accent text-white shadow-clay-btn translate-x-1'
+                    : 'text-text-muted hover:bg-bg hover:text-text-main hover:translate-x-1'}
                 `}
               >
-                {tab === 'pipeline' && <LayoutDashboard size={20} className={`mr-3 ${isActive ? 'text-accent' : 'text-text-muted opacity-60'}`} />}
-                {tab === 'overview' && <PieChart size={20} className={`mr-3 ${isActive ? 'text-accent' : 'text-text-muted opacity-60'}`} />}
-                {tab === 'dashboard' && <BarChart3 size={20} className={`mr-3 ${isActive ? 'text-accent' : 'text-text-muted opacity-60'}`} />}
-                {tab === 'contacts' && <Users size={20} className={`mr-3 ${isActive ? 'text-accent' : 'text-text-muted opacity-60'}`} />}
-                <span className="text-[13px] capitalize">{tab}</span>
+                {tabIcons[tab]}
+                {tabLabels[tab]}
               </button>
             );
           })}
@@ -1005,7 +1109,7 @@ const App = () => {
               {activeTab === 'pipeline' ? 'Sales Pipeline' :
                 activeTab === 'overview' ? 'Sales Overview' :
                   activeTab === 'dashboard' ? 'Dashboard Analysis' :
-                    activeTab === 'contacts' ? 'Contacts List' :
+                    activeTab === 'customers' ? 'Customer Master' :
                       activeTab === 'calendar' ? 'Calendar View' :
                         activeTab === 'activity' ? 'Activity Feed' :
                           activeTab === 'spec-setup' ? 'Smart Spec Recommendation' :
@@ -1245,6 +1349,84 @@ const App = () => {
             </div>
           )}
 
+          {activeTab === 'clients' && (
+            <div className="max-w-6xl mx-auto space-y-8 pb-10">
+              <div className="flex justify-between items-end">
+                <div>
+                  <h2 className="text-3xl font-black text-text-main mb-2">Key VIP Clients</h2>
+                  <p className="text-text-muted font-medium">ลำดับความสำคัญของลูกค้าตามยอดซื้อสะสม (Lifetime Value)</p>
+                </div>
+                <div className="bg-white/50 px-4 py-2 rounded-2xl shadow-clay-inner border border-white">
+                  <p className="text-[10px] font-black text-text-muted uppercase">Total VIPs</p>
+                  <p className="text-xl font-black text-accent">{customerMaster.filter(c => c.ltv > 0).length}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6">
+                {customerMaster.filter(c => c.ltv > 0).slice(0, 10).map((stats, idx) => {
+                  let tier = { label: 'Silver', color: 'bg-slate-100 text-slate-600', icon: <Users size={16} /> };
+                  if (stats.ltv >= 1000000) tier = { label: 'Platinum VIP', color: 'bg-indigo-600 text-white shadow-indigo-200', icon: <Trophy size={16} /> };
+                  else if (stats.ltv >= 500000) tier = { label: 'Gold Client', color: 'bg-yellow-500 text-white shadow-yellow-200', icon: <Sparkles size={16} /> };
+
+                  const company = stats.name;
+                  return (
+                    <Card key={company} className="p-8 group hover:shadow-clay-lg transition-all duration-500 relative overflow-hidden">
+                      {idx < 3 && (
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 -mr-16 -mt-16 rounded-full group-hover:scale-110 transition-transform"></div>
+                      )}
+
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                        <div className="flex items-center gap-6">
+                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-bg to-bg/50 shadow-clay-inner border border-white flex items-center justify-center text-2xl font-black text-accent">
+                            {idx + 1}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-xl font-black text-text-main">{company}</h3>
+                              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-sm ${tier.color}`}>
+                                {tier.icon} {tier.label}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-4 text-xs font-bold text-text-muted">
+                              <span className="flex items-center gap-1"><Users size={12} className="opacity-40" /> {stats.contact}</span>
+                              <span className="flex items-center gap-1"><Trophy size={12} className="opacity-40" /> {stats.deals.filter(d => d.stage === 'won').length} Deals Won</span>
+                              <span className="flex items-center gap-1"><Clock size={12} className="opacity-40" /> Last Deal: {formatDate(stats.lastDate)}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-10">
+                          <div className="text-right">
+                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Lifetime Value (LTV)</p>
+                            <p className="text-3xl font-black text-text-main">{formatCurrency(stats.ltv)}</p>
+                          </div>
+                          <div className="w-px h-12 bg-black/5 hidden md:block"></div>
+                          <div className="flex flex-col gap-2">
+                            <p className="text-[10px] font-black text-accent uppercase tracking-widest text-center">Take Care Action</p>
+                            <div className="flex gap-2">
+                              <button onClick={() => showToast(`ส่งคำขอบคุณถึง ${company} แล้ว`, "success")} className="px-4 py-2 bg-accent/10 text-accent rounded-xl text-[10px] font-black uppercase hover:bg-accent hover:text-white transition-all shadow-clay-sm border border-accent/20">
+                                Appreciation
+                              </button>
+                              <button onClick={() => showToast(`สร้างนัดหมายทานข้าวกับ ${company} แล้ว`, "success")} className="px-4 py-2 bg-warm-blue/10 text-warm-blue rounded-xl text-[10px] font-black uppercase hover:bg-warm-blue hover:text-white transition-all shadow-clay-sm border border-warm-blue/20">
+                                Coffee/Dinner
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+                {customerMaster.filter(c => c.ltv > 0).length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-40 opacity-20 filter grayscale">
+                    <Trophy size={80} className="mb-4 text-accent" />
+                    <p className="text-lg font-black uppercase tracking-widest text-center">No VIP Clients Yet <br /> Close some deals to build your VIP list!</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {activeTab === 'pipeline' && (
             <div className="flex flex-col h-full gap-4 overflow-hidden">
               {/* Pipeline Management Header (High Volume Solution) */}
@@ -1279,7 +1461,7 @@ const App = () => {
                   </select>
                   <div className="w-px h-6 bg-black/5"></div>
                   <div className="text-[10px] font-black text-text-muted">
-                    แสดงผล: <span className="text-text-main">{filteredDeals.length}</span> จาก <span className="text-text-main">{deals.length}</span> ดีล
+                    แสดงผล: <span className="text-text-main">{memoFilteredDeals.length}</span> จาก <span className="text-text-main">{deals.length}</span> ดีล
                   </div>
                 </div>
               </div>
@@ -1318,7 +1500,7 @@ const App = () => {
                         </div>
                       </div>
                       <div className="p-4 pt-0 overflow-y-auto flex-1 space-y-4 custom-scrollbar touch-pan-y pb-20">
-                        {filteredDeals
+                        {memoFilteredDeals
                           .filter(deal => deal.stage === stage.id)
                           .filter(deal => {
                             // Recent mode: Only 30 days
@@ -1456,7 +1638,7 @@ const App = () => {
                               </div>
                             );
                           })}
-                        {filteredDeals.filter(deal => deal.stage === stage.id).length === 0 && (
+                        {memoFilteredDeals.filter(deal => deal.stage === stage.id).length === 0 && (
                           <div className="flex flex-col items-center justify-center py-20 opacity-20 filter grayscale">
                             <LayoutDashboard size={48} className="mb-4" />
                             <p className="text-xs font-bold uppercase tracking-widest text-center">No deals in this stage</p>
@@ -1508,252 +1690,71 @@ const App = () => {
             <div className="space-y-8 max-w-6xl mx-auto pb-8">
               <div className="flex justify-between items-end">
                 <div>
-                  <h2 className="text-3xl font-black text-text-main mb-2">Dashboard</h2>
-                  <p className="text-text-muted font-medium">ภาพรวมยอดขายและประสิทธิภาพทีม</p>
+                  <h2 className="text-3xl font-black text-text-main mb-2">Dashboard Intelligence</h2>
+                  <p className="text-text-muted font-medium uppercase tracking-widest text-[10px]">Real-time Sales Performance & Pipeline Health</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="secondary" onClick={() => {
+                  <Button variant="secondary" onClick={async () => {
                     if (!deals.length) return alert("No data to analyze");
                     const prompt = `Analyze this sales data and give 3 key strategic insights (in Thai language):
                       Total Deals: ${deals.length}
-                      Won: ${deals.filter(d => d.stage === 'won').length}
-                      Lost: ${deals.filter(d => d.stage === 'lost').length}
-                      Total Value: ${deals.reduce((acc, d) => acc + d.value, 0)}
-                      Pipeline Status: ${JSON.stringify(deals.reduce((acc, d) => { acc[d.stage] = (acc[d.stage] || 0) + 1; return acc; }, {}))}
+                      Value: ${totalPipeline}
                       `;
-                    callGeminiAPI(prompt).then(res => {
-                      if (res) alert("AI Analyst Insight:\n\n" + (typeof res === 'string' ? res : JSON.stringify(res)));
-                      else alert("AI Analysis complete (check console for details if raw)");
-                    });
+                    const res = await callGeminiAPI(prompt);
+                    if (res) alert("AI Analysis: " + JSON.stringify(res));
                   }}>
-                    <Sparkles size={18} className="mr-2 text-accent" /> AI Analyst (Beta)
+                    <Sparkles size={18} className="mr-2 text-accent" /> AI Analyst
                   </Button>
                 </div>
               </div>
 
-              {/* 1. Key Metrics & Goal */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Card className="p-6 border-l-4 border-l-accent relative overflow-hidden group">
-                  <div className="absolute right-0 top-0 w-24 h-24 bg-accent/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                  <p className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">Total Pipeline Value</p>
-                  <h3 className="text-2xl font-black text-text-main">{formatCurrency(deals.reduce((acc, d) => acc + d.value, 0))}</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <Card className="lg:col-span-1 p-6 bg-gradient-to-br from-accent/20 to-surface border-accent/30 relative overflow-hidden flex flex-col">
+                  <div className="absolute top-0 right-0 p-2 opacity-10"><Zap size={48} className="text-accent" /></div>
+                  <h3 className="font-black text-xs text-accent uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Trophy size={14} /> The Golden List
+                  </h3>
+                  <div className="flex-1 space-y-3">
+                    {goldenList.slice(0, 5).map(deal => (
+                      <div key={deal.id} onClick={() => handleDealClick(deal)} className="p-2.5 bg-white/60 dark:bg-gray-800/60 rounded-xl shadow-sm border border-white/40 cursor-pointer hover:translate-x-1 transition-all">
+                        <p className="text-[11px] font-black text-text-main truncate">{deal.title}</p>
+                        <div className="flex justify-between items-center mt-1">
+                          <span className="text-[9px] font-bold text-accent">{formatCurrency(deal.value)}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {goldenList.length === 0 && (
+                      <div className="h-full flex flex-col items-center justify-center opacity-40 py-4">
+                        <Target size={24} className="mb-2" />
+                        <p className="text-[10px] font-bold text-center">No targets in window</p>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[8px] font-black text-text-muted mt-4 uppercase opacity-40 italic">Focus on &quot;Life-Changing Deals&quot;</p>
                 </Card>
-                <Card className="p-6 border-l-4 border-l-warm-green relative overflow-hidden group">
-                  <div className="absolute right-0 top-0 w-24 h-24 bg-warm-green/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                  <p className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">Revenue (Won)</p>
-                  <h3 className="text-2xl font-black text-warm-green">{formatCurrency(deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0))}</h3>
-                </Card>
-                <Card className="p-6 border-l-4 border-l-warm-purple relative overflow-hidden group">
-                  <div className="absolute right-0 top-0 w-24 h-24 bg-warm-purple/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                  <p className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">Forecast Revenue</p>
-                  <h3 className="text-2xl font-black text-warm-purple">{formatCurrency(deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').reduce((acc, d) => acc + (d.value * (d.probability / 100)), 0))}</h3>
-                </Card>
-                <Card className="p-6 border-l-4 border-l-warm-yellow relative overflow-hidden group">
-                  <div className="absolute right-0 top-0 w-24 h-24 bg-warm-yellow/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                  <p className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">Active Deals</p>
-                  <h3 className="text-2xl font-black text-warm-yellow">{deals.filter(d => d.stage !== 'won' && d.stage !== 'lost').length}</h3>
-                </Card>
+
+                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Card className="p-6 border-l-4 border-l-accent"><p className="text-text-muted text-[10px] font-black uppercase mb-1">Pipeline</p><h3 className="text-2xl font-black">{formatCurrency(totalPipeline)}</h3></Card>
+                  <Card className="p-6 border-l-4 border-l-warm-green"><p className="text-text-muted text-[10px] font-black uppercase mb-1">Won</p><h3 className="text-2xl font-black text-warm-green">{formatCurrency(wonRevenue)}</h3></Card>
+                  <Card className="p-6 border-l-4 border-l-warm-purple"><p className="text-text-muted text-[10px] font-black uppercase mb-1">Target Gap</p><h3 className="text-2xl font-black text-warm-purple">{formatCurrency(Math.max(0, monthlyGoal - wonRevenue))}</h3></Card>
+                </div>
               </div>
 
-              {/* 2. Revenue Performance Center (Beyond World Class) */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                {/* Achievement Gauge */}
-                <Card className="p-8 lg:col-span-1 border-none shadow-clay-lg bg-white dark:bg-gray-800 flex flex-col items-center justify-center relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                    <Target size={120} className="text-accent" />
-                  </div>
-
-                  <div className="relative w-48 h-48 mb-6">
-                    {/* Background Circle */}
-                    <svg className="w-full h-full transform -rotate-90">
-                      <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-gray-100 dark:text-gray-700" />
-                      {/* Progress Circle with Gradient filter */}
-                      <circle
-                        cx="96" cy="96" r="80" stroke="url(#achievementGradient)" strokeWidth="12" fill="transparent"
-                        strokeDasharray={2 * Math.PI * 80}
-                        strokeDashoffset={2 * Math.PI * 80 * (1 - Math.min(1, deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) / monthlyGoal))}
-                        strokeLinecap="round"
-                        className="transition-all duration-1000 ease-out"
-                      />
-                      <defs>
-                        <linearGradient id="achievementGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="var(--accent-color, #C08C60)" />
-                          <stop offset="100%" stopColor="#ef4444" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-4xl font-black text-text-main">{Math.round((deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) / monthlyGoal) * 100)}%</span>
-                      <span className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Reached</span>
-                    </div>
-                  </div>
-
-                  <div className="text-center w-full">
-                    <h3 className="font-black text-sm text-text-main mb-3 uppercase tracking-widest flex items-center justify-center gap-2">
-                      รายได้เทียบเป้าหมาย (Monthly Target)
-                    </h3>
-                    <div className="flex justify-between items-end px-4">
-                      <div className="text-left">
-                        <p className="text-[9px] font-black text-text-muted uppercase">Achieved</p>
-                        <p className="text-sm font-black text-warm-green">{formatCurrency(deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0))}</p>
-                      </div>
-                      <div className="text-right flex flex-col items-end">
-                        {isEditingGoal ? (
-                          <div className="flex items-center gap-1">
-                            <input
-                              type="number"
-                              value={monthlyGoal}
-                              onChange={(e) => setMonthlyGoal(Number(e.target.value))}
-                              className="w-20 px-2 py-0.5 text-[10px] font-black border border-accent rounded bg-white focus:outline-none"
-                              autoFocus
-                              onBlur={handleSaveGoal}
-                              onKeyDown={(e) => e.key === 'Enter' && handleSaveGoal()}
-                            />
-                            <button onClick={handleSaveGoal} className="text-warm-green"><Save size={10} /></button>
-                          </div>
-                        ) : (
-                          <button onClick={() => setIsEditingGoal(true)} className="text-[9px] font-black text-accent uppercase flex items-center gap-1 hover:underline">
-                            Target <Pencil size={8} />
-                          </button>
-                        )}
-                        <p className="text-sm font-black text-text-main">/ {formatCurrency(monthlyGoal)}</p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Forecast & Gap Analysis */}
-                <Card className="p-8 lg:col-span-2 border-none shadow-clay-lg bg-white dark:bg-gray-800 flex flex-col">
-                  <div className="flex justify-between items-start mb-8">
-                    <div>
-                      <h3 className="font-black text-lg text-text-main">วิเคราะห์ยอดขายและคาดการณ์ (Sales Forecast)</h3>
-                      <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1">Comparing Actual, Weighted Pipeline, and TargetGap</p>
-                    </div>
-                    <div className="flex gap-4">
-                      <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-warm-green"></div><span className="text-[9px] font-black text-text-muted">WON</span></div>
-                      <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-accent"></div><span className="text-[9px] font-black text-text-muted">WEIGHTED</span></div>
-                      <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-gray-200"></div><span className="text-[9px] font-black text-text-muted">GAP</span></div>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 flex flex-col justify-end gap-1">
-                    {/* Multi-layered Progress Bar */}
-                    <div className="w-full h-12 bg-gray-50 dark:bg-gray-900 rounded-2xl flex overflow-hidden p-1 shadow-clay-inner border border-black/5">
-                      {/* Won Portion */}
-                      <div
-                        className="h-full bg-warm-green rounded-xl transition-all duration-1000 shadow-[2px_0_10px_rgba(34,197,94,0.3)] z-30"
-                        style={{ width: `${Math.min(100, (deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) / monthlyGoal) * 100)}%` }}
-                      ></div>
-                      {/* Weighted Pipeline Portion */}
-                      <div
-                        className="h-full bg-accent rounded-xl -ml-2 transition-all duration-1000 shadow-[2px_0_10px_rgba(192,140,96,0.2)] z-20"
-                        style={{ width: `${Math.min(100 - (deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) / monthlyGoal * 100), (deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').reduce((acc, d) => acc + (d.value * (d.probability / 100)), 0) / monthlyGoal) * 100)}%` }}
-                      ></div>
-                      {/* Gap Portion */}
-                      <div className="h-full flex-1 bg-transparent"></div>
-                    </div>
-
-                    {/* Markers / Labels */}
-                    <div className="flex justify-between text-[10px] font-black text-text-muted uppercase mt-4">
-                      <div className="space-y-1">
-                        <p>ยอดปิดได้แล้ว (Won)</p>
-                        <p className="text-lg text-warm-green">{Math.round((deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) / monthlyGoal) * 100)}%</p>
-                      </div>
-                      <div className="text-center space-y-1">
-                        <p>รวมคาดการณ์ (Total Projection)</p>
-                        <p className="text-lg text-accent">
-                          {Math.round(((deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) + deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').reduce((acc, d) => acc + (d.value * (d.probability / 100)), 0)) / monthlyGoal) * 100)}%
-                        </p>
-                      </div>
-                      <div className="text-right space-y-1">
-                        <p>ยอดที่ยังขาด (Gap to Goal)</p>
-                        <p className="text-lg text-text-main">
-                          {formatCurrency(Math.max(0, monthlyGoal - (deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) + deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').reduce((acc, d) => acc + (d.value * (d.probability / 100)), 0))))}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-8 pt-6 border-t border-black/5 grid grid-cols-2 gap-8">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-warm-blue/10 rounded-2xl text-warm-blue"><Activity size={20} /></div>
-                      <div>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-wider">Pipeline Health</p>
-                        <p className="text-sm font-black text-text-main">Velocity: {deals.length ? (deals.filter(d => d.stage === 'won').length / Math.max(1, deals.length) * 100).toFixed(1) : 0}% Win Rate</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-warm-purple/10 rounded-2xl text-warm-purple"><Sparkles size={20} /></div>
-                      <div>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-wider">AI Insight</p>
-                        <p className="text-sm font-black text-text-main">
-                          {(deals.filter(d => d.stage === 'won').reduce((acc, d) => acc + d.value, 0) + deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').reduce((acc, d) => acc + (d.value * (d.probability / 100)), 0)) >= monthlyGoal
-                            ? 'On track to hit target!'
-                            : 'Needs more pipeline volume.'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              {/* 3. Pipeline Intelligence (Beyond World Class Funnel) */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                {/* Conversion Funnel */}
-                <Card className="p-8 border-none shadow-clay-lg bg-white dark:bg-gray-800 flex flex-col h-full uppercase tracking-tighter">
-                  <div className="flex justify-between items-start mb-10">
-                    <div>
-                      <h3 className="font-black text-lg text-text-main flex items-center gap-2">
-                        <TrendingUp size={20} className="text-accent" /> วิเคราะห์กรวยการขาย (Sales Funnel)
-                      </h3>
-                      <p className="text-[10px] font-bold text-text-muted mt-1">Lead to Conversion Drop-off Analysis</p>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 flex flex-col gap-1 pr-4">
-                    {['lead', 'contact', 'proposal', 'negotiation', 'won'].map((stageId, idx) => {
-                      const stage = stages.find(s => s.id === stageId);
-                      const count = deals.filter(d => d.stage === stageId).length;
-                      const totalVal = deals.filter(d => d.stage === stageId).reduce((acc, d) => acc + d.value, 0);
-
-                      // Width calculation (decreasing funnel)
+                <Card className="p-8 h-full">
+                  <h3 className="font-black text-lg mb-6 flex items-center gap-2"><TrendingUp size={20} className="text-accent" /> วิเคราะห์กรวยการขาย (Funnel)</h3>
+                  <div className="space-y-1">
+                    {funnelStats.map((f, idx) => {
+                      const stage = stages.find(s => s.id === f.id);
                       const widths = [100, 85, 70, 55, 40];
-                      const colors = [
-                        'bg-blue-500/80',
-                        'bg-purple-500/80',
-                        'bg-orange-500/80',
-                        'bg-yellow-500/80',
-                        'bg-green-500/80'
-                      ];
-
-                      // Conversion rate (compare to lead stage or previous stage)
-                      const leadCount = deals.filter(d => d.stage === 'lead').length || 1;
-                      const convRate = Math.round((count / leadCount) * 100);
-
                       return (
-                        <div key={stageId} className="relative group mb-1">
-                          <div className="flex items-center gap-4">
-                            <div className="w-24 text-[9px] font-black text-text-muted text-right truncate">
-                              {stage?.title}
-                            </div>
-                            <div className="flex-1 h-10 relative">
-                              <div
-                                className={`absolute inset-y-0 left-0 ${colors[idx]} rounded-r-lg transition-all duration-700 shadow-sm group-hover:scale-y-105 group-hover:brightness-110 flex items-center px-4`}
-                                style={{ width: `${widths[idx]}%` }}
-                              >
-                                <span className="text-white text-[10px] font-black">{count} Deals</span>
-                              </div>
-                            </div>
-                            <div className="w-24">
-                              <p className="text-[11px] font-black text-text-main">{formatCurrency(totalVal)}</p>
-                              <p className="text-[8px] font-bold text-text-muted">{idx === 0 ? 'SOURCE' : `CONV. ${convRate}%`}</p>
-                            </div>
+                        <div key={f.id} className="flex items-center gap-4 h-10">
+                          <span className="w-20 text-[9px] font-black text-text-muted uppercase text-right truncate">{stage?.title}</span>
+                          <div className="flex-1 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden relative">
+                            <div className="absolute inset-y-0 left-0 bg-accent/60 rounded-r-lg" style={{ width: `${widths[idx]}%` }}></div>
+                            <span className="absolute inset-0 flex items-center px-3 text-[10px] font-black text-white">{f.count} Deals</span>
                           </div>
-                          {idx < 4 && (
-                            <div className="ml-28 h-4 border-l-2 border-dashed border-gray-200 dark:border-gray-700 my-0.5 opacity-50"></div>
-                          )}
+                          <span className="w-24 text-[10px] font-black text-right">{formatCurrency(f.value)}</span>
                         </div>
                       );
                     })}
@@ -1761,52 +1762,96 @@ const App = () => {
                 </Card>
 
                 <div className="grid grid-cols-1 gap-6">
-                  {/* Top Opportunities Mini-Table */}
-                  <Card className="p-6 border-none shadow-clay-lg bg-white dark:bg-gray-800">
-                    <h3 className="font-bold text-sm mb-4 text-text-main flex items-center gap-2"><Trophy size={16} className="text-yellow-500" /> TOP OPPORTUNITIES</h3>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-[11px]">
-                        <thead className="text-text-muted border-b border-gray-100">
-                          <tr><th className="pb-3 pl-2">DEAL NAME</th><th className="pb-3 text-right pr-2">VALUE</th></tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                          {deals.filter(d => d.stage !== 'lost' && d.stage !== 'won').sort((a, b) => b.value - a.value).slice(0, 3).map(deal => (
-                            <tr key={deal.id} className="group hover:bg-gray-50 transition-colors">
-                              <td className="py-2.5 pl-2 font-black text-text-main">{deal.title}<div className="text-[9px] text-text-muted opacity-60 uppercase">{deal.company}</div></td>
-                              <td className="py-2.5 text-right pr-2 font-black text-accent">{formatCurrency(deal.value)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                  <Card className="p-6">
+                    <h3 className="font-black text-xs uppercase mb-4 flex items-center gap-2"><Trophy size={14} /> Top Active Ops</h3>
+                    <div className="space-y-2">
+                      {memoFilteredDeals.filter(d => d.stage !== 'won' && d.stage !== 'lost').sort((a, b) => b.value - a.value).slice(0, 3).map(d => (
+                        <div key={d.id} onClick={() => handleDealClick(d)} className="flex items-center justify-between p-2 hover:bg-bg/50 rounded-xl cursor-pointer">
+                          <div><p className="text-xs font-black">{d.title}</p><p className="text-[9px] text-text-muted uppercase">{d.company}</p></div>
+                          <p className="text-xs font-black text-accent">{formatCurrency(d.value)}</p>
+                        </div>
+                      ))}
                     </div>
                   </Card>
-
-                  {/* Loss Analysis Mini-Graph */}
-                  <Card className="p-6 border-none shadow-clay-lg bg-red-50/20 dark:bg-red-900/10">
-                    <h3 className="font-bold text-sm mb-4 text-text-main flex items-center gap-2"><XCircle size={16} className="text-red-500" /> LOSS REASON ANALYSIS</h3>
-                    {deals.filter(d => d.stage === 'lost').length > 0 ? (
-                      <div className="space-y-4">
-                        {Object.entries(deals.filter(d => d.stage === 'lost').reduce((acc, d) => { const r = d.lostReason || 'Unspecified'; acc[r] = (acc[r] || 0) + 1; return acc; }, {}))
-                          .sort((a, b) => b[1] - a[1]).slice(0, 2).map(([reason, count]) => (
-                            <div key={reason} className="flex items-center">
-                              <div className="w-full">
-                                <div className="flex justify-between text-[10px] mb-1"><span className="text-red-700 font-black uppercase">{reason}</span><span className="text-text-muted font-bold">{count} CASES</span></div>
-                                <div className="w-full bg-red-100 dark:bg-red-900/30 rounded-full h-1.5"><div className="bg-red-500 h-1.5 rounded-full" style={{ width: `${(count / deals.filter(d => d.stage === 'lost').length) * 100}%` }}></div></div>
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-6 text-text-muted text-xs italic">No losses yet. Maintaining 100% velocity!</div>
-                    )}
+                  <Card className="p-6 bg-red-50/10">
+                    <h3 className="font-black text-xs uppercase mb-4 flex items-center gap-2"><XCircle size={14} /> Loss Insights</h3>
+                    <div className="space-y-2">
+                      {Object.entries(deals.filter(d => d.stage === 'lost').reduce((acc, d) => { const r = d.lostReason || 'Other'; acc[r] = (acc[r] || 0) + 1; return acc; }, {})).slice(0, 2).map(([r, c]) => (
+                        <div key={r} className="flex items-center justify-between text-[10px] font-bold">
+                          <span className="uppercase">{r}</span>
+                          <span className="text-red-500">{c} Cases</span>
+                        </div>
+                      ))}
+                    </div>
                   </Card>
                 </div>
               </div>
             </div>
           )}
-          {activeTab === 'contacts' && (
-            <div className="bg-surface rounded-3xl shadow-clay-md border border-white/60 overflow-hidden">
-              <div className="overflow-x-auto"><table className="w-full text-left min-w-[700px]"><thead className="bg-bg/50 text-text-muted font-bold text-sm"><tr><th className="px-6 py-4">Contact Name</th><th className="px-6 py-4">Company</th><th className="px-6 py-4">Related Deal</th><th className="px-6 py-4">Last Contact</th></tr></thead><tbody className="divide-y divide-black/5">{deals.map(deal => (<tr key={deal.id} className="hover:bg-bg/30 cursor-pointer transition-colors" onClick={() => setSelectedDeal(deal)}><td className="px-6 py-4"><div className="flex items-center"><div className="w-10 h-10 rounded-xl bg-gradient-to-br from-warm-blue to-primary text-white shadow-clay-sm flex items-center justify-center font-bold mr-3 text-sm shrink-0">{deal.contact?.charAt(0) || '?'}</div><span className="font-bold text-text-main">{deal.contact}</span></div></td><td className="px-6 py-4 text-text-muted font-medium">{deal.company}</td><td className="px-6 py-4 text-accent font-bold">{deal.title}</td><td className="px-6 py-4 text-text-muted text-sm">{deal.lastActivity && !deal.lastActivity.includes('-') ? deal.lastActivity : formatDate(deal.lastActivity)}</td></tr>))}</tbody></table></div>
+
+          {activeTab === 'customers' && (
+            <div className="bg-surface rounded-[40px] shadow-clay-lg border border-white/60 overflow-hidden animate-in fade-in duration-500 max-w-6xl mx-auto">
+              <div className="p-8 border-b border-black/5 flex justify-between items-center bg-bg/20">
+                <div>
+                  <h2 className="text-2xl font-black text-text-main mb-1">Customer Master</h2>
+                  <p className="text-xs font-bold text-text-muted uppercase tracking-widest">Grouping all deals by unique company name</p>
+                </div>
+                <div className="px-4 py-2 bg-white rounded-2xl shadow-clay-inner border border-black/5 text-center">
+                  <p className="text-[9px] font-black text-text-muted uppercase">Entities</p>
+                  <p className="text-xl font-black text-accent">{customerMaster.length}</p>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left min-w-[800px]">
+                  <thead className="bg-bg/40 text-text-muted font-black text-[10px] uppercase tracking-widest">
+                    <tr>
+                      <th className="px-8 py-5">Company & Contact</th>
+                      <th className="px-8 py-5">Summary Status</th>
+                      <th className="px-8 py-5">Lifetime Value (LTV)</th>
+                      <th className="px-8 py-5 text-right">View History</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-black/5">
+                    {customerMaster.map((data) => (
+                      <React.Fragment key={data.name}>
+                        <tr onClick={() => setExpandedCompany(expandedCompany === data.name ? null : data.name)} className={`hover:bg-bg/20 cursor-pointer group ${expandedCompany === data.name ? 'bg-accent/5' : ''}`}>
+                          <td className="px-8 py-5">
+                            <p className="font-black text-text-main text-base group-hover:text-accent">{data.name}</p>
+                            <p className="text-xs font-bold text-text-muted">{data.contact}</p>
+                          </td>
+                          <td className="px-8 py-5">
+                            <span className="text-[10px] font-black uppercase px-3 py-1 bg-surface border rounded-lg shadow-clay-inner">
+                              {data.status} ({data.deals.length} deals)
+                            </span>
+                          </td>
+                          <td className="px-8 py-5 font-black text-text-main text-lg">{formatCurrency(data.ltv)}</td>
+                          <td className="px-8 py-5 text-right"><ChevronRight size={18} className={expandedCompany === data.name ? 'rotate-90 transition-transform' : ''} /></td>
+                        </tr>
+                        {expandedCompany === data.name && (
+                          <tr>
+                            <td colSpan="4" className="bg-bg/40 p-6">
+                              <div className="grid grid-cols-1 gap-2">
+                                {data.deals.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(deal => (
+                                  <div key={deal.id} onClick={(e) => { e.stopPropagation(); setSelectedDeal(deal); }} className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl shadow-clay-sm border hover:border-accent cursor-pointer transition-all">
+                                    <div>
+                                      <p className="font-bold text-sm text-text-main">{deal.title}</p>
+                                      <p className="text-[9px] font-bold text-text-muted uppercase">{formatDate(deal.createdAt)} • {deal.stage}</p>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="font-black text-accent">{formatCurrency(deal.value)}</p>
+                                      <p className="text-[8px] font-bold text-accent uppercase">View Detail</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
@@ -1917,11 +1962,6 @@ const App = () => {
                     <div className="h-full flex flex-col items-center justify-center text-text-muted opacity-50 space-y-4 min-h-[400px]">
                       <Cpu size={64} />
                       <p className="text-xl font-bold text-center pl-8 pr-8">Select your usage use case and budget on the left to get started.</p>
-                    </div>
-                  )}
-                  {recommendedSpecs.length > 0 && (
-                    <div className="flex justify-center mt-4">
-                      <Button variant="secondary" onClick={() => setRecommendedSpecs([])} icon={RotateCcw}>Start Over (Clear Results)</Button>
                     </div>
                   )}
                 </div>
@@ -2302,291 +2342,291 @@ const App = () => {
               </div>
             </div>
           )}
+
           {activeTab === 'solution' && <SolutionLayout deals={deals} onUpdateDeal={handleUpdateDeal} />}
         </div>
       </main>
 
       {/* Detail Modal */}
-      {
-        selectedDeal && (
-          <div className="fixed inset-0 bg-bg/85 z-50 flex items-center justify-center p-2 md:p-4 backdrop-blur-md overflow-y-auto overflow-x-hidden">
-            <div className="bg-surface w-full max-w-3xl max-h-[92vh] sm:rounded-[32px] shadow-clay-lg flex flex-col md:flex-row overflow-hidden animate-in zoom-in-95 duration-200 border border-white/50 relative">
-              <div className="w-full md:w-[350px] bg-bg/50 border-r border-white/50 p-5 flex flex-col shrink-0">
-
-                {!isEditingDetails ? (
-                  <>
-                    <div className="flex justify-between items-start mb-3">
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest ${selectedDeal.stage === 'lost' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{stages.find(s => s.id === selectedDeal.stage)?.title}</span>
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => setIsEditingDetails(true)} className="text-text-muted hover:text-accent p-1"><Pencil size={16} /></button>
-                        <button onClick={() => setSelectedDeal(null)} className="md:hidden text-text-muted hover:text-warm-red"><X size={22} /></button>
-                      </div>
-                    </div>
-                    <h2 className="text-lg font-black text-gray-900 mb-0.5 leading-tight">{selectedDeal.title}</h2>
-                    <p className="text-xl font-mono text-gray-700 mb-4">{formatCurrency(selectedDeal.value)}</p>
-
-                    <div className="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                      <div><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Contact Person</label><div className="flex items-center mt-1.5"><div className="w-9 h-9 bg-warm-blue/20 rounded-xl flex items-center justify-center text-warm-blue-dark text-xs font-bold mr-3 shadow-clay-sm flex-shrink-0">{selectedDeal.contact?.charAt(0)}</div><div className="min-w-0"><p className="font-extrabold text-text-main text-base truncate">{selectedDeal.contact}</p><p className="text-[11px] text-text-muted font-bold truncate">{selectedDeal.company}</p></div></div></div>
-                      <div><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Created At</label><p className="text-[11px] font-black text-text-main mt-0.5 bg-surface inline-block px-2 py-0.5 rounded-lg shadow-clay-sm">{formatDate(selectedDeal.createdAt)}</p></div>
-
-
-                      {/* Qualification Checklist (MEDDPICC) */}
-                      <div className="pt-3 border-t border-black/5">
-                        <label className="text-[10px] font-black text-accent uppercase tracking-widest block mb-1.5 flex items-center justify-between">
-                          รายการ QUALIFY
-                        </label>
-                        <div className="space-y-1.5">
-                          {[
-                            { key: 'Metrics', label: 'วัดผลสำเร็จได้ (Metrics)' },
-                            { key: 'Economic', label: 'ผู้มีอำนาจซื้อ (Buyer)' },
-                            { key: 'Criteria', label: 'เกณฑ์ที่เลือก (Criteria)' },
-                            { key: 'Process', label: 'กระบวนการ (Process)' },
-                            { key: 'Pain', label: 'ปัญหาชัดเจน (Pain)' },
-                            { key: 'Champion', label: 'คนสนับสนุน (Champion)' },
-                            { key: 'Competition', label: 'รู้ว่าแข่งใคร (Competition)' }
-                          ].map((item) => {
-                            const isDone = selectedDeal.tasks?.some(t => t.text.includes(item.key) && t.completed);
-                            return (
-                              <button
-                                key={item.key}
-                                onClick={async () => {
-                                  const existingTask = selectedDeal.tasks?.find(t => t.text.includes(item.key));
-                                  if (existingTask) {
-                                    const updatedTasks = selectedDeal.tasks.filter(t => t.id !== existingTask.id);
-                                    await handleUpdateDeal(selectedDeal.id, { tasks: updatedTasks });
-                                    setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
-                                  } else {
-                                    const task = { id: Date.now(), text: `[MEDDPICC] ${item.key}: ${item.label}`, date: new Date().toISOString(), completed: true };
-                                    const updatedTasks = [...(selectedDeal.tasks || []), task];
-                                    await handleUpdateDeal(selectedDeal.id, { tasks: updatedTasks });
-                                    setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
-                                  }
-                                }}
-                                className={`w-full flex items-center gap-2.5 p-2 rounded-xl border text-left transition-all ${isDone ? 'bg-warm-green/10 border-warm-green/30 text-warm-green-dark shadow-clay-inner' : 'bg-white border-black/5 text-text-muted hover:border-accent/40 shadow-sm'}`}
-                              >
-                                {isDone ? <CheckCircle2 size={12} /> : <div className="w-2.5 h-2.5 rounded-full border-2 border-current opacity-30" />}
-                                <span className="text-[10px] font-extrabold">{item.label}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {selectedDeal.stage === 'lost' && (<div className="bg-warm-red/10 p-4 rounded-2xl border border-warm-red/20 shadow-clay-inner"><label className="text-xs font-bold text-warm-red uppercase flex items-center mb-1"><XCircle size={14} className="mr-2" /> Lost Reason</label><p className="text-base text-warm-red-dark font-bold">{selectedDeal.lostReason}</p></div>)}
-                    </div>
-
-                    <div className="mt-3 pt-3 border-t border-black/5">
-                      <button
-                        onClick={async () => {
-                          const prompt = `Act as an Enterprise Sales Coach (MEDDPICC Expert). This deal is in stage '${selectedDeal.stage}' with value ${selectedDeal.value}. Current qualification state: ${(selectedDeal.tasks || []).filter(t => t.text.includes('[MEDDPICC]')).map(t => t.text).join(', ')}. Provide a Win-Strategy in 3 bullet points (Thai language): 1. Tactical Next Step 2. Relationship Strategy 3. Risk to Mitigate`;
-                          showToast("Consulting Sales Coach AI...", "info");
-                          const res = await callGeminiAPI(prompt);
-                          if (res) alert("Sales Coach AI Strategy:\n\n" + (typeof res === 'string' ? res : JSON.stringify(res)));
-                        }}
-                        className="w-full py-2.5 bg-gradient-to-r from-accent to-[#C08C60] text-white rounded-2xl font-black text-[10px] shadow-clay-btn hover:scale-[1.02] transition-all flex items-center justify-center gap-2 mb-2 uppercase tracking-widest"
-                      >
-                        <Target size={14} /> Win-Strategy AI
-                      </button>
-                    </div>
-
-                    {selectedDeal.stage !== 'lost' && selectedDeal.stage !== 'won' && (<div className="mt-2 pt-2 border-t border-gray-200"><button onClick={() => setIsLostModalOpen(true)} className="w-full py-1.5 border border-red-100 text-red-500 rounded-lg hover:bg-red-50 text-[10px] font-black uppercase tracking-wider transition-colors">Mark as Lost</button></div>)}
-
-                  </>
-                ) : (
-                  <form onSubmit={handleSaveDealDetails} className="flex flex-col h-full">
-                    <div className="flex justify-between items-center mb-6">
-                      <h3 className="font-black text-lg text-text-main flex items-center"><Pencil className="mr-2 text-accent" size={20} /> Edit Deal</h3>
-                      <button type="button" onClick={() => setIsEditingDetails(false)} className="text-text-muted hover:text-warm-red"><X size={20} /></button>
-                    </div>
-                    <div className="space-y-4 flex-1 overflow-y-auto pr-2">
-                      <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Deal Title</label><input required name="title" defaultValue={selectedDeal.title} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
-                      <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Value (THB)</label><input required name="value" type="number" defaultValue={selectedDeal.value} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
-                      <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Contact Name</label><input required name="contact" defaultValue={selectedDeal.contact} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
-                      <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Company</label><input required name="company" defaultValue={selectedDeal.company} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
-                      <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Deal Date</label><input required name="createdAt" type="date" defaultValue={selectedDeal.createdAt ? new Date(selectedDeal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
-                    </div>
-                    <div className="mt-4 pt-4 border-t border-gray-200 flex gap-2">
-                      <Button type="button" variant="secondary" onClick={() => setIsEditingDetails(false)} className="flex-1">Cancel</Button>
-                      <Button type="submit" variant="primary" icon={Save} className="flex-1">Save</Button>
-                    </div>
-                  </form>
-                )}
-              </div>
-              <div className="flex-1 flex flex-col h-full bg-white relative">
-                {/* Desktop Close Button */}
-                <button onClick={() => setSelectedDeal(null)} className="absolute top-4 right-4 z-10 hidden md:block text-gray-400 hover:text-warm-red transition-colors">
-                  <X size={24} />
-                </button>
-
-                <div className="flex items-center p-4 border-b border-gray-100 pr-12">
-                  <div className="flex space-x-4">
-                    <div className="flex items-center text-gray-800 font-black text-xs uppercase tracking-widest border-b-2 border-accent pb-1">
-                      <FileText size={14} className="mr-2 text-accent" /> Activity & Timeline
+      {selectedDeal && (
+        <div className="fixed inset-0 bg-bg/85 z-50 flex items-center justify-center p-2 md:p-4 backdrop-blur-md overflow-y-auto overflow-x-hidden">
+          <div className="bg-surface w-full max-w-3xl max-h-[92vh] sm:rounded-[32px] shadow-clay-lg flex flex-col md:flex-row overflow-hidden animate-in zoom-in-95 duration-200 border border-white/50 relative">
+            <div className="w-full md:w-[350px] bg-bg/50 border-r border-white/50 p-5 flex flex-col shrink-0">
+              {!isEditingDetails ? (
+                <>
+                  <div className="flex justify-between items-start mb-3">
+                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest ${selectedDeal.stage === 'lost' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{stages.find(s => s.id === selectedDeal.stage)?.title}</span>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setIsEditingDetails(true)} className="text-text-muted hover:text-accent p-1"><Pencil size={16} /></button>
+                      <button onClick={() => setSelectedDeal(null)} className="md:hidden text-text-muted hover:text-warm-red"><X size={22} /></button>
                     </div>
                   </div>
-                </div>
+                  <h2 className="text-lg font-black text-gray-900 mb-0.5 leading-tight">{selectedDeal.title}</h2>
+                  <p className="text-xl font-mono text-gray-700 mb-4">{formatCurrency(selectedDeal.value)}</p>
 
-                <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
-                  <section>
-                    <h3 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center">
-                      <CheckSquare size={14} className="mr-2 text-accent" /> Tasks
-                    </h3>
-                    <div className="space-y-2 mb-4">
-                      {selectedDeal.tasks?.map(task => (
-                        <div key={task.id} className="group flex items-center justify-between p-2.5 rounded-2xl bg-bg/40 hover:bg-bg/70 transition-all border border-black/5">
-                          <div className="flex items-center min-w-0">
-                            <button onClick={() => handleToggleTask(task.id)} className={`mr-2.5 rounded-full p-0.5 ${task.completed ? 'bg-warm-green/20 text-warm-green' : 'bg-white text-text-muted shadow-clay-sm'}`}>
-                              <CheckCircle2 size={16} />
+                  <div className="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                    <div><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Contact Person</label><div className="flex items-center mt-1.5"><div className="w-9 h-9 bg-warm-blue/20 rounded-xl flex items-center justify-center text-warm-blue-dark text-xs font-bold mr-3 shadow-clay-sm flex-shrink-0">{selectedDeal.contact?.charAt(0)}</div><div className="min-w-0"><p className="font-extrabold text-text-main text-base truncate">{selectedDeal.contact}</p><p className="text-[11px] text-text-muted font-bold truncate">{selectedDeal.company}</p></div></div></div>
+                    <div><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Created At</label><p className="text-[11px] font-black text-text-main mt-0.5 bg-surface inline-block px-2 py-0.5 rounded-lg shadow-clay-sm">{formatDate(selectedDeal.createdAt)}</p></div>
+
+                    <div className="pt-3 border-t border-black/5">
+                      <label className="text-[10px] font-black text-accent uppercase tracking-widest block mb-1.5 flex items-center justify-between">
+                        รายการ QUALIFY
+                      </label>
+                      <div className="space-y-1.5">
+                        {[
+                          { key: 'Metrics', label: 'วัดผลสำเร็จได้ (Metrics)' },
+                          { key: 'Economic', label: 'ผู้มีอำนาจซื้อ (Buyer)' },
+                          { key: 'Criteria', label: 'เกณฑ์ที่เลือก (Criteria)' },
+                          { key: 'Process', label: 'กระบวนการ (Process)' },
+                          { key: 'Pain', label: 'ปัญหาชัดเจน (Pain)' },
+                          { key: 'Champion', label: 'คนสนับสนุน (Champion)' },
+                          { key: 'Competition', label: 'รู้ว่าแข่งใคร (Competition)' }
+                        ].map((item) => {
+                          const isDone = selectedDeal.tasks?.some(t => t.text.includes(item.key) && t.completed);
+                          return (
+                            <button
+                              key={item.key}
+                              onClick={async () => {
+                                const existingTask = selectedDeal.tasks?.find(t => t.text.includes(item.key));
+                                if (existingTask) {
+                                  const updatedTasks = selectedDeal.tasks.filter(t => t.id !== existingTask.id);
+                                  await handleUpdateDeal(selectedDeal.id, { tasks: updatedTasks });
+                                  setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
+                                } else {
+                                  const task = { id: Date.now(), text: `[MEDDPICC] ${item.key}: ${item.label}`, date: new Date().toISOString(), completed: true };
+                                  const updatedTasks = [...(selectedDeal.tasks || []), task];
+                                  await handleUpdateDeal(selectedDeal.id, { tasks: updatedTasks });
+                                  setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
+                                }
+                              }}
+                              className={`w-full flex items-center gap-2.5 p-2 rounded-xl border text-left transition-all ${isDone ? 'bg-warm-green/10 border-warm-green/30 text-warm-green-dark shadow-clay-inner' : 'bg-white border-black/5 text-text-muted hover:border-accent/40 shadow-sm'}`}
+                            >
+                              {isDone ? <CheckCircle2 size={12} /> : <div className="w-2.5 h-2.5 rounded-full border-2 border-current opacity-30" />}
+                              <span className="text-[10px] font-extrabold">{item.label}</span>
                             </button>
-                            <div className={task.completed ? 'opacity-40 line-through' : ''}>
-                              <p className="text-text-main text-[13px] font-bold truncate">{task.text}</p>
-                              {task.date && (<p className={`text-[10px] flex items-center mt-0.5 ${new Date(task.date) < new Date() && !task.completed ? 'text-warm-red' : 'text-text-muted'}`}><Clock size={10} className="mr-1" /> {new Date(task.date).toLocaleDateString('th-TH')}</p>)}
-                            </div>
-                          </div>
-                          <button onClick={() => handleDeleteTask(task.id)} className="text-text-muted hover:text-warm-red opacity-0 group-hover:opacity-100 transition-opacity p-1"><Trash2 size={14} /></button>
-                        </div>
-                      ))}
-                      {(!selectedDeal.tasks || selectedDeal.tasks.length === 0) && (<p className="text-[11px] text-text-muted italic pl-2">No tasks assigned.</p>)}
+                          );
+                        })}
+                      </div>
                     </div>
-                    <form onSubmit={handleAddTask} className="flex gap-2 items-center bg-bg/50 p-2.5 rounded-2xl border border-black/5 shadow-clay-inner">
-                      <div className="flex-1">
-                        <input type="text" placeholder="Add task..." className="w-full bg-transparent border-none focus:ring-0 text-[13px] p-0 mb-1 text-text-main font-bold placeholder-text-muted/40" value={newTask} onChange={(e) => setNewTask(e.target.value)} />
-                        <div className="flex items-center gap-2">
-                          <Clock size={12} className="text-text-muted" />
-                          <input type="date" className="bg-transparent text-[10px] text-text-muted focus:outline-none font-bold" value={newTaskDate} onChange={(e) => setNewTaskDate(e.target.value)} />
+
+                    {selectedDeal.stage === 'lost' && (
+                      <div className="bg-warm-red/10 p-4 rounded-2xl border border-warm-red/20 shadow-clay-inner">
+                        <label className="text-xs font-bold text-warm-red uppercase flex items-center mb-1"><XCircle size={14} className="mr-2" /> Lost Reason</label>
+                        <p className="text-base text-warm-red-dark font-bold">{selectedDeal.lostReason}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-3 pt-3 border-t border-black/5">
+                    <button
+                      onClick={async () => {
+                        const prompt = `Act as an Enterprise Sales Coach (MEDDPICC Expert). This deal is in stage '${selectedDeal.stage}' with value ${selectedDeal.value}. Current qualification state: ${(selectedDeal.tasks || []).filter(t => t.text.includes('[MEDDPICC]')).map(t => t.text).join(', ')}. Provide a Win-Strategy in 3 bullet points (Thai language): 1. Tactical Next Step 2. Relationship Strategy 3. Risk to Mitigate`;
+                        showToast("Consulting Sales Coach AI...", "info");
+                        const res = await callGeminiAPI(prompt);
+                        if (res) alert("Sales Coach AI Strategy:\n\n" + (typeof res === 'string' ? res : JSON.stringify(res)));
+                      }}
+                      className="w-full py-2.5 bg-gradient-to-r from-accent to-[#C08C60] text-white rounded-2xl font-black text-[10px] shadow-clay-btn hover:scale-[1.02] transition-all flex items-center justify-center gap-2 mb-2 uppercase tracking-widest"
+                    >
+                      <Target size={14} /> Win-Strategy AI
+                    </button>
+                  </div>
+
+                  {selectedDeal.stage !== 'lost' && selectedDeal.stage !== 'won' && (
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      <button onClick={() => setIsLostModalOpen(true)} className="w-full py-1.5 border border-red-100 text-red-500 rounded-lg hover:bg-red-50 text-[10px] font-black uppercase tracking-wider transition-colors">Mark as Lost</button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <form onSubmit={handleSaveDealDetails} className="flex flex-col h-full">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="font-black text-lg text-text-main flex items-center"><Pencil className="mr-2 text-accent" size={20} /> Edit Deal</h3>
+                    <button type="button" onClick={() => setIsEditingDetails(false)} className="text-text-muted hover:text-warm-red"><X size={20} /></button>
+                  </div>
+                  <div className="space-y-4 flex-1 overflow-y-auto pr-2">
+                    <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Deal Title</label><input required name="title" defaultValue={selectedDeal.title} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
+                    <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Value (THB)</label><input required name="value" type="number" defaultValue={selectedDeal.value} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
+                    <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Contact Name</label><input required name="contact" defaultValue={selectedDeal.contact} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
+                    <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Company</label><input required name="company" defaultValue={selectedDeal.company} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
+                    <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Deal Date</label><input required name="createdAt" type="date" defaultValue={selectedDeal.createdAt ? new Date(selectedDeal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-gray-200 flex gap-2">
+                    <Button type="button" variant="secondary" onClick={() => setIsEditingDetails(false)} className="flex-1">Cancel</Button>
+                    <Button type="submit" variant="primary" icon={Save} className="flex-1">Save</Button>
+                  </div>
+                </form>
+              )}
+            </div>
+            <div className="flex-1 flex flex-col h-full bg-white relative">
+              <button onClick={() => setSelectedDeal(null)} className="absolute top-4 right-4 z-10 hidden md:block text-gray-400 hover:text-warm-red transition-colors">
+                <X size={24} />
+              </button>
+
+              <div className="flex items-center p-4 border-b border-gray-100 pr-12">
+                <div className="flex space-x-4">
+                  <div className="flex items-center text-gray-800 font-black text-xs uppercase tracking-widest border-b-2 border-accent pb-1">
+                    <FileText size={14} className="mr-2 text-accent" /> Activity & Timeline
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+                <section>
+                  <h3 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center">
+                    <CheckSquare size={14} className="mr-2 text-accent" /> Tasks
+                  </h3>
+                  <div className="space-y-2 mb-4">
+                    {selectedDeal.tasks?.map(task => (
+                      <div key={task.id} className="group flex items-center justify-between p-2.5 rounded-2xl bg-bg/40 hover:bg-bg/70 transition-all border border-black/5">
+                        <div className="flex items-center min-w-0">
+                          <button onClick={() => handleToggleTask(task.id)} className={`mr-2.5 rounded-full p-0.5 ${task.completed ? 'bg-warm-green/20 text-warm-green' : 'bg-white text-text-muted shadow-clay-sm'}`}>
+                            <CheckCircle2 size={16} />
+                          </button>
+                          <div className={task.completed ? 'opacity-40 line-through' : ''}>
+                            <p className="text-text-main text-[13px] font-bold truncate">{task.text}</p>
+                            {task.date && (<p className={`text-[10px] flex items-center mt-0.5 ${new Date(task.date) < new Date() && !task.completed ? 'text-warm-red' : 'text-text-muted'}`}><Clock size={10} className="mr-1" /> {new Date(task.date).toLocaleDateString('th-TH')}</p>)}
+                          </div>
+                        </div>
+                        <button onClick={() => handleDeleteTask(task.id)} className="text-text-muted hover:text-warm-red opacity-0 group-hover:opacity-100 transition-opacity p-1"><Trash2 size={14} /></button>
+                      </div>
+                    ))}
+                    {(!selectedDeal.tasks || selectedDeal.tasks.length === 0) && (<p className="text-[11px] text-text-muted italic pl-2">No tasks assigned.</p>)}
+                  </div>
+                  <form onSubmit={handleAddTask} className="flex gap-2 items-center bg-bg/50 p-2.5 rounded-2xl border border-black/5 shadow-clay-inner">
+                    <div className="flex-1">
+                      <input type="text" placeholder="Add task..." className="w-full bg-transparent border-none focus:ring-0 text-[13px] p-0 mb-1 text-text-main font-bold placeholder-text-muted/40" value={newTask} onChange={(e) => setNewTask(e.target.value)} />
+                      <div className="flex items-center gap-2">
+                        <Clock size={12} className="text-text-muted" />
+                        <input type="date" className="bg-transparent text-[10px] text-text-muted focus:outline-none font-bold" value={newTaskDate} onChange={(e) => setNewTaskDate(e.target.value)} />
+                      </div>
+                    </div>
+                    <button type="submit" disabled={!newTask.trim()} className="p-2 bg-accent text-white rounded-xl shadow-clay-btn active:scale-95"><Plus size={16} /></button>
+                  </form>
+                </section>
+
+                <hr className="border-black/5" />
+
+                <section>
+                  <h3 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center">
+                    <MessageSquare size={14} className="mr-2 text-accent" /> Timeline
+                  </h3>
+                  <div className="space-y-4 mb-4 pl-4 border-l-2 border-black/5">
+                    {selectedDeal.notes?.map(note => (
+                      <div key={note.id} className="relative">
+                        <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-accent border-2 border-white shadow-sm"></div>
+                        <div className="bg-bg/30 p-3.5 rounded-2xl rounded-tl-none border border-black/5">
+                          <p className="text-text-main text-[13px] font-medium whitespace-pre-wrap">{note.text}</p>
+                          <p className="text-[10px] text-text-muted mt-2 font-black uppercase tracking-wider">{formatDate(note.date)}</p>
                         </div>
                       </div>
-                      <button type="submit" disabled={!newTask.trim()} className="p-2 bg-accent text-white rounded-xl shadow-clay-btn active:scale-95"><Plus size={16} /></button>
-                    </form>
-                  </section>
-
-                  <hr className="border-black/5" />
-
-                  <section>
-                    <h3 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center">
-                      <MessageSquare size={14} className="mr-2 text-accent" /> Timeline
-                    </h3>
-                    <div className="space-y-4 mb-4 pl-4 border-l-2 border-black/5">
-                      {selectedDeal.notes?.map(note => (
-                        <div key={note.id} className="relative">
-                          <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-accent border-2 border-white shadow-sm"></div>
-                          <div className="bg-bg/30 p-3.5 rounded-2xl rounded-tl-none border border-black/5">
-                            <p className="text-text-main text-[13px] font-medium whitespace-pre-wrap">{note.text}</p>
-                            <p className="text-[10px] text-text-muted mt-2 font-black uppercase tracking-wider">{formatDate(note.date)}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <form onSubmit={handleAddNote} className="relative">
-                      <textarea placeholder="Write a note..." className="w-full p-3 pr-12 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:ring-0 text-[13px] resize-none text-text-main font-medium placeholder-text-muted/40" rows="2" value={newNote} onChange={(e) => setNewNote(e.target.value)} />
-                      <button type="submit" disabled={!newNote.trim()} className="absolute bottom-2.5 right-2.5 p-2 bg-text-main text-white rounded-xl shadow-clay-btn active:scale-95"><ArrowRight size={14} /></button>
-                    </form>
-                  </section>
-                </div>
+                    ))}
+                  </div>
+                  <form onSubmit={handleAddNote} className="relative">
+                    <textarea placeholder="Write a note..." className="w-full p-3 pr-12 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:ring-0 text-[13px] resize-none text-text-main font-medium placeholder-text-muted/40" rows="2" value={newNote} onChange={(e) => setNewNote(e.target.value)} />
+                    <button type="submit" disabled={!newNote.trim()} className="absolute bottom-2.5 right-2.5 p-2 bg-text-main text-white rounded-xl shadow-clay-btn active:scale-95"><ArrowRight size={14} /></button>
+                  </form>
+                </section>
               </div>
-
             </div>
           </div>
-        )
-      }
+        </div>
+      )}
 
       {/* Mark Lost Modal */}
-      {
-        isLostModalOpen && (
-          <div className="fixed inset-0 bg-bg/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
-            <div className="bg-surface rounded-3xl w-full max-w-sm p-6 shadow-clay-lg animate-in zoom-in-95 border border-white/50">
-              <div className="flex items-center mb-6 text-warm-red"><AlertCircle size={28} className="mr-3" /><h3 className="text-xl font-black text-text-main">Mark as Lost</h3></div>
-              <form onSubmit={handleMarkLost}>
-                <div className="space-y-4 mb-4">
-                  <label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-2">Lost Reason</label>
-                  {['Price too high', 'Competitor selected', 'Project delayed', 'Unreachable', 'Product mismatch'].map(reason => (<label key={reason} className="flex items-center p-3 border border-white/50 bg-bg/30 rounded-xl hover:bg-warm-red/10 cursor-pointer transition-all has-[:checked]:bg-warm-red/20 has-[:checked]:border-warm-red/30 has-[:checked]:shadow-clay-inner"><input type="radio" name="reason" value={reason} className="text-warm-red focus:ring-warm-red w-4 h-4 bg-surface border-none shadow-clay-inner" required /><span className="ml-3 text-sm font-bold text-text-main">{reason}</span></label>))}
-                </div>
+      {isLostModalOpen && (
+        <div className="fixed inset-0 bg-bg/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-surface rounded-3xl w-full max-w-sm p-6 shadow-clay-lg animate-in zoom-in-95 border border-white/50">
+            <div className="flex items-center mb-6 text-warm-red"><AlertCircle size={28} className="mr-3" /><h3 className="text-xl font-black text-text-main">Mark as Lost</h3></div>
+            <form onSubmit={handleMarkLost}>
+              <div className="space-y-4 mb-4">
+                <label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-2">Lost Reason</label>
+                {['Price too high', 'Competitor selected', 'Project delayed', 'Unreachable', 'Product mismatch'].map(reason => (<label key={reason} className="flex items-center p-3 border border-white/50 bg-bg/30 rounded-xl hover:bg-warm-red/10 cursor-pointer transition-all has-[:checked]:bg-warm-red/20 has-[:checked]:border-warm-red/30 has-[:checked]:shadow-clay-inner"><input type="radio" name="reason" value={reason} className="text-warm-red focus:ring-warm-red w-4 h-4 bg-surface border-none shadow-clay-inner" required /><span className="ml-3 text-sm font-bold text-text-main">{reason}</span></label>))}
+              </div>
 
-                <div className="mb-8">
-                  <label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-2">Win-Back: Follow up in?</label>
-                  <select name="followUp" className="w-full px-4 py-3 bg-bg/50 border-none shadow-clay-inner rounded-xl focus:outline-none text-text-main font-bold">
-                    <option value="no">No Reminder</option>
-                    <option value="1">1 Month (Cool Down)</option>
-                    <option value="3">3 Months (Quarterly Review) 🔥 Recommended</option>
-                    <option value="6">6 Months (New Budget)</option>
-                  </select>
-                </div>
+              <div className="mb-8">
+                <label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-2">Win-Back: Follow up in?</label>
+                <select name="followUp" className="w-full px-4 py-3 bg-bg/50 border-none shadow-clay-inner rounded-xl focus:outline-none text-text-main font-bold">
+                  <option value="no">No Reminder</option>
+                  <option value="1">1 Month (Cool Down)</option>
+                  <option value="3">3 Months (Quarterly Review) 🔥 Recommended</option>
+                  <option value="6">6 Months (New Budget)</option>
+                </select>
+              </div>
 
-                <div className="flex gap-4"><Button fullWidth variant="secondary" onClick={() => setIsLostModalOpen(false)} type="button">Cancel</Button><Button fullWidth variant="danger" type="submit">Confirm</Button></div>
-              </form>
-            </div>
+              <div className="flex gap-4"><Button fullWidth variant="secondary" onClick={() => setIsLostModalOpen(false)} type="button">Cancel</Button><Button fullWidth variant="danger" type="submit">Confirm</Button></div>
+            </form>
           </div>
-        )
-      }
+        </div>
+      )}
 
       {/* Import Modal */}
-      {
-        isImportModalOpen && (
-          <div className="fixed inset-0 bg-bg/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-            <div className="bg-surface rounded-3xl w-full max-w-md shadow-clay-lg p-8 border border-white/50">
-              <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-black text-text-main flex items-center"><FileSpreadsheet className="mr-3 text-warm-green" size={28} />Import Data</h3><button onClick={() => setIsImportModalOpen(false)}><X size={24} className="text-text-muted hover:text-warm-red" /></button></div>
-              <div className="space-y-4"><Button variant="outline" fullWidth onClick={downloadTemplate} icon={Download}>ดาวน์โหลดแบบฟอร์ม (Template)</Button><div className="relative border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => fileInputRef.current.click()}><input type="file" accept=".csv" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />{importStatus === 'processing' ? (<div className="flex flex-col items-center text-accent"><Loader2 className="animate-spin mb-2" size={32} /><span>Creating data...</span></div>) : importStatus?.startsWith('success') ? (<div className="flex flex-col items-center text-warm-green-dark"><CheckCircle2 className="mb-2" size={32} /><span>Success! {importStatus.split(':')[1]} items imported.</span></div>) : importStatus === 'error' ? (<div className="flex flex-col items-center text-warm-red-dark"><AlertCircle className="mb-2" size={32} /><span>Error reading CSV.</span></div>) : (<div className="flex flex-col items-center text-text-muted"><Upload className="mb-2" size={32} /><span className="font-medium">Click to upload .CSV</span></div>)}</div></div>
+      {isImportModalOpen && (
+        <div className="fixed inset-0 bg-bg/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-surface rounded-3xl w-full max-w-md shadow-clay-lg p-8 border border-white/50">
+            <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-black text-text-main flex items-center"><FileSpreadsheet className="mr-3 text-warm-green" size={28} />Import Data</h3><button onClick={() => setIsImportModalOpen(false)}><X size={24} className="text-text-muted hover:text-warm-red" /></button></div>
+            <div className="space-y-4">
+              <Button variant="outline" fullWidth onClick={downloadTemplate} icon={Download}>ดาวน์โหลดแบบฟอร์ม (Template)</Button>
+              <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => fileInputRef.current.click()}>
+                <input type="file" accept=".csv" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+                {importStatus === 'processing' ? (<div className="flex flex-col items-center text-accent"><Loader2 className="animate-spin mb-2" size={32} /><span>Creating data...</span></div>) : importStatus?.startsWith('success') ? (<div className="flex flex-col items-center text-warm-green-dark"><CheckCircle2 className="mb-2" size={32} /><span>Success! {importStatus.split(':')[1]} items imported.</span></div>) : importStatus === 'error' ? (<div className="flex flex-col items-center text-warm-red-dark"><AlertCircle className="mb-2" size={32} /><span>Error reading CSV.</span></div>) : (<div className="flex flex-col items-center text-text-muted"><Upload className="mb-2" size={32} /><span className="font-medium">Click to upload .CSV</span></div>)}
+              </div>
             </div>
           </div>
-        )
-      }
+        </div>
+      )}
 
       {/* Add Deal Modal */}
-      {
-        isModalOpen && (
-          <div className="fixed inset-0 bg-bg/80 z-50 flex items-end md:items-center justify-center sm:p-4 backdrop-blur-sm">
-            <div className="bg-surface rounded-t-3xl md:rounded-3xl w-full max-w-md shadow-clay-lg transform transition-all animate-in slide-in-from-bottom duration-300 border border-white/50">
-              <div className="flex justify-between items-center p-8 border-b border-black/5"><h3 className="text-2xl font-black text-text-main">New Deal</h3><button onClick={() => setIsModalOpen(false)} className="text-text-muted hover:text-warm-red bg-bg rounded-full p-2 hover:shadow-clay-sm transition-all"><X size={20} /></button></div>
-              <form onSubmit={handleAddDeal} className="p-8 space-y-6">
-                <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Deal Title</label><input required name="title" type="text" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="e.g. Website Redesign" /></div>
-                <div className="grid grid-cols-2 gap-6">
-                  <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Value (THB)</label><input required name="value" type="number" min="0" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="0" /></div>
-                  <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Deal Date</label><input required name="date" type="date" defaultValue={new Date().toISOString().split('T')[0]} className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" /></div>
-                </div>
-                <div className="grid grid-cols-2 gap-6">
-                  <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Contact Person</label><input required name="contact" type="text" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="Client Name" /></div>
-                  <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Company</label><div className="relative"><Building2 size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" /><input required name="company" type="text" className="w-full pl-12 pr-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="Company Name" /></div></div>
-                </div>
-                <div className="pt-6 flex justify-end space-x-4 pb-4 md:pb-0"><Button variant="secondary" onClick={() => setIsModalOpen(false)} type="button" className="flex-1 md:flex-none">Cancel</Button><Button variant="primary" type="submit" className="flex-1 md:flex-none">Save Deal</Button></div>
-              </form>
-            </div>
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-bg/80 z-50 flex items-end md:items-center justify-center sm:p-4 backdrop-blur-sm">
+          <div className="bg-surface rounded-t-3xl md:rounded-3xl w-full max-w-md shadow-clay-lg transform transition-all animate-in slide-in-from-bottom duration-300 border border-white/50">
+            <div className="flex justify-between items-center p-8 border-b border-black/5"><h3 className="text-2xl font-black text-text-main">New Deal</h3><button onClick={() => setIsModalOpen(false)} className="text-text-muted hover:text-warm-red bg-bg rounded-full p-2 hover:shadow-clay-sm transition-all"><X size={20} /></button></div>
+            <form onSubmit={handleAddDeal} className="p-8 space-y-6">
+              <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Deal Title</label><input required name="title" type="text" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="e.g. Website Redesign" /></div>
+              <div className="grid grid-cols-2 gap-6">
+                <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Value (THB)</label><input required name="value" type="number" min="0" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="0" /></div>
+                <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Deal Date</label><input required name="date" type="date" defaultValue={new Date().toISOString().split('T')[0]} className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Contact Person</label><input required name="contact" type="text" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="Client Name" /></div>
+                <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Company</label><div className="relative"><Building2 size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" /><input required name="company" type="text" className="w-full pl-12 pr-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="Company Name" /></div></div>
+              </div>
+              <div className="pt-6 flex justify-end space-x-4 pb-4 md:pb-0"><Button variant="secondary" onClick={() => setIsModalOpen(false)} type="button" className="flex-1 md:flex-none">Cancel</Button><Button variant="primary" type="submit" className="flex-1 md:flex-none">Save Deal</Button></div>
+            </form>
           </div>
-        )
-      }
+        </div>
+      )}
 
       {/* Move Deal Modal (Tablet/Mobile Friendly) */}
-      {
-        movingDeal && (
-          <div className="fixed inset-0 bg-bg/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
-            <div className="bg-surface rounded-3xl w-full max-w-sm p-6 shadow-clay-lg animate-in zoom-in-95 border border-white/50">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black text-text-main">Move Deal</h3>
-                <button onClick={() => setMovingDeal(null)} className="text-text-muted hover:text-warm-red"><X size={24} /></button>
-              </div>
-              <p className="text-sm text-text-muted font-bold mb-4">Select destination stage for <span className="text-accent">&quot;{movingDeal.title}&quot;</span>:</p>
-              <div className="space-y-3">
-                {stages.map(stage => (
-                  <button
-                    key={stage.id}
-                    onClick={async () => {
-                      await handleUpdateDeal(movingDeal.id, { stage: stage.id });
-                      setMovingDeal(null);
-                    }}
-                    className={`w-full p-4 rounded-xl font-bold text-left flex items-center justify-between border-2 transition-all
-                       ${movingDeal.stage === stage.id ? 'bg-accent/10 border-accent text-accent cursor-default' : 'bg-bg/50 border-transparent hover:bg-white text-text-main shadow-clay-inner hover:shadow-clay-sm'}
-                     `}
-                    disabled={movingDeal.stage === stage.id}
-                  >
-                    <span>{stage.title}</span>
-                    {movingDeal.stage === stage.id && <CheckCircle2 size={18} />}
-                  </button>
-                ))}
-              </div>
+      {movingDeal && (
+        <div className="fixed inset-0 bg-bg/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-surface rounded-3xl w-full max-w-sm p-6 shadow-clay-lg animate-in zoom-in-95 border border-white/50">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-black text-text-main">Move Deal</h3>
+              <button onClick={() => setMovingDeal(null)} className="text-text-muted hover:text-warm-red"><X size={24} /></button>
+            </div>
+            <p className="text-sm text-text-muted font-bold mb-4">Select destination stage for <span className="text-accent">&quot;{movingDeal.title}&quot;</span>:</p>
+            <div className="space-y-3">
+              {stages.map(stage => (
+                <button
+                  key={stage.id}
+                  onClick={async () => {
+                    await handleUpdateDeal(movingDeal.id, { stage: stage.id });
+                    setMovingDeal(null);
+                  }}
+                  className={`w-full p-4 rounded-xl font-bold text-left flex items-center justify-between border-2 transition-all
+                    ${movingDeal.stage === stage.id ? 'bg-accent/10 border-accent text-accent cursor-default' : 'bg-bg/50 border-transparent hover:bg-white text-text-main shadow-clay-inner hover:shadow-clay-sm'}
+                  `}
+                  disabled={movingDeal.stage === stage.id}
+                >
+                  <span>{stage.title}</span>
+                  {movingDeal.stage === stage.id && <CheckCircle2 size={18} />}
+                </button>
+              ))}
             </div>
           </div>
-        )
-      }
-    </div >
+        </div>
+      )}
+    </div>
   );
 }
 

@@ -122,15 +122,40 @@ ${rackItems.sort((a, b) => b.uPosition - a.uPosition).map(i => `- [U${i.uPositio
         if (rackItems.length === 0) return "Start adding components to generate an architectural analysis.";
 
         const totalWatts = rackItems.reduce((sum, i) => sum + (i.watts || 0), 0);
+        const totalPrice = rackItems.reduce((sum, i) => sum + (i.price || 0), 0);
         const hasUPS = rackItems.some(i => i.category === 'UPS');
         const upsCapacity = rackItems.reduce((sum, i) => sum + (i.capacity_watts || 0), 0);
 
-        if (totalWatts > 0 && !hasUPS) return "⚠️ Critical: No UPS detected. Active equipment requires power backup protection.";
-        if (hasUPS && totalWatts > upsCapacity) return "⚠️ Critical: Power Overload! UPS capacity is insufficient for current load.";
-        if (hasUPS && totalWatts > (upsCapacity * 0.8)) return "⚠️ Warning: UPS load exceeds 80% safety margin. Consider adding another Power Module.";
-        if (rackItems.length > 30) return "ℹ️ Optimization: High density rack. Verify rear airflow clearance > 30cm.";
+        const serverItems = rackItems.filter(i => i.category === 'Server');
+        const hasNetworking = rackItems.some(i => i.category === 'Networking');
 
-        return "✅ System Optimal: Power redundancy and distribution efficiency are within Enterprise Grade standards.";
+        let insights = [];
+
+        // 1. Technical Safety Checks
+        if (totalWatts > 0 && !hasUPS) insights.push("⚠️ Critical: No UPS detected. Active equipment requires power backup protection.");
+        if (hasUPS && totalWatts > upsCapacity) insights.push("⚠️ Critical: Power Overload! UPS capacity is insufficient for current load.");
+        if (hasUPS && totalWatts > (upsCapacity * 0.8)) insights.push("⚠️ Warning: UPS load exceeds 80% safety margin. Consider adding another Power Module.");
+
+        // 2. Brand-Specific Upsell AI (Expert Level)
+        serverItems.forEach(item => {
+            const name = item.name.toLowerCase();
+            if (name.includes('dell')) {
+                if (!item.name.includes('ProSupport')) insights.push(`🚀 Dell Specialist Suggestion: ควรอัพเกรดเป็น Dell ProSupport Plus 3-5 ปี สำหรับดีลนี้ เพื่อความเสถียรของ Service และเบ่งยอดขายให้ถึงเป้า!`);
+                if (!hasNetworking) insights.push(`🚀 Networking Upsell: เสนอ Dell Networking Switch (N-Series) พ่วงไปด้วย เพื่อให้เป็น Total Solution ของแบรนด์ Dell ทั้งหมด`);
+            } else if (name.includes('hp') || name.includes('hpe')) {
+                if (!item.name.includes('Foundation Care')) insights.push(`🚀 HPE Specialist: แนะนำพ่วง HPE Foundation Care Next Business Day และ Aruba Switch เพื่อทำระบบ Network Management ให้ลูกค้าจบในแบรนด์เดียว`);
+            } else if (name.includes('lenovo')) {
+                if (!item.name.includes('YourService')) insights.push(`🚀 Lenovo Specialist: แนะนำเสนอ Lenovo ThinkSystem Premier Support และจัดพ่วง Lenovo NE networking switches เพื่อปิดดีลเป็น Full Stack Infrastructure`);
+            }
+        });
+
+        // 3. Goal Pushing Logic
+        if (totalPrice > 0 && totalPrice < 100000) {
+            insights.push(`💡 Strategy Insight: ยอดดีลปัจจุบันคือ ${new Intl.NumberFormat('th-TH').format(totalPrice)} บาท ขาดอีกเพียง ${new Intl.NumberFormat('th-TH').format(100000 - totalPrice)} บาท จะถึงเป้า "ดีลคุณภาพ (100k)". ลองเสนอ Hard Drive เพิ่มเติม หรือ License Software เพื่อดันยอดได้ทันที!`);
+        }
+
+        if (insights.length === 0) return "✅ System Optimal: Power redundancy and distribution efficiency are within Enterprise Grade standards.";
+        return insights.join("\n\n");
     };
 
     const handleApplyRackTemplate = (templateItems) => {
