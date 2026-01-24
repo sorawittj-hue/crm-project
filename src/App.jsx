@@ -5,7 +5,7 @@ import {
   CheckCircle2, Upload, Download, FileSpreadsheet, AlertCircle,
   FileText, CheckSquare, MessageSquare, Trash2, XCircle, Clock, ArrowRight,
   Cpu, Server, HardDrive, Wrench, ChevronRight, RotateCcw,
-  Zap, Signal, PieChart, BarChart3, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save, ArrowRightCircle,
+  Zap, Signal, PieChart, BarChart3, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save,
   Sun, Moon, CheckSquare as CheckSquareIcon, Filter, Activity, CalendarDays
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
@@ -1256,145 +1256,140 @@ const App = () => {
           )}
 
           {activeTab === 'pipeline' && (
-            <div className="flex overflow-x-auto pb-4 h-full gap-4 items-start snap-x snap-mandatory">
-              {stages.filter(s => visibleStages.includes(s.id)).map(stage => (
-                <div key={stage.id} className={`min-w-[85vw] md:min-w-[320px] lg:min-w-[320px] xl:min-w-[340px] w-[85vw] md:w-[320px] lg:w-[320px] xl:w-[340px] flex-shrink-0 flex flex-col max-h-full snap-center px-2 ${stage.id === 'lost' ? 'opacity-70 hover:opacity-100' : ''}`} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, stage.id)}>
-                  <div className={`p-4 mb-4 rounded-2xl bg-surface/40 backdrop-blur-sm border border-white/40 sticky top-0 z-10`}>
-                    <div className="flex justify-between items-center mb-1">
-                      <h3 className={`font-black text-lg text-text-main`}>{stage.title}</h3>
-                      <span className="bg-white shadow-clay-inner text-text-muted text-xs font-bold px-2 py-1 rounded-lg">{deals.filter(d => d.stage === stage.id).length}</span>
+            <div className="flex overflow-x-auto pb-6 h-full gap-5 items-start snap-x snap-mandatory pt-2">
+              {stages.filter(s => visibleStages.includes(s.id)).map(stage => {
+                const stageColors = {
+                  lead: 'border-t-blue-500',
+                  contact: 'border-t-purple-500',
+                  proposal: 'border-t-orange-500',
+                  negotiation: 'border-t-yellow-500',
+                  won: 'border-t-green-500',
+                  lost: 'border-t-red-500'
+                };
+
+                return (
+                  <div key={stage.id}
+                    className={`min-w-[300px] max-w-[320px] flex-shrink-0 flex flex-col max-h-full snap-center bg-gray-50/50 dark:bg-gray-900/30 rounded-3xl border border-black/5 dark:border-white/5 overflow-hidden shadow-sm`}
+                    onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, stage.id)}
+                  >
+                    <div className={`p-4 border-t-4 ${stageColors[stage.id] || 'border-t-gray-400'} bg-white dark:bg-gray-800 shadow-sm z-10`}>
+                      <div className="flex justify-between items-center mb-1">
+                        <h3 className={`font-black text-sm text-text-main uppercase tracking-widest`}>{stage.title}</h3>
+                        <span className="bg-gray-100 dark:bg-gray-700 text-text-muted text-[10px] font-black px-2 py-0.5 rounded-full">{deals.filter(d => d.stage === stage.id).length}</span>
+                      </div>
+                      <div className="text-[10px] text-text-muted font-bold flex justify-between">
+                        <span>Value Pool:</span>
+                        <span className="text-text-main">{formatCurrency(getStageTotal(stage.id))}</span>
+                      </div>
                     </div>
-                    <div className="text-sm text-text-muted font-bold">Total: {formatCurrency(getStageTotal(stage.id))}</div>
-                  </div>
-                  <div className="p-2 overflow-y-auto flex-1 space-y-4 custom-scrollbar touch-pan-y pb-20">
-                    {filteredDeals.filter(deal => deal.stage === stage.id).map(deal => {
-                      const isSelected = selectedDealIds.has(deal.id);
-                      // --- Stale Deal Alert Logic ---
-                      let lastActive = new Date(deal.lastActivity); // Try lastActivity
-                      if (isNaN(lastActive.getTime())) lastActive = new Date(deal.createdAt); // Fallback if invalid (e.g. old string format)
-                      const diffHours = (new Date() - lastActive) / (1000 * 60 * 60);
-                      const diffDays = Math.ceil(diffHours / 24);
+                    <div className="p-3 overflow-y-auto flex-1 space-y-3 custom-scrollbar touch-pan-y pb-10">
+                      {filteredDeals.filter(deal => deal.stage === stage.id).map(deal => {
+                        const isSelected = selectedDealIds.has(deal.id);
+                        // --- Stale Deal Alert Logic ---
+                        let lastActive = new Date(deal.lastActivity); // Try lastActivity
+                        if (isNaN(lastActive.getTime())) lastActive = new Date(deal.createdAt); // Fallback if invalid (e.g. old string format)
+                        const diffHours = (new Date() - lastActive) / (1000 * 60 * 60);
+                        const diffDays = Math.ceil(diffHours / 24);
 
-                      let staleStyle = "bg-surface border-white/60";
-                      let staleBadge = null;
+                        let staleMarker = null;
+                        let statusBorder = "border-gray-100 dark:border-gray-800";
 
-                      if (stage.id === 'lead' && diffHours > 24) {
-                        staleStyle = "bg-orange-50 border-orange-300";
-                        staleBadge = (<div className="absolute top-2 right-2 z-20 flex items-center gap-1 bg-orange-100/90 backdrop-blur-sm text-orange-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-orange-200 shadow-sm animate-pulse"><Zap size={10} fill="currentColor" /> ด่วน {Math.floor(diffHours)} ชม.</div>);
-                      } else if (stage.id === 'proposal' && diffDays > 3) {
-                        staleStyle = "bg-red-50 border-red-300";
-                        staleBadge = (<div className="absolute top-2 right-2 z-20 flex items-center gap-1 bg-red-100/90 backdrop-blur-sm text-red-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-red-200 shadow-sm"><Flame size={10} fill="currentColor" /> ร้อน {diffDays} วัน</div>);
-                      } else if (stage.id === 'negotiation' && diffDays > 7) {
-                        staleStyle = "bg-yellow-50 border-yellow-300";
-                        staleBadge = (<div className="absolute top-2 right-2 z-20 flex items-center gap-1 bg-yellow-100/90 backdrop-blur-sm text-yellow-700 px-2 py-0.5 rounded-lg text-[10px] font-bold border border-yellow-200 shadow-sm"><AlertTriangle size={10} fill="currentColor" /> เงียบ {diffDays} วัน</div>);
-                      }
+                        if (stage.id === 'lead' && diffHours > 24) {
+                          statusBorder = "border-l-4 border-l-orange-500";
+                          staleMarker = (<div className="flex items-center gap-1 text-orange-500 text-[9px] font-bold animate-pulse"><Zap size={10} /> {Math.floor(diffHours)}h stall</div>);
+                        } else if (stage.id === 'proposal' && diffDays > 3) {
+                          statusBorder = "border-l-4 border-l-red-500";
+                          staleMarker = (<div className="flex items-center gap-1 text-red-500 text-[9px] font-bold"><Flame size={10} /> {diffDays}d heat</div>);
+                        } else if (stage.id === 'negotiation' && diffDays > 7) {
+                          statusBorder = "border-l-4 border-l-yellow-600";
+                          staleMarker = (<div className="flex items-center gap-1 text-yellow-600 text-[9px] font-bold"><AlertTriangle size={10} /> {diffDays}d idle</div>);
+                        }
 
-                      const nextTask = deal.tasks?.find(t => !t.completed);
-                      const isOverdue = nextTask && nextTask.date && new Date(nextTask.date) < new Date();
+                        const nextTask = deal.tasks?.find(t => !t.completed);
+                        const isOverdue = nextTask && nextTask.date && new Date(nextTask.date) < new Date();
 
-                      // MEDDPICC Progress (Simulated or calculated if field exists)
-                      // In a real app, this would be a real object, for now we calculate based on tasks/notes keywords
-                      const meddpiccKeys = ['Metrics', 'Economic Buyer', 'Criteria', 'Process', 'Pain', 'Champion', 'Competition'];
-                      const qualifiedCount = (deal.tasks || []).filter(t => meddpiccKeys.some(k => t.text.includes(k))).length;
+                        const meddpiccKeys = ['Metrics', 'Economic Buyer', 'Criteria', 'Process', 'Pain', 'Champion', 'Competition'];
+                        const qualifiedCount = (deal.tasks || []).filter(t => meddpiccKeys.some(k => t.text.includes(k))).length;
 
-                      return (
-                        <div
-                          key={deal.id}
-                          draggable={!bulkMode}
-                          onDragStart={(e) => handleDragStart(e, deal.id)}
-                          onClick={() => bulkMode ? toggleBulkSelection(deal.id) : handleDealClick(deal)}
-                          onContextMenu={(e) => e.preventDefault()} // Block native popup
-                          style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
-                          className={`${staleStyle} p-5 rounded-3xl shadow-clay-sm border transition-all group relative overflow-hidden ${bulkMode ? 'cursor-pointer hover:bg-accent/5' : 'cursor-pointer hover:shadow-clay-md hover:-translate-y-1 active:scale-95'
-                            } ${isSelected ? 'ring-2 ring-accent ring-offset-2' : ''}
-                            ${qualifiedCount >= 4 ? 'border-l-4 border-l-warm-green' : ''}
+                        return (
+                          <div
+                            key={deal.id}
+                            draggable={!bulkMode}
+                            onDragStart={(e) => handleDragStart(e, deal.id)}
+                            onClick={() => bulkMode ? toggleBulkSelection(deal.id) : handleDealClick(deal)}
+                            style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
+                            className={`bg-white dark:bg-gray-900 p-4 rounded-xl border ${statusBorder} shadow-sm group relative transition-all 
+                            ${bulkMode ? 'cursor-pointer hover:bg-accent/5' : 'cursor-pointer hover:shadow-md hover:-translate-y-0.5'}
+                            ${isSelected ? 'ring-2 ring-accent ring-offset-2' : ''}
                           `}
-                        >
-                          {/* Bulk Selection Checkbox */}
-                          {bulkMode && (
-                            <div className="absolute top-3 left-3 z-30">
-                              <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-all ${isSelected ? 'bg-accent border-accent text-white' : 'bg-white border-gray-300'}`}>
-                                {isSelected && <CheckSquareIcon size={12} />}
+                          >
+                            {/* Bulk Selection Checkbox */}
+                            {bulkMode && (
+                              <div className="absolute top-3 left-3 z-30">
+                                <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-all ${isSelected ? 'bg-accent border-accent text-white' : 'bg-white border-gray-300'}`}>
+                                  {isSelected && <CheckSquareIcon size={12} />}
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-[10px] font-black text-accent uppercase tracking-tight">{deal.company}</span>
+                                {staleMarker}
+                              </div>
+
+                              {/* Action Buttons (Visible on Hover) */}
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={(e) => handleAnalyzeDeal(deal, e)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-text-muted hover:text-accent"><Wand2 size={12} /></button>
+                                <button onClick={(e) => handleDeleteDeal(deal.id, e)} className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded text-text-muted hover:text-red-500"><Trash2 size={12} /></button>
                               </div>
                             </div>
-                          )}
-                          {staleBadge}
-                          <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/80 to-transparent rounded-bl-full pointer-events-none opacity-50`}></div>
-                          <div className={`flex justify-between items-start mb-3 relative z-10 ${bulkMode ? 'ml-8' : ''}`}>
-                            <div className="flex flex-col gap-1 max-w-[60%]">
-                              <span className="text-xs font-bold text-accent bg-accent/10 px-3 py-1 rounded-lg truncate">{deal.company}</span>
-                              {deal.ai_score !== undefined && deal.ai_score !== null && (
-                                <div className={`text-[10px] font-bold px-2 py-0.5 rounded border inline-flex items-center gap-1 w-fit
-                                 ${deal.ai_score >= 70 ? 'bg-green-100 text-green-700 border-green-200' : deal.ai_score >= 40 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : 'bg-red-100 text-red-700 border-red-200'}
-                               `}>
-                                  <TrendingUp size={10} /> {deal.ai_score}% Win Prob.
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {deal.tasks?.filter(t => !t.completed).length > 0 && (<div className="flex items-center text-xs text-red-500 bg-red-50 px-1.5 py-0.5 rounded"><AlertCircle size={10} className="mr-1" />{deal.tasks.filter(t => !t.completed).length}</div>)}
-                              <button
-                                onClick={(e) => handleAnalyzeDeal(deal, e)}
-                                className={`text-text-muted hover:text-warm-purple hover:bg-warm-purple/10 p-1.5 rounded-lg transition-colors group/ai ${analyzingDealIds.has(deal.id) ? 'animate-spin text-warm-purple' : ''}`}
-                                title="AI Predict Score"
-                              >
-                                <Wand2 size={14} />
-                              </button>
-                              <button
-                                onClick={(e) => handleDeleteDeal(deal.id, e)}
-                                className="text-text-muted hover:text-warm-red hover:bg-warm-red/10 p-1.5 rounded-lg transition-colors group/delete"
-                                title="Delete Deal"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); setMovingDeal(deal); }}
-                                className="text-text-muted hover:text-accent hover:bg-accent/10 p-1.5 rounded-lg transition-colors group/move lg:hidden"
-                                title="Move Deal"
-                              >
-                                <ArrowRightCircle size={14} />
-                              </button>
-                            </div>
-                          </div>
-                          <h4 className="font-bold text-lg text-text-main mb-1 leading-tight relative z-10 truncate">{deal.title}</h4>
-                          {deal.ai_insight && <p className="text-[10px] text-text-muted mb-2 relative z-10 italic">&quot; {deal.ai_insight} &quot;</p>}
 
-                          {/* Next Action Focus */}
-                          {nextTask ? (
-                            <div className={`mb-3 p-2 rounded-xl text-[10px] font-bold flex items-center gap-2 relative z-10 ${isOverdue ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-warm-blue/10 text-warm-blue-dark'}`}>
-                              <Clock size={12} />
-                              <span className="truncate">Next Action: {nextTask.text}</span>
-                            </div>
-                          ) : (
-                            <div className="mb-3 p-2 rounded-xl text-[10px] font-bold flex items-center gap-2 bg-gray-100 text-gray-400 relative z-10 italic">
-                              <Plus size={12} /> Plan next activity...
-                            </div>
-                          )}
+                            <h4 className="font-bold text-sm text-text-main mb-2 leading-snug line-clamp-1">{deal.title}</h4>
 
-                          <div className="flex items-center text-sm text-text-muted mb-4 relative z-10"><Users size={16} className="mr-2" />{deal.contact}</div>
+                            {deal.ai_insight && <p className="text-[10px] text-text-muted mb-2 relative z-10 italic">&quot; {deal.ai_insight} &quot;</p>}
 
-                          {/* Qualification Tracker (MEDDPICC) */}
-                          <div className="mb-4 relative z-10">
-                            <div className="flex justify-between items-center text-[8px] font-black text-gray-400 uppercase mb-1">
-                              <span>Qualification (MEDDPICC)</span>
-                              <span>{qualifiedCount}/7</span>
+                            {/* Next Action */}
+                            {nextTask ? (
+                              <div className={`mb-3 p-1.5 rounded-lg text-[9px] font-black flex items-center gap-2 border ${isOverdue ? 'bg-red-50 border-red-100 text-red-600 animate-pulse' : 'bg-gray-50 border-gray-100 text-gray-500'}`}>
+                                <Clock size={10} />
+                                <span className="truncate">{nextTask.text}</span>
+                              </div>
+                            ) : (
+                              <div className="mb-3 p-1.5 rounded-lg text-[9px] font-bold flex items-center gap-2 bg-gray-50/50 text-gray-300 italic border border-dashed border-gray-100">
+                                <Plus size={10} /> Next activity?
+                              </div>
+                            )}
+
+                            <div className="flex items-center justify-between text-[11px] font-bold text-text-muted">
+                              <div className="flex items-center gap-1.5">
+                                <div className="w-5 h-5 bg-accent/10 text-accent rounded-full flex items-center justify-center text-[8px]">{deal.contact?.charAt(0)}</div>
+                                <span className="max-w-[80px] truncate">{deal.contact}</span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                {deal.ai_score && (
+                                  <span className={`px-1.5 rounded-full text-[8px] flex items-center gap-0.5 ${deal.ai_score >= 70 ? 'text-green-500' : 'text-orange-500'}`}>
+                                    <TrendingUp size={8} />{deal.ai_score}%
+                                  </span>
+                                )}
+                                <span className="text-text-main font-black underline decoration-accent/30">{formatCurrency(deal.value)}</span>
+                              </div>
                             </div>
-                            <div className="flex gap-0.5 h-1">
+
+                            {/* MEDDPICC Progress bar (Condensed) */}
+                            <div className="mt-3 flex gap-0.5 h-0.5">
                               {[...Array(7)].map((_, i) => (
-                                <div key={i} className={`flex-1 rounded-full ${i < qualifiedCount ? 'bg-warm-green' : 'bg-gray-200'}`}></div>
+                                <div key={i} className={`flex-1 rounded-full ${i < qualifiedCount ? 'bg-accent' : 'bg-gray-100 dark:bg-gray-800'}`}></div>
                               ))}
                             </div>
                           </div>
-                          <div className="border-t border-black/5 pt-3 flex justify-between items-center relative z-10">
-                            <span className="font-extrabold text-text-main text-lg">{formatCurrency(deal.value)}</span>
-                            {stage.id === 'lost' ? <span className="text-xs text-warm-red bg-warm-red/10 px-2 py-1 rounded-lg font-bold">{deal.lostReason || 'N/A'}</span> : stage.id !== 'won' && <div className="flex items-center text-xs text-warm-yellow font-bold bg-warm-yellow/10 px-2 py-1 rounded-lg"><Trophy size={14} className="mr-1" />{deal.probability}%</div>}
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
           {activeTab === 'overview' && (
