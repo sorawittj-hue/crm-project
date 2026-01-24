@@ -2309,40 +2309,41 @@ const App = () => {
       {/* Detail Modal */}
       {
         selectedDeal && (
-          <div className="fixed inset-0 bg-bg/80 z-50 flex items-center justify-center sm:p-4 backdrop-blur-md overflow-y-auto">
-            <div className="bg-surface w-full max-w-4xl min-h-[80vh] sm:rounded-3xl shadow-clay-lg flex flex-col md:flex-row overflow-hidden animate-in zoom-in-95 duration-200 border border-white/50">
-              <div className="w-full md:w-1/3 bg-bg/50 border-r border-white/50 p-6 flex flex-col">
+          <div className="fixed inset-0 bg-bg/85 z-50 flex items-center justify-center p-2 md:p-4 backdrop-blur-md overflow-y-auto overflow-x-hidden">
+            <div className="bg-surface w-full max-w-3xl max-h-[92vh] sm:rounded-[32px] shadow-clay-lg flex flex-col md:flex-row overflow-hidden animate-in zoom-in-95 duration-200 border border-white/50 relative">
+              <div className="w-full md:w-[350px] bg-bg/50 border-r border-white/50 p-5 flex flex-col shrink-0">
+
                 {!isEditingDetails ? (
                   <>
-                    <div className="flex justify-between items-start mb-4">
-                      <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${selectedDeal.stage === 'lost' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{stages.find(s => s.id === selectedDeal.stage)?.title}</span>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => setIsEditingDetails(true)} className="text-text-muted hover:text-accent p-1"><Pencil size={18} /></button>
-                        <button onClick={() => setSelectedDeal(null)} className="md:hidden text-text-muted hover:text-red-500"><X size={24} /></button>
+                    <div className="flex justify-between items-start mb-3">
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest ${selectedDeal.stage === 'lost' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{stages.find(s => s.id === selectedDeal.stage)?.title}</span>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => setIsEditingDetails(true)} className="text-text-muted hover:text-accent p-1"><Pencil size={16} /></button>
+                        <button onClick={() => setSelectedDeal(null)} className="md:hidden text-text-muted hover:text-warm-red"><X size={22} /></button>
                       </div>
                     </div>
-                    <h2 className="text-xl font-bold text-gray-900 mb-1 leading-tight">{selectedDeal.title}</h2>
-                    <p className="text-2xl font-mono text-gray-700 mb-6">{formatCurrency(selectedDeal.value)}</p>
+                    <h2 className="text-lg font-black text-gray-900 mb-0.5 leading-tight">{selectedDeal.title}</h2>
+                    <p className="text-xl font-mono text-gray-700 mb-4">{formatCurrency(selectedDeal.value)}</p>
 
-                    <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                      <div><label className="text-xs font-bold text-text-muted uppercase tracking-wide">Contact Person</label><div className="flex items-center mt-2"><div className="w-10 h-10 bg-warm-blue/20 rounded-xl flex items-center justify-center text-warm-blue-dark text-sm font-bold mr-4 shadow-clay-sm flex-shrink-0">{selectedDeal.contact?.charAt(0)}</div><div className="min-w-0"><p className="font-bold text-text-main text-lg truncate">{selectedDeal.contact}</p><p className="text-sm text-text-muted font-medium truncate">{selectedDeal.company}</p></div></div></div>
-                      <div><label className="text-xs font-bold text-text-muted uppercase tracking-wide">Created At</label><p className="text-sm font-bold text-text-main mt-1 bg-surface inline-block px-3 py-1 rounded-lg shadow-clay-sm">{formatDate(selectedDeal.createdAt)}</p></div>
+                    <div className="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                      <div><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Contact Person</label><div className="flex items-center mt-1.5"><div className="w-9 h-9 bg-warm-blue/20 rounded-xl flex items-center justify-center text-warm-blue-dark text-xs font-bold mr-3 shadow-clay-sm flex-shrink-0">{selectedDeal.contact?.charAt(0)}</div><div className="min-w-0"><p className="font-extrabold text-text-main text-base truncate">{selectedDeal.contact}</p><p className="text-[11px] text-text-muted font-bold truncate">{selectedDeal.company}</p></div></div></div>
+                      <div><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Created At</label><p className="text-[11px] font-black text-text-main mt-0.5 bg-surface inline-block px-2 py-0.5 rounded-lg shadow-clay-sm">{formatDate(selectedDeal.createdAt)}</p></div>
+
 
                       {/* Qualification Checklist (MEDDPICC) */}
-                      <div className="pt-4 border-t border-black/5">
-                        <label className="text-xs font-black text-accent uppercase tracking-widest block mb-3 flex items-center justify-between">
-                          รายการตรวจสอบ (Qualify)
-                          <span className="text-[10px] text-text-muted normal-case font-bold">(MEDDPICC)</span>
+                      <div className="pt-3 border-t border-black/5">
+                        <label className="text-[10px] font-black text-accent uppercase tracking-widest block mb-1.5 flex items-center justify-between">
+                          รายการ QUALIFY
                         </label>
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                           {[
-                            { key: 'Metrics', label: 'วัดผลความสำเร็จได้ (Metrics)' },
-                            { key: 'Economic', label: 'พบผู้มีอำนาจตัดสินใจ (Buyer)' },
-                            { key: 'Criteria', label: 'ทราบเกณฑ์การเลือกซื้อ (Criteria)' },
-                            { key: 'Process', label: 'เข้าใจกระบวนการตัดสินใจ (Process)' },
-                            { key: 'Pain', label: 'ระบุปัญหาที่ชัดเจนได้ (Pain)' },
-                            { key: 'Champion', label: 'มีผู้สนับสนุนภายใน (Champion)' },
-                            { key: 'Competition', label: 'วิเคราะห์คู่แข่งแล้ว (Competition)' }
+                            { key: 'Metrics', label: 'วัดผลสำเร็จได้ (Metrics)' },
+                            { key: 'Economic', label: 'ผู้มีอำนาจซื้อ (Buyer)' },
+                            { key: 'Criteria', label: 'เกณฑ์ที่เลือก (Criteria)' },
+                            { key: 'Process', label: 'กระบวนการ (Process)' },
+                            { key: 'Pain', label: 'ปัญหาชัดเจน (Pain)' },
+                            { key: 'Champion', label: 'คนสนับสนุน (Champion)' },
+                            { key: 'Competition', label: 'รู้ว่าแข่งใคร (Competition)' }
                           ].map((item) => {
                             const isDone = selectedDeal.tasks?.some(t => t.text.includes(item.key) && t.completed);
                             return (
@@ -2351,7 +2352,6 @@ const App = () => {
                                 onClick={async () => {
                                   const existingTask = selectedDeal.tasks?.find(t => t.text.includes(item.key));
                                   if (existingTask) {
-                                    // If already exists, we REMOVE it (true toggle logic as requested for deletion)
                                     const updatedTasks = selectedDeal.tasks.filter(t => t.id !== existingTask.id);
                                     await handleUpdateDeal(selectedDeal.id, { tasks: updatedTasks });
                                     setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
@@ -2362,10 +2362,10 @@ const App = () => {
                                     setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
                                   }
                                 }}
-                                className={`w-full flex items-center gap-3 p-2.5 rounded-xl border text-left transition-all ${isDone ? 'bg-warm-green/10 border-warm-green/30 text-warm-green-dark shadow-clay-inner' : 'bg-white border-black/5 text-text-muted hover:border-accent/40 shadow-sm'}`}
+                                className={`w-full flex items-center gap-2.5 p-2 rounded-xl border text-left transition-all ${isDone ? 'bg-warm-green/10 border-warm-green/30 text-warm-green-dark shadow-clay-inner' : 'bg-white border-black/5 text-text-muted hover:border-accent/40 shadow-sm'}`}
                               >
-                                {isDone ? <CheckCircle2 size={14} /> : <div className="w-3.5 h-3.5 rounded-full border-2 border-current opacity-30" />}
-                                <span className="text-[11px] font-bold">{item.label}</span>
+                                {isDone ? <CheckCircle2 size={12} /> : <div className="w-2.5 h-2.5 rounded-full border-2 border-current opacity-30" />}
+                                <span className="text-[10px] font-extrabold">{item.label}</span>
                               </button>
                             );
                           })}
@@ -2375,28 +2375,22 @@ const App = () => {
                       {selectedDeal.stage === 'lost' && (<div className="bg-warm-red/10 p-4 rounded-2xl border border-warm-red/20 shadow-clay-inner"><label className="text-xs font-bold text-warm-red uppercase flex items-center mb-1"><XCircle size={14} className="mr-2" /> Lost Reason</label><p className="text-base text-warm-red-dark font-bold">{selectedDeal.lostReason}</p></div>)}
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-black/5">
+                    <div className="mt-3 pt-3 border-t border-black/5">
                       <button
                         onClick={async () => {
-                          const prompt = `Act as an Enterprise Sales Coach (MEDDPICC Expert). This deal is in stage '${selectedDeal.stage}' with value ${selectedDeal.value}.
-                             Current qualification state: ${(selectedDeal.tasks || []).filter(t => t.text.includes('[MEDDPICC]')).map(t => t.text).join(', ')}.
-                             
-                             Provide a Win-Strategy in 3 bullet points (Thai language):
-                             1. Tactical Next Step
-                             2. Relationship Strategy
-                             3. Risk to Mitigate
-                             `;
+                          const prompt = `Act as an Enterprise Sales Coach (MEDDPICC Expert). This deal is in stage '${selectedDeal.stage}' with value ${selectedDeal.value}. Current qualification state: ${(selectedDeal.tasks || []).filter(t => t.text.includes('[MEDDPICC]')).map(t => t.text).join(', ')}. Provide a Win-Strategy in 3 bullet points (Thai language): 1. Tactical Next Step 2. Relationship Strategy 3. Risk to Mitigate`;
                           showToast("Consulting Sales Coach AI...", "info");
                           const res = await callGeminiAPI(prompt);
                           if (res) alert("Sales Coach AI Strategy:\n\n" + (typeof res === 'string' ? res : JSON.stringify(res)));
                         }}
-                        className="w-full py-3 bg-gradient-to-r from-accent to-[#C08C60] text-white rounded-2xl font-black text-xs shadow-clay-btn hover:scale-[1.02] transition-all flex items-center justify-center gap-2 mb-3"
+                        className="w-full py-2.5 bg-gradient-to-r from-accent to-[#C08C60] text-white rounded-2xl font-black text-[10px] shadow-clay-btn hover:scale-[1.02] transition-all flex items-center justify-center gap-2 mb-2 uppercase tracking-widest"
                       >
-                        <Target size={16} /> WIN-STRATEGY AI COACH
+                        <Target size={14} /> Win-Strategy AI
                       </button>
                     </div>
 
-                    {selectedDeal.stage !== 'lost' && selectedDeal.stage !== 'won' && (<div className="mt-6 pt-6 border-t border-gray-200"><button onClick={() => setIsLostModalOpen(true)} className="w-full py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium transition-colors">แจ้งเคสหลุด (Mark as Lost)</button></div>)}
+                    {selectedDeal.stage !== 'lost' && selectedDeal.stage !== 'won' && (<div className="mt-2 pt-2 border-t border-gray-200"><button onClick={() => setIsLostModalOpen(true)} className="w-full py-1.5 border border-red-100 text-red-500 rounded-lg hover:bg-red-50 text-[10px] font-black uppercase tracking-wider transition-colors">Mark as Lost</button></div>)}
+
                   </>
                 ) : (
                   <form onSubmit={handleSaveDealDetails} className="flex flex-col h-full">
@@ -2418,13 +2412,79 @@ const App = () => {
                   </form>
                 )}
               </div>
-              <div className="w-full md:w-2/3 flex flex-col h-[80vh] md:h-auto">
-                <div className="flex items-center justify-between p-4 border-b border-gray-100"><div className="flex space-x-4"><div className="flex items-center text-gray-800 font-bold border-b-2 border-blue-500 pb-1 px-1"><FileText size={16} className="mr-2" /> กิจกรรม & Tasks</div></div><button onClick={() => setSelectedDeal(null)} className="hidden md:block text-gray-400 hover:text-gray-600"><X size={24} /></button></div>
-                <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-white">
-                  <section><h3 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-3 flex items-center"><CheckSquare size={16} className="mr-2" /> Tasks</h3><div className="space-y-2 mb-4">{selectedDeal.tasks?.map(task => (<div key={task.id} className="group flex items-center justify-between p-3 rounded-2xl border border-white/50 bg-bg/30 hover:bg-bg/60 transition-all"><div className="flex items-center"><button onClick={() => handleToggleTask(task.id)} className={`mr-3 rounded-full p-1 ${task.completed ? 'bg-warm-green/20 text-warm-green' : 'bg-surface text-text-muted hover:bg-white shadow-clay-sm'}`}><CheckCircle2 size={18} /></button><div className={task.completed ? 'opacity-50 line-through' : ''}><p className="text-text-main text-sm font-bold">{task.text}</p>{task.date && (<p className={`text-xs flex items-center mt-0.5 ${new Date(task.date) < new Date() && !task.completed ? 'text-warm-red' : 'text-text-muted'}`}><Clock size={10} className="mr-1" /> {new Date(task.date).toLocaleDateString('th-TH')}</p>)}</div></div><button onClick={() => handleDeleteTask(task.id)} className="text-text-muted hover:text-warm-red opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={16} /></button></div>))}{(!selectedDeal.tasks || selectedDeal.tasks.length === 0) && (<p className="text-sm text-text-muted italic pl-2">No tasks yet.</p>)}</div><form onSubmit={handleAddTask} className="flex gap-2 items-end bg-bg/50 p-3 rounded-2xl border border-white/50 shadow-clay-inner"><div className="flex-1"><input type="text" placeholder="Add a new task..." className="w-full bg-transparent border-none focus:ring-0 text-sm p-0 mb-2 text-text-main font-bold placeholder-text-muted/50" value={newTask} onChange={(e) => setNewTask(e.target.value)} /><div className="flex items-center gap-2"><Clock size={14} className="text-text-muted" /><input type="date" className="bg-transparent text-xs text-text-muted focus:outline-none" value={newTaskDate} onChange={(e) => setNewTaskDate(e.target.value)} /></div></div><button type="submit" disabled={!newTask.trim()} className="p-2 bg-accent text-white rounded-xl hover:bg-accent/80 disabled:opacity-50 shadow-clay-btn active:shadow-clay-btn-active"><Plus size={16} /></button></form></section><hr className="border-black/5" />
-                  <section><h3 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-3 flex items-center"><MessageSquare size={16} className="mr-2" /> Timeline</h3><div className="space-y-4 mb-4 pl-4 border-l-2 border-black/5">{selectedDeal.notes?.map(note => (<div key={note.id} className="relative"><div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-accent border-2 border-white"></div><div className="bg-bg/30 p-4 rounded-2xl rounded-tl-none border border-white/50"><p className="text-text-main text-sm font-medium whitespace-pre-wrap">{note.text}</p><p className="text-xs text-text-muted mt-2 font-bold">{formatDate(note.date)}</p></div></div>))}</div><form onSubmit={handleAddNote} className="relative"><textarea placeholder="Add a note..." className="w-full p-4 pr-12 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:ring-0 focus:outline-none text-sm resize-none text-text-main font-medium placeholder-text-muted/50" rows="3" value={newNote} onChange={(e) => setNewNote(e.target.value)} /><button type="submit" disabled={!newNote.trim()} className="absolute bottom-3 right-3 p-2 bg-text-main text-white rounded-xl hover:bg-text-main/80 disabled:opacity-50 transition-all shadow-clay-btn active:shadow-clay-btn-active"><ArrowRight size={16} /></button></form></section>
+              <div className="flex-1 flex flex-col h-full bg-white relative">
+                {/* Desktop Close Button */}
+                <button onClick={() => setSelectedDeal(null)} className="absolute top-4 right-4 z-10 hidden md:block text-gray-400 hover:text-warm-red transition-colors">
+                  <X size={24} />
+                </button>
+
+                <div className="flex items-center p-4 border-b border-gray-100 pr-12">
+                  <div className="flex space-x-4">
+                    <div className="flex items-center text-gray-800 font-black text-xs uppercase tracking-widest border-b-2 border-accent pb-1">
+                      <FileText size={14} className="mr-2 text-accent" /> Activity & Timeline
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+                  <section>
+                    <h3 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center">
+                      <CheckSquare size={14} className="mr-2 text-accent" /> Tasks
+                    </h3>
+                    <div className="space-y-2 mb-4">
+                      {selectedDeal.tasks?.map(task => (
+                        <div key={task.id} className="group flex items-center justify-between p-2.5 rounded-2xl bg-bg/40 hover:bg-bg/70 transition-all border border-black/5">
+                          <div className="flex items-center min-w-0">
+                            <button onClick={() => handleToggleTask(task.id)} className={`mr-2.5 rounded-full p-0.5 ${task.completed ? 'bg-warm-green/20 text-warm-green' : 'bg-white text-text-muted shadow-clay-sm'}`}>
+                              <CheckCircle2 size={16} />
+                            </button>
+                            <div className={task.completed ? 'opacity-40 line-through' : ''}>
+                              <p className="text-text-main text-[13px] font-bold truncate">{task.text}</p>
+                              {task.date && (<p className={`text-[10px] flex items-center mt-0.5 ${new Date(task.date) < new Date() && !task.completed ? 'text-warm-red' : 'text-text-muted'}`}><Clock size={10} className="mr-1" /> {new Date(task.date).toLocaleDateString('th-TH')}</p>)}
+                            </div>
+                          </div>
+                          <button onClick={() => handleDeleteTask(task.id)} className="text-text-muted hover:text-warm-red opacity-0 group-hover:opacity-100 transition-opacity p-1"><Trash2 size={14} /></button>
+                        </div>
+                      ))}
+                      {(!selectedDeal.tasks || selectedDeal.tasks.length === 0) && (<p className="text-[11px] text-text-muted italic pl-2">No tasks assigned.</p>)}
+                    </div>
+                    <form onSubmit={handleAddTask} className="flex gap-2 items-center bg-bg/50 p-2.5 rounded-2xl border border-black/5 shadow-clay-inner">
+                      <div className="flex-1">
+                        <input type="text" placeholder="Add task..." className="w-full bg-transparent border-none focus:ring-0 text-[13px] p-0 mb-1 text-text-main font-bold placeholder-text-muted/40" value={newTask} onChange={(e) => setNewTask(e.target.value)} />
+                        <div className="flex items-center gap-2">
+                          <Clock size={12} className="text-text-muted" />
+                          <input type="date" className="bg-transparent text-[10px] text-text-muted focus:outline-none font-bold" value={newTaskDate} onChange={(e) => setNewTaskDate(e.target.value)} />
+                        </div>
+                      </div>
+                      <button type="submit" disabled={!newTask.trim()} className="p-2 bg-accent text-white rounded-xl shadow-clay-btn active:scale-95"><Plus size={16} /></button>
+                    </form>
+                  </section>
+
+                  <hr className="border-black/5" />
+
+                  <section>
+                    <h3 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center">
+                      <MessageSquare size={14} className="mr-2 text-accent" /> Timeline
+                    </h3>
+                    <div className="space-y-4 mb-4 pl-4 border-l-2 border-black/5">
+                      {selectedDeal.notes?.map(note => (
+                        <div key={note.id} className="relative">
+                          <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-accent border-2 border-white shadow-sm"></div>
+                          <div className="bg-bg/30 p-3.5 rounded-2xl rounded-tl-none border border-black/5">
+                            <p className="text-text-main text-[13px] font-medium whitespace-pre-wrap">{note.text}</p>
+                            <p className="text-[10px] text-text-muted mt-2 font-black uppercase tracking-wider">{formatDate(note.date)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <form onSubmit={handleAddNote} className="relative">
+                      <textarea placeholder="Write a note..." className="w-full p-3 pr-12 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:ring-0 text-[13px] resize-none text-text-main font-medium placeholder-text-muted/40" rows="2" value={newNote} onChange={(e) => setNewNote(e.target.value)} />
+                      <button type="submit" disabled={!newNote.trim()} className="absolute bottom-2.5 right-2.5 p-2 bg-text-main text-white rounded-xl shadow-clay-btn active:scale-95"><ArrowRight size={14} /></button>
+                    </form>
+                  </section>
                 </div>
               </div>
+
             </div>
           </div>
         )
