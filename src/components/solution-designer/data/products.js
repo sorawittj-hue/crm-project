@@ -1,0 +1,108 @@
+export const IT_PRODUCTS = [
+    {
+        id: 'srv-dell-r750',
+        name: 'Dell PowerEdge R750',
+        description: '2U Rack Server, Dual Intel Xeon Platinum, High Performance',
+        category: 'Server',
+        u_height: 2,
+        watts: 750,
+        btu: 2560,
+        weight_kg: 28.5,
+        price: 350000,
+        image: 'https://images.unsplash.com/photo-1558494949-ef526b0042a0?w=100&h=40&fit=crop&q=80',
+        color: '#007db8'
+    },
+    {
+        id: 'srv-hpe-dl380',
+        name: 'HPE ProLiant DL380 Gen11',
+        description: '2U Rack Server, Reliable workhorse for enterprise',
+        category: 'Server',
+        u_height: 2,
+        watts: 800,
+        btu: 2730,
+        weight_kg: 26.8,
+        price: 340000,
+        image: 'https://images.unsplash.com/photo-1591405351990-4726e331f141?w=100&h=40&fit=crop&q=80',
+        color: '#01a982'
+    },
+    {
+        id: 'net-cisco-c9300',
+        name: 'Cisco Catalyst 9300',
+        description: '1U Enterprise Switch, 48-port PoE+, Network Advantage',
+        category: 'Network',
+        u_height: 1,
+        watts: 350,
+        btu: 1200,
+        weight_kg: 7.5,
+        price: 180000,
+        image: 'https://images.unsplash.com/photo-1544197150-b99a580bbcbf?w=100&h=20&fit=crop&q=80',
+        color: '#1ba0d7'
+    },
+    {
+        id: 'net-aruba-6300',
+        name: 'Aruba CX 6300M',
+        description: '1U Layer 3 Switch, High availability',
+        category: 'Network',
+        u_height: 1,
+        watts: 200,
+        btu: 680,
+        weight_kg: 6.2,
+        price: 145000,
+        image: 'https://images.unsplash.com/photo-1544197150-b99a580bbcbf?w=100&h=20&fit=crop&q=80',
+        color: '#ff8300'
+    },
+    {
+        id: 'ups-apc-3000',
+        name: 'APC Smart-UPS SRT 3000VA',
+        description: '2U Online Double Conversion UPS',
+        category: 'UPS',
+        u_height: 2,
+        watts: 0, // Consumes minimal, provides power
+        capacity_watts: 2700,
+        weight_kg: 48,
+        price: 85000,
+        image: 'https://images.unsplash.com/photo-1628135899298-5085f396494c?w=100&h=40&fit=crop&q=80',
+        color: '#3dcd58',
+        isPowerSource: true
+    },
+    {
+        id: 'ups-apc-8000',
+        name: 'APC Symmetra 8kVA',
+        description: '4U Modular Scalable UPS',
+        category: 'UPS',
+        u_height: 4,
+        watts: 0,
+        capacity_watts: 8000,
+        weight_kg: 85,
+        price: 250000,
+        image: 'https://images.unsplash.com/photo-1628135899298-5085f396494c?w=100&h=80&fit=crop&q=80',
+        color: '#3dcd58',
+        isPowerSource: true
+    },
+    {
+        id: 'store-dell-me5',
+        name: 'Dell PowerVault ME5024',
+        description: '2U Storage Array, 24x SFF Drives',
+        category: 'Storage',
+        u_height: 2,
+        watts: 580,
+        btu: 1980,
+        weight_kg: 30,
+        price: 450000,
+        image: 'https://images.unsplash.com/photo-1558494949-ef526b0042a0?w=100&h=40&fit=crop&q=80',
+        color: '#007db8'
+    },
+    {
+        id: 'patch-panel',
+        name: '24-Port Patch Panel',
+        description: '1U Cable Management',
+        category: 'Accessory',
+        u_height: 1,
+        watts: 0,
+        btu: 0,
+        weight_kg: 0.5,
+        price: 2500,
+        image: 'https://images.unsplash.com/photo-1555617943-233f20f01569?w=100&h=20&fit=crop&q=80',
+        color: '#666666'
+    }
+];

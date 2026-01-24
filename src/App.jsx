@@ -9,6 +9,7 @@ import {
   Sun, Moon, CheckSquare as CheckSquareIcon, Filter, Activity, CalendarDays
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
+import SolutionLayout from './components/solution-designer/SolutionLayout';
 
 // --- Supabase Configuration ---
 // ใช้ Environment Variables จากไฟล์ .env
@@ -937,7 +938,7 @@ const App = () => {
           })}
 
           <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6">Features</p>
-          {['spec-setup', 'tools'].map(tab => {
+          {['spec-setup', 'solution', 'tools'].map(tab => {
             const isActive = activeTab === tab;
             return (
               <button
@@ -952,8 +953,9 @@ const App = () => {
               >
                 {tab === 'spec-setup' && <Cpu size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
                 {tab === 'tools' && <Wrench size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
+                {tab === 'solution' && <Server size={24} className={`mr-4 ${isActive ? 'text-accent' : 'text-text-muted group-hover:text-primary'}`} />}
                 <span className="text-base">
-                  {tab === 'spec-setup' ? 'Spec AI' : 'IT Tools'}
+                  {tab === 'spec-setup' ? 'Spec AI' : tab === 'solution' ? 'Solution Designer' : 'IT Tools'}
                 </span>
               </button>
             );
@@ -1016,7 +1018,8 @@ const App = () => {
                     activeTab === 'contacts' ? 'Contacts List' :
                       activeTab === 'calendar' ? 'Calendar View' :
                         activeTab === 'activity' ? 'Activity Feed' :
-                          activeTab === 'spec-setup' ? 'Smart Spec Recommendation' : 'Professional IT Tools'}
+                          activeTab === 'spec-setup' ? 'Smart Spec Recommendation' :
+                            activeTab === 'solution' ? 'Enterprise Solution Designer' : 'Professional IT Tools'}
             </h1>
             {loading && <Loader2 size={16} className="animate-spin text-accent hidden md:block" />}
           </div>
@@ -2015,6 +2018,7 @@ const App = () => {
               </div>
             </div>
           )}
+          {activeTab === 'solution' && <SolutionLayout deals={deals} onUpdateDeal={handleUpdateDeal} />}
         </div>
       </main>
 
