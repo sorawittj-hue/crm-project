@@ -1806,14 +1806,35 @@ const App = () => {
                     </div>
                   </Card>
 
-                  {/* Quick Wins List */}
+                  {/* AI Battle Plan (New Feature) */}
+                  <Card className="p-6 border-l-4 border-l-accent bg-surface shadow-clay-md">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-bold text-sm text-text-main flex items-center gap-2"><Sparkles size={16} className="text-accent" /> AI Battle Plan</h3>
+                      <button onClick={async () => {
+                        const strategyDeals = deals.filter(d => d.stage !== 'won' && d.stage !== 'lost').slice(0, 5);
+                        const prompt = `Act as a ruthless Sales Director. Look at these deals: ${JSON.stringify(strategyDeals.map(d => ({ title: d.title, stage: d.stage, val: d.value })))}. Give me 3 concrete, aggressive bullet points on what to do TODAY to close money. Thai Language. Short & Punchy.`;
+                        alert("AI is thinking... (Ordering 3 strategies)");
+                        const res = await callGeminiAPI(prompt);
+                        if (res && res.response) alert(res.response);
+                        if (res) alert("🎯 Strategy:\n" + (res.plan || JSON.stringify(res)));
+                      }} className="px-3 py-1 bg-accent/10 text-accent text-[10px] uppercase font-black rounded-lg hover:bg-accent hover:text-white transition-colors">
+                        Generate Plan
+                      </button>
+                    </div>
+                    <p className="text-xs text-text-muted">Generate a data-driven daily execution plan to maximize revenue.</p>
+                  </Card>
+
+                  {/* Quick Wins List (Refined Logic) */}
                   <Card className="flex-1 p-6 overflow-y-auto max-h-[300px]">
                     <h3 className="font-bold text-sm mb-4 text-text-main flex items-center gap-2"><Zap size={16} className="text-yellow-500" /> Quick Wins Opportunity</h3>
                     <div className="space-y-3">
-                      {deals.filter(d => d.value < (deals.reduce((acc, x) => acc + x.value, 0) / deals.length) && d.stage === 'negotiation').slice(0, 4).map(deal => (
+                      {/* Logic Update: Show ANY deal with > 50% probability that isn't won yet */}
+                      {deals.filter(d => d.stage !== 'won' && d.stage !== 'lost' && (d.probability >= 50 || d.stage === 'negotiation')).sort((a, b) => b.probability - a.probability).slice(0, 4).map(deal => (
                         <div key={deal.id} onClick={() => handleDealClick(deal)} className="flex items-center justify-between p-3 rounded-xl bg-yellow-50/50 dark:bg-yellow-900/10 border border-yellow-100 dark:border-yellow-900/30 cursor-pointer hover:bg-yellow-100 transition-colors">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600 font-bold text-xs">Fast</div>
+                            <div className="w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600 font-bold text-xs">
+                              {deal.probability}%
+                            </div>
                             <div>
                               <p className="text-xs font-black text-text-main">{deal.title}</p>
                               <p className="text-[10px] text-text-muted">{deal.company}</p>
@@ -1822,8 +1843,8 @@ const App = () => {
                           <span className="text-xs font-black text-accent">{formatCurrency(deal.value)}</span>
                         </div>
                       ))}
-                      {deals.filter(d => d.value < (deals.reduce((acc, x) => acc + x.value, 0) / deals.length) && d.stage === 'negotiation').length === 0 && (
-                        <div className="text-center py-6 opacity-40 text-xs font-bold">No quick wins identified</div>
+                      {deals.filter(d => d.stage !== 'won' && d.stage !== 'lost' && (d.probability >= 50 || d.stage === 'negotiation')).length === 0 && (
+                        <div className="text-center py-6 opacity-40 text-xs font-bold">No high-probability deals found. Keep pushing!</div>
                       )}
                     </div>
                   </Card>
