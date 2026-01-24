@@ -1439,7 +1439,7 @@ const App = () => {
                   <span className="text-[10px] text-text-muted font-bold opacity-70">โฟกัสดีลเหล่านี้เพื่อปิดยอดให้เร็วที่สุด!</span>
                 </div>
 
-                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
+                <div className="flex gap-3 overflow-x-auto pb-4 custom-scrollbar snap-x">
                   {deals.filter(d => d.value >= 100000 && d.stage !== 'won' && d.stage !== 'lost').length === 0 && (
                     <div className="text-xs text-text-muted italic opacity-50 py-2 w-full text-center">ยังไม่มีดีลร้อนแรงในขณะนี้ (No Hot Deals)</div>
                   )}
@@ -1468,8 +1468,8 @@ const App = () => {
                           <h4 className="text-sm font-extrabold text-text-main truncate group-hover:text-accent transition-colors">{deal.title}</h4>
                           <div className="flex justify-between items-center mt-1">
                             <span className={`text-[9px] font-bold px-2 py-0.5 rounded-lg border flex items-center gap-1 ${deal.stage === 'proposal' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                deal.stage === 'negotiation' ? 'bg-purple-50 text-purple-600 border-purple-100' :
-                                  'bg-gray-50 text-gray-500 border-gray-100'
+                              deal.stage === 'negotiation' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                'bg-gray-50 text-gray-500 border-gray-100'
                               }`}>
                               {stages.find(s => s.id === deal.stage)?.title?.split(' ')[0] || deal.stage}
                             </span>
@@ -1785,10 +1785,89 @@ const App = () => {
                   <p className="text-[8px] font-black text-text-muted mt-4 uppercase opacity-40 italic">Focus on &quot;Life-Changing Deals&quot;</p>
                 </Card>
 
-                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Card className="p-6 border-l-4 border-l-accent"><p className="text-text-muted text-[10px] font-black uppercase mb-1">Pipeline</p><h3 className="text-2xl font-black">{formatCurrency(totalPipeline)}</h3></Card>
-                  <Card className="p-6 border-l-4 border-l-warm-green"><p className="text-text-muted text-[10px] font-black uppercase mb-1">Won</p><h3 className="text-2xl font-black text-warm-green">{formatCurrency(wonRevenue)}</h3></Card>
-                  <Card className="p-6 border-l-4 border-l-warm-purple"><p className="text-text-muted text-[10px] font-black uppercase mb-1">Target Gap</p><h3 className="text-2xl font-black text-warm-purple">{formatCurrency(Math.max(0, monthlyGoal - wonRevenue))}</h3></Card>
+                <div className="lg:col-span-3 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-[32px] p-6 lg:p-8 shadow-clay-md border border-white/60 relative overflow-hidden group">
+                  {/* Decorative Background Blob */}
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none group-hover:bg-accent/20 transition-all duration-700"></div>
+
+                  <div className="flex flex-col md:flex-row gap-8 lg:gap-12 relative z-10 h-full">
+                    {/* LEFT: MAIN GOAL GAUGE */}
+                    <div className="flex-1 flex flex-col items-center justify-center min-h-[220px]">
+                      <div className="flex justify-between w-full mb-2 px-4 max-w-[240px]">
+                        <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Revenue Goal</span>
+                        <button onClick={() => {
+                          const newGoal = prompt("Set Monthly Goal (THB):", monthlyGoal);
+                          if (newGoal && !isNaN(newGoal)) {
+                            setMonthlyGoal(Number(newGoal));
+                            supabase.from('settings').upsert({ key: 'monthly_goal', value: Number(newGoal) });
+                          }
+                        }} className="text-[10px] font-bold text-accent hover:underline cursor-pointer">Edit Target</button>
+                      </div>
+
+                      {/* The Gauge (SVG) */}
+                      <div className="relative w-40 h-40 lg:w-48 lg:h-48">
+                        <svg className="w-full h-full transform -rotate-90">
+                          <circle cx="50%" cy="50%" r="45%" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-gray-100 dark:text-gray-700" />
+                          <circle cx="50%" cy="50%" r="45%" stroke="currentColor" strokeWidth="12" fill="transparent"
+                            strokeDasharray="283"
+                            strokeDashoffset={Math.max(0, 283 - (283 * (Math.min(100, (wonRevenue / monthlyGoal) * 100)) / 100))}
+                            strokeLinecap="round" className="text-accent transition-all duration-1000 ease-out" />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-3xl lg:text-4xl font-black text-text-main tracking-tighter">
+                            {Math.round((wonRevenue / monthlyGoal) * 100)}%
+                          </span>
+                          <span className="text-[10px] font-bold text-text-muted mt-1 uppercase">Allocated</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 text-center">
+                        <p className="text-2xl font-black text-text-main">{formatCurrency(wonRevenue)}</p>
+                        <p className="text-[10px] font-bold text-text-muted">of {formatCurrency(monthlyGoal)} Goal</p>
+                      </div>
+                    </div>
+
+                    {/* RIGHT: INSIGHTS & METRICS */}
+                    <div className="flex-[1.5] flex flex-col justify-center gap-6">
+                      {/* Insight Banner */}
+                      <div className="bg-surface/50 rounded-2xl p-4 border border-white/50 shadow-sm backdrop-blur-sm">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2.5 bg-warm-blue/10 text-warm-blue rounded-xl shrink-0"><Sparkles size={18} /></div>
+                          <div>
+                            <h4 className="font-bold text-sm text-text-main mb-1">AI Sales Forecast</h4>
+                            <p className="text-xs text-text-muted leading-relaxed">
+                              Based on probability, projected landing: <span className="text-text-main font-black underline decoration-accent/30">{formatCurrency(wonRevenue + (deals.reduce((acc, d) => d.stage !== 'won' && d.stage !== 'lost' ? acc + (d.value * (d.probability / 100)) : acc, 0)))}</span>.
+                              {(wonRevenue + (deals.reduce((acc, d) => d.stage !== 'won' && d.stage !== 'lost' ? acc + (d.value * (d.probability / 100)) : acc, 0))) > monthlyGoal
+                                ? <span className="text-warm-green font-bold block mt-1"> 🚀 You are on track to exceed target!</span>
+                                : <span className="text-warm-red font-bold block mt-1"> ⚠️ Focus on &apos;Closing&apos; stage to bridge gap.</span>}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Metric Bars */}
+                      <div className="space-y-5 px-1">
+                        <div>
+                          <div className="flex justify-between text-[10px] font-bold mb-2">
+                            <span className="flex items-center gap-2 uppercase tracking-wide text-text-muted"><Activity size={12} /> Total Pipeline</span>
+                            <span className="text-text-main text-xs">{formatCurrency(totalPipeline)}</span>
+                          </div>
+                          <div className="h-2.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div className="h-full bg-warm-blue rounded-full transition-all duration-1000" style={{ width: '100%' }}></div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex justify-between text-[10px] font-bold mb-2">
+                            <span className="flex items-center gap-2 uppercase tracking-wide text-text-muted"><Target size={12} /> Target Gap</span>
+                            <span className="text-warm-red text-xs">{formatCurrency(Math.max(0, monthlyGoal - wonRevenue))}</span>
+                          </div>
+                          <div className="h-2.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div className="h-full bg-warm-red/80 rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, (Math.max(0, monthlyGoal - wonRevenue) / monthlyGoal) * 100)}%` }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
