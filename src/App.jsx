@@ -6,7 +6,7 @@ import {
   FileText, CheckSquare, MessageSquare, Trash2, XCircle, Clock, ArrowRight,
   Cpu, Server, HardDrive, Wrench, ChevronRight, RotateCcw,
   Zap, Signal, PieChart, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save,
-  Sun, Moon, CheckSquare as CheckSquareIcon, Filter, Activity
+  Sun, Moon, CheckSquare as CheckSquareIcon, Filter, Activity, Info
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import SolutionLayout from './components/solution-designer/SolutionLayout';
@@ -1718,6 +1718,39 @@ const App = () => {
                 </div>
               </div>
 
+              {/* Thai Strategic Guide (Collapsible) */}
+              <details className="group bg-white/40 dark:bg-black/20 border border-white/40 rounded-2xl overflow-hidden mb-6">
+                <summary className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-white/50 transition-colors list-none">
+                  <span className="text-xs font-bold text-text-muted flex items-center gap-2"><Info size={14} /> คู่มือวิเคราะห์กลยุทธ์ (Strategic Manual)</span>
+                  <span className="text-xs text-text-muted group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <div className="p-4 pt-0 grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-text-muted leading-relaxed">
+                  <div>
+                    <strong className="text-text-main block mb-1">1. Deal Health Matrix (กราฟจุด)</strong>
+                    <ul className="list-disc pl-4 space-y-1">
+                      <li><span className="text-green-600 font-bold">Stars (สีเขียว)</span>: ดีลเกรด A+ มูลค่าสูงและมีการคุยต่อเนื่อง (ต้องปิดให้ได้)</li>
+                      <li><span className="text-red-500 font-bold">Risk (สีแดง)</span>: ดีลเสี่ยงหลุด! มูลค่าสูงแต่เริ่มเงียบไปนาน (รีบตามด่วน)</li>
+                      <li><span className="text-blue-500 font-bold">Cash Cow (สีฟ้า)</span>: ดีลเล็กแต่มาเรื่อยๆ (ปิดเร็วๆ เก็บยอด)</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <strong className="text-text-main block mb-1">2. Sales Velocity (ความเร็ว)</strong>
+                    <ul className="list-disc pl-4 space-y-1">
+                      <li><strong>Cycle Time</strong>: เวลาเฉลี่ยที่ใช้ปิดดีล (ยิ่งน้อยยิ่งดี)</li>
+                      <li><strong>Velocity</strong>: รายได้ที่ไหลเข้ามาต่อวัน (ยิ่งมากยิ่งดี)</li>
+                      <li><strong>Engagement Trend</strong>: กราฟแท่งแสดงความถี่ในการติดต่อลูกค้าในช่วง 30 วัน</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <strong className="text-text-main block mb-1">3. AI Battle Plan & Quick Wins</strong>
+                    <ul className="list-disc pl-4 space-y-1">
+                      <li><strong>AI Plan</strong>: ให้ AI ช่วยคิด &quot;แผนการรบ&quot; ประจำวัน 3 ข้อเพื่อปิดยอดทันที</li>
+                      <li><strong>Quick Wins</strong>: แนะนำดีลที่มีโอกาสชนะเกิน 50% หรือดีลช่วงต่อรองที่ปิดง่าย</li>
+                    </ul>
+                  </div>
+                </div>
+              </details>
+
               {/* The Growth Matrix (2x2 Grid) */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
                 {/* Matrix Chart */}
@@ -1858,6 +1891,22 @@ const App = () => {
                 <div>
                   <h2 className="text-3xl font-black text-text-main mb-2">Dashboard Intelligence</h2>
                   <p className="text-text-muted font-medium uppercase tracking-widest text-[10px]">Real-time Sales Performance & Pipeline Health</p>
+
+                  {/* Thai Dashboard Guide (Collapsible) */}
+                  <details className="mt-4 group bg-white/40 dark:bg-black/20 border border-white/40 rounded-2xl overflow-hidden w-full md:w-[480px]">
+                    <summary className="px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-white/50 transition-colors list-none">
+                      <span className="text-xs font-bold text-text-muted flex items-center gap-2"><Info size={14} /> คำอธิบายแดชบอร์ด</span>
+                      <span className="text-xs text-text-muted group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <div className="p-4 pt-0 text-xs text-text-muted leading-relaxed">
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li><strong>Revenue Goal (วงแหวน)</strong>: แสดงยอดขายจริงเทียบกับเป้าหมาย (แก้เป้าได้โดยกด Edit)</li>
+                        <li><strong>AI Forecast</strong>: ยอดที่ AI คำนวณว่าจะ &quot;จบได้จริง&quot; ตามความน่าจะเป็น</li>
+                        <li><strong>Target Gap</strong>: ยอดที่ต้องหาเพิ่ม เพื่อให้ถึงเป้าหมาย</li>
+                        <li><strong>Golden List</strong>: รายชื่อดีลที่สำคัญที่สุด (Top Deals) ที่ต้องโฟกัส</li>
+                      </ul>
+                    </div>
+                  </details>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button variant="secondary" onClick={async () => {
