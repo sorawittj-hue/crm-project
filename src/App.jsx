@@ -1144,7 +1144,7 @@ const App = () => {
             )}
             <div className="relative hidden md:block group">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-muted group-hover:text-accent transition-colors" size={20} />
-              <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-12 pr-6 py-3 bg-surface border-none shadow-clay-inner rounded-xl focus:outline-none focus:ring-0 text-sm w-48 lg:w-64 transition-all placeholder-text-muted/50 text-text-main" />
+              <input type="text" placeholder="Search customer, deal, product..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-12 pr-6 py-3 bg-white border border-gray-200 shadow-clay-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/20 text-sm w-64 lg:w-96 transition-all placeholder-text-muted/50 text-text-main" />
             </div>
             {/* Advanced Filters Toggle */}
             <button
@@ -1633,11 +1633,15 @@ const App = () => {
                                 )}
 
                                 <div className="mb-3">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-[11px] font-black text-accent bg-accent/5 px-2 py-0.5 rounded-lg truncate max-w-[70%]">{deal.company}</span>
+                                  {/* Improved Header: Company First, then Title */}
+                                  <div className="flex justify-between items-start mb-1 gap-2">
+                                    <span className="font-black text-sm text-text-main hover:text-accent transition-colors truncate" title={deal.company}>{deal.company}</span>
                                     {staleMarker}
                                   </div>
-                                  <h4 className="font-extrabold text-[15px] text-text-main leading-tight group-hover:text-accent transition-colors">{deal.title}</h4>
+                                  <div className="flex items-center gap-1.5 overflow-hidden">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-accent/40 shrink-0"></span>
+                                    <h4 className="font-bold text-xs text-text-muted truncate group-hover:text-text-main transition-colors" title={deal.title}>{deal.title}</h4>
+                                  </div>
                                 </div>
 
                                 <div className="flex items-center gap-2 text-[11px] text-text-muted font-medium mb-4">
@@ -1664,8 +1668,8 @@ const App = () => {
 
                                 <div className="flex items-center justify-between pt-1">
                                   <div className="flex flex-col">
-                                    <span className="text-[10px] text-text-muted font-black uppercase opacity-40 leading-none mb-1">Deal Value</span>
-                                    <span className="text-lg font-black text-text-main tracking-tight">{formatCurrency(deal.value)}</span>
+                                    <span className="text-[9px] text-text-muted font-bold uppercase opacity-50 leading-none mb-0.5">Deal Value</span>
+                                    <span className="text-xl font-black text-accent tracking-tight">{formatCurrency(deal.value)}</span>
                                   </div>
 
                                   {deal.ai_score && (
