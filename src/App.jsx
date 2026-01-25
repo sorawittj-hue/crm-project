@@ -1072,21 +1072,23 @@ const App = () => {
 
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
           <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 opacity-60">Menu</p>
-          {['pipeline', 'overview', 'dashboard', 'customers', 'clients'].map((tab) => {
+          {['pipeline', 'overview', 'dashboard', 'customers', 'clients', 'activity'].map((tab) => {
             const isActive = activeTab === tab;
             const tabIcons = {
-              pipeline: <Activity size={18} />,
+              pipeline: <Activity size={18} />, // Keeping original icons logic
               overview: <PieChart size={18} />,
               dashboard: <LayoutDashboard size={18} />,
               customers: <Users size={18} />,
-              clients: <Trophy size={18} className="text-yellow-500" />
+              clients: <Trophy size={18} className="text-yellow-500" />,
+              activity: <Zap size={18} />
             };
             const tabLabels = {
               pipeline: 'Sales Pipeline',
               overview: 'Sales Overview',
               dashboard: 'Strategic Dash',
               customers: 'Customer Master',
-              clients: 'Key VIP Clients'
+              clients: 'Key VIP Clients',
+              activity: 'Action Center'
             };
             return (
               <button
@@ -1099,7 +1101,13 @@ const App = () => {
                     : 'text-text-muted hover:bg-bg hover:text-text-main hover:translate-x-1'}
                 `}
               >
-                {tabIcons[tab]}
+                {tab === 'activity' && <div className="relative">
+                  <Activity size={18} />
+                  {deals.filter(d => d.tasks?.some(t => !t.completed && new Date(t.date) < new Date())).length > 0 &&
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                  }
+                </div>}
+                {tab !== 'activity' && tabIcons[tab]}
                 {tabLabels[tab]}
               </button>
             );
@@ -1373,44 +1381,107 @@ const App = () => {
 
           {/* Activity Feed */}
           {activeTab === 'activity' && (
-            <div className="max-w-4xl mx-auto space-y-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-black text-text-main">Activity Feed</h2>
-                <div className="text-sm text-text-muted">{globalActivities.length} activities</div>
+            <div className="max-w-5xl mx-auto space-y-8 pb-20">
+              <div className="flex justify-between items-end">
+                <div>
+                  <h2 className="text-3xl font-black text-text-main mb-2">Action Center</h2>
+                  <p className="text-text-muted font-medium">ศูนย์รวมการแจ้งเตือนและกิจกรรมที่ต้องทำ (AI Recommended Actions)</p>
+                </div>
+                <div className="bg-white/50 px-4 py-2 rounded-2xl shadow-clay-inner border border-white flex gap-4">
+                  <div className="text-center">
+                    <p className="text-[10px] font-black text-text-muted uppercase">Pending Tasks</p>
+                    <p className="text-xl font-black text-text-main">{deals.reduce((acc, d) => acc + (d.tasks || []).filter(t => !t.completed).length, 0)}</p>
+                  </div>
+                  <div className="w-px h-8 bg-black/5"></div>
+                  <div className="text-center">
+                    <p className="text-[10px] font-black text-text-muted uppercase">Urgent</p>
+                    <p className="text-xl font-black text-warm-red">{deals.reduce((acc, d) => acc + (d.tasks || []).filter(t => !t.completed && new Date(t.date) < new Date()).length, 0)}</p>
+                  </div>
+                </div>
               </div>
+
+              {/* 1. AI Smart Alerts Section */}
               <div className="space-y-4">
-                {globalActivities.length === 0 ? (
-                  <Card className="p-12 text-center">
-                    <Activity size={48} className="mx-auto mb-4 text-text-muted opacity-50" />
-                    <p className="text-text-muted font-bold">No activities yet</p>
-                  </Card>
-                ) : (
-                  globalActivities.map((activity) => (
-                    <Card key={activity.id} className="p-4 hover:shadow-clay-md transition-shadow">
-                      <div className="flex items-start gap-4">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 ${activity.type === 'note' ? 'bg-warm-blue' :
-                          activity.type === 'task' ? (activity.completed ? 'bg-warm-green' : 'bg-warm-yellow') :
-                            activity.type === 'deal_created' ? 'bg-accent' : 'bg-text-muted'
-                          }`}>
-                          {activity.type === 'note' && <MessageSquare size={20} />}
-                          {activity.type === 'task' && <CheckSquare size={20} />}
-                          {activity.type === 'deal_created' && <Trophy size={20} />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-text-main">{activity.dealTitle}</span>
-                            <span className="text-xs text-text-muted">•</span>
-                            <span className="text-xs text-text-muted">{activity.company}</span>
-                          </div>
-                          <p className="text-sm text-text-muted mb-2">{activity.text}</p>
-                          <div className="text-xs text-text-muted font-bold">
-                            {formatDate(activity.date)}
-                            {activity.user && ` • ${activity.user}`}
-                          </div>
+                <h3 className="text-sm font-black text-text-muted uppercase tracking-widest flex items-center gap-2">
+                  <Zap size={16} className="text-accent" /> AI Insights & Alerts
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Overdue Tasks Alert */}
+                  {deals.some(d => d.tasks?.some(t => !t.completed && new Date(t.date) < new Date())) && (
+                    <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3">
+                      <div className="p-2 bg-white rounded-xl text-red-500 shadow-sm"><AlertCircle size={20} /></div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-red-900 text-sm">Overdue Tasks Detected</h4>
+                        <p className="text-xs text-red-700 mt-1">You have tasks that missed their deadline. Please review them immediately.</p>
+                        <button onClick={() => setFilterDate(new Date().toISOString().split('T')[0])} className="mt-2 text-[10px] font-black bg-white text-red-600 px-3 py-1.5 rounded-lg shadow-sm hover:bg-red-500 hover:text-white transition-all uppercase">View Tasks</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Stalled Deals Alert */}
+                  {deals.some(d => {
+                    const lastActive = new Date(d.lastActivity || d.createdAt);
+                    const diffDays = (new Date() - lastActive) / (1000 * 60 * 60 * 24);
+                    return d.stage !== 'won' && d.stage !== 'lost' && diffDays > 7;
+                  }) && (
+                      <div className="p-4 bg-orange-50 border border-orange-100 rounded-2xl flex items-start gap-3">
+                        <div className="p-2 bg-white rounded-xl text-orange-500 shadow-sm"><Clock size={20} /></div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-orange-900 text-sm">Stalled Deals Warning</h4>
+                          <p className="text-xs text-orange-700 mt-1">Some deals haven&apos;t had activity for over 7 days. Consider sending a follow-up.</p>
+                          <button onClick={() => setActiveTab('pipeline')} className="mt-2 text-[10px] font-black bg-white text-orange-600 px-3 py-1.5 rounded-lg shadow-sm hover:bg-orange-500 hover:text-white transition-all uppercase">Go to Pipeline</button>
                         </div>
                       </div>
-                    </Card>
-                  ))
+                    )}
+                </div>
+              </div>
+
+              {/* 2. Unified Feed (Tasks + Activities) */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-black text-text-muted uppercase tracking-widest flex items-center gap-2 mt-4">
+                  <Activity size={16} className="text-text-muted" /> Recent Activity Log
+                </h3>
+
+                {globalActivities.length === 0 ? (
+                  <Card className="p-12 text-center opacity-50">
+                    <p className="font-bold text-text-muted">No recent activities recorded.</p>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {globalActivities.sort((a, b) => new Date(b.date) - new Date(a.date)).map((activity) => {
+                      return (
+                        <div key={activity.id} className="group flex gap-4 p-4 bg-white hover:bg-white/80 dark:bg-gray-900 border border-black/5 dark:border-white/5 rounded-2xl shadow-sm hover:shadow-clay-md transition-all">
+                          <div className="flex-col items-center gap-2 hidden sm:flex">
+                            <span className="text-[10px] font-black text-text-muted opacity-50">{new Date(activity.date).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</span>
+                            <div className="w-px h-full bg-black/5 flex-1"></div>
+                          </div>
+
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-white/20 shadow-inner ${activity.type === 'note' ? 'bg-blue-100 text-blue-600' :
+                            activity.type === 'task' ? (activity.completed ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600') :
+                              activity.type === 'deal_created' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-500'
+                            }`}>
+                            {activity.type === 'note' && <MessageSquare size={18} />}
+                            {activity.type === 'task' && <CheckSquare size={18} />}
+                            {activity.type === 'deal_created' && <Plus size={18} />}
+                            {activity.type === 'deal_moved' && <ArrowRight size={18} />}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start">
+                              <h4 className="text-sm font-bold text-text-main">{activity.text}</h4>
+                              <span className="text-[10px] font-bold text-text-muted whitespace-nowrap ml-2 bg-surface px-2 py-0.5 rounded-lg border border-black/5">{formatDate(activity.date)}</span>
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className={`text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded text-white ${activity.type === 'task' ? 'bg-yellow-400' : 'bg-gray-400'
+                                }`}>{activity.type}</span>
+                              <span className="text-xs text-text-muted">for <b>{activity.dealTitle}</b> ({activity.company})</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             </div>
