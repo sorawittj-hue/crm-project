@@ -955,6 +955,73 @@ const App = () => {
 
   const getStageTotal = (stageId) => memoFilteredDeals.filter(d => d.stage === stageId).reduce((sum, d) => sum + d.value, 0);
 
+  // --- Advanced Client Analytics (Logic อย่ากั๊ก) ---
+  const vipClients = useMemo(() => {
+    const clients = {};
+    const now = new Date();
+
+    deals.forEach(deal => {
+      if (!deal.company) return;
+      const name = deal.company.trim();
+      const nameKey = name.toLowerCase();
+
+      if (!clients[nameKey]) {
+        clients[nameKey] = {
+          id: nameKey,
+          name: name,
+          contact: deal.contact || 'Unknown',
+          firstSeen: new Date(deal.createdAt),
+          lastSeen: new Date(deal.createdAt),
+          totalDeals: 0,
+          wonDeals: 0,
+          wonValue: 0,
+          activeCount: 0,
+          activeValue: 0,
+          products: new Set()
+        };
+      }
+
+      const client = clients[nameKey];
+      const dealDate = new Date(deal.createdAt);
+
+      // Timestamps
+      if (dealDate < client.firstSeen) client.firstSeen = dealDate;
+      if (dealDate > client.lastSeen) client.lastSeen = dealDate;
+
+      // Aggregates
+      client.totalDeals++;
+      if (deal.stage === 'won') {
+        client.wonDeals++;
+        client.wonValue += Number(deal.value);
+      } else if (deal.stage !== 'lost') {
+        client.activeCount++;
+        client.activeValue += Number(deal.value);
+      }
+
+      // Track potential products from title
+      if (deal.title) client.products.add(deal.title.split(' ')[0]);
+    });
+
+    return Object.values(clients).map(c => {
+      const daysSinceLast = Math.round((now - c.lastSeen) / (1000 * 60 * 60 * 24));
+      const winRate = c.totalDeals > 0 ? Math.round((c.wonDeals / c.totalDeals) * 100) : 0;
+      const avgDealSize = c.wonDeals > 0 ? c.wonValue / c.wonDeals : 0;
+
+      // Tier Logic
+      let tier = { name: 'Silver', color: 'bg-slate-100 text-slate-600', gradient: 'from-slate-50 to-slate-100' };
+      if (c.wonValue >= 1000000) tier = { name: 'Platinum', color: 'bg-indigo-100 text-indigo-700', gradient: 'from-indigo-50 to-indigo-100' };
+      else if (c.wonValue >= 500000) tier = { name: 'Gold', color: 'bg-yellow-100 text-yellow-700', gradient: 'from-yellow-50 to-yellow-100' };
+
+      // Health Logic
+      let health = { label: 'Neutral', color: 'text-gray-500', bg: 'bg-gray-100' };
+      if (c.activeCount > 0) health = { label: 'Active', color: 'text-green-600', bg: 'bg-green-100' };
+      else if (daysSinceLast > 90) health = { label: 'Churn Risk', color: 'text-red-600', bg: 'bg-red-100' };
+      else if (daysSinceLast < 30) health = { label: 'Engaged', color: 'text-blue-600', bg: 'bg-blue-100' };
+
+      return { ...c, daysSinceLast, winRate, avgDealSize, tier, health };
+    }).sort((a, b) => b.wonValue - a.wonValue);
+  }, [deals]);
+
   // Render Views
   // Render Views
   if (!isDbReady) {
@@ -1350,79 +1417,124 @@ const App = () => {
           )}
 
           {activeTab === 'clients' && (
-            <div className="max-w-6xl mx-auto space-y-8 pb-10">
-              <div className="flex justify-between items-end">
-                <div>
-                  <h2 className="text-3xl font-black text-text-main mb-2">Key VIP Clients</h2>
-                  <p className="text-text-muted font-medium">ลำดับความสำคัญของลูกค้าตามยอดซื้อสะสม (Lifetime Value)</p>
+            <div className="max-w-7xl mx-auto space-y-8 pb-20">
+              {/* Clients Dashboard Header */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="p-6 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[24px] text-white shadow-clay-lg relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl group-hover:scale-110 transition-transform"></div>
+                  <div className="relative z-10">
+                    <p className="text-indigo-100 text-xs font-bold uppercase tracking-widest mb-1">Total VIP Lifetime Value</p>
+                    <h2 className="text-3xl font-black">{formatCurrency(vipClients.reduce((sum, c) => sum + c.wonValue, 0))}</h2>
+                    <div className="mt-4 flex items-center gap-2 text-indigo-200 text-xs">
+                      <TrendingUp size={14} /> <span>Across {vipClients.length} clients</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-white/50 px-4 py-2 rounded-2xl shadow-clay-inner border border-white">
-                  <p className="text-[10px] font-black text-text-muted uppercase">Total VIPs</p>
-                  <p className="text-xl font-black text-accent">{customerMaster.filter(c => c.ltv > 0).length}</p>
+
+                <Card className="p-6 flex flex-col justify-center">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><Target size={16} /></div>
+                    <span className="text-xs font-bold text-text-muted uppercase">Avg Win Rate</span>
+                  </div>
+                  <p className="text-2xl font-black text-text-main">
+                    {Math.round(vipClients.reduce((sum, c) => sum + c.winRate, 0) / (vipClients.length || 1))}%
+                  </p>
+                </Card>
+
+                <Card className="p-6 flex flex-col justify-center">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center"><AlertTriangle size={16} /></div>
+                    <span className="text-xs font-bold text-text-muted uppercase">Churn Risks</span>
+                  </div>
+                  <p className="text-2xl font-black text-warm-red">
+                    {vipClients.filter(c => c.health.label === 'Churn Risk').length} Clients
+                  </p>
+                </Card>
+
+                <Card className="p-6 flex flex-col justify-center bg-accent/5 border-accent/20">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center"><Zap size={16} /></div>
+                    <span className="text-xs font-bold text-accent uppercase">Active Pipelines</span>
+                  </div>
+                  <p className="text-2xl font-black text-accent">
+                    {vipClients.reduce((sum, c) => sum + c.activeCount, 0)} Deals
+                  </p>
+                </Card>
+              </div>
+
+              <div className="flex justify-between items-end px-2">
+                <div>
+                  <h2 className="text-2xl font-black text-text-main">Client Portfolio</h2>
+                  <p className="text-text-muted text-sm font-medium">จัดการลูกค้าตามระดับความสำคัญและโอกาสการขาย</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-6">
-                {customerMaster.filter(c => c.ltv > 0).slice(0, 10).map((stats, idx) => {
-                  let tier = { label: 'Silver', color: 'bg-slate-100 text-slate-600', icon: <Users size={16} /> };
-                  if (stats.ltv >= 1000000) tier = { label: 'Platinum VIP', color: 'bg-indigo-600 text-white shadow-indigo-200', icon: <Trophy size={16} /> };
-                  else if (stats.ltv >= 500000) tier = { label: 'Gold Client', color: 'bg-yellow-500 text-white shadow-yellow-200', icon: <Sparkles size={16} /> };
-
-                  const company = stats.name;
-                  return (
-                    <Card key={company} className="p-8 group hover:shadow-clay-lg transition-all duration-500 relative overflow-hidden">
-                      {idx < 3 && (
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 -mr-16 -mt-16 rounded-full group-hover:scale-110 transition-transform"></div>
-                      )}
-
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-                        <div className="flex items-center gap-6">
-                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-bg to-bg/50 shadow-clay-inner border border-white flex items-center justify-center text-2xl font-black text-accent">
-                            {idx + 1}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="text-xl font-black text-text-main">{company}</h3>
-                              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-sm ${tier.color}`}>
-                                {tier.icon} {tier.label}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-4 text-xs font-bold text-text-muted">
-                              <span className="flex items-center gap-1"><Users size={12} className="opacity-40" /> {stats.contact}</span>
-                              <span className="flex items-center gap-1"><Trophy size={12} className="opacity-40" /> {stats.deals.filter(d => d.stage === 'won').length} Deals Won</span>
-                              <span className="flex items-center gap-1"><Clock size={12} className="opacity-40" /> Last Deal: {formatDate(stats.lastDate)}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-10">
-                          <div className="text-right">
-                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Lifetime Value (LTV)</p>
-                            <p className="text-3xl font-black text-text-main">{formatCurrency(stats.ltv)}</p>
-                          </div>
-                          <div className="w-px h-12 bg-black/5 hidden md:block"></div>
-                          <div className="flex flex-col gap-2">
-                            <p className="text-[10px] font-black text-accent uppercase tracking-widest text-center">Take Care Action</p>
-                            <div className="flex gap-2">
-                              <button onClick={() => showToast(`ส่งคำขอบคุณถึง ${company} แล้ว`, "success")} className="px-4 py-2 bg-accent/10 text-accent rounded-xl text-[10px] font-black uppercase hover:bg-accent hover:text-white transition-all shadow-clay-sm border border-accent/20">
-                                Appreciation
-                              </button>
-                              <button onClick={() => showToast(`สร้างนัดหมายทานข้าวกับ ${company} แล้ว`, "success")} className="px-4 py-2 bg-warm-blue/10 text-warm-blue rounded-xl text-[10px] font-black uppercase hover:bg-warm-blue hover:text-white transition-all shadow-clay-sm border border-warm-blue/20">
-                                Coffee/Dinner
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  );
-                })}
-                {customerMaster.filter(c => c.ltv > 0).length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-40 opacity-20 filter grayscale">
-                    <Trophy size={80} className="mb-4 text-accent" />
-                    <p className="text-lg font-black uppercase tracking-widest text-center">No VIP Clients Yet <br /> Close some deals to build your VIP list!</p>
+              {/* VIP Client Cards */}
+              <div className="grid grid-cols-1 gap-4">
+                {vipClients.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-20 opacity-20 filter grayscale">
+                    <Users size={64} className="mb-4 text-text-muted" />
+                    <p className="text-lg font-bold">No clients found. Close some deals!</p>
                   </div>
                 )}
+
+                {vipClients.map((client, idx) => (
+                  <div key={client.id} className="group bg-white hover:bg-white/80 dark:bg-gray-900 rounded-[28px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-clay-lg transition-all duration-300 relative overflow-hidden">
+                    {/* Rank Indicator */}
+                    <div className="absolute top-0 left-0 w-16 h-full bg-gradient-to-b from-gray-50 to-white border-r border-gray-100 flex flex-col items-center justify-center gap-1 z-10">
+                      <span className="text-[10px] font-black uppercase text-gray-300 transform -rotate-90 origin-center w-20 text-center">Rank</span>
+                      <span className={`text-2xl font-black ${idx < 3 ? 'text-accent scale-110' : 'text-gray-300'}`}>#{idx + 1}</span>
+                    </div>
+
+                    <div className="pl-20 pr-6 py-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+
+                      {/* Client Info */}
+                      <div className="flex-1 min-w-[240px]">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-xl font-black text-text-main group-hover:text-accent transition-colors">{client.name}</h3>
+                          <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${client.tier.color}`}>{client.tier.name}</span>
+                          <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${client.health.bg} ${client.health.color}`}>{client.health.label}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-4 text-xs text-text-muted font-bold">
+                          <div className="flex items-center gap-1.5"><Users size={14} className="opacity-50" /> {client.contact}</div>
+                          <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="opacity-50 text-green-500" /> {client.wonDeals} Won</div>
+                          <div className="flex items-center gap-1.5"><Clock size={14} className="opacity-50" /> Last seen {client.daysSinceLast} days ago</div>
+                        </div>
+                      </div>
+
+                      {/* Performance Stats */}
+                      <div className="flex items-center gap-8 lg:border-l lg:border-gray-100 lg:pl-8">
+                        <div>
+                          <p className="text-[10px] font-black text-text-muted uppercase tracking-wider mb-1">Lifetime Value</p>
+                          <p className="text-xl font-black text-text-main">{formatCurrency(client.wonValue)}</p>
+                        </div>
+                        <div className="hidden sm:block">
+                          <p className="text-[10px] font-black text-text-muted uppercase tracking-wider mb-1">Win Rate</p>
+                          <div className="flex items-center gap-2">
+                            <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="h-full bg-accent rounded-full" style={{ width: `${client.winRate}%` }}></div>
+                            </div>
+                            <span className="text-sm font-bold">{client.winRate}%</span>
+                          </div>
+                        </div>
+                        <div className="hidden xl:block">
+                          <p className="text-[10px] font-black text-text-muted uppercase tracking-wider mb-1">Avg Deal</p>
+                          <p className="text-sm font-bold text-text-main">{formatCurrency(client.avgDealSize)}</p>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 pl-4 border-l border-gray-100/50">
+                        <button onClick={() => showToast(`Drafting email to ${client.name}...`)} className="p-3 rounded-xl bg-gray-50 text-text-muted hover:bg-accent hover:text-white transition-all shadow-sm"><MessageSquare size={16} /></button>
+                        <button onClick={() => showToast(`Calling ${client.contact}...`)} className="p-3 rounded-xl bg-gray-50 text-text-muted hover:bg-green-500 hover:text-white transition-all shadow-sm"><Users size={16} /></button>
+                        <button onClick={() => showToast(`Scheduled review for ${client.name}`)} className="px-4 py-3 rounded-xl bg-indigo-50 text-indigo-600 font-bold text-xs hover:bg-indigo-600 hover:text-white transition-all shadow-sm flex items-center gap-2">
+                          <Wand2 size={14} /> <span className="hidden xl:inline">Smart Plan</span>
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
