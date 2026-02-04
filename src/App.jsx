@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   LayoutDashboard, Users, Plus, Search,
   Building2, DollarSign, Trophy, X, Loader2, Database, Menu,
@@ -6,14 +6,14 @@ import {
   FileText, CheckSquare, MessageSquare, Trash2, XCircle, Clock, ArrowRight,
   Cpu, Server, HardDrive, Wrench, ChevronRight, RotateCcw,
   Zap, Signal, PieChart, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save,
-  Sun, Moon, CheckSquare as CheckSquareIcon, Filter, Activity, Info
+  Sun, Moon, CheckSquare as CheckSquareIcon, Filter, Activity, Info, Phone, Calendar, CircleDot
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import SolutionLayout from './components/solution-designer/SolutionLayout';
 
 // --- Supabase Configuration ---
 // ใช้ Environment Variables จากไฟล์ .env
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co ";
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY || "your-anon-key";
 
 // Initialize Supabase Client
@@ -80,7 +80,7 @@ const App = () => {
     try {
       // 1. Auto-Discover Models (Dynamic)
       // This fixes "Model Not Found" by asking Google "What models CAN I use?"
-      const listResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      const listResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key= ${apiKey}`);
       const listData = await listResponse.json();
 
       if (listData.error) {
@@ -101,7 +101,7 @@ const App = () => {
       console.log(`Using Auto-Discovered Model: ${modelName}`);
 
       // 2. Call the API with the discovered model
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/ ${modelName}:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -273,7 +273,7 @@ const App = () => {
     return { filteredDeals: filtered, customers, goldenList, totalPipeline, wonRevenue, funnel };
   }, [deals, searchTerm, filterStage, filterValueMin, filterValueMax, filterDate]);
 
-  const { filteredDeals: memoFilteredDeals, customers: customerMaster, goldenList, totalPipeline, wonRevenue, funnel: funnelStats } = masterData;
+  const { filteredDeals: memoFilteredDeals, goldenList, totalPipeline, wonRevenue, funnel: funnelStats } = masterData;
 
 
   useEffect(() => {
@@ -2271,67 +2271,178 @@ const App = () => {
           )}
 
           {activeTab === 'customers' && (
-            <div className="bg-surface rounded-[40px] shadow-clay-lg border border-white/60 overflow-hidden animate-in fade-in duration-500 max-w-6xl mx-auto">
-              <div className="p-8 border-b border-black/5 flex justify-between items-center bg-bg/20">
-                <div>
-                  <h2 className="text-2xl font-black text-text-main mb-1">Customer Master</h2>
-                  <p className="text-xs font-bold text-text-muted uppercase tracking-widest">Grouping all deals by unique company name</p>
+            <div className="max-w-7xl mx-auto space-y-6 pb-20">
+              {/* Header Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-black/5 shadow-sm flex items-center justify-between group hover:border-accent/30 transition-all">
+                  <div>
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Total Customers</p>
+                    <h3 className="text-2xl font-black text-text-main group-hover:text-accent transition-colors">{vipClients.length}</h3>
+                  </div>
+                  <div className="p-3 bg-bg rounded-xl text-text-muted group-hover:bg-accent group-hover:text-white transition-colors"><Users size={20} /></div>
                 </div>
-                <div className="px-4 py-2 bg-white rounded-2xl shadow-clay-inner border border-black/5 text-center">
-                  <p className="text-[9px] font-black text-text-muted uppercase">Entities</p>
-                  <p className="text-xl font-black text-accent">{customerMaster.length}</p>
+                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-black/5 shadow-sm flex items-center justify-between group hover:border-accent/30 transition-all">
+                  <div>
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Active Buying</p>
+                    <h3 className="text-2xl font-black text-text-main group-hover:text-green-500 transition-colors">{vipClients.filter(c => c.health.label === 'Active' || c.health.label === 'Engaged').length}</h3>
+                  </div>
+                  <div className="p-3 bg-bg rounded-xl text-text-muted group-hover:bg-green-500 group-hover:text-white transition-colors"><Zap size={20} /></div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-black/5 shadow-sm flex items-center justify-between group hover:border-accent/30 transition-all">
+                  <div>
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Avg Lifetime Value</p>
+                    <h3 className="text-2xl font-black text-text-main group-hover:text-indigo-500 transition-colors">{formatCurrency(vipClients.reduce((sum, c) => sum + c.wonValue, 0) / (vipClients.length || 1))}</h3>
+                  </div>
+                  <div className="p-3 bg-bg rounded-xl text-text-muted group-hover:bg-indigo-500 group-hover:text-white transition-colors"><Trophy size={20} /></div>
                 </div>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left min-w-[800px]">
-                  <thead className="bg-bg/40 text-text-muted font-black text-[10px] uppercase tracking-widest">
-                    <tr>
-                      <th className="px-8 py-5">Company & Contact</th>
-                      <th className="px-8 py-5">Summary Status</th>
-                      <th className="px-8 py-5">Lifetime Value (LTV)</th>
-                      <th className="px-8 py-5 text-right">View History</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-black/5">
-                    {customerMaster.map((data) => (
-                      <React.Fragment key={data.name}>
-                        <tr onClick={() => setExpandedCompany(expandedCompany === data.name ? null : data.name)} className={`hover:bg-bg/20 cursor-pointer group ${expandedCompany === data.name ? 'bg-accent/5' : ''}`}>
-                          <td className="px-8 py-5">
-                            <p className="font-black text-text-main text-base group-hover:text-accent">{data.name}</p>
-                            <p className="text-xs font-bold text-text-muted">{data.contact}</p>
-                          </td>
-                          <td className="px-8 py-5">
-                            <span className="text-[10px] font-black uppercase px-3 py-1 bg-surface border rounded-lg shadow-clay-inner">
-                              {data.status} ({data.deals.length} deals)
+
+              {/* Toolbar */}
+              <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 bg-surface p-4 rounded-2xl shadow-clay-inner border border-white/60">
+                <div>
+                  <h2 className="text-xl font-black text-text-main flex items-center gap-2"><Users size={20} className="text-accent" /> Customer Master</h2>
+                  <p className="text-xs font-medium text-text-muted">Manage all your customer relationships in one place.</p>
+                </div>
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                  <span className="text-[10px] font-bold text-text-muted uppercase hidden md:inline">Sort by:</span>
+                  <select className="bg-bg border-none text-xs font-bold rounded-lg px-3 py-2 focus:ring-accent cursor-pointer">
+                    <option value="ltv">Lifetime Value (High-Low)</option>
+                    <option value="recent">Recently Active</option>
+                    <option value="name">Name (A-Z)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Customer List (Cards) */}
+              <div className="grid grid-cols-1 gap-4">
+                {vipClients.filter(c =>
+                  c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  c.contact.toLowerCase().includes(searchTerm.toLowerCase())
+                ).map((client) => (
+                  <div key={client.id} className="group bg-white dark:bg-gray-900 rounded-[20px] border border-black/5 dark:border-white/5 shadow-sm hover:shadow-clay-md transition-all duration-300 overflow-hidden">
+                    <div
+                      onClick={() => setExpandedCompany(expandedCompany === client.name ? null : client.name)}
+                      className="p-5 flex flex-col md:flex-row items-center gap-6 cursor-pointer relative"
+                    >
+                      {/* Left: Avatar & Identity */}
+                      <div className="flex items-center gap-4 min-w-[300px] w-full md:w-auto">
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black bg-gradient-to-br ${client.tier.gradient} shadow-inner`}>
+                          {client.name.charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-black text-text-main truncate group-hover:text-accent transition-colors">{client.name}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded shadow-sm ${client.tier.color}`}>{client.tier.name}</span>
+                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded shadow-sm flex items-center gap-1 ${client.health.bg} ${client.health.color}`}>
+                              <div className={`w-1.5 h-1.5 rounded-full bg-current animate-pulse`}></div>
+                              {client.health.label}
                             </span>
-                          </td>
-                          <td className="px-8 py-5 font-black text-text-main text-lg">{formatCurrency(data.ltv)}</td>
-                          <td className="px-8 py-5 text-right"><ChevronRight size={18} className={expandedCompany === data.name ? 'rotate-90 transition-transform' : ''} /></td>
-                        </tr>
-                        {expandedCompany === data.name && (
-                          <tr>
-                            <td colSpan="4" className="bg-bg/40 p-6">
-                              <div className="grid grid-cols-1 gap-2">
-                                {data.deals.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(deal => (
-                                  <div key={deal.id} onClick={(e) => { e.stopPropagation(); setSelectedDeal(deal); }} className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl shadow-clay-sm border hover:border-accent cursor-pointer transition-all">
-                                    <div>
-                                      <p className="font-bold text-sm text-text-main">{deal.title}</p>
-                                      <p className="text-[9px] font-bold text-text-muted uppercase">{formatDate(deal.createdAt)} • {deal.stage}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Middle: Key Stats */}
+                      <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 w-full border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6">
+                        <div>
+                          <p className="text-[9px] font-bold text-text-muted uppercase opacity-60 mb-0.5">Contact</p>
+                          <p className="text-xs font-bold text-text-main truncate flex items-center gap-1"><Users size={12} />{client.contact}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-bold text-text-muted uppercase opacity-60 mb-0.5">Total Spent (LTV)</p>
+                          <p className="text-xs font-black text-accent">{formatCurrency(client.wonValue)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-bold text-text-muted uppercase opacity-60 mb-0.5">Win Rate</p>
+                          <p className="text-xs font-bold text-text-main">{client.winRate}% ({client.wonDeals}/{client.totalDeals})</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-bold text-text-muted uppercase opacity-60 mb-0.5">Last Activity</p>
+                          <p className="text-xs font-bold text-text-main">{client.daysSinceLast} days ago</p>
+                        </div>
+                      </div>
+
+                      {/* Right: Expand Icon */}
+                      <div className="hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-bg text-text-muted group-hover:bg-accent group-hover:text-white transition-all">
+                        <ChevronRight size={20} className={`transform transition-transform ${expandedCompany === client.name ? 'rotate-90' : ''}`} />
+                      </div>
+                    </div>
+
+                    {/* Expanded Detail View */}
+                    {expandedCompany === client.name && (
+                      <div className="bg-bg/40 border-t border-black/5 p-6 animate-in slide-in-from-top-2 duration-200">
+                        <div className="flex flex-col xl:flex-row gap-6">
+                          {/* Profile / Notes Side */}
+                          <div className="xl:w-1/3 space-y-4">
+                            <h4 className="font-bold text-sm uppercase flex items-center gap-2 opacity-60"><Users size={14} /> Customer Profile</h4>
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-white">
+                              <div className="space-y-3">
+                                <button className="w-full flex items-center justify-between p-3 rounded-xl bg-bg hover:bg-accent/10 hover:text-accent transition-all group/btn text-sm font-bold text-text-muted">
+                                  <span className="flex items-center gap-2"><MessageSquare size={16} /> Send Email</span>
+                                  <ArrowRight size={14} className="opacity-0 group-hover/btn:opacity-100 -translate-x-2 group-hover/btn:translate-x-0 transition-all" />
+                                </button>
+                                <button className="w-full flex items-center justify-between p-3 rounded-xl bg-bg hover:bg-green-50 hover:text-green-600 transition-all group/btn text-sm font-bold text-text-muted">
+                                  <span className="flex items-center gap-2"><Phone size={16} /> Call Contact</span>
+                                  <ArrowRight size={14} className="opacity-0 group-hover/btn:opacity-100 -translate-x-2 group-hover/btn:translate-x-0 transition-all" />
+                                </button>
+                                <button className="w-full flex items-center justify-between p-3 rounded-xl bg-bg hover:bg-purple-50 hover:text-purple-600 transition-all group/btn text-sm font-bold text-text-muted">
+                                  <span className="flex items-center gap-2"><Calendar size={16} /> Schedule Meeting</span>
+                                  <ArrowRight size={14} className="opacity-0 group-hover/btn:opacity-100 -translate-x-2 group-hover/btn:translate-x-0 transition-all" />
+                                </button>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-bold text-text-muted uppercase mb-2">Interests & Products</p>
+                              <div className="flex flex-wrap gap-2">
+                                {Array.from(client.products).map(p => (
+                                  <span key={p} className="px-2 py-1 bg-white border rounded-lg text-[10px] font-bold text-text-main hover:border-accent cursor-default">{p}</span>
+                                ))}
+                                {client.products.size === 0 && <span className="text-xs text-text-muted italic">No products identified yet.</span>}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Deal Timeline Side */}
+                          <div className="flex-1 space-y-4">
+                            <div className="flex justify-between items-center">
+                              <h4 className="font-bold text-sm uppercase flex items-center gap-2 opacity-60"><Activity size={14} /> Deal History</h4>
+                              <span className="text-[10px] font-black bg-white px-2 py-1 rounded-lg border">{deals.filter(d => d.company === client.name).length} Deals</span>
+                            </div>
+
+                            <div className="space-y-3">
+                              {deals.filter(d => d.company === client.name).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(deal => (
+                                <div key={deal.id} onClick={(e) => { e.stopPropagation(); handleDealClick(deal); }} className="flex items-center gap-4 p-3 bg-white dark:bg-gray-800 rounded-2xl border border-transparent hover:border-accent shadow-sm cursor-pointer transition-all group/deal">
+                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${deal.stage === 'won' ? 'bg-green-100 text-green-600' :
+                                    deal.stage === 'lost' ? 'bg-red-100 text-red-600' :
+                                      'bg-blue-100 text-blue-600'
+                                    }`}>
+                                    {deal.stage === 'won' ? <Trophy size={18} /> : deal.stage === 'lost' ? <XCircle size={18} /> : <CircleDot size={18} />}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-start">
+                                      <p className="font-bold text-sm text-text-main truncate group-hover/deal:text-accent transition-colors">{deal.title}</p>
+                                      <p className="font-black text-sm text-text-main">{formatCurrency(deal.value)}</p>
                                     </div>
-                                    <div className="text-right">
-                                      <p className="font-black text-accent">{formatCurrency(deal.value)}</p>
-                                      <p className="text-[8px] font-bold text-accent uppercase">View Detail</p>
+                                    <div className="flex justify-between items-center mt-0.5">
+                                      <p className="text-[10px] font-bold text-text-muted uppercase">{formatDate(deal.createdAt)} • {deal.stage}</p>
+                                      <span className="text-[9px] font-bold text-text-muted opacity-0 group-hover/deal:opacity-100 transition-opacity flex items-center gap-1">View Detail <ArrowRight size={10} /></span>
                                     </div>
                                   </div>
-                                ))}
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </tbody>
-                </table>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {vipClients.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-20 opacity-20 filter grayscale">
+                    <Users size={64} className="mb-4 text-text-muted" />
+                    <p className="text-lg font-bold">No customers found.</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
