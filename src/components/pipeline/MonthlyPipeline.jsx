@@ -80,25 +80,25 @@ const MonthSelector = ({ currentDate, onChange, monthlyStats }) => {
   };
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2">
       <button
         onClick={handlePrevMonth}
-        className="p-2 rounded-xl bg-white shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all"
+        className="p-2 rounded-lg bg-white shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all"
       >
-        <ChevronLeft size={20} className="text-gray-600" />
+        <ChevronLeft size={18} className="text-gray-600" />
       </button>
       
       <div className="relative">
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-lg shadow-blue-500/25 font-bold text-lg min-w-[200px] flex items-center justify-center gap-2 hover:shadow-xl hover:scale-[1.02] transition-all"
+          className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-lg shadow-blue-500/25 font-bold text-base min-w-[160px] flex items-center justify-center gap-2 hover:shadow-xl hover:scale-[1.02] transition-all"
         >
-          <Calendar size={20} />
+          <Calendar size={16} />
           {getMonthName(currentDate.getFullYear(), currentDate.getMonth())}
         </button>
         
         {showDropdown && (
-          <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+          <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
             {months.map((m) => (
               <button
                 key={m.key}
@@ -106,7 +106,7 @@ const MonthSelector = ({ currentDate, onChange, monthlyStats }) => {
                   onChange(new Date(m.year, m.month, 1));
                   setShowDropdown(false);
                 }}
-                className={`w-full px-4 py-3 text-left font-medium transition-colors flex items-center justify-between ${
+                className={`w-full px-3 py-2.5 text-left font-medium text-sm transition-colors flex items-center justify-between ${
                   m.key === currentKey 
                     ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600' 
                     : 'hover:bg-gray-50 text-gray-700'
@@ -114,7 +114,7 @@ const MonthSelector = ({ currentDate, onChange, monthlyStats }) => {
               >
                 <span>{m.label}</span>
                 {monthlyStats[m.key]?.total > 0 && (
-                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                  <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
                     {formatCurrency(monthlyStats[m.key]?.won || 0)}
                   </span>
                 )}
@@ -126,9 +126,9 @@ const MonthSelector = ({ currentDate, onChange, monthlyStats }) => {
       
       <button
         onClick={handleNextMonth}
-        className="p-2 rounded-xl bg-white shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all"
+        className="p-2 rounded-lg bg-white shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all"
       >
-        <ChevronRight size={20} className="text-gray-600" />
+        <ChevronRight size={18} className="text-gray-600" />
       </button>
     </div>
   );
@@ -148,23 +148,23 @@ const MonthStatsCard = ({ title, value, subtext, icon: Icon, trend, trendUp, col
   return (
     <div 
       onClick={onClick}
-      className={`bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-200 transition-all cursor-pointer group ${onClick ? 'cursor-pointer' : ''}`}
+      className={`bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-200 transition-all cursor-pointer group ${onClick ? 'cursor-pointer' : ''}`}
     >
       <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-gray-500 font-medium mb-1">{title}</p>
-          <p className="text-2xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors">{value}</p>
-          {subtext && <p className="text-xs text-gray-400 mt-1">{subtext}</p>}
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-gray-500 font-medium mb-1 truncate">{title}</p>
+          <p className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors">{value}</p>
+          {subtext && <p className="text-[10px] text-gray-400 mt-1 truncate">{subtext}</p>}
         </div>
-        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colorClasses[color]} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-          <Icon size={24} className="text-white" />
+        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colorClasses[color]} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform flex-shrink-0 ml-2`}>
+          <Icon size={20} className="text-white" />
         </div>
       </div>
       {trend !== undefined && (
-        <div className={`flex items-center gap-1 mt-3 text-sm font-medium ${trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
-          {trendUp ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+        <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
+          {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
           <span>{trend}%</span>
-          <span className="text-gray-400 font-normal">vs เดือนที่แล้ว</span>
+          <span className="text-gray-400 font-normal">เทียบ</span>
         </div>
       )}
     </div>
@@ -186,7 +186,7 @@ const DealCard = ({ deal, onClick, onDragStart, isDragging }) => {
   };
 
   const getPriorityBadge = () => {
-    if (deal.value >= 500000) return { text: 'HOT 🔥', color: 'bg-rose-100 text-rose-700 border-rose-200' };
+    if (deal.value >= 500000) return { text: 'HOT', color: 'bg-rose-100 text-rose-700 border-rose-200' };
     if (deal.value >= 100000) return { text: 'WARM', color: 'bg-amber-100 text-amber-700 border-amber-200' };
     return null;
   };
@@ -198,51 +198,45 @@ const DealCard = ({ deal, onClick, onDragStart, isDragging }) => {
       draggable
       onDragStart={(e) => onDragStart(e, deal)}
       onClick={() => onClick(deal)}
-      className={`bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-lg hover:border-blue-300 hover:-translate-y-1 transition-all cursor-pointer group ${isDragging ? 'opacity-50 rotate-2' : ''}`}
+      className={`bg-white rounded-xl p-3 border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5 transition-all cursor-pointer group ${isDragging ? 'opacity-50 rotate-1' : ''}`}
     >
       {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-gray-500 truncate">{deal.company}</p>
-          <h4 className="font-bold text-gray-800 truncate group-hover:text-blue-600 transition-colors">{deal.title}</h4>
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex-1 min-w-0 pr-1">
+          <p className="text-[10px] font-medium text-gray-500 truncate">{deal.company}</p>
+          <h4 className="font-bold text-sm text-gray-800 truncate group-hover:text-blue-600 transition-colors leading-tight">{deal.title}</h4>
         </div>
         {priority && (
-          <span className={`text-[10px] font-bold px-2 py-1 rounded-full border ${priority.color} whitespace-nowrap ml-2`}>
+          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${priority.color} whitespace-nowrap ml-1`}>
             {priority.text}
           </span>
         )}
       </div>
 
-      {/* Contact */}
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-        <Users size={14} />
-        <span className="truncate">{deal.contact || 'ไม่มีข้อมูล'}</span>
-      </div>
-
       {/* Value */}
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-lg font-bold text-blue-600">{formatCurrency(deal.value)}</span>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-bold text-blue-600">{formatCurrency(deal.value)}</span>
         {deal.probability > 0 && (
-          <span className="text-xs font-medium text-gray-500">{deal.probability}% win</span>
+          <span className="text-[10px] font-medium text-gray-500">{deal.probability}%</span>
         )}
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium ${getAgingColor()}`}>
-          <Clock size={12} />
-          {daysSinceActivity === 0 ? 'วันนี้' : `${daysSinceActivity} วัน`}
+      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+        <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${getAgingColor()}`}>
+          <Clock size={10} />
+          {daysSinceActivity === 0 ? 'วันนี้' : `${daysSinceActivity}d`}
         </div>
         
         {deal.tasks?.filter(t => !t.completed).length > 0 && (
-          <div className="flex items-center gap-1 text-xs text-amber-600 font-medium">
-            <CheckCircle2 size={12} />
-            {deal.tasks.filter(t => !t.completed).length} งาน
+          <div className="flex items-center gap-1 text-[10px] text-amber-600 font-medium">
+            <CheckCircle2 size={10} />
+            {deal.tasks.filter(t => !t.completed).length}
           </div>
         )}
         
         {deal.ai_score && (
-          <div className={`text-xs font-bold px-2 py-1 rounded-lg ${deal.ai_score >= 70 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+          <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${deal.ai_score >= 70 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
             AI {deal.ai_score}%
           </div>
         )}
@@ -275,43 +269,43 @@ const StageColumn = ({ stage, deals, onDrop, onDealClick, onDragStart, draggedDe
 
   return (
     <div 
-      className={`flex-shrink-0 w-80 flex flex-col rounded-2xl transition-all ${isDragOver ? 'ring-2 ring-blue-400 bg-blue-50/50' : ''}`}
+      className={`flex-shrink-0 w-[260px] flex flex-col rounded-2xl transition-all ${isDragOver ? 'ring-2 ring-blue-400 bg-blue-50/50' : ''}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {/* Header */}
-      <div className={`p-4 rounded-t-2xl bg-gradient-to-r ${stage.color}`}>
+      {/* Header - Compact */}
+      <div className={`p-3 rounded-t-2xl bg-gradient-to-r ${stage.color}`}>
         <div className="flex items-center justify-between text-white">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
-              <Icon size={20} />
+            <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center">
+              <Icon size={16} />
             </div>
             <div>
-              <h3 className="font-bold">{stage.title}</h3>
-              <p className="text-xs text-white/80">{stage.titleEn}</p>
+              <h3 className="font-bold text-sm">{stage.title}</h3>
+              <p className="text-[10px] text-white/80">{stage.titleEn}</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold">{deals.length}</p>
-            <p className="text-xs text-white/80">ดีล</p>
+            <p className="text-xl font-bold">{deals.length}</p>
+            <p className="text-[10px] text-white/80">ดีล</p>
           </div>
         </div>
-        <div className="mt-3 pt-3 border-t border-white/20">
-          <p className="text-sm text-white/90">มูลค่ารวม</p>
-          <p className="text-xl font-bold">{formatCurrency(totalValue)}</p>
+        <div className="mt-2 pt-2 border-t border-white/20">
+          <p className="text-[10px] text-white/80 uppercase tracking-wide">มูลค่ารวม</p>
+          <p className="text-base font-bold">{formatCurrency(totalValue)}</p>
         </div>
       </div>
 
-      {/* Deals List */}
-      <div className={`flex-1 p-3 space-y-3 min-h-[400px] max-h-[calc(100vh-350px)] overflow-y-auto custom-scrollbar ${stage.bgColor}`}>
+      {/* Deals List - Compact */}
+      <div className={`flex-1 p-2 space-y-2 min-h-[350px] max-h-[calc(100vh-320px)] overflow-y-auto custom-scrollbar ${stage.bgColor}`}>
         {deals.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-              <Plus size={24} />
+          <div className="flex flex-col items-center justify-center py-8 text-gray-400">
+            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+              <Plus size={18} />
             </div>
-            <p className="text-sm">ไม่มีดีลใน Stage นี้</p>
-            <p className="text-xs text-gray-400 mt-1">ลากดีลมาวางที่นี่</p>
+            <p className="text-xs">ไม่มีดีล</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">ลากดีลมาวาง</p>
           </div>
         ) : (
           deals.map(deal => (
@@ -332,69 +326,69 @@ const StageColumn = ({ stage, deals, onDrop, onDealClick, onDragStart, draggedDe
 // ==================== COMPONENT: QUICK ACTIONS BAR ====================
 const QuickActionsBar = ({ onAddDeal, onExport, onFilter, viewMode, setViewMode, searchTerm, setSearchTerm }) => {
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-wrap items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
+    <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center gap-2">
         <button
           onClick={onAddDeal}
-          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/25 transition-all"
+          className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/25 transition-all"
         >
-          <Plus size={18} />
-          <span>เพิ่มดีลใหม่</span>
+          <Plus size={16} />
+          <span className="hidden sm:inline">เพิ่มดีล</span>
         </button>
         
-        <div className="h-8 w-px bg-gray-200" />
+        <div className="h-6 w-px bg-gray-200" />
         
-        <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+        <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
           <button
             onClick={() => setViewMode('board')}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${viewMode === 'board' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md font-medium text-sm transition-all ${viewMode === 'board' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            <LayoutGrid size={16} />
+            <LayoutGrid size={14} />
             <span className="hidden sm:inline">บอร์ด</span>
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md font-medium text-sm transition-all ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            <List size={16} />
+            <List size={14} />
             <span className="hidden sm:inline">รายการ</span>
           </button>
           <button
             onClick={() => setViewMode('calendar')}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${viewMode === 'calendar' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md font-medium text-sm transition-all ${viewMode === 'calendar' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            <CalendarDays size={16} />
+            <CalendarDays size={14} />
             <span className="hidden sm:inline">ปฏิทิน</span>
           </button>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <div className="relative">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={16} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="ค้นหาดีล, บริษัท, ผู้ติดต่อ..."
+            placeholder="ค้นหาดีล, บริษัท..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+            className="pl-8 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-44 lg:w-56"
           />
         </div>
         
         <button
           onClick={onFilter}
-          className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
+          className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg font-medium text-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
         >
-          <Filter size={18} />
+          <Filter size={16} />
           <span className="hidden sm:inline">ตัวกรอง</span>
         </button>
         
         <button
           onClick={onExport}
-          className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
+          className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg font-medium text-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
         >
-          <Download size={18} />
-          <span className="hidden sm:inline">ส่งออก</span>
+          <Download size={16} />
+          <span className="hidden lg:inline">ส่งออก</span>
         </button>
       </div>
     </div>
@@ -611,12 +605,12 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
   }, [monthlyDeals]);
 
   return (
-    <div className="h-full flex flex-col gap-4">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+    <div className="h-full flex flex-col gap-3">
+      {/* Header - Compact */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Sales Pipeline</h1>
-          <p className="text-sm text-gray-500 mt-1">จัดการดีลตามรอบเดือน เพื่อติดตามยอดขายและเป้าหมาย</p>
+          <h1 className="text-xl font-bold text-gray-800">Sales Pipeline</h1>
+          <p className="text-xs text-gray-500 mt-0.5">จัดการดีลตามรอบเดือน เพื่อติดตามยอดขายและเป้าหมาย</p>
         </div>
         <MonthSelector 
           currentDate={currentDate} 
@@ -629,7 +623,7 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
       <MonthlyAnalytics deals={monthlyDeals} monthlyTarget={monthlyTarget} />
 
       {/* Quick Actions */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-3">
         <QuickActionsBar
           onAddDeal={onAddDeal}
           onExport={handleExport}
@@ -648,24 +642,24 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
           />
           <button
             onClick={() => setShowAnalytics(!showAnalytics)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium text-sm transition-all ${
               showAnalytics 
                 ? 'bg-purple-100 text-purple-700 border border-purple-200' 
                 : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
             }`}
           >
-            <BarChart3 size={18} />
+            <BarChart3 size={16} />
             <span className="hidden sm:inline">วิเคราะห์</span>
           </button>
         </div>
       </div>
 
       {/* Pipeline Board with optional Analytics Sidebar */}
-      <div className="flex-1 flex gap-4 min-h-0">
+      <div className="flex-1 flex gap-3 min-h-0">
         <div className={`flex-1 min-h-0 ${showAnalytics ? 'w-3/4' : 'w-full'}`}>
           {viewMode === 'board' && (
-            <div className="h-full overflow-x-auto overflow-y-hidden pb-4">
-              <div className="flex gap-4 h-full min-w-max px-1">
+            <div className="h-full overflow-x-auto overflow-y-hidden pb-2">
+              <div className="flex gap-3 h-full min-w-max px-0.5">
                 {STAGES.map(stage => (
                   <StageColumn
                     key={stage.id}
@@ -745,7 +739,7 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
 
         {/* Analytics Sidebar */}
         {showAnalytics && (
-          <div className="w-80 flex-shrink-0 space-y-4 overflow-y-auto pb-4">
+          <div className="w-72 flex-shrink-0 space-y-3 overflow-y-auto pb-2">
             <MonthlyComparison 
               deals={allDeals} 
               currentDate={currentDate}
