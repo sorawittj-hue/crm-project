@@ -52,7 +52,7 @@ import { FileText } from 'lucide-react';
 // ==================== COMPONENT: MONTH SELECTOR ====================
 const MonthSelector = ({ currentDate, onChange, monthlyStats }) => {
   const [showDropdown, setShowDropdown] = useState(false);
-  
+
   const months = useMemo(() => {
     const m = [];
     const now = new Date();
@@ -87,7 +87,7 @@ const MonthSelector = ({ currentDate, onChange, monthlyStats }) => {
       >
         <ChevronLeft size={18} className="text-gray-600" />
       </button>
-      
+
       <div className="relative">
         <button
           onClick={() => setShowDropdown(!showDropdown)}
@@ -96,7 +96,7 @@ const MonthSelector = ({ currentDate, onChange, monthlyStats }) => {
           <Calendar size={16} />
           {getMonthName(currentDate.getFullYear(), currentDate.getMonth())}
         </button>
-        
+
         {showDropdown && (
           <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
             {months.map((m) => (
@@ -106,11 +106,10 @@ const MonthSelector = ({ currentDate, onChange, monthlyStats }) => {
                   onChange(new Date(m.year, m.month, 1));
                   setShowDropdown(false);
                 }}
-                className={`w-full px-3 py-2.5 text-left font-medium text-sm transition-colors flex items-center justify-between ${
-                  m.key === currentKey 
-                    ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600' 
-                    : 'hover:bg-gray-50 text-gray-700'
-                }`}
+                className={`w-full px-3 py-2.5 text-left font-medium text-sm transition-colors flex items-center justify-between ${m.key === currentKey
+                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600'
+                  : 'hover:bg-gray-50 text-gray-700'
+                  }`}
               >
                 <span>{m.label}</span>
                 {monthlyStats[m.key]?.total > 0 && (
@@ -123,7 +122,7 @@ const MonthSelector = ({ currentDate, onChange, monthlyStats }) => {
           </div>
         )}
       </div>
-      
+
       <button
         onClick={handleNextMonth}
         className="p-2 rounded-lg bg-white shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all"
@@ -146,7 +145,7 @@ const MonthStatsCard = ({ title, value, subtext, icon: Icon, trend, trendUp, col
   };
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className={`bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-200 transition-all cursor-pointer group ${onClick ? 'cursor-pointer' : ''}`}
     >
@@ -172,10 +171,10 @@ const MonthStatsCard = ({ title, value, subtext, icon: Icon, trend, trendUp, col
 };
 
 // ==================== COMPONENT: DEAL CARD ====================
-const DealCard = ({ deal, onClick, onDragStart, isDragging }) => {
+const DealCard = ({ deal, onClick, onDragStart, isDragging, teamMembers = [] }) => {
   const stage = STAGES.find(s => s.id === deal.stage) || STAGES[0];
   const daysSinceCreated = Math.floor((new Date() - new Date(deal.createdAt)) / (1000 * 60 * 60 * 24));
-  const daysSinceActivity = deal.lastActivity 
+  const daysSinceActivity = deal.lastActivity
     ? Math.floor((new Date() - new Date(deal.lastActivity)) / (1000 * 60 * 60 * 24))
     : daysSinceCreated;
 
@@ -191,7 +190,19 @@ const DealCard = ({ deal, onClick, onDragStart, isDragging }) => {
     return null;
   };
 
+  // Next Action Logic
+  const getNextAction = () => {
+    if (deal.stage === 'negotiation' && (deal.probability || 0) >= 70) return { text: '💰 ปิดดีลได้เลย!', color: 'text-emerald-700 bg-emerald-50 border-emerald-200' };
+    if (deal.stage === 'negotiation') return { text: '🤝 นัดประชุมปิด', color: 'text-orange-700 bg-orange-50 border-orange-200' };
+    if (deal.stage === 'proposal') return { text: daysSinceActivity >= 3 ? '📞 ติดตามด่วน!' : '📞 ติดตาม Proposal', color: daysSinceActivity >= 3 ? 'text-red-700 bg-red-50 border-red-200' : 'text-blue-700 bg-blue-50 border-blue-200' };
+    if (deal.stage === 'contact') return { text: '📄 ส่ง Proposal', color: 'text-indigo-700 bg-indigo-50 border-indigo-200' };
+    if (deal.stage === 'lead') return { text: '📞 โทรรับสาย', color: 'text-purple-700 bg-purple-50 border-purple-200' };
+    return null;
+  };
+
   const priority = getPriorityBadge();
+  const nextAction = getNextAction();
+  const assignee = teamMembers.find(m => m.id === deal.assigned_to);
 
   return (
     <div
@@ -206,11 +217,22 @@ const DealCard = ({ deal, onClick, onDragStart, isDragging }) => {
           <p className="text-[10px] font-medium text-gray-500 truncate">{deal.company}</p>
           <h4 className="font-bold text-sm text-gray-800 truncate group-hover:text-blue-600 transition-colors leading-tight">{deal.title}</h4>
         </div>
-        {priority && (
-          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${priority.color} whitespace-nowrap ml-1`}>
-            {priority.text}
-          </span>
-        )}
+        <div className="flex items-center gap-1 flex-shrink-0 ml-1">
+          {priority && (
+            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${priority.color} whitespace-nowrap`}>
+              {priority.text}
+            </span>
+          )}
+          {assignee && (
+            <div
+              className="w-5 h-5 rounded-full flex items-center justify-center text-white font-black text-[9px] shadow-sm flex-shrink-0"
+              style={{ backgroundColor: assignee.color }}
+              title={assignee.name}
+            >
+              {assignee.name.charAt(0)}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Value */}
@@ -221,20 +243,27 @@ const DealCard = ({ deal, onClick, onDragStart, isDragging }) => {
         )}
       </div>
 
+      {/* Next Action Chip */}
+      {nextAction && (
+        <div className={`mb-2 px-2 py-1 rounded-lg text-[10px] font-bold border w-full text-center ${nextAction.color}`}>
+          {nextAction.text}
+        </div>
+      )}
+
       {/* Footer */}
       <div className="flex items-center justify-between pt-2 border-t border-gray-100">
         <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${getAgingColor()}`}>
           <Clock size={10} />
           {daysSinceActivity === 0 ? 'วันนี้' : `${daysSinceActivity}d`}
         </div>
-        
+
         {deal.tasks?.filter(t => !t.completed).length > 0 && (
           <div className="flex items-center gap-1 text-[10px] text-amber-600 font-medium">
             <CheckCircle2 size={10} />
             {deal.tasks.filter(t => !t.completed).length}
           </div>
         )}
-        
+
         {deal.ai_score && (
           <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${deal.ai_score >= 70 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
             AI {deal.ai_score}%
@@ -246,9 +275,9 @@ const DealCard = ({ deal, onClick, onDragStart, isDragging }) => {
 };
 
 // ==================== COMPONENT: STAGE COLUMN ====================
-const StageColumn = ({ stage, deals, onDrop, onDealClick, onDragStart, draggedDeal }) => {
+const StageColumn = ({ stage, deals, onDrop, onDealClick, onDragStart, draggedDeal, teamMembers = [] }) => {
   const [isDragOver, setIsDragOver] = useState(false);
-  
+
   const totalValue = deals.reduce((sum, d) => sum + (d.value || 0), 0);
   const Icon = stage.icon;
 
@@ -268,7 +297,7 @@ const StageColumn = ({ stage, deals, onDrop, onDealClick, onDragStart, draggedDe
   };
 
   return (
-    <div 
+    <div
       className={`flex-shrink-0 w-[260px] flex flex-col rounded-2xl transition-all ${isDragOver ? 'ring-2 ring-blue-400 bg-blue-50/50' : ''}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -315,6 +344,7 @@ const StageColumn = ({ stage, deals, onDrop, onDealClick, onDragStart, draggedDe
               onClick={onDealClick}
               onDragStart={onDragStart}
               isDragging={draggedDeal?.id === deal.id}
+              teamMembers={teamMembers}
             />
           ))
         )}
@@ -335,9 +365,9 @@ const QuickActionsBar = ({ onAddDeal, onExport, onFilter, viewMode, setViewMode,
           <Plus size={16} />
           <span className="hidden sm:inline">เพิ่มดีล</span>
         </button>
-        
+
         <div className="h-6 w-px bg-gray-200" />
-        
+
         <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
           <button
             onClick={() => setViewMode('board')}
@@ -374,7 +404,7 @@ const QuickActionsBar = ({ onAddDeal, onExport, onFilter, viewMode, setViewMode,
             className="pl-8 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-44 lg:w-56"
           />
         </div>
-        
+
         <button
           onClick={onFilter}
           className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg font-medium text-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
@@ -382,7 +412,7 @@ const QuickActionsBar = ({ onAddDeal, onExport, onFilter, viewMode, setViewMode,
           <Filter size={16} />
           <span className="hidden sm:inline">ตัวกรอง</span>
         </button>
-        
+
         <button
           onClick={onExport}
           className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg font-medium text-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
@@ -396,19 +426,19 @@ const QuickActionsBar = ({ onAddDeal, onExport, onFilter, viewMode, setViewMode,
 };
 
 // ==================== COMPONENT: MONTHLY ANALYTICS ====================
-const MonthlyAnalytics = ({ deals, monthlyTarget = 1000000 }) => {
+const MonthlyAnalytics = ({ deals, monthlyTarget = 1000000, teamMembers = [] }) => {
   const stats = useMemo(() => {
     const won = deals.filter(d => d.stage === 'won');
     const lost = deals.filter(d => d.stage === 'lost');
     const active = deals.filter(d => d.stage !== 'won' && d.stage !== 'lost');
-    
+
     const wonValue = won.reduce((sum, d) => sum + (d.value || 0), 0);
     const lostValue = lost.reduce((sum, d) => sum + (d.value || 0), 0);
     const pipelineValue = active.reduce((sum, d) => sum + (d.value || 0), 0);
-    
+
     const avgDealSize = deals.length > 0 ? (wonValue + pipelineValue) / deals.length : 0;
     const winRate = (won.length + lost.length) > 0 ? (won.length / (won.length + lost.length)) * 100 : 0;
-    
+
     return {
       totalDeals: deals.length,
       wonCount: won.length,
@@ -423,49 +453,84 @@ const MonthlyAnalytics = ({ deals, monthlyTarget = 1000000 }) => {
     };
   }, [deals, monthlyTarget]);
 
+  // Per-member stats
+  const memberStats = useMemo(() => {
+    return teamMembers.map(m => {
+      const myDeals = deals.filter(d => d.assigned_to === m.id);
+      const wonValue = myDeals.filter(d => d.stage === 'won').reduce((s, d) => s + (d.value || 0), 0);
+      const pct = Math.round(Math.min(100, (wonValue / m.goal) * 100));
+      return { ...m, wonValue, pct };
+    });
+  }, [deals, teamMembers]);
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <MonthStatsCard
-        title="ยอดขายสำเร็จ"
-        value={formatCurrency(stats.wonValue)}
-        subtext={`${stats.wonCount} ดีลที่ปิดได้`}
-        icon={DollarSign}
-        color="emerald"
-      />
-      <MonthStatsCard
-        title="เป้าหมายรายเดือน"
-        value={`${stats.targetProgress.toFixed(0)}%`}
-        subtext={formatCurrency(monthlyTarget)}
-        icon={Target}
-        color="blue"
-      />
-      <MonthStatsCard
-        title="มูลค่าใน Pipeline"
-        value={formatCurrency(stats.pipelineValue)}
-        subtext={`${stats.activeCount} ดีลกำลังเจรจา`}
-        icon={Activity}
-        color="indigo"
-      />
-      <MonthStatsCard
-        title="Win Rate"
-        value={`${stats.winRate.toFixed(1)}%`}
-        subtext={`${stats.lostCount} ดีลหลุด (${formatCurrency(stats.lostValue)})`}
-        icon={Award}
-        color="amber"
-      />
+    <div className="space-y-3">
+      {/* Team Mini-Scoreboard */}
+      {teamMembers.length > 0 && (
+        <div className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">📊 Team Scoreboard (เดือนนี้)</p>
+          <div className="flex gap-3">
+            {memberStats.map(m => (
+              <div key={m.id} className="flex-1">
+                <div className="flex justify-between items-center mb-1">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-4 h-4 rounded-full flex items-center justify-center text-white font-black text-[8px]" style={{ backgroundColor: m.color }}>{m.name.charAt(0)}</div>
+                    <span className="text-[10px] font-bold text-gray-700">{m.name}</span>
+                  </div>
+                  <span className="text-[10px] font-black" style={{ color: m.color }}>{m.pct}%</span>
+                </div>
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${m.pct}%`, backgroundColor: m.color }} />
+                </div>
+                <p className="text-[9px] text-gray-400 mt-0.5">{formatCurrency(m.wonValue)} / {formatCurrency(m.goal)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <MonthStatsCard
+          title="ยอดขายสำเร็จ"
+          value={formatCurrency(stats.wonValue)}
+          subtext={`${stats.wonCount} ดีลที่ปิดได้`}
+          icon={DollarSign}
+          color="emerald"
+        />
+        <MonthStatsCard
+          title="เป้าหมายรายเดือน"
+          value={`${stats.targetProgress.toFixed(0)}%`}
+          subtext={formatCurrency(monthlyTarget)}
+          icon={Target}
+          color="blue"
+        />
+        <MonthStatsCard
+          title="มูลค่าใน Pipeline"
+          value={formatCurrency(stats.pipelineValue)}
+          subtext={`${stats.activeCount} ดีลกำลังเจรจา`}
+          icon={Activity}
+          color="indigo"
+        />
+        <MonthStatsCard
+          title="Win Rate"
+          value={`${stats.winRate.toFixed(1)}%`}
+          subtext={`${stats.lostCount} ดีลหลุด (${formatCurrency(stats.lostValue)})`}
+          icon={Award}
+          color="amber"
+        />
+      </div>
     </div>
   );
 };
 
 // ==================== MAIN COMPONENT ====================
-const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal, monthlyTarget = 1000000 }) => {
+const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal, monthlyTarget = 1000000, teamMembers = [] }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState('board'); // 'board', 'list', 'calendar', 'analytics'
   const [searchTerm, setSearchTerm] = useState('');
   const [draggedDeal, setDraggedDeal] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
-  
+
   // Advanced filters state
   const [filters, setFilters] = useState({
     stages: ['lead', 'contact', 'proposal', 'negotiation', 'won', 'lost'],
@@ -481,21 +546,21 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
   const monthlyDeals = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    
+
     return allDeals.filter(deal => {
       const dealDate = new Date(deal.createdAt);
       const matchesMonth = dealDate.getFullYear() === year && dealDate.getMonth() === month;
-      
+
       if (!matchesMonth) return false;
-      
+
       // Stage filter
       if (!filters.stages.includes(deal.stage)) return false;
-      
+
       // Value filter
       const value = deal.value || 0;
       if (filters.minValue && value < Number(filters.minValue)) return false;
       if (filters.maxValue && value > Number(filters.maxValue)) return false;
-      
+
       // Date range filter
       if (filters.startDate) {
         const start = new Date(filters.startDate);
@@ -506,14 +571,14 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
         end.setHours(23, 59, 59);
         if (dealDate > end) return false;
       }
-      
+
       // Priority filter
       if (filters.priority) {
         if (filters.priority === 'hot' && value < 500000) return false;
         if (filters.priority === 'warm' && (value < 100000 || value >= 500000)) return false;
         if (filters.priority === 'cold' && value >= 100000) return false;
       }
-      
+
       // Search term
       const search = (searchTerm || filters.searchTerm).toLowerCase();
       if (search) {
@@ -523,7 +588,7 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
           deal.contact?.toLowerCase().includes(search)
         );
       }
-      
+
       return true;
     });
   }, [allDeals, currentDate, searchTerm, filters]);
@@ -534,14 +599,14 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
     allDeals.forEach(deal => {
       const date = new Date(deal.createdAt);
       const key = `${date.getFullYear()}-${date.getMonth()}`;
-      
+
       if (!stats[key]) {
         stats[key] = { total: 0, won: 0, count: 0 };
       }
-      
+
       stats[key].total += deal.value || 0;
       stats[key].count += 1;
-      
+
       if (deal.stage === 'won') {
         stats[key].won += deal.value || 0;
       }
@@ -557,7 +622,7 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
 
   const handleDrop = async (stageId) => {
     if (!draggedDeal) return;
-    
+
     if (draggedDeal.stage !== stageId) {
       setLoading(true);
       await onUpdateDeal(draggedDeal.id, { stage: stageId });
@@ -568,16 +633,17 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
 
   // Export monthly deals
   const handleExport = () => {
-    const headers = ['Title', 'Company', 'Contact', 'Value', 'Stage', 'Created At'];
+    const headers = ['Title', 'Company', 'Contact', 'Value', 'Stage', 'Assigned To', 'Created At'];
     const rows = monthlyDeals.map(d => [
       d.title,
       d.company,
       d.contact,
       d.value,
       d.stage,
+      teamMembers.find(m => m.id === d.assigned_to)?.name || d.assigned_to || '-',
       d.createdAt
     ]);
-    
+
     const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -612,22 +678,22 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
           <h1 className="text-xl font-bold text-gray-800">Sales Pipeline</h1>
           <p className="text-xs text-gray-500 mt-0.5">จัดการดีลตามรอบเดือน เพื่อติดตามยอดขายและเป้าหมาย</p>
         </div>
-        <MonthSelector 
-          currentDate={currentDate} 
+        <MonthSelector
+          currentDate={currentDate}
           onChange={setCurrentDate}
           monthlyStats={monthlyStats}
         />
       </div>
 
       {/* Monthly Stats */}
-      <MonthlyAnalytics deals={monthlyDeals} monthlyTarget={monthlyTarget} />
+      <MonthlyAnalytics deals={monthlyDeals} monthlyTarget={monthlyTarget} teamMembers={teamMembers} />
 
       {/* Quick Actions */}
       <div className="flex items-center justify-between gap-3">
         <QuickActionsBar
           onAddDeal={onAddDeal}
           onExport={handleExport}
-          onFilter={() => {}}
+          onFilter={() => { }}
           viewMode={viewMode}
           setViewMode={setViewMode}
           searchTerm={searchTerm}
@@ -642,11 +708,10 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
           />
           <button
             onClick={() => setShowAnalytics(!showAnalytics)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium text-sm transition-all ${
-              showAnalytics 
-                ? 'bg-purple-100 text-purple-700 border border-purple-200' 
-                : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium text-sm transition-all ${showAnalytics
+              ? 'bg-purple-100 text-purple-700 border border-purple-200'
+              : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
+              }`}
           >
             <BarChart3 size={16} />
             <span className="hidden sm:inline">วิเคราะห์</span>
@@ -669,6 +734,7 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
                     onDealClick={onDealClick}
                     onDragStart={handleDragStart}
                     draggedDeal={draggedDeal}
+                    teamMembers={teamMembers}
                   />
                 ))}
               </div>
@@ -684,6 +750,7 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">บริษัท</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">มูลค่า</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Stage</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">มอบหมาย</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">วันที่สร้าง</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">AI Score</th>
                   </tr>
@@ -691,9 +758,10 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
                 <tbody className="divide-y divide-gray-100">
                   {monthlyDeals.map(deal => {
                     const stage = STAGES.find(s => s.id === deal.stage);
+                    const assignee = teamMembers.find(m => m.id === deal.assigned_to);
                     return (
-                      <tr 
-                        key={deal.id} 
+                      <tr
+                        key={deal.id}
                         onClick={() => onDealClick(deal)}
                         className="hover:bg-blue-50 cursor-pointer transition-colors"
                       >
@@ -709,6 +777,16 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
                           <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${stage?.bgColor} ${stage?.textColor}`}>
                             {stage?.title}
                           </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {assignee ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-[10px]" style={{ backgroundColor: assignee.color }}>
+                                {assignee.name.charAt(0)}
+                              </div>
+                              <span className="text-xs font-medium text-gray-700">{assignee.name}</span>
+                            </div>
+                          ) : <span className="text-xs text-gray-400">-</span>}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-500">{formatDate(deal.createdAt)}</td>
                         <td className="px-4 py-3">
@@ -728,8 +806,8 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
 
           {viewMode === 'calendar' && (
             <div className="h-full overflow-auto">
-              <MonthlyCalendarView 
-                deals={monthlyDeals} 
+              <MonthlyCalendarView
+                deals={monthlyDeals}
                 currentDate={currentDate}
                 onDealClick={onDealClick}
               />
@@ -740,11 +818,11 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
         {/* Analytics Sidebar */}
         {showAnalytics && (
           <div className="w-72 flex-shrink-0 space-y-3 overflow-y-auto pb-2">
-            <MonthlyComparison 
-              deals={allDeals} 
+            <MonthlyComparison
+              deals={allDeals}
               currentDate={currentDate}
             />
-            <DealAgingReport 
+            <DealAgingReport
               deals={activeDeals}
             />
           </div>
@@ -767,7 +845,7 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
 const MonthlyCalendarView = ({ deals, currentDate, onDealClick }) => {
   const daysInMonth = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth());
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
-  
+
   const dealsByDate = useMemo(() => {
     const map = {};
     deals.forEach(deal => {
@@ -797,8 +875,8 @@ const MonthlyCalendarView = ({ deals, currentDate, onDealClick }) => {
       </div>
       <div className="grid grid-cols-7 gap-2">
         {days.map((day, idx) => (
-          <div 
-            key={idx} 
+          <div
+            key={idx}
             className={`min-h-[100px] p-2 rounded-xl border ${day ? 'bg-gray-50 border-gray-100' : 'bg-transparent border-transparent'} ${day === new Date().getDate() && currentDate.getMonth() === new Date().getMonth() ? 'ring-2 ring-blue-500' : ''}`}
           >
             {day && (

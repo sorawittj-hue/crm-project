@@ -1,15 +1,17 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import {
-  LayoutDashboard, Users, Plus, Search,
+  Users, Plus, Search,
   Building2, DollarSign, Trophy, X, Loader2, Database, Menu,
   CheckCircle2, Upload, Download, FileSpreadsheet, AlertCircle,
   FileText, CheckSquare, MessageSquare, Trash2, XCircle, Clock, ArrowRight,
-  Cpu, Server, HardDrive, Wrench, ChevronRight, RotateCcw,
-  Zap, Signal, PieChart, Target, Sparkles, Wand2, TrendingUp, Flame, AlertTriangle, Pencil, Save,
+  Cpu, Server, HardDrive, ChevronRight, RotateCcw,
+  Zap, Signal, Target, Sparkles, Wand2, TrendingUp, AlertTriangle, Pencil, Save,
   Sun, Moon, CheckSquare as CheckSquareIcon, Filter, Activity, Info, Phone, Calendar, CircleDot
 } from 'lucide-react';
 import SolutionLayout from './components/solution-designer/SolutionLayout';
 import MonthlyPipeline from './components/pipeline/MonthlyPipeline';
+import TeamDashboard from './components/team/TeamDashboard';
+import CommandCenter from './components/dashboard/CommandCenter';
 import { supabase } from './utils/supabase';
 
 // --- Components ---
@@ -41,9 +43,9 @@ const Card = ({ children, className = '' }) => (
 // --- Main Application ---
 const App = () => {
   // const isDemoMode = true; // FORCE DEMO MODE (Local Storage)
-  const isDemoMode = false; // Real Supabase Mode
+  // const isDemoMode = false; // Real Supabase Mode
   // ---/ State /---
-  const [activeTab, setActiveTab] = useState('pipeline'); // 'pipeline' | 'dashboard' | 'contacts' | 'spec-setup' | 'tools' | 'calendar' | 'activity'
+  const [activeTab, setActiveTab] = useState('command'); // 'command' | 'pipeline' | 'team' | 'customers' | 'activity' | 'spec-setup' | 'tools' | 'solution'
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedDealIds, setSelectedDealIds] = useState(new Set());
@@ -168,7 +170,6 @@ const App = () => {
   const [isEditingDetails, setIsEditingDetails] = useState(false);
 
   // UX State
-  const [draggedDeal, setDraggedDeal] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDate, setFilterDate] = useState(''); // State for date filter
   const [filterValueMin, setFilterValueMin] = useState('');
@@ -178,8 +179,6 @@ const App = () => {
   const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [pipelineViewMode, setPipelineViewMode] = useState('active'); // 'active', 'recent', 'all'
-  const [pipelineSortMode, setPipelineSortMode] = useState('value'); // 'value', 'activity', 'newest'
   // Wait, I see selectedDealForMove on line 177 in previous reads (Step 269). Let's use that if it exists.
   const [movingDeal, setMovingDeal] = useState(null);
   const fileInputRef = useRef(null);
@@ -188,8 +187,18 @@ const App = () => {
   const [globalActivities, setGlobalActivities] = useState([]);
 
   // Persist Goal to Supabase
-  const [monthlyGoal, setMonthlyGoal] = useState(1000000);
+  const [monthlyGoal, setMonthlyGoal] = useState(10000000);
   const [expandedCompany, setExpandedCompany] = useState(null);
+
+  // Team Members Configuration
+  const [teamMembers] = useState([
+    { id: 'leader', name: 'ผม (Leader)', role: 'หัวหน้าทีม', goal: 7000000, color: '#7C6AF3' },
+    { id: 'off', name: 'น้องออฟ', role: 'ทีมงาน', goal: 3000000, color: '#F97316' },
+  ]);
+
+  // Pipeline filter by assignee
+  const [pipelineAssigneeFilter, setPipelineAssigneeFilter] = useState('all'); // 'all' | 'leader' | 'off'
+  const [customerOwnerFilter, setCustomerOwnerFilter] = useState('all');
 
   // Dark Mode Effect
   useEffect(() => {
@@ -550,16 +559,6 @@ const App = () => {
     setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
   };
 
-  const handleDragStart = (e, dealId) => { setDraggedDeal(dealId); e.dataTransfer.effectAllowed = 'move'; };
-  const handleDragOver = (e) => e.preventDefault();
-  const handleDrop = async (e, stageId) => {
-    e.preventDefault();
-    if (draggedDeal) {
-      await handleUpdateDeal(draggedDeal, { stage: stageId });
-      setDraggedDeal(null);
-    }
-  };
-
   const handleAddDeal = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -569,6 +568,7 @@ const App = () => {
       company: formData.get('company'),
       contact: formData.get('contact'),
       value: Number(formData.get('value')),
+      assigned_to: formData.get('assigned_to') || 'leader',
       stage: 'lead',
       probability: 20,
       lastActivity: new Date().toISOString(),
@@ -582,52 +582,6 @@ const App = () => {
         setIsModalOpen(false);
       }
     } catch (error) { console.error(error); }
-  };
-
-  // Predictive Scoring State
-  const [analyzingDealIds, setAnalyzingDealIds] = useState(new Set());
-
-  const handleAnalyzeDeal = async (deal, e) => {
-    e.stopPropagation();
-    if (analyzingDealIds.has(deal.id)) return;
-
-    setAnalyzingDealIds(prev => new Set(prev).add(deal.id));
-
-    try {
-      const prompt = `Analyze this sales deal for probability of winning (0-100) based on:
-      Title: ${deal.title}
-      Stage: ${deal.stage} (lead -> contact -> proposal -> negotiation -> won)
-      Value: ${deal.value}
-      Company: ${deal.company}
-      
-      Return ONLY a JSON object: { "score": number, "insight": "Short strategic reason (max 10 words)" }`;
-
-      const result = await callGeminiAPI(prompt);
-
-      if (result && result.score !== undefined) {
-        // Update Supabase
-        const { error } = await supabase.from('deals').update({
-          ai_score: result.score,
-          ai_insight: result.insight
-        }).eq('id', deal.id);
-
-        if (!error) {
-          // Optimistic Update
-          setDeals(prev => prev.map(d => d.id === deal.id ? { ...d, ai_score: result.score, ai_insight: result.insight } : d));
-        } else {
-          alert("Please create 'ai_score' and 'ai_insight' columns in Supabase first!");
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Analysis failed");
-    } finally {
-      setAnalyzingDealIds(prev => {
-        const next = new Set(prev);
-        next.delete(deal.id);
-        return next;
-      });
-    }
   };
 
   const handleMarkLost = async (e) => {
@@ -678,30 +632,6 @@ const App = () => {
     setSelectedDeal(prev => ({ ...prev, ...updates })); // Update local modal state
     setIsEditingDetails(false);
     showToast("อัพเดทข้อมูลเรียบร้อย", "success");
-  };
-
-  const handleDeleteDeal = async (dealId, e) => {
-    e.stopPropagation();
-    if (!window.confirm("Are you sure you want to permanently delete this deal?")) return;
-
-    // Optimistic UI Update: Remove deeply from state immediately
-    const originalDeals = [...deals];
-    setDeals(prev => prev.filter(d => d.id !== dealId));
-
-    if (isDemoMode) return;
-
-    try {
-      const { error } = await supabase.from('deals').delete().eq('id', dealId);
-      if (error) {
-        // Revert if API fails
-        setDeals(originalDeals);
-        console.error("Error deleting deal:", error);
-        alert("Failed to delete deal");
-      }
-    } catch (error) {
-      setDeals(originalDeals);
-      console.error(error);
-    }
   };
 
   // Helper Functions
@@ -849,16 +779,6 @@ const App = () => {
   });
 
   // Bulk Action Handlers
-  const toggleBulkSelection = (dealId) => {
-    const newSelection = new Set(selectedDealIds);
-    if (newSelection.has(dealId)) {
-      newSelection.delete(dealId);
-    } else {
-      newSelection.add(dealId);
-    }
-    setSelectedDealIds(newSelection);
-  };
-
   const selectAllVisible = () => {
     const allIds = new Set(filteredDeals.map(d => d.id));
     setSelectedDealIds(allIds);
@@ -945,8 +865,6 @@ const App = () => {
       return dealDate === dateStr;
     });
   };
-
-  const getStageTotal = (stageId) => memoFilteredDeals.filter(d => d.stage === stageId).reduce((sum, d) => sum + d.value, 0);
 
   // --- Advanced Client Analytics (Logic อย่ากั๊ก) ---
   const vipClients = useMemo(() => {
@@ -1064,73 +982,105 @@ const App = () => {
         </div>
 
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
-          <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 opacity-60">Menu</p>
-          {['pipeline', 'overview', 'dashboard', 'customers', 'clients', 'activity'].map((tab) => {
-            const isActive = activeTab === tab;
-            const tabIcons = {
-              pipeline: <Activity size={18} />, // Keeping original icons logic
-              overview: <PieChart size={18} />,
-              dashboard: <LayoutDashboard size={18} />,
-              customers: <Users size={18} />,
-              clients: <Trophy size={18} className="text-yellow-500" />,
-              activity: <Zap size={18} />
-            };
-            const tabLabels = {
-              pipeline: 'Sales Pipeline',
-              overview: 'Sales Overview',
-              dashboard: 'Strategic Dash',
-              customers: 'Customer Master',
-              clients: 'Key VIP Clients',
-              activity: 'Action Center'
-            };
+          {/* ─── SECTION: SALES ─────────────────────────────── */}
+          <p className="px-3 text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 opacity-70">SALES</p>
+          {[
+            { id: 'command', icon: '🏠', label: 'Command Center' },
+            { id: 'pipeline', icon: '🗂️', label: 'Sales Pipeline' },
+            { id: 'team', icon: '🏆', label: 'Team Dashboard' },
+            { id: 'customers', icon: '🤝', label: 'Customer Master' },
+            { id: 'activity', icon: '📋', label: 'Activity Feed' },
+          ].map(({ id, icon, label }) => {
+            const isActive = activeTab === id;
+            // Red badge: stale deals
+            const staleDealCount = id === 'pipeline'
+              ? deals.filter(d => !['won', 'lost'].includes(d.stage) && Math.floor((Date.now() - new Date(d.lastActivity || d.createdAt)) / 86400000) >= 7).length
+              : id === 'command'
+                ? deals.filter(d => !['won', 'lost'].includes(d.stage) && Math.floor((Date.now() - new Date(d.lastActivity || d.createdAt)) / 86400000) >= 7).length
+                : 0;
             return (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`
-                  w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300
-                  ${isActive
-                    ? 'bg-accent text-white shadow-clay-btn translate-x-1'
-                    : 'text-text-muted hover:bg-bg hover:text-text-main hover:translate-x-1'}
-                `}
+                key={id}
+                onClick={() => { setActiveTab(id); setIsSidebarOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all duration-200 relative ${isActive
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+                  }`}
               >
-                {tab === 'activity' && <div className="relative">
-                  <Activity size={18} />
-                  {deals.filter(d => d.tasks?.some(t => !t.completed && new Date(t.date) < new Date())).length > 0 &&
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                  }
-                </div>}
-                {tab !== 'activity' && tabIcons[tab]}
-                {tabLabels[tab]}
+                <span className="text-base leading-none">{icon}</span>
+                <span className="flex-1 text-left tracking-wide">{label}</span>
+                {staleDealCount > 0 && (
+                  <span className={`ml-auto text-[9px] font-black px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-red-100 text-red-600'
+                    }`}>{staleDealCount}</span>
+                )}
               </button>
             );
           })}
 
-          <div className="my-6 border-t border-black/5 opacity-50 mx-4"></div>
-          <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 opacity-60">Architect Tools</p>
-          {['spec-setup', 'solution', 'tools'].map((tab) => {
-            const isActive = activeTab === tab;
+          {/* ─── SECTION: TOOLS ─────────────────────────────── */}
+          <div className="my-3 border-t border-gray-100" />
+          <p className="px-3 text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 opacity-70">TOOLS</p>
+          {[
+            { id: 'spec-setup', icon: '🖥️', label: 'Spec AI' },
+            { id: 'solution', icon: '🏗️', label: 'Solution Designer' },
+            { id: 'tools', icon: '🔧', label: 'IT Tools' },
+          ].map(({ id, icon, label }) => {
+            const isActive = activeTab === id;
             return (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`
-                  w-full flex items-center px-4 py-3 rounded-2xl transition-all duration-300 group
-                  ${isActive
-                    ? 'bg-surface shadow-clay-inner text-accent font-bold scale-[0.98]'
-                    : 'text-text-muted hover:bg-surface/50 hover:text-text-main hover:translate-x-1'}
-                `}
+                key={id}
+                onClick={() => { setActiveTab(id); setIsSidebarOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-2 rounded-xl text-xs font-medium transition-all ${isActive ? 'bg-gray-100 text-gray-800 font-bold' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'
+                  }`}
               >
-                {tab === 'spec-setup' && <Cpu size={20} className={`mr-3 ${isActive ? 'text-accent' : 'text-text-muted opacity-60'}`} />}
-                {tab === 'tools' && <Wrench size={20} className={`mr-3 ${isActive ? 'text-accent' : 'text-text-muted opacity-60'}`} />}
-                {tab === 'solution' && <Server size={20} className={`mr-3 ${isActive ? 'text-accent' : 'text-text-muted opacity-60'}`} />}
-                <span className="text-[13px]">
-                  {tab === 'spec-setup' ? 'Spec AI' : tab === 'solution' ? 'Solution Designer' : 'IT Tools'}
-                </span>
+                <span className="text-sm leading-none">{icon}</span>
+                <span>{label}</span>
               </button>
             );
           })}
         </nav>
+
+        {/* Team Progress Mini-Bar */}
+        {(() => {
+          const now = new Date();
+          const teamWon = deals
+            .filter(d => d.stage === 'won' && new Date(d.createdAt).getMonth() === now.getMonth() && new Date(d.createdAt).getFullYear() === now.getFullYear())
+            .reduce((s, d) => s + (d.value || 0), 0);
+          const pct = Math.round(Math.min(100, (teamWon / monthlyGoal) * 100));
+          return (
+            <div className="px-4 pb-2">
+              <div className="bg-surface/80 rounded-2xl p-3 border border-white/40 shadow-clay-sm">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-[9px] font-black text-text-muted uppercase tracking-widest">🎯 ทีม {pct}%</span>
+                  <span className="text-[9px] font-bold text-text-main">{formatCurrency(teamWon)}</span>
+                </div>
+                <div className="h-1.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-accent to-orange-400 rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
+                </div>
+                <div className="flex gap-2 mt-2">
+                  {teamMembers.map(m => {
+                    const mWon = deals
+                      .filter(d => d.assigned_to === m.id && d.stage === 'won' && new Date(d.createdAt).getMonth() === now.getMonth() && new Date(d.createdAt).getFullYear() === now.getFullYear())
+                      .reduce((s, d) => s + (d.value || 0), 0);
+                    const mPct = Math.round(Math.min(100, (mWon / m.goal) * 100));
+                    return (
+                      <div key={m.id} className="flex-1">
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: m.color }} />
+                          <span className="text-[8px] font-bold text-text-muted truncate">{m.name.split(' ')[0]}</span>
+                          <span className="text-[8px] font-black ml-auto" style={{ color: m.color }}>{mPct}%</span>
+                        </div>
+                        <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${mPct}%`, backgroundColor: m.color }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Dark Mode Toggle */}
         <div className="px-4 py-4 border-t border-black/5 flex flex-col gap-2">
@@ -1177,15 +1127,45 @@ const App = () => {
               {activeTab === 'pipeline' ? 'Sales Pipeline' :
                 activeTab === 'overview' ? 'Sales Overview' :
                   activeTab === 'dashboard' ? 'Dashboard Analysis' :
-                    activeTab === 'customers' ? 'Customer Master' :
-                      activeTab === 'calendar' ? 'Calendar View' :
-                        activeTab === 'activity' ? 'Activity Feed' :
-                          activeTab === 'spec-setup' ? 'Smart Spec Recommendation' :
-                            activeTab === 'solution' ? 'Enterprise Solution Designer' : 'Professional IT Tools'}
+                    activeTab === 'team' ? '🏆 Team Dashboard' :
+                      activeTab === 'customers' ? 'Customer Master' :
+                        activeTab === 'calendar' ? 'Calendar View' :
+                          activeTab === 'activity' ? 'Activity Feed' :
+                            activeTab === 'spec-setup' ? 'Smart Spec Recommendation' :
+                              activeTab === 'solution' ? 'Enterprise Solution Designer' : 'Professional IT Tools'}
             </h1>
             {loading && <Loader2 size={16} className="animate-spin text-accent hidden md:block" />}
           </div>
           <div className="flex items-center gap-2 md:gap-4">
+            {/* Live Team Status Pill */}
+            {(() => {
+              const now = new Date();
+              const teamWon = deals
+                .filter(d => d.stage === 'won' && new Date(d.createdAt).getMonth() === now.getMonth() && new Date(d.createdAt).getFullYear() === now.getFullYear())
+                .reduce((s, d) => s + (d.value || 0), 0);
+              const teamPct = Math.round(Math.min(100, (teamWon / monthlyGoal) * 100));
+              return (
+                <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-surface rounded-xl shadow-clay-sm border border-white/60 text-[10px] font-black">
+                  <div className="flex items-center gap-1">
+                    <span className="text-text-muted">🏆</span>
+                    <span className="text-text-main">{teamPct}%</span>
+                  </div>
+                  <div className="w-px h-3 bg-gray-200" />
+                  {teamMembers.map(m => {
+                    const mWon = deals
+                      .filter(d => d.assigned_to === m.id && d.stage === 'won' && new Date(d.createdAt).getMonth() === now.getMonth() && new Date(d.createdAt).getFullYear() === now.getFullYear())
+                      .reduce((s, d) => s + (d.value || 0), 0);
+                    const mPct = Math.round(Math.min(100, (mWon / m.goal) * 100));
+                    return (
+                      <div key={m.id} className="flex items-center gap-1">
+                        <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-white font-black text-[7px]" style={{ backgroundColor: m.color }}>{m.name.charAt(0)}</div>
+                        <span style={{ color: m.color }}>{mPct}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
             {activeTab === 'pipeline' && (
               <>
                 {/* Bulk Mode Toggle */}
@@ -1269,6 +1249,16 @@ const App = () => {
               </button>
             </div>
           </div>
+        )}
+
+        {activeTab === 'command' && (
+          <CommandCenter
+            deals={deals}
+            teamMembers={teamMembers}
+            monthlyGoal={monthlyGoal}
+            onDealClick={(deal) => { setSelectedDeal(deal); setIsEditingDetails(true); }}
+            onAddDeal={() => setIsModalOpen(true)}
+          />
         )}
 
         {/* Bulk Actions Bar */}
@@ -1604,13 +1594,33 @@ const App = () => {
           )}
 
           {activeTab === 'pipeline' && (
-            <MonthlyPipeline
-              deals={deals}
-              onDealClick={handleDealClick}
-              onAddDeal={() => setIsModalOpen(true)}
-              onUpdateDeal={handleUpdateDeal}
-              monthlyTarget={monthlyGoal}
-            />
+            <div className="h-full flex flex-col">
+              {/* Assignee Filter Bar */}
+              <div className="flex-shrink-0 flex items-center gap-2 px-1 pb-3">
+                <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">แสดงดีลของ:</span>
+                {[{ id: 'all', label: '👥 ทุกคน' }, ...teamMembers.map(m => ({ id: m.id, label: m.name }))].map(opt => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setPipelineAssigneeFilter(opt.id)}
+                    className={`px-3 py-1.5 rounded-xl text-[11px] font-black transition-all ${pipelineAssigneeFilter === opt.id
+                      ? 'text-white shadow-clay-btn'
+                      : 'bg-surface text-text-muted hover:bg-white shadow-clay-sm'
+                      }`}
+                    style={pipelineAssigneeFilter === opt.id ? { backgroundColor: opt.id === 'all' ? '#7C6AF3' : teamMembers.find(m => m.id === opt.id)?.color || '#7C6AF3' } : {}}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <MonthlyPipeline
+                deals={pipelineAssigneeFilter === 'all' ? deals : deals.filter(d => d.assigned_to === pipelineAssigneeFilter)}
+                onDealClick={handleDealClick}
+                onAddDeal={() => setIsModalOpen(true)}
+                onUpdateDeal={handleUpdateDeal}
+                monthlyTarget={pipelineAssigneeFilter === 'all' ? monthlyGoal : (teamMembers.find(m => m.id === pipelineAssigneeFilter)?.goal || monthlyGoal)}
+                teamMembers={teamMembers}
+              />
+            </div>
           )}
           {activeTab === 'overview' && (
             <div className="space-y-6 max-w-7xl mx-auto pb-10">
@@ -1839,14 +1849,25 @@ const App = () => {
                     <Trophy size={14} /> The Golden List
                   </h3>
                   <div className="flex-1 space-y-3">
-                    {goldenList.slice(0, 5).map(deal => (
-                      <div key={deal.id} onClick={() => handleDealClick(deal)} className="p-2.5 bg-white/60 dark:bg-gray-800/60 rounded-xl shadow-sm border border-white/40 cursor-pointer hover:translate-x-1 transition-all">
-                        <p className="text-[11px] font-black text-text-main truncate">{deal.title}</p>
-                        <div className="flex justify-between items-center mt-1">
-                          <span className="text-[9px] font-bold text-accent">{formatCurrency(deal.value)}</span>
+                    {goldenList.slice(0, 5).map(deal => {
+                      const assignee = teamMembers.find(m => m.id === deal.assigned_to);
+                      return (
+                        <div key={deal.id} onClick={() => handleDealClick(deal)} className="p-2.5 bg-white/60 dark:bg-gray-800/60 rounded-xl shadow-sm border border-white/40 cursor-pointer hover:translate-x-1 transition-all">
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-[11px] font-black text-text-main truncate flex-1">{deal.title}</p>
+                            {assignee && (
+                              <div className="w-4 h-4 rounded-full flex items-center justify-center text-white font-black text-[8px] ml-1 flex-shrink-0" style={{ backgroundColor: assignee.color }}>
+                                {assignee.name.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-[9px] font-bold text-accent">{formatCurrency(deal.value)}</span>
+                            {assignee && <span className="text-[8px] text-text-muted">{assignee.name}</span>}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     {goldenList.length === 0 && (
                       <div className="h-full flex flex-col items-center justify-center opacity-40 py-4">
                         <Target size={24} className="mb-2" />
@@ -1865,7 +1886,7 @@ const App = () => {
                     {/* LEFT: MAIN GOAL GAUGE */}
                     <div className="flex-1 flex flex-col items-center justify-center min-h-[220px]">
                       <div className="flex justify-between w-full mb-2 px-4 max-w-[240px]">
-                        <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Revenue Goal</span>
+                        <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Team Goal</span>
                         <button onClick={() => {
                           const newGoal = prompt("Set Monthly Goal (THB):", monthlyGoal);
                           if (newGoal && !isNaN(newGoal)) {
@@ -1895,6 +1916,31 @@ const App = () => {
                       <div className="mt-4 text-center">
                         <p className="text-2xl font-black text-text-main">{formatCurrency(wonRevenue)}</p>
                         <p className="text-[10px] font-bold text-text-muted">of {formatCurrency(monthlyGoal)} Goal</p>
+                      </div>
+
+                      {/* Per-Member Mini Gauges */}
+                      <div className="mt-4 w-full max-w-[240px] space-y-2">
+                        {teamMembers.map(m => {
+                          const now = new Date();
+                          const mWon = deals
+                            .filter(d => d.assigned_to === m.id && d.stage === 'won' && new Date(d.createdAt).getMonth() === now.getMonth() && new Date(d.createdAt).getFullYear() === now.getFullYear())
+                            .reduce((s, d) => s + (d.value || 0), 0);
+                          const mPct = Math.round(Math.min(100, (mWon / m.goal) * 100));
+                          return (
+                            <div key={m.id}>
+                              <div className="flex justify-between items-center mb-1">
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-4 h-4 rounded-full flex items-center justify-center text-white font-black text-[8px]" style={{ backgroundColor: m.color }}>{m.name.charAt(0)}</div>
+                                  <span className="text-[10px] font-bold text-text-main">{m.name}</span>
+                                </div>
+                                <span className="text-[10px] font-black" style={{ color: m.color }}>{formatCurrency(mWon)} / {mPct}%</span>
+                              </div>
+                              <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full transition-all duration-700" style={{ width: `${mPct}%`, backgroundColor: m.color }} />
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -2026,6 +2072,17 @@ const App = () => {
                   <p className="text-xs font-medium text-text-muted">Manage all your customer relationships in one place.</p>
                 </div>
                 <div className="flex items-center gap-2 w-full md:w-auto">
+                  {/* Owner Filter */}
+                  <div className="flex items-center gap-1 bg-bg rounded-xl p-1 shadow-clay-inner">
+                    {[{ id: 'all', label: '👥 All' }, ...teamMembers.map(m => ({ id: m.id, label: m.name }))].map(opt => (
+                      <button
+                        key={opt.id}
+                        onClick={() => setCustomerOwnerFilter(opt.id)}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all ${customerOwnerFilter === opt.id ? 'bg-white text-accent shadow-clay-sm' : 'text-text-muted hover:bg-white/60'
+                          }`}
+                      >{opt.label}</button>
+                    ))}
+                  </div>
                   <span className="text-[10px] font-bold text-text-muted uppercase hidden md:inline">Sort by:</span>
                   <select className="bg-bg border-none text-xs font-bold rounded-lg px-3 py-2 focus:ring-accent cursor-pointer">
                     <option value="ltv">Lifetime Value (High-Low)</option>
@@ -2040,124 +2097,140 @@ const App = () => {
                 {vipClients.filter(c =>
                   c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                   c.contact.toLowerCase().includes(searchTerm.toLowerCase())
-                ).map((client) => (
-                  <div key={client.id} className="group bg-white dark:bg-gray-900 rounded-[20px] border border-black/5 dark:border-white/5 shadow-sm hover:shadow-clay-md transition-all duration-300 overflow-hidden">
-                    <div
-                      onClick={() => setExpandedCompany(expandedCompany === client.name ? null : client.name)}
-                      className="p-5 flex flex-col md:flex-row items-center gap-6 cursor-pointer relative"
-                    >
-                      {/* Left: Avatar & Identity */}
-                      <div className="flex items-center gap-4 min-w-[300px] w-full md:w-auto">
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black bg-gradient-to-br ${client.tier.gradient} shadow-inner`}>
-                          {client.name.charAt(0)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-black text-text-main truncate group-hover:text-accent transition-colors">{client.name}</h3>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded shadow-sm ${client.tier.color}`}>{client.tier.name}</span>
-                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded shadow-sm flex items-center gap-1 ${client.health.bg} ${client.health.color}`}>
-                              <div className={`w-1.5 h-1.5 rounded-full bg-current animate-pulse`}></div>
-                              {client.health.label}
-                            </span>
+                ).map((client) => {
+                  // Determine owner: the member with most deals for this client
+                  const clientDeals = deals.filter(d => d.company === client.name);
+                  const ownerCounts = {};
+                  clientDeals.forEach(d => { if (d.assigned_to) ownerCounts[d.assigned_to] = (ownerCounts[d.assigned_to] || 0) + 1; });
+                  const ownerId = Object.entries(ownerCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+                  const owner = teamMembers.find(m => m.id === ownerId);
+                  return (
+                    <div key={client.id} className="group bg-white dark:bg-gray-900 rounded-[20px] border border-black/5 dark:border-white/5 shadow-sm hover:shadow-clay-md transition-all duration-300 overflow-hidden">
+                      <div
+                        onClick={() => setExpandedCompany(expandedCompany === client.name ? null : client.name)}
+                        className="p-5 flex flex-col md:flex-row items-center gap-6 cursor-pointer relative"
+                      >
+                        {/* Left: Avatar & Identity */}
+                        <div className="flex items-center gap-4 min-w-[300px] w-full md:w-auto">
+                          <div className="relative">
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black bg-gradient-to-br ${client.tier.gradient} shadow-inner`}>
+                              {client.name.charAt(0)}
+                            </div>
+                            {owner && (
+                              <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-white font-black text-[9px]" style={{ backgroundColor: owner.color }}>
+                                {owner.name.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-black text-text-main truncate group-hover:text-accent transition-colors">{client.name}</h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded shadow-sm ${client.tier.color}`}>{client.tier.name}</span>
+                              <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded shadow-sm flex items-center gap-1 ${client.health.bg} ${client.health.color}`}>
+                                <div className={`w-1.5 h-1.5 rounded-full bg-current animate-pulse`}></div>
+                                {client.health.label}
+                              </span>
+                              {owner && <span className="text-[9px] font-bold px-2 py-0.5 rounded text-white" style={{ backgroundColor: owner.color }}>👤 {owner.name}</span>}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Middle: Key Stats */}
-                      <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 w-full border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6">
-                        <div>
-                          <p className="text-[9px] font-bold text-text-muted uppercase opacity-60 mb-0.5">Contact</p>
-                          <p className="text-xs font-bold text-text-main truncate flex items-center gap-1"><Users size={12} />{client.contact}</p>
-                        </div>
-                        <div>
-                          <p className="text-[9px] font-bold text-text-muted uppercase opacity-60 mb-0.5">Total Spent (LTV)</p>
-                          <p className="text-xs font-black text-accent">{formatCurrency(client.wonValue)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[9px] font-bold text-text-muted uppercase opacity-60 mb-0.5">Win Rate</p>
-                          <p className="text-xs font-bold text-text-main">{client.winRate}% ({client.wonDeals}/{client.totalDeals})</p>
-                        </div>
-                        <div>
-                          <p className="text-[9px] font-bold text-text-muted uppercase opacity-60 mb-0.5">Last Activity</p>
-                          <p className="text-xs font-bold text-text-main">{client.daysSinceLast} days ago</p>
-                        </div>
-                      </div>
-
-                      {/* Right: Expand Icon */}
-                      <div className="hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-bg text-text-muted group-hover:bg-accent group-hover:text-white transition-all">
-                        <ChevronRight size={20} className={`transform transition-transform ${expandedCompany === client.name ? 'rotate-90' : ''}`} />
-                      </div>
-                    </div>
-
-                    {/* Expanded Detail View */}
-                    {expandedCompany === client.name && (
-                      <div className="bg-bg/40 border-t border-black/5 p-6 animate-in slide-in-from-top-2 duration-200">
-                        <div className="flex flex-col xl:flex-row gap-6">
-                          {/* Profile / Notes Side */}
-                          <div className="xl:w-1/3 space-y-4">
-                            <h4 className="font-bold text-sm uppercase flex items-center gap-2 opacity-60"><Users size={14} /> Customer Profile</h4>
-                            <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-white">
-                              <div className="space-y-3">
-                                <button className="w-full flex items-center justify-between p-3 rounded-xl bg-bg hover:bg-accent/10 hover:text-accent transition-all group/btn text-sm font-bold text-text-muted">
-                                  <span className="flex items-center gap-2"><MessageSquare size={16} /> Send Email</span>
-                                  <ArrowRight size={14} className="opacity-0 group-hover/btn:opacity-100 -translate-x-2 group-hover/btn:translate-x-0 transition-all" />
-                                </button>
-                                <button className="w-full flex items-center justify-between p-3 rounded-xl bg-bg hover:bg-green-50 hover:text-green-600 transition-all group/btn text-sm font-bold text-text-muted">
-                                  <span className="flex items-center gap-2"><Phone size={16} /> Call Contact</span>
-                                  <ArrowRight size={14} className="opacity-0 group-hover/btn:opacity-100 -translate-x-2 group-hover/btn:translate-x-0 transition-all" />
-                                </button>
-                                <button className="w-full flex items-center justify-between p-3 rounded-xl bg-bg hover:bg-purple-50 hover:text-purple-600 transition-all group/btn text-sm font-bold text-text-muted">
-                                  <span className="flex items-center gap-2"><Calendar size={16} /> Schedule Meeting</span>
-                                  <ArrowRight size={14} className="opacity-0 group-hover/btn:opacity-100 -translate-x-2 group-hover/btn:translate-x-0 transition-all" />
-                                </button>
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-bold text-text-muted uppercase mb-2">Interests & Products</p>
-                              <div className="flex flex-wrap gap-2">
-                                {Array.from(client.products).map(p => (
-                                  <span key={p} className="px-2 py-1 bg-white border rounded-lg text-[10px] font-bold text-text-main hover:border-accent cursor-default">{p}</span>
-                                ))}
-                                {client.products.size === 0 && <span className="text-xs text-text-muted italic">No products identified yet.</span>}
-                              </div>
-                            </div>
+                        {/* Middle: Key Stats */}
+                        <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 w-full border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6">
+                          <div>
+                            <p className="text-[9px] font-bold text-text-muted uppercase opacity-60 mb-0.5">Contact</p>
+                            <p className="text-xs font-bold text-text-main truncate flex items-center gap-1"><Users size={12} />{client.contact}</p>
                           </div>
+                          <div>
+                            <p className="text-[9px] font-bold text-text-muted uppercase opacity-60 mb-0.5">Total Spent (LTV)</p>
+                            <p className="text-xs font-black text-accent">{formatCurrency(client.wonValue)}</p>
+                          </div>
+                          <div>
+                            <p className="text-[9px] font-bold text-text-muted uppercase opacity-60 mb-0.5">Win Rate</p>
+                            <p className="text-xs font-bold text-text-main">{client.winRate}% ({client.wonDeals}/{client.totalDeals})</p>
+                          </div>
+                          <div>
+                            <p className="text-[9px] font-bold text-text-muted uppercase opacity-60 mb-0.5">Last Activity</p>
+                            <p className="text-xs font-bold text-text-main">{client.daysSinceLast} days ago</p>
+                          </div>
+                        </div>
 
-                          {/* Deal Timeline Side */}
-                          <div className="flex-1 space-y-4">
-                            <div className="flex justify-between items-center">
-                              <h4 className="font-bold text-sm uppercase flex items-center gap-2 opacity-60"><Activity size={14} /> Deal History</h4>
-                              <span className="text-[10px] font-black bg-white px-2 py-1 rounded-lg border">{deals.filter(d => d.company === client.name).length} Deals</span>
-                            </div>
+                        {/* Right: Expand Icon */}
+                        <div className="hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-bg text-text-muted group-hover:bg-accent group-hover:text-white transition-all">
+                          <ChevronRight size={20} className={`transform transition-transform ${expandedCompany === client.name ? 'rotate-90' : ''}`} />
+                        </div>
+                      </div>
 
-                            <div className="space-y-3">
-                              {deals.filter(d => d.company === client.name).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(deal => (
-                                <div key={deal.id} onClick={(e) => { e.stopPropagation(); handleDealClick(deal); }} className="flex items-center gap-4 p-3 bg-white dark:bg-gray-800 rounded-2xl border border-transparent hover:border-accent shadow-sm cursor-pointer transition-all group/deal">
-                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${deal.stage === 'won' ? 'bg-green-100 text-green-600' :
-                                    deal.stage === 'lost' ? 'bg-red-100 text-red-600' :
-                                      'bg-blue-100 text-blue-600'
-                                    }`}>
-                                    {deal.stage === 'won' ? <Trophy size={18} /> : deal.stage === 'lost' ? <XCircle size={18} /> : <CircleDot size={18} />}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex justify-between items-start">
-                                      <p className="font-bold text-sm text-text-main truncate group-hover/deal:text-accent transition-colors">{deal.title}</p>
-                                      <p className="font-black text-sm text-text-main">{formatCurrency(deal.value)}</p>
-                                    </div>
-                                    <div className="flex justify-between items-center mt-0.5">
-                                      <p className="text-[10px] font-bold text-text-muted uppercase">{formatDate(deal.createdAt)} • {deal.stage}</p>
-                                      <span className="text-[9px] font-bold text-text-muted opacity-0 group-hover/deal:opacity-100 transition-opacity flex items-center gap-1">View Detail <ArrowRight size={10} /></span>
-                                    </div>
-                                  </div>
+                      {/* Expanded Detail View */}
+                      {expandedCompany === client.name && (
+                        <div className="bg-bg/40 border-t border-black/5 p-6 animate-in slide-in-from-top-2 duration-200">
+                          <div className="flex flex-col xl:flex-row gap-6">
+                            {/* Profile / Notes Side */}
+                            <div className="xl:w-1/3 space-y-4">
+                              <h4 className="font-bold text-sm uppercase flex items-center gap-2 opacity-60"><Users size={14} /> Customer Profile</h4>
+                              <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-white">
+                                <div className="space-y-3">
+                                  <button className="w-full flex items-center justify-between p-3 rounded-xl bg-bg hover:bg-accent/10 hover:text-accent transition-all group/btn text-sm font-bold text-text-muted">
+                                    <span className="flex items-center gap-2"><MessageSquare size={16} /> Send Email</span>
+                                    <ArrowRight size={14} className="opacity-0 group-hover/btn:opacity-100 -translate-x-2 group-hover/btn:translate-x-0 transition-all" />
+                                  </button>
+                                  <button className="w-full flex items-center justify-between p-3 rounded-xl bg-bg hover:bg-green-50 hover:text-green-600 transition-all group/btn text-sm font-bold text-text-muted">
+                                    <span className="flex items-center gap-2"><Phone size={16} /> Call Contact</span>
+                                    <ArrowRight size={14} className="opacity-0 group-hover/btn:opacity-100 -translate-x-2 group-hover/btn:translate-x-0 transition-all" />
+                                  </button>
+                                  <button className="w-full flex items-center justify-between p-3 rounded-xl bg-bg hover:bg-purple-50 hover:text-purple-600 transition-all group/btn text-sm font-bold text-text-muted">
+                                    <span className="flex items-center gap-2"><Calendar size={16} /> Schedule Meeting</span>
+                                    <ArrowRight size={14} className="opacity-0 group-hover/btn:opacity-100 -translate-x-2 group-hover/btn:translate-x-0 transition-all" />
+                                  </button>
                                 </div>
-                              ))}
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-bold text-text-muted uppercase mb-2">Interests & Products</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {Array.from(client.products).map(p => (
+                                    <span key={p} className="px-2 py-1 bg-white border rounded-lg text-[10px] font-bold text-text-main hover:border-accent cursor-default">{p}</span>
+                                  ))}
+                                  {client.products.size === 0 && <span className="text-xs text-text-muted italic">No products identified yet.</span>}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Deal Timeline Side */}
+                            <div className="flex-1 space-y-4">
+                              <div className="flex justify-between items-center">
+                                <h4 className="font-bold text-sm uppercase flex items-center gap-2 opacity-60"><Activity size={14} /> Deal History</h4>
+                                <span className="text-[10px] font-black bg-white px-2 py-1 rounded-lg border">{deals.filter(d => d.company === client.name).length} Deals</span>
+                              </div>
+
+                              <div className="space-y-3">
+                                {deals.filter(d => d.company === client.name).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(deal => (
+                                  <div key={deal.id} onClick={(e) => { e.stopPropagation(); handleDealClick(deal); }} className="flex items-center gap-4 p-3 bg-white dark:bg-gray-800 rounded-2xl border border-transparent hover:border-accent shadow-sm cursor-pointer transition-all group/deal">
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${deal.stage === 'won' ? 'bg-green-100 text-green-600' :
+                                      deal.stage === 'lost' ? 'bg-red-100 text-red-600' :
+                                        'bg-blue-100 text-blue-600'
+                                      }`}>
+                                      {deal.stage === 'won' ? <Trophy size={18} /> : deal.stage === 'lost' ? <XCircle size={18} /> : <CircleDot size={18} />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex justify-between items-start">
+                                        <p className="font-bold text-sm text-text-main truncate group-hover/deal:text-accent transition-colors">{deal.title}</p>
+                                        <p className="font-black text-sm text-text-main">{formatCurrency(deal.value)}</p>
+                                      </div>
+                                      <div className="flex justify-between items-center mt-0.5">
+                                        <p className="text-[10px] font-bold text-text-muted uppercase">{formatDate(deal.createdAt)} • {deal.stage}</p>
+                                        <span className="text-[9px] font-bold text-text-muted opacity-0 group-hover/deal:opacity-100 transition-opacity flex items-center gap-1">View Detail <ArrowRight size={10} /></span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      )}
+                    </div>
+                  );
+                })}
 
                 {vipClients.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-20 opacity-20 filter grayscale">
@@ -2658,289 +2731,340 @@ const App = () => {
           )}
 
           {activeTab === 'solution' && <SolutionLayout deals={deals} onUpdateDeal={handleUpdateDeal} />}
+
+          {activeTab === 'team' && (
+            <TeamDashboard
+              deals={deals}
+              teamMembers={teamMembers}
+              onDealClick={handleDealClick}
+              formatCurrency={formatCurrency}
+            />
+          )}
         </div>
       </main>
 
       {/* Detail Modal */}
-      {selectedDeal && (
-        <div className="fixed inset-0 bg-bg/85 z-50 flex items-center justify-center p-2 md:p-4 backdrop-blur-md overflow-y-auto overflow-x-hidden">
-          <div className="bg-surface w-full max-w-3xl max-h-[92vh] sm:rounded-[32px] shadow-clay-lg flex flex-col md:flex-row overflow-hidden animate-in zoom-in-95 duration-200 border border-white/50 relative">
-            <div className="w-full md:w-[350px] bg-bg/50 border-r border-white/50 p-5 flex flex-col shrink-0">
-              {!isEditingDetails ? (
-                <>
-                  <div className="flex justify-between items-start mb-3">
-                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest ${selectedDeal.stage === 'lost' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{stages.find(s => s.id === selectedDeal.stage)?.title}</span>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => setIsEditingDetails(true)} className="text-text-muted hover:text-accent p-1"><Pencil size={16} /></button>
-                      <button onClick={() => setSelectedDeal(null)} className="md:hidden text-text-muted hover:text-warm-red"><X size={22} /></button>
-                    </div>
-                  </div>
-                  <h2 className="text-lg font-black text-gray-900 mb-0.5 leading-tight">{selectedDeal.title}</h2>
-                  <p className="text-xl font-mono text-gray-700 mb-4">{formatCurrency(selectedDeal.value)}</p>
-
-                  <div className="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                    <div><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Contact Person</label><div className="flex items-center mt-1.5"><div className="w-9 h-9 bg-warm-blue/20 rounded-xl flex items-center justify-center text-warm-blue-dark text-xs font-bold mr-3 shadow-clay-sm flex-shrink-0">{selectedDeal.contact?.charAt(0)}</div><div className="min-w-0"><p className="font-extrabold text-text-main text-base truncate">{selectedDeal.contact}</p><p className="text-[11px] text-text-muted font-bold truncate">{selectedDeal.company}</p></div></div></div>
-                    <div><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Created At</label><p className="text-[11px] font-black text-text-main mt-0.5 bg-surface inline-block px-2 py-0.5 rounded-lg shadow-clay-sm">{formatDate(selectedDeal.createdAt)}</p></div>
-
-                    <div className="pt-3 border-t border-black/5">
-                      <label className="text-[10px] font-black text-accent uppercase tracking-widest block mb-1.5 flex items-center justify-between">
-                        รายการ QUALIFY
-                      </label>
-                      <div className="space-y-1.5">
-                        {[
-                          { key: 'Metrics', label: 'วัดผลสำเร็จได้ (Metrics)' },
-                          { key: 'Economic', label: 'ผู้มีอำนาจซื้อ (Buyer)' },
-                          { key: 'Criteria', label: 'เกณฑ์ที่เลือก (Criteria)' },
-                          { key: 'Process', label: 'กระบวนการ (Process)' },
-                          { key: 'Pain', label: 'ปัญหาชัดเจน (Pain)' },
-                          { key: 'Champion', label: 'คนสนับสนุน (Champion)' },
-                          { key: 'Competition', label: 'รู้ว่าแข่งใคร (Competition)' }
-                        ].map((item) => {
-                          const isDone = selectedDeal.tasks?.some(t => t.text.includes(item.key) && t.completed);
-                          return (
-                            <button
-                              key={item.key}
-                              onClick={async () => {
-                                const existingTask = selectedDeal.tasks?.find(t => t.text.includes(item.key));
-                                if (existingTask) {
-                                  const updatedTasks = selectedDeal.tasks.filter(t => t.id !== existingTask.id);
-                                  await handleUpdateDeal(selectedDeal.id, { tasks: updatedTasks });
-                                  setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
-                                } else {
-                                  const task = { id: Date.now(), text: `[MEDDPICC] ${item.key}: ${item.label}`, date: new Date().toISOString(), completed: true };
-                                  const updatedTasks = [...(selectedDeal.tasks || []), task];
-                                  await handleUpdateDeal(selectedDeal.id, { tasks: updatedTasks });
-                                  setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
-                                }
-                              }}
-                              className={`w-full flex items-center gap-2.5 p-2 rounded-xl border text-left transition-all ${isDone ? 'bg-warm-green/10 border-warm-green/30 text-warm-green-dark shadow-clay-inner' : 'bg-white border-black/5 text-text-muted hover:border-accent/40 shadow-sm'}`}
-                            >
-                              {isDone ? <CheckCircle2 size={12} /> : <div className="w-2.5 h-2.5 rounded-full border-2 border-current opacity-30" />}
-                              <span className="text-[10px] font-extrabold">{item.label}</span>
-                            </button>
-                          );
-                        })}
+      {
+        selectedDeal && (
+          <div className="fixed inset-0 bg-bg/85 z-50 flex items-center justify-center p-2 md:p-4 backdrop-blur-md overflow-y-auto overflow-x-hidden">
+            <div className="bg-surface w-full max-w-3xl max-h-[92vh] sm:rounded-[32px] shadow-clay-lg flex flex-col md:flex-row overflow-hidden animate-in zoom-in-95 duration-200 border border-white/50 relative">
+              <div className="w-full md:w-[350px] bg-bg/50 border-r border-white/50 p-5 flex flex-col shrink-0">
+                {!isEditingDetails ? (
+                  <>
+                    <div className="flex justify-between items-start mb-3">
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest ${selectedDeal.stage === 'lost' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{stages.find(s => s.id === selectedDeal.stage)?.title}</span>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => setIsEditingDetails(true)} className="text-text-muted hover:text-accent p-1"><Pencil size={16} /></button>
+                        <button onClick={() => setSelectedDeal(null)} className="md:hidden text-text-muted hover:text-warm-red"><X size={22} /></button>
                       </div>
                     </div>
+                    <h2 className="text-lg font-black text-gray-900 mb-0.5 leading-tight">{selectedDeal.title}</h2>
+                    <p className="text-xl font-mono text-gray-700 mb-4">{formatCurrency(selectedDeal.value)}</p>
 
-                    {selectedDeal.stage === 'lost' && (
-                      <div className="bg-warm-red/10 p-4 rounded-2xl border border-warm-red/20 shadow-clay-inner">
-                        <label className="text-xs font-bold text-warm-red uppercase flex items-center mb-1"><XCircle size={14} className="mr-2" /> Lost Reason</label>
-                        <p className="text-base text-warm-red-dark font-bold">{selectedDeal.lostReason}</p>
+                    <div className="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                      <div><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Contact Person</label><div className="flex items-center mt-1.5"><div className="w-9 h-9 bg-warm-blue/20 rounded-xl flex items-center justify-center text-warm-blue-dark text-xs font-bold mr-3 shadow-clay-sm flex-shrink-0">{selectedDeal.contact?.charAt(0)}</div><div className="min-w-0"><p className="font-extrabold text-text-main text-base truncate">{selectedDeal.contact}</p><p className="text-[11px] text-text-muted font-bold truncate">{selectedDeal.company}</p></div></div></div>
+                      <div><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Created At</label><p className="text-[11px] font-black text-text-main mt-0.5 bg-surface inline-block px-2 py-0.5 rounded-lg shadow-clay-sm">{formatDate(selectedDeal.createdAt)}</p></div>
+
+                      <div className="pt-3 border-t border-black/5">
+                        <label className="text-[10px] font-black text-accent uppercase tracking-widest block mb-1.5 flex items-center justify-between">
+                          รายการ QUALIFY
+                        </label>
+                        <div className="space-y-1.5">
+                          {[
+                            { key: 'Metrics', label: 'วัดผลสำเร็จได้ (Metrics)' },
+                            { key: 'Economic', label: 'ผู้มีอำนาจซื้อ (Buyer)' },
+                            { key: 'Criteria', label: 'เกณฑ์ที่เลือก (Criteria)' },
+                            { key: 'Process', label: 'กระบวนการ (Process)' },
+                            { key: 'Pain', label: 'ปัญหาชัดเจน (Pain)' },
+                            { key: 'Champion', label: 'คนสนับสนุน (Champion)' },
+                            { key: 'Competition', label: 'รู้ว่าแข่งใคร (Competition)' }
+                          ].map((item) => {
+                            const isDone = selectedDeal.tasks?.some(t => t.text.includes(item.key) && t.completed);
+                            return (
+                              <button
+                                key={item.key}
+                                onClick={async () => {
+                                  const existingTask = selectedDeal.tasks?.find(t => t.text.includes(item.key));
+                                  if (existingTask) {
+                                    const updatedTasks = selectedDeal.tasks.filter(t => t.id !== existingTask.id);
+                                    await handleUpdateDeal(selectedDeal.id, { tasks: updatedTasks });
+                                    setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
+                                  } else {
+                                    const task = { id: Date.now(), text: `[MEDDPICC] ${item.key}: ${item.label}`, date: new Date().toISOString(), completed: true };
+                                    const updatedTasks = [...(selectedDeal.tasks || []), task];
+                                    await handleUpdateDeal(selectedDeal.id, { tasks: updatedTasks });
+                                    setSelectedDeal(prev => ({ ...prev, tasks: updatedTasks }));
+                                  }
+                                }}
+                                className={`w-full flex items-center gap-2.5 p-2 rounded-xl border text-left transition-all ${isDone ? 'bg-warm-green/10 border-warm-green/30 text-warm-green-dark shadow-clay-inner' : 'bg-white border-black/5 text-text-muted hover:border-accent/40 shadow-sm'}`}
+                              >
+                                {isDone ? <CheckCircle2 size={12} /> : <div className="w-2.5 h-2.5 rounded-full border-2 border-current opacity-30" />}
+                                <span className="text-[10px] font-extrabold">{item.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {selectedDeal.stage === 'lost' && (
+                        <div className="bg-warm-red/10 p-4 rounded-2xl border border-warm-red/20 shadow-clay-inner">
+                          <label className="text-xs font-bold text-warm-red uppercase flex items-center mb-1"><XCircle size={14} className="mr-2" /> Lost Reason</label>
+                          <p className="text-base text-warm-red-dark font-bold">{selectedDeal.lostReason}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-3 pt-3 border-t border-black/5">
+                      <button
+                        onClick={async () => {
+                          const prompt = `Act as an Enterprise Sales Coach (MEDDPICC Expert). This deal is in stage '${selectedDeal.stage}' with value ${selectedDeal.value}. Current qualification state: ${(selectedDeal.tasks || []).filter(t => t.text.includes('[MEDDPICC]')).map(t => t.text).join(', ')}. Provide a Win-Strategy in 3 bullet points (Thai language): 1. Tactical Next Step 2. Relationship Strategy 3. Risk to Mitigate`;
+                          showToast("Consulting Sales Coach AI...", "info");
+                          const res = await callGeminiAPI(prompt);
+                          if (res) alert("Sales Coach AI Strategy:\n\n" + (typeof res === 'string' ? res : JSON.stringify(res)));
+                        }}
+                        className="w-full py-2.5 bg-gradient-to-r from-accent to-[#C08C60] text-white rounded-2xl font-black text-[10px] shadow-clay-btn hover:scale-[1.02] transition-all flex items-center justify-center gap-2 mb-2 uppercase tracking-widest"
+                      >
+                        <Target size={14} /> Win-Strategy AI
+                      </button>
+                    </div>
+
+                    {selectedDeal.stage !== 'lost' && selectedDeal.stage !== 'won' && (
+                      <div className="mt-2 pt-2 border-t border-gray-200">
+                        <button onClick={() => setIsLostModalOpen(true)} className="w-full py-1.5 border border-red-100 text-red-500 rounded-lg hover:bg-red-50 text-[10px] font-black uppercase tracking-wider transition-colors">Mark as Lost</button>
                       </div>
                     )}
-                  </div>
-
-                  <div className="mt-3 pt-3 border-t border-black/5">
-                    <button
-                      onClick={async () => {
-                        const prompt = `Act as an Enterprise Sales Coach (MEDDPICC Expert). This deal is in stage '${selectedDeal.stage}' with value ${selectedDeal.value}. Current qualification state: ${(selectedDeal.tasks || []).filter(t => t.text.includes('[MEDDPICC]')).map(t => t.text).join(', ')}. Provide a Win-Strategy in 3 bullet points (Thai language): 1. Tactical Next Step 2. Relationship Strategy 3. Risk to Mitigate`;
-                        showToast("Consulting Sales Coach AI...", "info");
-                        const res = await callGeminiAPI(prompt);
-                        if (res) alert("Sales Coach AI Strategy:\n\n" + (typeof res === 'string' ? res : JSON.stringify(res)));
-                      }}
-                      className="w-full py-2.5 bg-gradient-to-r from-accent to-[#C08C60] text-white rounded-2xl font-black text-[10px] shadow-clay-btn hover:scale-[1.02] transition-all flex items-center justify-center gap-2 mb-2 uppercase tracking-widest"
-                    >
-                      <Target size={14} /> Win-Strategy AI
-                    </button>
-                  </div>
-
-                  {selectedDeal.stage !== 'lost' && selectedDeal.stage !== 'won' && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
-                      <button onClick={() => setIsLostModalOpen(true)} className="w-full py-1.5 border border-red-100 text-red-500 rounded-lg hover:bg-red-50 text-[10px] font-black uppercase tracking-wider transition-colors">Mark as Lost</button>
+                  </>
+                ) : (
+                  <form onSubmit={handleSaveDealDetails} className="flex flex-col h-full">
+                    <div className="flex justify-between items-center mb-6">
+                      <h3 className="font-black text-lg text-text-main flex items-center"><Pencil className="mr-2 text-accent" size={20} /> Edit Deal</h3>
+                      <button type="button" onClick={() => setIsEditingDetails(false)} className="text-text-muted hover:text-warm-red"><X size={20} /></button>
                     </div>
-                  )}
-                </>
-              ) : (
-                <form onSubmit={handleSaveDealDetails} className="flex flex-col h-full">
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-black text-lg text-text-main flex items-center"><Pencil className="mr-2 text-accent" size={20} /> Edit Deal</h3>
-                    <button type="button" onClick={() => setIsEditingDetails(false)} className="text-text-muted hover:text-warm-red"><X size={20} /></button>
-                  </div>
-                  <div className="space-y-4 flex-1 overflow-y-auto pr-2">
-                    <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Deal Title</label><input required name="title" defaultValue={selectedDeal.title} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
-                    <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Value (THB)</label><input required name="value" type="number" defaultValue={selectedDeal.value} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
-                    <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Contact Name</label><input required name="contact" defaultValue={selectedDeal.contact} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
-                    <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Company</label><input required name="company" defaultValue={selectedDeal.company} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
-                    <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Deal Date</label><input required name="createdAt" type="date" defaultValue={selectedDeal.createdAt ? new Date(selectedDeal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-gray-200 flex gap-2">
-                    <Button type="button" variant="secondary" onClick={() => setIsEditingDetails(false)} className="flex-1">Cancel</Button>
-                    <Button type="submit" variant="primary" icon={Save} className="flex-1">Save</Button>
-                  </div>
-                </form>
-              )}
-            </div>
-            <div className="flex-1 flex flex-col h-full bg-white relative">
-              <button onClick={() => setSelectedDeal(null)} className="absolute top-4 right-4 z-10 hidden md:block text-gray-400 hover:text-warm-red transition-colors">
-                <X size={24} />
-              </button>
+                    <div className="space-y-4 flex-1 overflow-y-auto pr-2">
+                      <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Deal Title</label><input required name="title" defaultValue={selectedDeal.title} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
+                      <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Value (THB)</label><input required name="value" type="number" defaultValue={selectedDeal.value} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
+                      <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Contact Name</label><input required name="contact" defaultValue={selectedDeal.contact} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
+                      <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Company</label><input required name="company" defaultValue={selectedDeal.company} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
+                      <div><label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-1">Deal Date</label><input required name="createdAt" type="date" defaultValue={selectedDeal.createdAt ? new Date(selectedDeal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]} className="w-full px-4 py-3 bg-white border-2 border-transparent focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-clay-inner" /></div>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-gray-200 flex gap-2">
+                      <Button type="button" variant="secondary" onClick={() => setIsEditingDetails(false)} className="flex-1">Cancel</Button>
+                      <Button type="submit" variant="primary" icon={Save} className="flex-1">Save</Button>
+                    </div>
+                  </form>
+                )}
+              </div>
+              <div className="flex-1 flex flex-col h-full bg-white relative">
+                <button onClick={() => setSelectedDeal(null)} className="absolute top-4 right-4 z-10 hidden md:block text-gray-400 hover:text-warm-red transition-colors">
+                  <X size={24} />
+                </button>
 
-              <div className="flex items-center p-4 border-b border-gray-100 pr-12">
-                <div className="flex space-x-4">
-                  <div className="flex items-center text-gray-800 font-black text-xs uppercase tracking-widest border-b-2 border-accent pb-1">
-                    <FileText size={14} className="mr-2 text-accent" /> Activity & Timeline
+                <div className="flex items-center p-4 border-b border-gray-100 pr-12">
+                  <div className="flex space-x-4">
+                    <div className="flex items-center text-gray-800 font-black text-xs uppercase tracking-widest border-b-2 border-accent pb-1">
+                      <FileText size={14} className="mr-2 text-accent" /> Activity & Timeline
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
-                <section>
-                  <h3 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center">
-                    <CheckSquare size={14} className="mr-2 text-accent" /> Tasks
-                  </h3>
-                  <div className="space-y-2 mb-4">
-                    {selectedDeal.tasks?.map(task => (
-                      <div key={task.id} className="group flex items-center justify-between p-2.5 rounded-2xl bg-bg/40 hover:bg-bg/70 transition-all border border-black/5">
-                        <div className="flex items-center min-w-0">
-                          <button onClick={() => handleToggleTask(task.id)} className={`mr-2.5 rounded-full p-0.5 ${task.completed ? 'bg-warm-green/20 text-warm-green' : 'bg-white text-text-muted shadow-clay-sm'}`}>
-                            <CheckCircle2 size={16} />
-                          </button>
-                          <div className={task.completed ? 'opacity-40 line-through' : ''}>
-                            <p className="text-text-main text-[13px] font-bold truncate">{task.text}</p>
-                            {task.date && (<p className={`text-[10px] flex items-center mt-0.5 ${new Date(task.date) < new Date() && !task.completed ? 'text-warm-red' : 'text-text-muted'}`}><Clock size={10} className="mr-1" /> {new Date(task.date).toLocaleDateString('th-TH')}</p>)}
+                <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+                  <section>
+                    <h3 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center">
+                      <CheckSquare size={14} className="mr-2 text-accent" /> Tasks
+                    </h3>
+                    <div className="space-y-2 mb-4">
+                      {selectedDeal.tasks?.map(task => (
+                        <div key={task.id} className="group flex items-center justify-between p-2.5 rounded-2xl bg-bg/40 hover:bg-bg/70 transition-all border border-black/5">
+                          <div className="flex items-center min-w-0">
+                            <button onClick={() => handleToggleTask(task.id)} className={`mr-2.5 rounded-full p-0.5 ${task.completed ? 'bg-warm-green/20 text-warm-green' : 'bg-white text-text-muted shadow-clay-sm'}`}>
+                              <CheckCircle2 size={16} />
+                            </button>
+                            <div className={task.completed ? 'opacity-40 line-through' : ''}>
+                              <p className="text-text-main text-[13px] font-bold truncate">{task.text}</p>
+                              {task.date && (<p className={`text-[10px] flex items-center mt-0.5 ${new Date(task.date) < new Date() && !task.completed ? 'text-warm-red' : 'text-text-muted'}`}><Clock size={10} className="mr-1" /> {new Date(task.date).toLocaleDateString('th-TH')}</p>)}
+                            </div>
+                          </div>
+                          <button onClick={() => handleDeleteTask(task.id)} className="text-text-muted hover:text-warm-red opacity-0 group-hover:opacity-100 transition-opacity p-1"><Trash2 size={14} /></button>
+                        </div>
+                      ))}
+                      {(!selectedDeal.tasks || selectedDeal.tasks.length === 0) && (<p className="text-[11px] text-text-muted italic pl-2">No tasks assigned.</p>)}
+                    </div>
+                    <form onSubmit={handleAddTask} className="flex gap-2 items-center bg-bg/50 p-2.5 rounded-2xl border border-black/5 shadow-clay-inner">
+                      <div className="flex-1">
+                        <input type="text" placeholder="Add task..." className="w-full bg-transparent border-none focus:ring-0 text-[13px] p-0 mb-1 text-text-main font-bold placeholder-text-muted/40" value={newTask} onChange={(e) => setNewTask(e.target.value)} />
+                        <div className="flex items-center gap-2">
+                          <Clock size={12} className="text-text-muted" />
+                          <input type="date" className="bg-transparent text-[10px] text-text-muted focus:outline-none font-bold" value={newTaskDate} onChange={(e) => setNewTaskDate(e.target.value)} />
+                        </div>
+                      </div>
+                      <button type="submit" disabled={!newTask.trim()} className="p-2 bg-accent text-white rounded-xl shadow-clay-btn active:scale-95"><Plus size={16} /></button>
+                    </form>
+                  </section>
+
+                  <hr className="border-black/5" />
+
+                  <section>
+                    <h3 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center">
+                      <MessageSquare size={14} className="mr-2 text-accent" /> Timeline
+                    </h3>
+                    <div className="space-y-4 mb-4 pl-4 border-l-2 border-black/5">
+                      {selectedDeal.notes?.map(note => (
+                        <div key={note.id} className="relative">
+                          <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-accent border-2 border-white shadow-sm"></div>
+                          <div className="bg-bg/30 p-3.5 rounded-2xl rounded-tl-none border border-black/5">
+                            <p className="text-text-main text-[13px] font-medium whitespace-pre-wrap">{note.text}</p>
+                            <p className="text-[10px] text-text-muted mt-2 font-black uppercase tracking-wider">{formatDate(note.date)}</p>
                           </div>
                         </div>
-                        <button onClick={() => handleDeleteTask(task.id)} className="text-text-muted hover:text-warm-red opacity-0 group-hover:opacity-100 transition-opacity p-1"><Trash2 size={14} /></button>
-                      </div>
-                    ))}
-                    {(!selectedDeal.tasks || selectedDeal.tasks.length === 0) && (<p className="text-[11px] text-text-muted italic pl-2">No tasks assigned.</p>)}
-                  </div>
-                  <form onSubmit={handleAddTask} className="flex gap-2 items-center bg-bg/50 p-2.5 rounded-2xl border border-black/5 shadow-clay-inner">
-                    <div className="flex-1">
-                      <input type="text" placeholder="Add task..." className="w-full bg-transparent border-none focus:ring-0 text-[13px] p-0 mb-1 text-text-main font-bold placeholder-text-muted/40" value={newTask} onChange={(e) => setNewTask(e.target.value)} />
-                      <div className="flex items-center gap-2">
-                        <Clock size={12} className="text-text-muted" />
-                        <input type="date" className="bg-transparent text-[10px] text-text-muted focus:outline-none font-bold" value={newTaskDate} onChange={(e) => setNewTaskDate(e.target.value)} />
-                      </div>
+                      ))}
                     </div>
-                    <button type="submit" disabled={!newTask.trim()} className="p-2 bg-accent text-white rounded-xl shadow-clay-btn active:scale-95"><Plus size={16} /></button>
-                  </form>
-                </section>
-
-                <hr className="border-black/5" />
-
-                <section>
-                  <h3 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center">
-                    <MessageSquare size={14} className="mr-2 text-accent" /> Timeline
-                  </h3>
-                  <div className="space-y-4 mb-4 pl-4 border-l-2 border-black/5">
-                    {selectedDeal.notes?.map(note => (
-                      <div key={note.id} className="relative">
-                        <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-accent border-2 border-white shadow-sm"></div>
-                        <div className="bg-bg/30 p-3.5 rounded-2xl rounded-tl-none border border-black/5">
-                          <p className="text-text-main text-[13px] font-medium whitespace-pre-wrap">{note.text}</p>
-                          <p className="text-[10px] text-text-muted mt-2 font-black uppercase tracking-wider">{formatDate(note.date)}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <form onSubmit={handleAddNote} className="relative">
-                    <textarea placeholder="Write a note..." className="w-full p-3 pr-12 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:ring-0 text-[13px] resize-none text-text-main font-medium placeholder-text-muted/40" rows="2" value={newNote} onChange={(e) => setNewNote(e.target.value)} />
-                    <button type="submit" disabled={!newNote.trim()} className="absolute bottom-2.5 right-2.5 p-2 bg-text-main text-white rounded-xl shadow-clay-btn active:scale-95"><ArrowRight size={14} /></button>
-                  </form>
-                </section>
+                    <form onSubmit={handleAddNote} className="relative">
+                      <textarea placeholder="Write a note..." className="w-full p-3 pr-12 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:ring-0 text-[13px] resize-none text-text-main font-medium placeholder-text-muted/40" rows="2" value={newNote} onChange={(e) => setNewNote(e.target.value)} />
+                      <button type="submit" disabled={!newNote.trim()} className="absolute bottom-2.5 right-2.5 p-2 bg-text-main text-white rounded-xl shadow-clay-btn active:scale-95"><ArrowRight size={14} /></button>
+                    </form>
+                  </section>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Mark Lost Modal */}
-      {isLostModalOpen && (
-        <div className="fixed inset-0 bg-bg/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-surface rounded-3xl w-full max-w-sm p-6 shadow-clay-lg animate-in zoom-in-95 border border-white/50">
-            <div className="flex items-center mb-6 text-warm-red"><AlertCircle size={28} className="mr-3" /><h3 className="text-xl font-black text-text-main">Mark as Lost</h3></div>
-            <form onSubmit={handleMarkLost}>
-              <div className="space-y-4 mb-4">
-                <label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-2">Lost Reason</label>
-                {['Price too high', 'Competitor selected', 'Project delayed', 'Unreachable', 'Product mismatch'].map(reason => (<label key={reason} className="flex items-center p-3 border border-white/50 bg-bg/30 rounded-xl hover:bg-warm-red/10 cursor-pointer transition-all has-[:checked]:bg-warm-red/20 has-[:checked]:border-warm-red/30 has-[:checked]:shadow-clay-inner"><input type="radio" name="reason" value={reason} className="text-warm-red focus:ring-warm-red w-4 h-4 bg-surface border-none shadow-clay-inner" required /><span className="ml-3 text-sm font-bold text-text-main">{reason}</span></label>))}
-              </div>
+      {
+        isLostModalOpen && (
+          <div className="fixed inset-0 bg-bg/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+            <div className="bg-surface rounded-3xl w-full max-w-sm p-6 shadow-clay-lg animate-in zoom-in-95 border border-white/50">
+              <div className="flex items-center mb-6 text-warm-red"><AlertCircle size={28} className="mr-3" /><h3 className="text-xl font-black text-text-main">Mark as Lost</h3></div>
+              <form onSubmit={handleMarkLost}>
+                <div className="space-y-4 mb-4">
+                  <label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-2">Lost Reason</label>
+                  {['Price too high', 'Competitor selected', 'Project delayed', 'Unreachable', 'Product mismatch'].map(reason => (<label key={reason} className="flex items-center p-3 border border-white/50 bg-bg/30 rounded-xl hover:bg-warm-red/10 cursor-pointer transition-all has-[:checked]:bg-warm-red/20 has-[:checked]:border-warm-red/30 has-[:checked]:shadow-clay-inner"><input type="radio" name="reason" value={reason} className="text-warm-red focus:ring-warm-red w-4 h-4 bg-surface border-none shadow-clay-inner" required /><span className="ml-3 text-sm font-bold text-text-main">{reason}</span></label>))}
+                </div>
 
-              <div className="mb-8">
-                <label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-2">Win-Back: Follow up in?</label>
-                <select name="followUp" className="w-full px-4 py-3 bg-bg/50 border-none shadow-clay-inner rounded-xl focus:outline-none text-text-main font-bold">
-                  <option value="no">No Reminder</option>
-                  <option value="1">1 Month (Cool Down)</option>
-                  <option value="3">3 Months (Quarterly Review) 🔥 Recommended</option>
-                  <option value="6">6 Months (New Budget)</option>
-                </select>
-              </div>
+                <div className="mb-8">
+                  <label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-2">Win-Back: Follow up in?</label>
+                  <select name="followUp" className="w-full px-4 py-3 bg-bg/50 border-none shadow-clay-inner rounded-xl focus:outline-none text-text-main font-bold">
+                    <option value="no">No Reminder</option>
+                    <option value="1">1 Month (Cool Down)</option>
+                    <option value="3">3 Months (Quarterly Review) 🔥 Recommended</option>
+                    <option value="6">6 Months (New Budget)</option>
+                  </select>
+                </div>
 
-              <div className="flex gap-4"><Button fullWidth variant="secondary" onClick={() => setIsLostModalOpen(false)} type="button">Cancel</Button><Button fullWidth variant="danger" type="submit">Confirm</Button></div>
-            </form>
+                <div className="flex gap-4"><Button fullWidth variant="secondary" onClick={() => setIsLostModalOpen(false)} type="button">Cancel</Button><Button fullWidth variant="danger" type="submit">Confirm</Button></div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
+
+      {/* Quick-Add FAB */}
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg shadow-indigo-500/40 flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-50 group border border-indigo-400"
+      >
+        <Plus size={28} className="transition-transform group-hover:rotate-90" />
+        <span className="absolute right-16 bg-gray-900 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all pointer-events-none whitespace-nowrap shadow-md">
+          เพิ่มดีลด่วน
+        </span>
+      </button>
 
       {/* Import Modal */}
-      {isImportModalOpen && (
-        <div className="fixed inset-0 bg-bg/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-surface rounded-3xl w-full max-w-md shadow-clay-lg p-8 border border-white/50">
-            <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-black text-text-main flex items-center"><FileSpreadsheet className="mr-3 text-warm-green" size={28} />Import Data</h3><button onClick={() => setIsImportModalOpen(false)}><X size={24} className="text-text-muted hover:text-warm-red" /></button></div>
-            <div className="space-y-4">
-              <Button variant="outline" fullWidth onClick={downloadTemplate} icon={Download}>ดาวน์โหลดแบบฟอร์ม (Template)</Button>
-              <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => fileInputRef.current.click()}>
-                <input type="file" accept=".csv" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
-                {importStatus === 'processing' ? (<div className="flex flex-col items-center text-accent"><Loader2 className="animate-spin mb-2" size={32} /><span>Creating data...</span></div>) : importStatus?.startsWith('success') ? (<div className="flex flex-col items-center text-warm-green-dark"><CheckCircle2 className="mb-2" size={32} /><span>Success! {importStatus.split(':')[1]} items imported.</span></div>) : importStatus === 'error' ? (<div className="flex flex-col items-center text-warm-red-dark"><AlertCircle className="mb-2" size={32} /><span>Error reading CSV.</span></div>) : (<div className="flex flex-col items-center text-text-muted"><Upload className="mb-2" size={32} /><span className="font-medium">Click to upload .CSV</span></div>)}
+      {
+        isImportModalOpen && (
+          <div className="fixed inset-0 bg-bg/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+            <div className="bg-surface rounded-3xl w-full max-w-md shadow-clay-lg p-8 border border-white/50">
+              <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-black text-text-main flex items-center"><FileSpreadsheet className="mr-3 text-warm-green" size={28} />Import Data</h3><button onClick={() => setIsImportModalOpen(false)}><X size={24} className="text-text-muted hover:text-warm-red" /></button></div>
+              <div className="space-y-4">
+                <Button variant="outline" fullWidth onClick={downloadTemplate} icon={Download}>ดาวน์โหลดแบบฟอร์ม (Template)</Button>
+                <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => fileInputRef.current.click()}>
+                  <input type="file" accept=".csv" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+                  {importStatus === 'processing' ? (<div className="flex flex-col items-center text-accent"><Loader2 className="animate-spin mb-2" size={32} /><span>Creating data...</span></div>) : importStatus?.startsWith('success') ? (<div className="flex flex-col items-center text-warm-green-dark"><CheckCircle2 className="mb-2" size={32} /><span>Success! {importStatus.split(':')[1]} items imported.</span></div>) : importStatus === 'error' ? (<div className="flex flex-col items-center text-warm-red-dark"><AlertCircle className="mb-2" size={32} /><span>Error reading CSV.</span></div>) : (<div className="flex flex-col items-center text-text-muted"><Upload className="mb-2" size={32} /><span className="font-medium">Click to upload .CSV</span></div>)}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Add Deal Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-bg/80 z-50 flex items-end md:items-center justify-center sm:p-4 backdrop-blur-sm">
-          <div className="bg-surface rounded-t-3xl md:rounded-3xl w-full max-w-md shadow-clay-lg transform transition-all animate-in slide-in-from-bottom duration-300 border border-white/50">
-            <div className="flex justify-between items-center p-8 border-b border-black/5"><h3 className="text-2xl font-black text-text-main">New Deal</h3><button onClick={() => setIsModalOpen(false)} className="text-text-muted hover:text-warm-red bg-bg rounded-full p-2 hover:shadow-clay-sm transition-all"><X size={20} /></button></div>
-            <form onSubmit={handleAddDeal} className="p-8 space-y-6">
-              <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Deal Title</label><input required name="title" type="text" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="e.g. Website Redesign" /></div>
-              <div className="grid grid-cols-2 gap-6">
-                <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Value (THB)</label><input required name="value" type="number" min="0" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="0" /></div>
-                <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Deal Date</label><input required name="date" type="date" defaultValue={new Date().toISOString().split('T')[0]} className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" /></div>
-              </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Contact Person</label><input required name="contact" type="text" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="Client Name" /></div>
-                <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Company</label><div className="relative"><Building2 size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" /><input required name="company" type="text" className="w-full pl-12 pr-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="Company Name" /></div></div>
-              </div>
-              <div className="pt-6 flex justify-end space-x-4 pb-4 md:pb-0"><Button variant="secondary" onClick={() => setIsModalOpen(false)} type="button" className="flex-1 md:flex-none">Cancel</Button><Button variant="primary" type="submit" className="flex-1 md:flex-none">Save Deal</Button></div>
-            </form>
+      {
+        isModalOpen && (
+          <div className="fixed inset-0 bg-bg/80 z-50 flex items-end md:items-center justify-center sm:p-4 backdrop-blur-sm">
+            <div className="bg-surface rounded-t-3xl md:rounded-3xl w-full max-w-md shadow-clay-lg transform transition-all animate-in slide-in-from-bottom duration-300 border border-white/50">
+              <div className="flex justify-between items-center p-8 border-b border-black/5"><h3 className="text-2xl font-black text-text-main">New Deal</h3><button onClick={() => setIsModalOpen(false)} className="text-text-muted hover:text-warm-red bg-bg rounded-full p-2 hover:shadow-clay-sm transition-all"><X size={20} /></button></div>
+              <form onSubmit={handleAddDeal} className="p-8 space-y-6">
+                <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Deal Title</label><input required name="title" type="text" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="e.g. Website Redesign" /></div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Value (THB)</label><input required name="value" type="number" min="0" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="0" /></div>
+                  <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Deal Date</label><input required name="date" type="date" defaultValue={new Date().toISOString().split('T')[0]} className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" /></div>
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Contact Person</label><input required name="contact" type="text" className="w-full px-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="Client Name" /></div>
+                  <div><label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">Company</label><div className="relative"><Building2 size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" /><input required name="company" type="text" className="w-full pl-12 pr-5 py-4 bg-bg/50 border-none shadow-clay-inner rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-main font-bold placeholder-text-muted/30" placeholder="Company Name" /></div></div>
+                </div>
+                {/* Assignee Field */}
+                <div>
+                  <label className="block text-sm font-bold text-text-muted mb-2 uppercase tracking-wide">มอบหมายดีลให้</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {teamMembers.map(m => (
+                      <label key={m.id} className="relative cursor-pointer">
+                        <input type="radio" name="assigned_to" value={m.id} defaultChecked={m.id === 'leader'} className="sr-only peer" />
+                        <div
+                          className="flex items-center gap-3 p-3 rounded-2xl border-2 border-transparent bg-bg/50 peer-checked:border-current peer-checked:bg-opacity-10 transition-all shadow-clay-inner peer-checked:shadow-clay-btn"
+                          style={{ '--tw-border-opacity': 1 }}
+                        >
+                          <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-sm" style={{ backgroundColor: m.color }}>{m.name.charAt(0)}</div>
+                          <div>
+                            <p className="text-xs font-black text-text-main">{m.name}</p>
+                            <p className="text-[10px] text-text-muted">{m.role}</p>
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="pt-6 flex justify-end space-x-4 pb-4 md:pb-0"><Button variant="secondary" onClick={() => setIsModalOpen(false)} type="button" className="flex-1 md:flex-none">Cancel</Button><Button variant="primary" type="submit" className="flex-1 md:flex-none">Save Deal</Button></div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Move Deal Modal (Tablet/Mobile Friendly) */}
-      {movingDeal && (
-        <div className="fixed inset-0 bg-bg/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-surface rounded-3xl w-full max-w-sm p-6 shadow-clay-lg animate-in zoom-in-95 border border-white/50">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-black text-text-main">Move Deal</h3>
-              <button onClick={() => setMovingDeal(null)} className="text-text-muted hover:text-warm-red"><X size={24} /></button>
-            </div>
-            <p className="text-sm text-text-muted font-bold mb-4">Select destination stage for <span className="text-accent">&quot;{movingDeal.title}&quot;</span>:</p>
-            <div className="space-y-3">
-              {stages.map(stage => (
-                <button
-                  key={stage.id}
-                  onClick={async () => {
-                    await handleUpdateDeal(movingDeal.id, { stage: stage.id });
-                    setMovingDeal(null);
-                  }}
-                  className={`w-full p-4 rounded-xl font-bold text-left flex items-center justify-between border-2 transition-all
+      {
+        movingDeal && (
+          <div className="fixed inset-0 bg-bg/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+            <div className="bg-surface rounded-3xl w-full max-w-sm p-6 shadow-clay-lg animate-in zoom-in-95 border border-white/50">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-text-main">Move Deal</h3>
+                <button onClick={() => setMovingDeal(null)} className="text-text-muted hover:text-warm-red"><X size={24} /></button>
+              </div>
+              <p className="text-sm text-text-muted font-bold mb-4">Select destination stage for <span className="text-accent">&quot;{movingDeal.title}&quot;</span>:</p>
+              <div className="space-y-3">
+                {stages.map(stage => (
+                  <button
+                    key={stage.id}
+                    onClick={async () => {
+                      await handleUpdateDeal(movingDeal.id, { stage: stage.id });
+                      setMovingDeal(null);
+                    }}
+                    className={`w-full p-4 rounded-xl font-bold text-left flex items-center justify-between border-2 transition-all
                     ${movingDeal.stage === stage.id ? 'bg-accent/10 border-accent text-accent cursor-default' : 'bg-bg/50 border-transparent hover:bg-white text-text-main shadow-clay-inner hover:shadow-clay-sm'}
                   `}
-                  disabled={movingDeal.stage === stage.id}
-                >
-                  <span>{stage.title}</span>
-                  {movingDeal.stage === stage.id && <CheckCircle2 size={18} />}
-                </button>
-              ))}
+                    disabled={movingDeal.stage === stage.id}
+                  >
+                    <span>{stage.title}</span>
+                    {movingDeal.stage === stage.id && <CheckCircle2 size={18} />}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }
 
