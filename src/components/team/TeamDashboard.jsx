@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Users, Target, TrendingUp, Zap, Trophy, AlertTriangle, ChevronRight, Star } from 'lucide-react';
+import { Users, TrendingUp, Zap, Trophy, AlertTriangle, Star } from 'lucide-react';
 
 const formatCurrency = (amount) =>
   new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(amount || 0);
@@ -169,8 +169,8 @@ const MemberCard = ({ member, deals, formatCurrency, onDealClick }) => {
 /* ── Main TeamDashboard ── */
 const TeamDashboard = ({ deals = [], teamMembers = [], onDealClick, formatCurrency: fmt }) => {
   const fc = fmt || formatCurrency;
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const now = useMemo(() => new Date(), []);
+  const startOfMonth = useMemo(() => new Date(now.getFullYear(), now.getMonth(), 1), [now]);
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const dayOfMonth = now.getDate();
   const daysLeft = daysInMonth - dayOfMonth + 1;
@@ -181,7 +181,7 @@ const TeamDashboard = ({ deals = [], teamMembers = [], onDealClick, formatCurren
     return deals
       .filter(d => d.stage === 'won' && new Date(d.updatedAt || d.createdAt) >= startOfMonth)
       .reduce((s, d) => s + (d.value || 0), 0);
-  }, [deals]);
+  }, [deals, startOfMonth]);
 
   const teamPipeline = deals.filter(d => !['won', 'lost'].includes(d.stage)).reduce((s, d) => s + (d.value || 0), 0);
   const teamGap = Math.max(0, teamGoal - teamWon);
@@ -215,7 +215,7 @@ const TeamDashboard = ({ deals = [], teamMembers = [], onDealClick, formatCurren
       months.push({ label, value });
     }
     return months;
-  }, [deals]);
+  }, [deals, now]);
 
   const maxTrend = Math.max(...monthlyTrend.map(m => m.value), 1);
 

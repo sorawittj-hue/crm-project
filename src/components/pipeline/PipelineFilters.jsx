@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Filter, ChevronDown, DollarSign, Calendar, Tag, Search } from 'lucide-react';
+import { X, Filter, ChevronDown, DollarSign, Calendar, Search } from 'lucide-react';
 
 const STAGES = [
   { id: 'lead', title: 'ลูกค้าใหม่', color: 'bg-blue-500' },
@@ -25,7 +25,7 @@ const PipelineFilters = ({ filters, onChange, onClear, dealCount }) => {
     setIsOpen(false);
   };
 
-  const hasActiveFilters = 
+  const hasActiveFilters =
     filters.stages.length < 6 ||
     filters.minValue ||
     filters.maxValue ||
@@ -35,11 +35,10 @@ const PipelineFilters = ({ filters, onChange, onClear, dealCount }) => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${
-          hasActiveFilters 
-            ? 'bg-blue-100 text-blue-700 border border-blue-200' 
+        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${hasActiveFilters
+            ? 'bg-blue-100 text-blue-700 border border-blue-200'
             : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
-        }`}
+          }`}
       >
         <Filter size={18} />
         <span>ตัวกรอง</span>
@@ -53,7 +52,7 @@ const PipelineFilters = ({ filters, onChange, onClear, dealCount }) => {
         <div className="absolute top-full right-0 mt-2 w-96 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 animate-in fade-in slide-in-from-top-2">
           <div className="p-4 border-b border-gray-100 flex items-center justify-between">
             <h3 className="font-semibold text-gray-800">ตัวกรองดีล</h3>
-            <button 
+            <button
               onClick={() => setIsOpen(false)}
               className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
             >
@@ -85,11 +84,10 @@ const PipelineFilters = ({ filters, onChange, onClear, dealCount }) => {
                   <button
                     key={stage.id}
                     onClick={() => handleStageToggle(stage.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                      filters.stages.includes(stage.id)
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filters.stages.includes(stage.id)
                         ? 'bg-gray-800 text-white'
                         : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                    }`}
+                      }`}
                   >
                     <span className={`w-2 h-2 rounded-full ${stage.color}`} />
                     {stage.title}
@@ -163,15 +161,14 @@ const PipelineFilters = ({ filters, onChange, onClear, dealCount }) => {
                 ].map(priority => (
                   <button
                     key={priority.id}
-                    onClick={() => onChange({ 
-                      ...filters, 
-                      priority: filters.priority === priority.id ? null : priority.id 
+                    onClick={() => onChange({
+                      ...filters,
+                      priority: filters.priority === priority.id ? null : priority.id
                     })}
-                    className={`flex-1 px-3 py-2 rounded-xl text-sm font-medium border transition-all ${
-                      filters.priority === priority.id
+                    className={`flex-1 px-3 py-2 rounded-xl text-sm font-medium border transition-all ${filters.priority === priority.id
                         ? priority.color
                         : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
-                    }`}
+                      }`}
                   >
                     {priority.label}
                   </button>

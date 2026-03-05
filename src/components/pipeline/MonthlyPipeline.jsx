@@ -1,12 +1,10 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import {
-  Calendar, ChevronLeft, ChevronRight, TrendingUp, TrendingDown,
-  Target, DollarSign, Users, Flame, Zap, Filter, Plus, Download,
-  MoreHorizontal, ArrowUpRight, ArrowDownRight, Activity, Award,
-  BarChart3, PieChart, Clock, CheckCircle2, AlertCircle, Sparkles,
+  Calendar, ChevronLeft, ChevronRight,
+  Target, DollarSign, Users, Flame, Filter, Plus, Download,
+  Activity, Award, BarChart3, Clock, CheckCircle2, AlertCircle, FileText,
   Search, RefreshCw, LayoutGrid, List, CalendarDays
 } from 'lucide-react';
-import { supabase } from '../../utils/supabase';
 import PipelineFilters from './PipelineFilters';
 import MonthlyComparison from './MonthlyComparison';
 import DealAgingReport from './DealAgingReport';
@@ -47,9 +45,6 @@ const STAGES = [
   { id: 'lost', title: 'หลุด/แพ้', titleEn: 'Lost', color: 'from-rose-500 to-rose-600', bgColor: 'bg-rose-50', borderColor: 'border-rose-200', textColor: 'text-rose-700', icon: AlertCircle },
 ];
 
-import { FileText } from 'lucide-react';
-
-// ==================== COMPONENT: MONTH SELECTOR ====================
 const MonthSelector = ({ currentDate, onChange, monthlyStats }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -69,7 +64,6 @@ const MonthSelector = ({ currentDate, onChange, monthlyStats }) => {
   }, []);
 
   const currentKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
-  const stats = monthlyStats[currentKey] || { total: 0, won: 0 };
 
   const handlePrevMonth = () => {
     onChange(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -134,55 +128,48 @@ const MonthSelector = ({ currentDate, onChange, monthlyStats }) => {
 };
 
 // ==================== COMPONENT: MONTH STATS CARD ====================
-const MonthStatsCard = ({ title, value, subtext, icon: Icon, trend, trendUp, color = 'blue', onClick }) => {
-  const colorClasses = {
-    blue: 'from-blue-500 to-blue-600 shadow-blue-500/25',
-    emerald: 'from-emerald-500 to-emerald-600 shadow-emerald-500/25',
-    amber: 'from-amber-500 to-amber-600 shadow-amber-500/25',
-    rose: 'from-rose-500 to-rose-600 shadow-rose-500/25',
-    indigo: 'from-indigo-500 to-indigo-600 shadow-indigo-500/25',
-    purple: 'from-purple-500 to-purple-600 shadow-purple-500/25',
-  };
-
+const MonthStatsCard = ({ title, value, subtext, icon: Icon, color = 'blue', onClick }) => {
   return (
-    <div
-      onClick={onClick}
-      className={`bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-200 transition-all cursor-pointer group ${onClick ? 'cursor-pointer' : ''}`}
-    >
-      <div className="flex items-start justify-between">
-        <div className="min-w-0 flex-1">
-          <p className="text-xs text-gray-500 font-medium mb-1 truncate">{title}</p>
-          <p className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors">{value}</p>
-          {subtext && <p className="text-[10px] text-gray-400 mt-1 truncate">{subtext}</p>}
+    <div onClick={onClick} className="bg-white rounded-xl p-2 shadow-sm border border-gray-100 flex items-center justify-between gap-3 cursor-pointer hover:bg-gray-50 transition-all group">
+      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${color === 'emerald' ? 'bg-emerald-50 text-emerald-600' :
+          color === 'blue' ? 'bg-blue-50 text-blue-600' :
+            color === 'amber' ? 'bg-amber-50 text-amber-600' :
+              color === 'rose' ? 'bg-rose-50 text-rose-600' :
+                color === 'indigo' ? 'bg-indigo-50 text-indigo-600' :
+                  'bg-purple-50 text-purple-600'
+          }`}>
+          <Icon size={16} />
         </div>
-        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colorClasses[color]} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform flex-shrink-0 ml-2`}>
-          <Icon size={20} className="text-white" />
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-tight truncate">{title}</p>
+          <p className="text-base font-black text-gray-800 truncate group-hover:text-blue-600 transition-colors">{value}</p>
         </div>
       </div>
-      {trend !== undefined && (
-        <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
-          {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-          <span>{trend}%</span>
-          <span className="text-gray-400 font-normal">เทียบ</span>
-        </div>
-      )}
+      <div className="text-right flex-shrink-0">
+        <p className="text-xs font-medium text-gray-400">{subtext}</p>
+      </div>
     </div>
   );
 };
 
 // ==================== COMPONENT: DEAL CARD ====================
-const DealCard = ({ deal, onClick, onDragStart, isDragging, teamMembers = [] }) => {
-  const stage = STAGES.find(s => s.id === deal.stage) || STAGES[0];
+const DealCard = ({ deal, onClick, onDragStart, onUpdateDeal, isDragging, teamMembers = [], zenithMode, focusMode }) => {
   const daysSinceCreated = Math.floor((new Date() - new Date(deal.createdAt)) / (1000 * 60 * 60 * 24));
   const daysSinceActivity = deal.lastActivity
     ? Math.floor((new Date() - new Date(deal.lastActivity)) / (1000 * 60 * 60 * 24))
     : daysSinceCreated;
+
+  const isHighValue = deal.value >= 500000;
+  const isDimmed = focusMode && !isHighValue;
 
   const getAgingColor = () => {
     if (daysSinceActivity <= 3) return 'text-emerald-600 bg-emerald-50';
     if (daysSinceActivity <= 7) return 'text-amber-600 bg-amber-50';
     return 'text-rose-600 bg-rose-50';
   };
+
+  const isCriticalAging = daysSinceActivity >= 14;
 
   const getPriorityBadge = () => {
     if (deal.value >= 500000) return { text: 'HOT', color: 'bg-rose-100 text-rose-700 border-rose-200' };
@@ -209,23 +196,52 @@ const DealCard = ({ deal, onClick, onDragStart, isDragging, teamMembers = [] }) 
       draggable
       onDragStart={(e) => onDragStart(e, deal)}
       onClick={() => onClick(deal)}
-      className={`bg-white rounded-xl p-3 border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5 transition-all cursor-pointer group ${isDragging ? 'opacity-50 rotate-1' : ''}`}
+      className={`rounded-xl p-2 border transition-all cursor-pointer group relative overflow-hidden ${isDragging ? 'opacity-50 rotate-1' : ''} 
+        ${isCriticalAging && zenithMode ? 'stagnant-pulse ring-2 ring-red-500' : isCriticalAging ? 'ring-2 ring-red-500 animate-pulse' : ''}
+        ${zenithMode ? 'bg-surface border-white/10 glass-glow' : 'bg-white border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300'}
+        ${isDimmed ? 'opacity-20 translate-y-2' : 'opacity-100'}
+      `}
     >
+      {/* Quick Action Overlay (Hover Only) */}
+      <div className="absolute inset-0 bg-white/95 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2 z-10">
+        <button
+          onClick={(e) => { e.stopPropagation(); onUpdateDeal(deal.id, { stage: 'won' }) }}
+          className="p-2 bg-emerald-100 text-emerald-700 rounded-full hover:bg-emerald-600 hover:text-white transition-all transform hover:scale-110"
+          title="Mark as Won"
+        >
+          <CheckCircle2 size={16} />
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); onUpdateDeal(deal.id, { stage: 'lost' }) }}
+          className="p-2 bg-rose-100 text-rose-700 rounded-full hover:bg-rose-600 hover:text-white transition-all transform hover:scale-110"
+          title="Mark as Lost"
+        >
+          <AlertCircle size={16} />
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); onClick(deal) }}
+          className="p-2 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-600 hover:text-white transition-all transform hover:scale-110"
+          title="Add Details"
+        >
+          <Plus size={16} />
+        </button>
+      </div>
+
       {/* Header */}
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0 pr-1">
-          <p className="text-[10px] font-medium text-gray-500 truncate">{deal.company}</p>
+          <p className="text-xs font-medium text-gray-500 truncate">{deal.company}</p>
           <h4 className="font-bold text-sm text-gray-800 truncate group-hover:text-blue-600 transition-colors leading-tight">{deal.title}</h4>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0 ml-1">
           {priority && (
-            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${priority.color} whitespace-nowrap`}>
+            <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${priority.color} whitespace-nowrap`}>
               {priority.text}
             </span>
           )}
           {assignee && (
             <div
-              className="w-5 h-5 rounded-full flex items-center justify-center text-white font-black text-[9px] shadow-sm flex-shrink-0"
+              className="w-6 h-6 rounded-full flex items-center justify-center text-white font-black text-xs shadow-sm flex-shrink-0"
               style={{ backgroundColor: assignee.color }}
               title={assignee.name}
             >
@@ -245,15 +261,15 @@ const DealCard = ({ deal, onClick, onDragStart, isDragging, teamMembers = [] }) 
 
       {/* Next Action Chip */}
       {nextAction && (
-        <div className={`mb-2 px-2 py-1 rounded-lg text-[10px] font-bold border w-full text-center ${nextAction.color}`}>
+        <div className={`mb-1.5 px-2 py-0.5 rounded-lg text-[9px] font-bold border w-full text-center ${nextAction.color}`}>
           {nextAction.text}
         </div>
       )}
 
       {/* Footer */}
       <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-        <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${getAgingColor()}`}>
-          <Clock size={10} />
+        <div className={`flex items-center gap-1.5 px-1.5 py-0.5 rounded text-xs font-medium ${getAgingColor()}`}>
+          <Clock size={11} />
           {daysSinceActivity === 0 ? 'วันนี้' : `${daysSinceActivity}d`}
         </div>
 
@@ -275,9 +291,8 @@ const DealCard = ({ deal, onClick, onDragStart, isDragging, teamMembers = [] }) 
 };
 
 // ==================== COMPONENT: STAGE COLUMN ====================
-const StageColumn = ({ stage, deals, onDrop, onDealClick, onDragStart, draggedDeal, teamMembers = [] }) => {
+const StageColumn = ({ stage, deals, onDealClick, onUpdateDeal, onDragStart, teamMembers = [], zenithMode, focusMode, draggedDeal }) => {
   const [isDragOver, setIsDragOver] = useState(false);
-
   const totalValue = deals.reduce((sum, d) => sum + (d.value || 0), 0);
   const Icon = stage.icon;
 
@@ -293,60 +308,51 @@ const StageColumn = ({ stage, deals, onDrop, onDealClick, onDragStart, draggedDe
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragOver(false);
-    onDrop(stage.id);
+    const dealId = e.dataTransfer.getData('dealId');
+    if (dealId) onUpdateDeal(dealId, { stage: stage.id });
   };
 
   return (
     <div
-      className={`flex-shrink-0 w-[260px] flex flex-col rounded-2xl transition-all ${isDragOver ? 'ring-2 ring-blue-400 bg-blue-50/50' : ''}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      className={`flex-shrink-0 w-[260px] flex flex-col h-full rounded-2xl transition-all duration-300 ${isDragOver ? 'ring-2 ring-blue-400 bg-blue-50/50' : zenithMode ? 'bg-white/5 border border-white/5 shadow-2xl' : 'bg-gray-50/50 border border-gray-100'}`}
     >
-      {/* Header - Compact */}
-      <div className={`p-3 rounded-t-2xl bg-gradient-to-r ${stage.color}`}>
-        <div className="flex items-center justify-between text-white">
+      <div className={`p-3 rounded-t-2xl border-b ${zenithMode ? 'bg-white/5 border-white/10' : 'bg-white/80 border-gray-100'} sticky top-0 z-10 backdrop-blur-md`}>
+        <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center">
-              <Icon size={16} />
+            <div className={`p-1.5 rounded-lg ${zenithMode ? 'bg-amber-400/20 text-amber-400' : 'bg-blue-50 text-blue-600'}`}>
+              {Icon ? <Icon size={14} /> : <Activity size={12} />}
             </div>
-            <div>
-              <h3 className="font-bold text-sm">{stage.title}</h3>
-              <p className="text-[10px] text-white/80">{stage.titleEn}</p>
-            </div>
+            <h3 className={`font-black text-xs uppercase tracking-wider ${zenithMode ? 'text-white' : 'text-gray-500'}`}>{stage.label}</h3>
           </div>
-          <div className="text-right">
-            <p className="text-xl font-bold">{deals.length}</p>
-            <p className="text-[10px] text-white/80">ดีล</p>
-          </div>
+          <span className={`text-xs font-black italic ${zenithMode ? 'text-amber-400' : 'text-blue-600'}`}>{formatCurrency(totalValue)}</span>
         </div>
-        <div className="mt-2 pt-2 border-t border-white/20">
-          <p className="text-[10px] text-white/80 uppercase tracking-wide">มูลค่ารวม</p>
-          <p className="text-base font-bold">{formatCurrency(totalValue)}</p>
+        <div className="flex items-center justify-between">
+          <span className={`text-xs font-bold ${zenithMode ? 'text-white/40' : 'text-gray-400'}`}>{deals.length} ดีล</span>
         </div>
       </div>
 
-      {/* Deals List - Compact */}
-      <div className={`flex-1 p-2 space-y-2 min-h-[350px] max-h-[calc(100vh-320px)] overflow-y-auto custom-scrollbar ${stage.bgColor}`}>
-        {deals.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-gray-400">
-            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
-              <Plus size={18} />
-            </div>
-            <p className="text-xs">ไม่มีดีล</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">ลากดีลมาวาง</p>
+      <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar min-h-[150px]">
+        {deals.map(deal => (
+          <DealCard
+            key={deal.id}
+            deal={deal}
+            onClick={onDealClick}
+            onUpdateDeal={onUpdateDeal}
+            onDragStart={onDragStart}
+            teamMembers={teamMembers}
+            isDragging={draggedDeal?.id === deal.id}
+            zenithMode={zenithMode}
+            focusMode={focusMode}
+          />
+        ))}
+        {deals.length === 0 && (
+          <div className={`h-24 flex flex-col items-center justify-center border-2 border-dashed rounded-xl ${zenithMode ? 'border-white/10 bg-white/5' : 'border-gray-100 bg-white/30'}`}>
+            <Plus size={16} className="text-gray-300 mb-1" />
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">DRAG HERE</p>
           </div>
-        ) : (
-          deals.map(deal => (
-            <DealCard
-              key={deal.id}
-              deal={deal}
-              onClick={onDealClick}
-              onDragStart={onDragStart}
-              isDragging={draggedDeal?.id === deal.id}
-              teamMembers={teamMembers}
-            />
-          ))
         )}
       </div>
     </div>
@@ -356,7 +362,7 @@ const StageColumn = ({ stage, deals, onDrop, onDealClick, onDragStart, draggedDe
 // ==================== COMPONENT: QUICK ACTIONS BAR ====================
 const QuickActionsBar = ({ onAddDeal, onExport, onFilter, viewMode, setViewMode, searchTerm, setSearchTerm }) => {
   return (
-    <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex flex-wrap items-center justify-between gap-3">
+    <div className="bg-white rounded-xl p-2 shadow-sm border border-gray-100 flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-2">
         <button
           onClick={onAddDeal}
@@ -464,56 +470,58 @@ const MonthlyAnalytics = ({ deals, monthlyTarget = 1000000, teamMembers = [] }) 
   }, [deals, teamMembers]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Team Mini-Scoreboard */}
       {teamMembers.length > 0 && (
-        <div className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">📊 Team Scoreboard (เดือนนี้)</p>
-          <div className="flex gap-3">
-            {memberStats.map(m => (
-              <div key={m.id} className="flex-1">
-                <div className="flex justify-between items-center mb-1">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-4 h-4 rounded-full flex items-center justify-center text-white font-black text-[8px]" style={{ backgroundColor: m.color }}>{m.name.charAt(0)}</div>
-                    <span className="text-[10px] font-bold text-gray-700">{m.name}</span>
+        <div className="bg-white rounded-xl p-2 shadow-sm border border-gray-100">
+          <div className="flex gap-4 items-center">
+            <p className="text-xs font-black text-gray-300 uppercase vertical-text border-r pr-2 leading-none">TEAM</p>
+            <div className="flex-1 flex gap-3">
+              {memberStats.map(m => (
+                <div key={m.id} className="flex-1">
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-4 h-4 rounded-full flex items-center justify-center text-white font-black text-[8px]" style={{ backgroundColor: m.color }}>{m.name.charAt(0)}</div>
+                      <span className="text-[10px] font-bold text-gray-700">{m.name}</span>
+                    </div>
+                    <span className="text-[10px] font-black" style={{ color: m.color }}>{m.pct}%</span>
                   </div>
-                  <span className="text-[10px] font-black" style={{ color: m.color }}>{m.pct}%</span>
+                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${m.pct}%`, backgroundColor: m.color }} />
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">{formatCurrency(m.wonValue)} / {formatCurrency(m.goal)}</p>
                 </div>
-                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${m.pct}%`, backgroundColor: m.color }} />
-                </div>
-                <p className="text-[9px] text-gray-400 mt-0.5">{formatCurrency(m.wonValue)} / {formatCurrency(m.goal)}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         <MonthStatsCard
-          title="ยอดขายสำเร็จ"
+          title="WON"
           value={formatCurrency(stats.wonValue)}
-          subtext={`${stats.wonCount} ดีลที่ปิดได้`}
+          subtext={`${stats.wonCount} won`}
           icon={DollarSign}
           color="emerald"
         />
         <MonthStatsCard
-          title="เป้าหมายรายเดือน"
+          title="GOAL"
           value={`${stats.targetProgress.toFixed(0)}%`}
           subtext={formatCurrency(monthlyTarget)}
           icon={Target}
           color="blue"
         />
         <MonthStatsCard
-          title="มูลค่าใน Pipeline"
+          title="PIPELINE"
           value={formatCurrency(stats.pipelineValue)}
-          subtext={`${stats.activeCount} ดีลกำลังเจรจา`}
+          subtext={`${stats.activeCount} active`}
           icon={Activity}
           color="indigo"
         />
         <MonthStatsCard
-          title="Win Rate"
+          title="WIN RATE"
           value={`${stats.winRate.toFixed(1)}%`}
-          subtext={`${stats.lostCount} ดีลหลุด (${formatCurrency(stats.lostValue)})`}
+          subtext={`${stats.lostCount} lost`}
           icon={Award}
           color="amber"
         />
@@ -671,12 +679,11 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
   }, [monthlyDeals]);
 
   return (
-    <div className="h-full flex flex-col gap-3">
+    <div className="h-full flex flex-col gap-2 p-2">
       {/* Header - Compact */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">Sales Pipeline</h1>
-          <p className="text-xs text-gray-500 mt-0.5">จัดการดีลตามรอบเดือน เพื่อติดตามยอดขายและเป้าหมาย</p>
+          <h1 className="text-lg font-black text-gray-800">Sales Pipeline</h1>
         </div>
         <MonthSelector
           currentDate={currentDate}
@@ -733,6 +740,7 @@ const MonthlyPipeline = ({ deals: allDeals, onDealClick, onAddDeal, onUpdateDeal
                     onDrop={handleDrop}
                     onDealClick={onDealClick}
                     onDragStart={handleDragStart}
+                    onUpdateDeal={onUpdateDeal}
                     draggedDeal={draggedDeal}
                     teamMembers={teamMembers}
                   />

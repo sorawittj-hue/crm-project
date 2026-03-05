@@ -1,15 +1,133 @@
-/* Main Stylesheet */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --zenith-bg: #0B0E14;
+  --zenith-surface: rgba(20, 24, 31, 0.8);
+  --zenith-gold: #D4AF37;
+  --zenith-cyan: #00F2FF;
+  --zenith-neon-red: #FF3B3B;
+  --zenith-glass-border: rgba(212, 175, 55, 0.2);
+}
+
 @layer base {
+  html {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
   body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
     @apply bg-bg text-text-main font-sans;
+  }
+  #root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
   }
 }
 
-/* Dark Mode Styles */
+/* Zenith Mode Styles (World-Class Command Center) */
+.zenith {
+  background-color: var(--zenith-bg);
+  color: #fff;
+  background-image: radial-gradient(circle at 50% 50%, #1a1e27 0%, var(--zenith-bg) 100%);
+}
+
+.zenith .bg-bg {
+  background-color: transparent !important;
+}
+
+.zenith .bg-surface {
+  background: var(--zenith-surface) !important;
+  backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--zenith-glass-border) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8), inset 0 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.zenith .text-text-main {
+  color: #ffffff !important;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.zenith .text-text-muted {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.zenith .text-accent {
+  color: var(--zenith-gold) !important;
+  text-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
+}
+
+.zenith .bg-accent {
+  background: linear-gradient(135deg, var(--zenith-gold) 0%, #b28e26 100%) !important;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+}
+
+.zenith .border-accent {
+  border-color: var(--zenith-gold) !important;
+}
+
+/* Glass Card Animation */
+.zenith .glass-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.zenith .glass-glow::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+  transition: transform 0.6s ease;
+}
+
+.zenith .glass-glow:hover::after {
+  transform: translate(10%, 10%);
+}
+
+/* Neon Pulse for Stagnant Deals */
+@keyframes neon-pulse {
+  0% { box-shadow: 0 0 5px var(--zenith-neon-red), inset 0 0 5px var(--zenith-neon-red); }
+  50% { box-shadow: 0 0 20px var(--zenith-neon-red), inset 0 0 10px var(--zenith-neon-red); }
+  100% { box-shadow: 0 0 5px var(--zenith-neon-red), inset 0 0 5px var(--zenith-neon-red); }
+}
+
+.zenith .stagnant-pulse {
+  animation: neon-pulse 2s infinite ease-in-out;
+  border-color: var(--zenith-neon-red) !important;
+}
+
+/* Floating Orb Animation */
+@keyframes orb-float {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.05); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.zenith-orb {
+  animation: orb-float 4s infinite ease-in-out;
+  background: radial-gradient(circle at 30% 30%, rgba(212, 175, 55, 0.8), rgba(212, 175, 55, 0.2));
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+}
+
 .dark {
   background-color: #1a1a2e;
   color: #e2e8f0;

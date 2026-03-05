@@ -12,6 +12,7 @@ import SolutionLayout from './components/solution-designer/SolutionLayout';
 import MonthlyPipeline from './components/pipeline/MonthlyPipeline';
 import TeamDashboard from './components/team/TeamDashboard';
 import CommandCenter from './components/dashboard/CommandCenter';
+import PDFImporter from './components/pipeline/PDFImporter';
 import { supabase } from './utils/supabase';
 
 // --- Components ---
@@ -34,13 +35,31 @@ const Button = ({ children, onClick, variant = 'primary', className = '', icon: 
   );
 };
 
+const ActionOrb = ({ deal, onClick }) => (
+  <div className="fixed bottom-40 left-8 z-[60] group cursor-pointer animate-bounce">
+    <div className="zenith-orb w-14 h-14 rounded-full flex items-center justify-center ring-4 ring-gold/20">
+      <AlertTriangle size={24} className="text-white" />
+      <div className="absolute left-16 bg-surface p-3 rounded-2xl border border-white/20 w-56 opacity-0 group-hover:opacity-100 transition-opacity whitespace-pre-wrap pointer-events-none">
+        <p className="text-xs font-black text-text-muted uppercase tracking-widest mb-1.5">Critical Orchestration</p>
+        <p className="text-xs font-bold text-white mb-2">{deal.title}</p>
+        <button onClick={() => onClick(deal)} className="w-full py-1.5 bg-amber-500 text-white text-[10px] font-black rounded-lg">RESPOND NOW</button>
+      </div>
+    </div>
+  </div>
+);
+
 const Card = ({ children, className = '' }) => (
   <div className={`bg-surface rounded-3xl shadow-clay-md border border-white/60 ${className}`}>
     {children}
   </div>
 );
 
-// --- Main Application ---
+// --- Utilities ---
+const daysSince = (dateStr) => Math.floor((Date.now() - new Date(dateStr || Date.now())) / 86400000);
+const formatCurrency = (amount) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(amount);
+const formatDate = (isoString) => isoString ? new Date(isoString).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+
+// --- Components ---
 const App = () => {
   // const isDemoMode = true; // FORCE DEMO MODE (Local Storage)
   // const isDemoMode = false; // Real Supabase Mode
@@ -75,7 +94,7 @@ const App = () => {
     try {
       // 1. Auto-Discover Models (Dynamic)
       // This fixes "Model Not Found" by asking Google "What models CAN I use?"
-      const listResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key= ${apiKey}`);
+      const listResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
       const listData = await listResponse.json();
 
       if (listData.error) {
@@ -96,7 +115,7 @@ const App = () => {
       console.log(`Using Auto-Discovered Model: ${modelName}`);
 
       // 2. Call the API with the discovered model
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/ ${modelName}:generateContent?key=${apiKey}`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -168,6 +187,8 @@ const App = () => {
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [isLostModalOpen, setIsLostModalOpen] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
+  const [isPdfVerificationModalOpen, setIsPdfVerificationModalOpen] = useState(false);
+  const [pdfExtractedData, setPdfExtractedData] = useState(null);
 
   // UX State
   const [searchTerm, setSearchTerm] = useState('');
@@ -179,6 +200,12 @@ const App = () => {
   const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [battlePlan, setBattlePlan] = useState(null);
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [zenithMode, setZenithMode] = useState(() => localStorage.getItem('zenithMode') === 'true');
+  const [strategicMandates, setStrategicMandates] = useState([]);
+  const [isGeneratingMandates, setIsGeneratingMandates] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
   // Wait, I see selectedDealForMove on line 177 in previous reads (Step 269). Let's use that if it exists.
   const [movingDeal, setMovingDeal] = useState(null);
   const fileInputRef = useRef(null);
@@ -197,8 +224,19 @@ const App = () => {
   ]);
 
   // Pipeline filter by assignee
-  const [pipelineAssigneeFilter, setPipelineAssigneeFilter] = useState('all'); // 'all' | 'leader' | 'off'
+
   const [customerOwnerFilter, setCustomerOwnerFilter] = useState('all');
+
+  // Zenith Mode Effect
+  useEffect(() => {
+    if (zenithMode) {
+      document.documentElement.classList.add('zenith');
+      localStorage.setItem('zenithMode', 'true');
+    } else {
+      document.documentElement.classList.remove('zenith');
+      localStorage.setItem('zenithMode', 'false');
+    }
+  }, [zenithMode]);
 
   // Dark Mode Effect
   useEffect(() => {
@@ -584,6 +622,114 @@ const App = () => {
     } catch (error) { console.error(error); }
   };
 
+  const handlePDFExtracted = (data) => {
+    setPdfExtractedData(data);
+    setIsImportModalOpen(false);
+    setIsPdfVerificationModalOpen(true);
+  };
+
+  const handleGenerateBattlePlan = async () => {
+    setIsGeneratingPlan(true);
+    const urgentDeals = deals.filter(d => !['won', 'lost'].includes(d.stage) && daysSince(d.lastActivity || d.createdAt) >= 7).slice(0, 5);
+    const hotDeals = deals.filter(d => d.stage === 'negotiation' || (d.probability >= 60)).slice(0, 5);
+    const wonCount = deals.filter(d => d.stage === 'won' && new Date(d.createdAt).getMonth() === new Date().getMonth()).length;
+
+    const dataSnapshot = {
+      urgent: urgentDeals.map(d => ({ title: d.title, company: d.company, value: d.value, daysIdle: daysSince(d.lastActivity || d.createdAt) })),
+      hot: hotDeals.map(d => ({ title: d.title, company: d.company, value: d.value, prob: d.probability })),
+      wonMonth: wonCount,
+      goal: monthlyGoal
+    };
+
+    const prompt = `You are a Senior Sales Leader. Analyze these deals and provide a high-energy "Battle Plan" for today in Thai language.
+    Focus on:
+    1. Which 2-3 specific deals to close NOW and how (Closing Strategy).
+    2. Which idle deals need a "Wake Up Call" (Re-engagement).
+    3. Motivation for the team to hit the goal.
+    
+    Data: ${JSON.stringify(dataSnapshot)}
+    
+    Return ONLY a JSON object: { "plan": "The text of the plan in Thai, use professional yet energetic tone." }`;
+
+    const result = await callGeminiAPI(prompt);
+    if (result && result.plan) {
+      setBattlePlan(result.plan);
+    }
+    setIsGeneratingPlan(false);
+  };
+
+  const handleGenerateStrategicMandates = async () => {
+    setIsGeneratingMandates(true);
+    const activeDeals = deals.filter(d => !['won', 'lost'].includes(d.stage))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
+
+    const context = activeDeals.map(d => `${d.title} (฿${d.value.toLocaleString()}) at ${d.stage} stage, last action ${daysSince(d.lastActivity)}d ago`);
+
+    const prompt = `Analyze these top 10 CRM deals and provide 3 high-impact "Strategic Mandates" to win the market. 
+    Be bold, professional, and use Thai language. 
+    Context: ${context.join('; ')}
+    Return ONLY a JSON array of objects: [{ "id": 1, "mandate": "Short bold title", "desc": "Actionable advice", "urgency": "high|medium|low" }]`;
+
+    const result = await callGeminiAPI(prompt);
+    if (result && Array.isArray(result)) {
+      setStrategicMandates(result);
+    }
+    setIsGeneratingMandates(false);
+  };
+
+  const handleSavePDFDeal = async (e) => {
+    e.preventDefault();
+    if (!pdfExtractedData) return;
+
+    // Convert to deal format
+    const formData = new FormData(e.target);
+    const dealDate = formData.get('date') ? new Date(formData.get('date')).toISOString() : new Date().toISOString();
+
+    // Auto follow-up 2 days later
+    const followUpDate = new Date();
+    followUpDate.setDate(followUpDate.getDate() + 2);
+
+    const newDeal = {
+      title: formData.get('title'),
+      company: formData.get('company'),
+      contact: formData.get('contact'),
+      value: Number(formData.get('value')),
+      assigned_to: formData.get('assigned_to') || 'leader',
+      stage: 'proposal',
+      probability: 40,
+      lastActivity: new Date().toISOString(),
+      createdAt: dealDate,
+      notes: [{
+        id: Date.now(),
+        text: `📄 นำเข้าอัตโนมัติจากใบเสนอราคา PDF: ${pdfExtractedData.sourceFilename || 'ไม่ทราบชื่อไฟล์'}`,
+        date: new Date().toISOString(),
+        user: 'System'
+      }],
+      tasks: [{
+        id: Date.now() + 1,
+        text: '📞 ติดตามผลการเสนอราคา (ส่งไปเมื่อ 2 วันก่อน)',
+        date: followUpDate.toISOString(),
+        completed: false
+      }]
+    };
+
+    try {
+      const { data, error } = await supabase.from('deals').insert([newDeal]).select();
+      if (!error && data) {
+        setDeals(prev => [data[0], ...prev]);
+        setIsPdfVerificationModalOpen(false);
+        setPdfExtractedData(null);
+        showToast("✓ นำเข้าดีลจาก PDF และสร้างงานติดตามแล้ว", "success");
+      } else {
+        console.error(error);
+        showToast("x ไม่สามารถสร้างดีลได้", "error");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleMarkLost = async (e) => {
     e.preventDefault();
     if (!selectedDeal) return;
@@ -760,8 +906,6 @@ const App = () => {
     reader.readAsText(file); event.target.value = '';
   };
 
-  const formatCurrency = (amount) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(amount);
-  const formatDate = (isoString) => isoString ? new Date(isoString).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
 
   // Filter Logic
   const filteredDeals = deals.filter(deal => {
@@ -940,7 +1084,16 @@ const App = () => {
   }
 
   return (
-    <div className="flex h-screen bg-bg font-sans text-text-main overflow-hidden selection:bg-accent/30">
+    <div className={`flex flex-col xl:flex-row h-screen w-screen bg-bg font-sans text-text-main overflow-hidden selection:bg-accent/30 transition-colors duration-500 ${zenithMode ? 'zenith' : ''}`} style={{ maxWidth: '100vw', maxHeight: '100vh' }}>
+      {/* Zenith Mode Toggle Floating Button */}
+      <button
+        onClick={() => setZenithMode(!zenithMode)}
+        className={`fixed bottom-24 right-8 w-14 h-14 rounded-full flex items-center justify-center z-[60] shadow-2xl transition-all hover:scale-110 active:scale-95 ${zenithMode ? 'bg-gradient-to-r from-yellow-500 to-amber-600 text-white' : 'bg-white text-gray-400 border border-gray-100'}`}
+        title="Toggle Zenith World-Class Mode"
+      >
+        <Zap size={24} className={zenithMode ? 'animate-pulse' : ''} />
+      </button>
+
       {/* Mobile/Tablet Sidebar Overlay (Backdrop) */}
       {isSidebarOpen && (
         <div
@@ -985,6 +1138,7 @@ const App = () => {
           {/* ─── SECTION: SALES ─────────────────────────────── */}
           <p className="px-3 text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 opacity-70">SALES</p>
           {[
+            { id: 'overview', icon: '📈', label: 'Strategic Overview' },
             { id: 'command', icon: '🏠', label: 'Command Center' },
             { id: 'pipeline', icon: '🗂️', label: 'Sales Pipeline' },
             { id: 'team', icon: '🏆', label: 'Team Dashboard' },
@@ -1051,8 +1205,8 @@ const App = () => {
             <div className="px-4 pb-2">
               <div className="bg-surface/80 rounded-2xl p-3 border border-white/40 shadow-clay-sm">
                 <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-[9px] font-black text-text-muted uppercase tracking-widest">🎯 ทีม {pct}%</span>
-                  <span className="text-[9px] font-bold text-text-main">{formatCurrency(teamWon)}</span>
+                  <span className="text-xs font-black text-text-muted uppercase tracking-widest">🎯 ทีม {pct}%</span>
+                  <span className="text-xs font-bold text-text-main">{formatCurrency(teamWon)}</span>
                 </div>
                 <div className="h-1.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-accent to-orange-400 rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
@@ -1116,8 +1270,8 @@ const App = () => {
         </div>
       </aside>
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen w-full relative overflow-hidden bg-bg">
-        <header className="h-24 bg-bg/50 backdrop-blur-sm flex justify-between items-center px-4 md:px-6 xl:px-8 flex-shrink-0 z-20 sticky top-0">
+      <main className="flex-1 flex flex-col h-full w-full relative overflow-hidden bg-bg">
+        <header className="h-20 bg-bg/50 backdrop-blur-sm flex justify-between items-center px-4 md:px-6 xl:px-8 flex-shrink-0 z-20 sticky top-0">
           <div className="flex items-center gap-3">
             {/* Show Menu button on Mobile AND Tablet (xl:hidden) */}
             <button onClick={() => setIsSidebarOpen(true)} className="xl:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
@@ -1131,8 +1285,9 @@ const App = () => {
                       activeTab === 'customers' ? 'Customer Master' :
                         activeTab === 'calendar' ? 'Calendar View' :
                           activeTab === 'activity' ? 'Activity Feed' :
-                            activeTab === 'spec-setup' ? 'Smart Spec Recommendation' :
-                              activeTab === 'solution' ? 'Enterprise Solution Designer' : 'Professional IT Tools'}
+                            activeTab === 'command' ? 'Command Center' :
+                              activeTab === 'spec-setup' ? 'Smart Spec Recommendation' :
+                                activeTab === 'solution' ? 'Enterprise Solution Designer' : 'Professional IT Tools'}
             </h1>
             {loading && <Loader2 size={16} className="animate-spin text-accent hidden md:block" />}
           </div>
@@ -1145,7 +1300,7 @@ const App = () => {
                 .reduce((s, d) => s + (d.value || 0), 0);
               const teamPct = Math.round(Math.min(100, (teamWon / monthlyGoal) * 100));
               return (
-                <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-surface rounded-xl shadow-clay-sm border border-white/60 text-[10px] font-black">
+                <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-surface rounded-xl shadow-clay-sm border border-white/60 text-xs font-black">
                   <div className="flex items-center gap-1">
                     <span className="text-text-muted">🏆</span>
                     <span className="text-text-main">{teamPct}%</span>
@@ -1158,7 +1313,7 @@ const App = () => {
                     const mPct = Math.round(Math.min(100, (mWon / m.goal) * 100));
                     return (
                       <div key={m.id} className="flex items-center gap-1">
-                        <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-white font-black text-[7px]" style={{ backgroundColor: m.color }}>{m.name.charAt(0)}</div>
+                        <div className="w-4 h-4 rounded-full flex items-center justify-center text-white font-black text-[10px]" style={{ backgroundColor: m.color }}>{m.name.charAt(0)}</div>
                         <span style={{ color: m.color }}>{mPct}%</span>
                       </div>
                     );
@@ -1182,7 +1337,7 @@ const App = () => {
                     <button
                       key={s.id}
                       onClick={() => setVisibleStages(prev => prev.includes(s.id) ? prev.filter(x => x !== s.id) : [...prev, s.id])}
-                      className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${visibleStages.includes(s.id) ? 'bg-accent text-white shadow-clay-btn' : 'text-text-muted hover:bg-bg'}`}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase transition-all ${visibleStages.includes(s.id) ? 'bg-accent text-white shadow-clay-btn' : 'text-text-muted hover:bg-bg'}`}
                     >
                       {s.id}
                     </button>
@@ -1202,9 +1357,42 @@ const App = () => {
               <Filter size={16} className="mr-2" />
               Filters
             </button>
+            <Button
+              onClick={() => setIsImportModalOpen(true)}
+              icon={Upload}
+              variant="secondary"
+              className="whitespace-nowrap hidden lg:flex"
+            >
+              Import Data
+            </Button>
             <Button onClick={() => setIsModalOpen(true)} icon={Plus} variant="primary" className="whitespace-nowrap"><span className="hidden md:inline">New Deal</span><span className="md:hidden">Add</span></Button>
           </div>
         </header>
+
+        {/* Bulk Actions Bar - ย้ายมาไว้ข้างนอกให้เห็นชัดเจนขึ้น */}
+        {bulkMode && selectedDealIds.size > 0 && (
+          <div className="bg-accent text-white px-4 md:px-6 xl:px-8 py-3 flex items-center justify-between z-30 shadow-lg">
+            <div className="flex items-center gap-4">
+              <span className="font-bold">{selectedDealIds.size} deals selected</span>
+              <button onClick={selectAllVisible} className="text-xs underline hover:opacity-80">Select All Visible</button>
+              <button onClick={clearBulkSelection} className="text-xs underline hover:opacity-80">Clear Selection</button>
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                onChange={(e) => handleBulkMove(e.target.value)}
+                className="px-3 py-2 bg-white text-accent rounded-lg focus:outline-none text-sm font-bold"
+              >
+                <option value="">Move to Stage...</option>
+                {stages.map(s => (
+                  <option key={s.id} value={s.id}>{s.title}</option>
+                ))}
+              </select>
+              <button onClick={handleBulkDelete} className="px-4 py-2 bg-warm-red rounded-lg text-xs font-bold hover:bg-red-600 transition-colors">
+                Delete Selected
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Advanced Filters Panel */}
         {showAdvancedFilters && (
@@ -1251,42 +1439,40 @@ const App = () => {
           </div>
         )}
 
-        {activeTab === 'command' && (
-          <CommandCenter
-            deals={deals}
-            teamMembers={teamMembers}
-            monthlyGoal={monthlyGoal}
-            onDealClick={(deal) => { setSelectedDeal(deal); setIsEditingDetails(true); }}
-            onAddDeal={() => setIsModalOpen(true)}
-          />
-        )}
-
-        {/* Bulk Actions Bar */}
-        {bulkMode && selectedDealIds.size > 0 && (
-          <div className="bg-accent text-white px-4 md:px-6 xl:px-8 py-3 flex items-center justify-between animate-in slide-in-from-top duration-300">
-            <div className="flex items-center gap-4">
-              <span className="font-bold">{selectedDealIds.size} deals selected</span>
-              <button onClick={selectAllVisible} className="text-xs underline hover:opacity-80">Select All Visible</button>
-              <button onClick={clearBulkSelection} className="text-xs underline hover:opacity-80">Clear Selection</button>
-            </div>
-            <div className="flex items-center gap-2">
-              <select
-                onChange={(e) => handleBulkMove(e.target.value)}
-                className="px-3 py-2 bg-white text-accent rounded-lg focus:outline-none text-sm font-bold"
-              >
-                <option value="">Move to Stage...</option>
-                {stages.map(s => (
-                  <option key={s.id} value={s.id}>{s.title}</option>
-                ))}
-              </select>
-              <button onClick={handleBulkDelete} className="px-4 py-2 bg-warm-red rounded-lg text-xs font-bold hover:bg-red-600 transition-colors">
-                Delete Selected
-              </button>
-            </div>
-          </div>
-        )}
-
+        {/* Main Content Area - จัดระเบียบให้ทุกหน้าอยู่ใน Container เดียวกัน */}
         <div className={`flex-1 bg-bg p-4 md:p-6 xl:p-8 ${activeTab === 'pipeline' ? 'overflow-x-auto overflow-y-hidden' : 'overflow-y-auto overflow-x-hidden'}`}>
+          {activeTab === 'command' && (
+            <CommandCenter
+              deals={deals}
+              teamMembers={teamMembers}
+              monthlyGoal={monthlyGoal}
+              onDealClick={(deal) => { setSelectedDeal(deal); setIsEditingDetails(true); }}
+              onAddDeal={() => setIsModalOpen(true)}
+              onGeneratePlan={handleGenerateBattlePlan}
+              isGeneratingPlan={isGeneratingPlan}
+              battlePlan={battlePlan}
+              zenithMode={zenithMode}
+              focusMode={focusMode}
+              setFocusMode={setFocusMode}
+              strategicMandates={strategicMandates}
+              isGeneratingMandates={isGeneratingMandates}
+              onGenerateMandates={handleGenerateStrategicMandates}
+            />
+          )}
+
+          {activeTab === 'pipeline' && (
+            <MonthlyPipeline
+              deals={deals}
+              teamMembers={teamMembers}
+              monthlyTarget={monthlyGoal}
+              onDealClick={(deal) => { setSelectedDeal(deal); setIsEditingDetails(true); }}
+              onUpdateDeal={handleUpdateDeal}
+              onAddDeal={() => setIsModalOpen(true)}
+              visibleStages={visibleStages}
+              zenithMode={zenithMode}
+              focusMode={focusMode}
+            />
+          )}
           {/* Calendar View */}
           {activeTab === 'calendar' && (
             <div className="max-w-6xl mx-auto space-y-6">
@@ -1333,24 +1519,24 @@ const App = () => {
                         {tasks.length > 0 && (
                           <div className="space-y-1">
                             {tasks.slice(0, 2).map((task, i) => (
-                              <div key={i} className="text-[10px] bg-warm-yellow/20 text-warm-yellow-dark px-1 py-0.5 rounded truncate" title={task.text}>
+                              <div key={i} className="text-xs bg-warm-yellow/20 text-warm-yellow-dark px-1 py-0.5 rounded truncate" title={task.text}>
                                 {task.text}
                               </div>
                             ))}
                             {tasks.length > 2 && (
-                              <div className="text-[10px] text-text-muted">+{tasks.length - 2} more</div>
+                              <div className="text-xs text-text-muted">+{tasks.length - 2} more</div>
                             )}
                           </div>
                         )}
                         {dealsOnDate.length > 0 && (
                           <div className="space-y-1 mt-1">
                             {dealsOnDate.slice(0, 1).map((deal, i) => (
-                              <div key={i} className="text-[10px] bg-accent/20 text-accent px-1 py-0.5 rounded truncate" title={deal.title}>
+                              <div key={i} className="text-xs font-bold bg-accent/20 text-accent px-1.5 py-0.5 rounded truncate" title={deal.title}>
                                 {deal.title}
                               </div>
                             ))}
                             {dealsOnDate.length > 1 && (
-                              <div className="text-[10px] text-text-muted">+{dealsOnDate.length - 1} deal</div>
+                              <div className="text-xs text-text-muted">+{dealsOnDate.length - 1} deal</div>
                             )}
                           </div>
                         )}
@@ -1372,12 +1558,12 @@ const App = () => {
                 </div>
                 <div className="bg-white/50 px-4 py-2 rounded-2xl shadow-clay-inner border border-white flex gap-4">
                   <div className="text-center">
-                    <p className="text-[10px] font-black text-text-muted uppercase">Pending Tasks</p>
+                    <p className="text-xs font-black text-text-muted uppercase">Pending Tasks</p>
                     <p className="text-xl font-black text-text-main">{deals.reduce((acc, d) => acc + (d.tasks || []).filter(t => !t.completed).length, 0)}</p>
                   </div>
                   <div className="w-px h-8 bg-black/5"></div>
                   <div className="text-center">
-                    <p className="text-[10px] font-black text-text-muted uppercase">Urgent</p>
+                    <p className="text-xs font-black text-text-muted uppercase">Urgent</p>
                     <p className="text-xl font-black text-warm-red">{deals.reduce((acc, d) => acc + (d.tasks || []).filter(t => !t.completed && new Date(t.date) < new Date()).length, 0)}</p>
                   </div>
                 </div>
@@ -1397,7 +1583,7 @@ const App = () => {
                       <div className="flex-1">
                         <h4 className="font-bold text-red-900 text-sm">Overdue Tasks Detected</h4>
                         <p className="text-xs text-red-700 mt-1">You have tasks that missed their deadline. Please review them immediately.</p>
-                        <button onClick={() => setFilterDate(new Date().toISOString().split('T')[0])} className="mt-2 text-[10px] font-black bg-white text-red-600 px-3 py-1.5 rounded-lg shadow-sm hover:bg-red-500 hover:text-white transition-all uppercase">View Tasks</button>
+                        <button onClick={() => setFilterDate(new Date().toISOString().split('T')[0])} className="mt-2 text-xs font-black bg-white text-red-600 px-3 py-1.5 rounded-lg shadow-sm hover:bg-red-500 hover:text-white transition-all uppercase">View Tasks</button>
                       </div>
                     </div>
                   )}
@@ -1413,7 +1599,7 @@ const App = () => {
                         <div className="flex-1">
                           <h4 className="font-bold text-orange-900 text-sm">Stalled Deals Warning</h4>
                           <p className="text-xs text-orange-700 mt-1">Some deals haven&apos;t had activity for over 7 days. Consider sending a follow-up.</p>
-                          <button onClick={() => setActiveTab('pipeline')} className="mt-2 text-[10px] font-black bg-white text-orange-600 px-3 py-1.5 rounded-lg shadow-sm hover:bg-orange-500 hover:text-white transition-all uppercase">Go to Pipeline</button>
+                          <button onClick={() => setActiveTab('pipeline')} className="mt-2 text-xs font-black bg-white text-orange-600 px-3 py-1.5 rounded-lg shadow-sm hover:bg-orange-500 hover:text-white transition-all uppercase">Go to Pipeline</button>
                         </div>
                       </div>
                     )}
@@ -1436,7 +1622,7 @@ const App = () => {
                       return (
                         <div key={activity.id} className="group flex gap-4 p-4 bg-white hover:bg-white/80 dark:bg-gray-900 border border-black/5 dark:border-white/5 rounded-2xl shadow-sm hover:shadow-clay-md transition-all">
                           <div className="flex-col items-center gap-2 hidden sm:flex">
-                            <span className="text-[10px] font-black text-text-muted opacity-50">{new Date(activity.date).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span className="text-xs font-black text-text-muted opacity-50">{new Date(activity.date).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</span>
                             <div className="w-px h-full bg-black/5 flex-1"></div>
                           </div>
 
@@ -1470,8 +1656,8 @@ const App = () => {
             </div>
           )}
 
-          {activeTab === 'clients' && (
-            <div className="max-w-7xl mx-auto space-y-8 pb-20">
+          {activeTab === 'customers' && (
+            <div className="max-w-7xl mx-auto space-y-6 pb-20">
               {/* Clients Dashboard Header */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="p-6 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[24px] text-white shadow-clay-lg relative overflow-hidden group">
@@ -1593,35 +1779,6 @@ const App = () => {
             </div>
           )}
 
-          {activeTab === 'pipeline' && (
-            <div className="h-full flex flex-col">
-              {/* Assignee Filter Bar */}
-              <div className="flex-shrink-0 flex items-center gap-2 px-1 pb-3">
-                <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">แสดงดีลของ:</span>
-                {[{ id: 'all', label: '👥 ทุกคน' }, ...teamMembers.map(m => ({ id: m.id, label: m.name }))].map(opt => (
-                  <button
-                    key={opt.id}
-                    onClick={() => setPipelineAssigneeFilter(opt.id)}
-                    className={`px-3 py-1.5 rounded-xl text-[11px] font-black transition-all ${pipelineAssigneeFilter === opt.id
-                      ? 'text-white shadow-clay-btn'
-                      : 'bg-surface text-text-muted hover:bg-white shadow-clay-sm'
-                      }`}
-                    style={pipelineAssigneeFilter === opt.id ? { backgroundColor: opt.id === 'all' ? '#7C6AF3' : teamMembers.find(m => m.id === opt.id)?.color || '#7C6AF3' } : {}}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-              <MonthlyPipeline
-                deals={pipelineAssigneeFilter === 'all' ? deals : deals.filter(d => d.assigned_to === pipelineAssigneeFilter)}
-                onDealClick={handleDealClick}
-                onAddDeal={() => setIsModalOpen(true)}
-                onUpdateDeal={handleUpdateDeal}
-                monthlyTarget={pipelineAssigneeFilter === 'all' ? monthlyGoal : (teamMembers.find(m => m.id === pipelineAssigneeFilter)?.goal || monthlyGoal)}
-                teamMembers={teamMembers}
-              />
-            </div>
-          )}
           {activeTab === 'overview' && (
             <div className="space-y-6 max-w-7xl mx-auto pb-10">
               <div className="flex justify-between items-end mb-4">
@@ -1862,8 +2019,8 @@ const App = () => {
                             )}
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-[9px] font-bold text-accent">{formatCurrency(deal.value)}</span>
-                            {assignee && <span className="text-[8px] text-text-muted">{assignee.name}</span>}
+                            <span className="text-[10px] font-bold text-accent">{formatCurrency(deal.value)}</span>
+                            {assignee && <span className="text-xs text-text-muted">{assignee.name}</span>}
                           </div>
                         </div>
                       );
@@ -1871,11 +2028,11 @@ const App = () => {
                     {goldenList.length === 0 && (
                       <div className="h-full flex flex-col items-center justify-center opacity-40 py-4">
                         <Target size={24} className="mb-2" />
-                        <p className="text-[10px] font-bold text-center">No targets in window</p>
+                        <p className="text-xs font-bold text-center">No targets in window</p>
                       </div>
                     )}
                   </div>
-                  <p className="text-[8px] font-black text-text-muted mt-4 uppercase opacity-40 italic">Focus on &quot;Life-Changing Deals&quot;</p>
+                  <p className="text-xs font-black text-text-muted mt-4 uppercase opacity-40 italic">Focus on &quot;Life-Changing Deals&quot;</p>
                 </Card>
 
                 <div className="lg:col-span-3 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-[32px] p-6 lg:p-8 shadow-clay-md border border-white/60 relative overflow-hidden group">
@@ -2245,6 +2402,12 @@ const App = () => {
           {activeTab === 'spec-setup' && (
             <div className="max-w-6xl mx-auto space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Actionable Orbs for Zenith Mode */}
+                {zenithMode && deals.filter(d => daysSince(d.lastActivity || d.createdAt) >= 14).slice(0, 1).map((deal) => (
+                  <ActionOrb key={deal.id} deal={deal} onClick={setSelectedDeal} />
+                ))}
+
+                {/* Modals */}
                 {/* Inputs */}
                 <div className="lg:col-span-1 space-y-6">
                   <Card className="p-8 border-l-8 border-l-accent">
@@ -2973,16 +3136,78 @@ const App = () => {
       {/* Import Modal */}
       {
         isImportModalOpen && (
-          <div className="fixed inset-0 bg-bg/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-            <div className="bg-surface rounded-3xl w-full max-w-md shadow-clay-lg p-8 border border-white/50">
-              <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-black text-text-main flex items-center"><FileSpreadsheet className="mr-3 text-warm-green" size={28} />Import Data</h3><button onClick={() => setIsImportModalOpen(false)}><X size={24} className="text-text-muted hover:text-warm-red" /></button></div>
+          <div className="fixed inset-0 bg-bg/80 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
+            <div className="bg-surface rounded-3xl w-full max-w-2xl shadow-clay-lg p-8 border border-white/50 animate-in zoom-in-95 duration-200">
+              <div className="flex justify-between items-center mb-6"><h3 className="text-2xl font-black text-text-main flex items-center"><FileSpreadsheet className="mr-3 text-accent" size={32} />AI & Data Import</h3><button onClick={() => setIsImportModalOpen(false)}><X size={24} className="text-text-muted hover:text-warm-red" /></button></div>
+
+              <div className="mb-6">
+                <PDFImporter onDataExtracted={handlePDFExtracted} callGeminiAPI={callGeminiAPI} />
+              </div>
+              <div className="relative flex py-4 items-center">
+                <div className="flex-grow border-t border-gray-300"></div>
+                <span className="flex-shrink-0 mx-4 text-text-muted text-xs font-bold uppercase tracking-widest">Or Import via CSV</span>
+                <div className="flex-grow border-t border-gray-300"></div>
+              </div>
+
               <div className="space-y-4">
-                <Button variant="outline" fullWidth onClick={downloadTemplate} icon={Download}>ดาวน์โหลดแบบฟอร์ม (Template)</Button>
+                <Button variant="outline" fullWidth onClick={downloadTemplate} icon={Download}>ดาวน์โหลดแบบฟอร์ม (CSV Template)</Button>
                 <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => fileInputRef.current.click()}>
                   <input type="file" accept=".csv" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
                   {importStatus === 'processing' ? (<div className="flex flex-col items-center text-accent"><Loader2 className="animate-spin mb-2" size={32} /><span>Creating data...</span></div>) : importStatus?.startsWith('success') ? (<div className="flex flex-col items-center text-warm-green-dark"><CheckCircle2 className="mb-2" size={32} /><span>Success! {importStatus.split(':')[1]} items imported.</span></div>) : importStatus === 'error' ? (<div className="flex flex-col items-center text-warm-red-dark"><AlertCircle className="mb-2" size={32} /><span>Error reading CSV.</span></div>) : (<div className="flex flex-col items-center text-text-muted"><Upload className="mb-2" size={32} /><span className="font-medium">Click to upload .CSV</span></div>)}
                 </div>
               </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* PDF Verification Modal */}
+      {
+        isPdfVerificationModalOpen && pdfExtractedData && (
+          <div className="fixed inset-0 bg-bg/80 z-[80] flex items-center justify-center p-4 backdrop-blur-sm">
+            <div className="bg-surface rounded-3xl w-full max-w-lg shadow-clay-lg animate-in zoom-in-95 border border-white/50">
+              <div className="flex justify-between items-center p-6 border-b border-black/5">
+                <h3 className="text-xl font-black text-text-main flex items-center"><Sparkles className="mr-2 text-accent" size={24} /> Verify AI Extracted Data</h3>
+                <button onClick={() => setIsPdfVerificationModalOpen(false)} className="text-text-muted hover:text-warm-red"><X size={20} /></button>
+              </div>
+              <form onSubmit={handleSavePDFDeal} className="p-6 space-y-4">
+                <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 rounded-xl text-xs font-bold flex items-start gap-2 mb-2">
+                  <AlertCircle size={16} className="mt-0.5 shrink-0 text-yellow-500" />
+                  <p>AI data extraction may not be 100% accurate. Please review and modify the data before saving.</p>
+                </div>
+
+                <div><label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Deal Title</label><input required name="title" type="text" defaultValue={pdfExtractedData.title || ''} className="w-full px-4 py-3 bg-white border border-gray-200 focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-sm" /></div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div><label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Company</label><input required name="company" type="text" defaultValue={pdfExtractedData.company || ''} className="w-full px-4 py-3 bg-white border border-gray-200 focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-sm" /></div>
+                  <div><label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Contact Person</label><input name="contact" type="text" defaultValue={pdfExtractedData.contact || ''} className="w-full px-4 py-3 bg-white border border-gray-200 focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-sm" /></div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div><label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Total Value (THB)</label><input required name="value" type="number" min="0" defaultValue={pdfExtractedData.value || 0} className="w-full px-4 py-3 bg-white border border-gray-200 focus:border-accent rounded-xl focus:outline-none font-black text-accent text-sm shadow-sm" /></div>
+                  <div><label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Quote Date</label><input required name="date" type="date" defaultValue={pdfExtractedData.date || new Date().toISOString().split('T')[0]} className="w-full px-4 py-3 bg-white border border-gray-200 focus:border-accent rounded-xl focus:outline-none font-bold text-text-main text-sm shadow-sm" /></div>
+                </div>
+
+                <div className="pt-2">
+                  <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-2">Assign To</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {teamMembers.map(m => (
+                      <label key={m.id} className="relative cursor-pointer">
+                        <input type="radio" name="assigned_to" value={m.id} defaultChecked={m.id === 'leader'} className="sr-only peer" />
+                        <div className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 bg-white peer-checked:border-current peer-checked:bg-opacity-5 transition-all peer-checked:shadow-sm" style={{ '--tw-border-opacity': 1, color: m.color }}>
+                          <div className="w-6 h-6 rounded-lg flex items-center justify-center text-white font-black text-xs" style={{ backgroundColor: m.color }}>{m.name.charAt(0)}</div>
+                          <p className="text-xs font-bold text-text-main">{m.name}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 mt-2 border-t border-black/5 flex justify-end gap-3">
+                  <Button variant="secondary" onClick={() => setIsPdfVerificationModalOpen(false)} type="button">Cancel</Button>
+                  <Button variant="primary" type="submit" icon={CheckCircle2}>Confirm & Import</Button>
+                </div>
+              </form>
             </div>
           </div>
         )
