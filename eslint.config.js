@@ -5,7 +5,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
-    { ignores: ['dist'] },
+    { ignores: ['dist', 'ai-devkit'] },
     {
         files: ['**/*.{js,jsx}'],
         languageOptions: {
@@ -33,7 +33,9 @@ export default [
                 'warn',
                 { allowConstantExport: true },
             ],
-            'react/prop-types': 'off'
+            'react/prop-types': 'off',
+            'react-hooks/set-state-in-effect': 'off',
+            'react-hooks/exhaustive-deps': 'warn'
         },
     },
 ]

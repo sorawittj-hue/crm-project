@@ -4,55 +4,66 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        bg: '#F3F0EB', // Warm light beige
-        'bg-dark': '#1a1a2e', // Dark background
-        surface: '#FAF9F6', // Off-white/Cream
-        'surface-dark': '#252542', // Dark surface
-        primary: '#A89F91', // Warm Gry
-        'primary-dark': '#8C857B',
-        accent: '#D4A373', // Soft Brown/Bronze
-        'text-main': '#4A4238', // Dark Coffee
-        'text-muted': '#8C857B',
-        'text-main-dark': '#e2e8f0', // Dark mode text
-        'text-muted-dark': '#94a3b8', // Dark mode muted text
-        // Semantic Warm Colors
-        'warm-blue': '#8DA9C4',
-        'warm-blue-dark': '#4A6Fa5',
-        'warm-green': '#A8C5A8',
-        'warm-green-dark': '#5A8F69',
-        'warm-red': '#D98F8F',
-        'warm-red-dark': '#B85555',
-        'warm-yellow': '#E6C785',
-        'warm-yellow-dark': '#C99A2E',
-        'warm-purple': '#BFA6C7',
-        'warm-purple-dark': '#895F96',
-        // Dark mode specific colors
-        'dark-border': '#3f3f5f',
-        'dark-surface': '#2d2d4a',
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
       },
-      boxShadow: {
-        'clay-sm': '4px 4px 8px #d1cfc9, -4px -4px 8px #ffffff',
-        'clay-md': '8px 8px 16px #d1cfc9, -8px -8px 16px #ffffff',
-        'clay-lg': '12px 12px 24px #d1cfc9, -12px -12px 24px #ffffff',
-        'clay-inner': 'inset 4px 4px 8px #d1cfc9, inset -4px -4px 8px #ffffff',
-        'clay-btn': '6px 6px 12px #cec9bf, -6px -6px 12px #ffffff',
-        'clay-btn-active': 'inset 3px 3px 6px #cec9bf, inset -3px -3px 6px #ffffff',
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ['"Nunito"', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'], // Suggesting a rounder font
-      },
-      animation: {
-        'fade-in-down': 'fadeInDown 0.5s ease-out forwards',
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
       },
       keyframes: {
-        fadeInDown: {
-          '0%': { opacity: '0', transform: 'translateY(-20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        }
-      }
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
     },
   },
   plugins: [],
