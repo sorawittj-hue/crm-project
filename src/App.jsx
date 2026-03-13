@@ -3,11 +3,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import AppLayout from './components/layout/AppLayout';
 
-// Pages placeholders
+// Pages
 import CommandCenterPage from './pages/CommandCenterPage';
 import PipelinePage from './pages/PipelinePage';
 import CustomersPage from './pages/CustomersPage';
 import DashboardPage from './pages/DashboardPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 import ToolsPage from './pages/ToolsPage';
 
 const queryClient = new QueryClient({
@@ -29,7 +30,8 @@ function App() {
             <Route path="command" element={<CommandCenterPage />} />
             <Route path="pipeline" element={<PipelinePage />} />
             <Route path="customers" element={<CustomersPage />} />
-            <Route path="analytics" element={<DashboardPage />} />
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="tools" element={<ToolsPage />} />
           </Route>
         </Routes>

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Home, ListTree, Users, BarChart3, 
-  Menu, X, Sun, Moon, Wrench, Zap, 
+import {
+  Home, ListTree, Users, BarChart3,
+  Menu, X, Sun, Moon, Wrench, Zap,
   Search, ChevronRight, Sliders, DollarSign
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';

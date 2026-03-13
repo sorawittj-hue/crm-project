@@ -44,4 +44,10 @@ const DialogFooter = ({ className, ...props }) => (
   <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)} {...props} />
 )
 
-export { Dialog, DialogHeader, DialogFooter, DialogTitle, DialogDescription }
+const DialogContent = ({ className, children, ...props }) => (
+  <div className={cn("relative w-full max-w-lg", className)} {...props}>
+    {children}
+  </div>
+)
+
+export { Dialog, DialogHeader, DialogFooter, DialogTitle, DialogDescription, DialogContent }
