@@ -3,27 +3,25 @@
  * Displays tracked analytics data including page views, events, and performance metrics
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Activity, Eye, MousePointer2, Clock, TrendingUp, TrendingDown,
-  BarChart3, PieChart, Users, Zap, Download, Trash2, RefreshCw,
-  Calendar, ArrowUpRight, ArrowDownRight, Monitor, Smartphone, Tablet
+  Activity, Eye, Clock, TrendingDown,
+  BarChart3, Users, Zap, Download, RefreshCw,
+  ArrowUpRight, ArrowDownRight, Monitor
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { Card, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import {
-  ResponsiveContainer, AreaChart, Area, BarChart, Bar, LineChart, Line,
+  ResponsiveContainer, AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, PieChart as RechartsPieChart,
-  Pie, Cell, Legend
+  Pie, Cell
 } from 'recharts';
 import {
   getAnalyticsSummary,
   getEventLog,
-  getPageViewHistory,
-  getPerformanceMetrics,
-  AnalyticsEvents
+  getPageViewHistory
 } from '../utils/analytics';
 import { cn } from '../lib/utils';
 
@@ -44,10 +42,10 @@ const MetricCard = ({ title, value, subValue, icon: Icon, trend, color = "primar
     className={cn(
       "relative overflow-hidden rounded-2xl p-6 backdrop-blur-xl border transition-all duration-300",
       color === "primary" ? "bg-primary/10 border-primary/20" :
-      color === "emerald" ? "bg-emerald-500/10 border-emerald-500/20" :
-      color === "amber" ? "bg-amber-500/10 border-amber-500/20" :
-      color === "rose" ? "bg-rose-500/10 border-rose-500/20" :
-      "bg-white/5 border-white/5"
+        color === "emerald" ? "bg-emerald-500/10 border-emerald-500/20" :
+          color === "amber" ? "bg-amber-500/10 border-amber-500/20" :
+            color === "rose" ? "bg-rose-500/10 border-rose-500/20" :
+              "bg-white/5 border-white/5"
     )}
   >
     <div className="relative z-10">
@@ -55,10 +53,10 @@ const MetricCard = ({ title, value, subValue, icon: Icon, trend, color = "primar
         <div className={cn(
           "w-12 h-12 rounded-xl flex items-center justify-center",
           color === "primary" ? "bg-primary/20 text-primary" :
-          color === "emerald" ? "bg-emerald-500/20 text-emerald-500" :
-          color === "amber" ? "bg-amber-500/20 text-amber-500" :
-          color === "rose" ? "bg-rose-500/20 text-rose-500" :
-          "bg-white/10 text-white"
+            color === "emerald" ? "bg-emerald-500/20 text-emerald-500" :
+              color === "amber" ? "bg-amber-500/20 text-amber-500" :
+                color === "rose" ? "bg-rose-500/20 text-rose-500" :
+                  "bg-white/10 text-white"
         )}>
           <Icon size={22} />
         </div>
@@ -136,25 +134,25 @@ export default function PageAnalyticsDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     setIsLoading(true);
     const summary = getAnalyticsSummary(timeRange);
     const events = getEventLog(50);
     const views = getPageViewHistory(30);
-    
+
     setAnalytics(summary);
     setEventLog(events);
     setPageViews(views);
     setIsLoading(false);
-  };
+  }, [timeRange]);
 
   useEffect(() => {
     loadData();
-    
+
     // Auto-refresh every 30 seconds
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
-  }, [timeRange]);
+  }, [loadData]);
 
   // Prepare page views by path data for chart
   const pageViewsData = useMemo(() => {
@@ -169,9 +167,9 @@ export default function PageAnalyticsDashboard() {
   const eventsByTypeData = useMemo(() => {
     if (!analytics) return [];
     return Object.entries(analytics.events.byType)
-      .map(([type, count]) => ({ 
-        name: type.replace(/_/g, ' ').toUpperCase(), 
-        count 
+      .map(([type, count]) => ({
+        name: type.replace(/_/g, ' ').toUpperCase(),
+        count
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 8);
@@ -180,7 +178,7 @@ export default function PageAnalyticsDashboard() {
   // Prepare hourly activity data
   const hourlyActivity = useMemo(() => {
     if (!eventLog.length) return [];
-    
+
     const hours = {};
     for (let i = 23; i >= 0; i--) {
       const hour = new Date();
@@ -188,15 +186,15 @@ export default function PageAnalyticsDashboard() {
       const key = hour.getHours().toString().padStart(2, '0') + ':00';
       hours[key] = 0;
     }
-    
+
     eventLog.forEach(event => {
       const date = new Date(event.timestamp);
       const key = date.getHours().toString().padStart(2, '0') + ':00';
-      if (hours.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(hours, key)) {
         hours[key]++;
       }
     });
-    
+
     return Object.entries(hours).map(([hour, count]) => ({ hour, count }));
   }, [eventLog]);
 
@@ -348,8 +346,8 @@ export default function PageAnalyticsDashboard() {
                   <Bar dataKey="views" fill="url(#pageViewGradient)" radius={[8, 8, 0, 0]} />
                   <defs>
                     <linearGradient id="pageViewGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0.2}/>
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0.2} />
                     </linearGradient>
                   </defs>
                 </BarChart>
@@ -409,8 +407,8 @@ export default function PageAnalyticsDashboard() {
                   <Area type="monotone" dataKey="count" stroke="#f97316" strokeWidth={2} fill="url(#hourlyGradient)" />
                   <defs>
                     <linearGradient id="hourlyGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f97316" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                 </AreaChart>

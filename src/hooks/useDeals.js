@@ -17,7 +17,7 @@ export function useUpdateDeal() {
 
   return useMutation({
     mutationFn: updateDeal,
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
       toast.success('Deal updated successfully');
     },
@@ -33,7 +33,7 @@ export function useAddDeal() {
 
   return useMutation({
     mutationFn: addDeal,
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
       toast.success('Deal created successfully');
     },

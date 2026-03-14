@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Search, Filter, X, ChevronDown, DollarSign, Calendar, Tag, User, Sliders } from 'lucide-react';
-import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { cn } from '../../lib/utils';
 
@@ -21,14 +20,14 @@ const QUICK_VIEWS = [
   { id: 'hot', label: 'Hot Leads', icon: Tag },
 ];
 
-export default function PipelineFilters({ 
-  filters, 
-  onChange, 
-  onClear, 
+export default function PipelineFilters({
+  filters,
+  onChange,
+  onClear,
   dealCount,
   teamMembers,
   onQuickViewChange,
-  activeQuickView 
+  activeQuickView
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -78,8 +77,8 @@ export default function PipelineFilters({
       <div className="flex flex-wrap items-center gap-3">
         {/* Owner Filter */}
         <div className="flex items-center gap-2 bg-white/5 rounded-xl p-1 border border-white/5">
-          <button 
-            onClick={() => onChange({ ...filters, owner: 'all' })} 
+          <button
+            onClick={() => onChange({ ...filters, owner: 'all' })}
             className={cn(
               "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all",
               filters.owner === 'all' ? "bg-white text-black" : "text-muted-foreground hover:text-white"
@@ -88,8 +87,8 @@ export default function PipelineFilters({
             All
           </button>
           {teamMembers?.map(m => (
-            <button 
-              key={m.id} 
+            <button
+              key={m.id}
               onClick={() => onChange({ ...filters, owner: m.id })}
               className={cn(
                 "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all",

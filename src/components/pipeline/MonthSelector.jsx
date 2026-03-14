@@ -1,6 +1,5 @@
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { cn } from '../../lib/utils';
 
 const MONTHS = [
   { value: 0, label: 'January', short: 'Jan' },

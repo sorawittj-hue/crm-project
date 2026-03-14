@@ -8,8 +8,8 @@ export async function fetchDeals() {
     const { data, error } = await supabase
       .from('deals')
       .select('*')
-      .order('createdAt', { ascending: false });
-    
+      .order('created_at', { ascending: false });
+
     if (error) throw error;
     return data || [];
   } catch (error) {
@@ -28,7 +28,7 @@ export async function getDealById(id) {
       .select('*')
       .eq('id', id)
       .single();
-    
+
     if (error) throw error;
     return data;
   } catch (error) {
@@ -43,25 +43,25 @@ export async function getDealById(id) {
 export async function updateDeal({ id, ...updates }) {
   try {
     if (!id) throw new Error('Deal ID is required');
-    
+
     // Validate stage transitions
     const validStages = ['lead', 'contact', 'proposal', 'negotiation', 'won', 'lost'];
     if (updates.stage && !validStages.includes(updates.stage)) {
       throw new Error('Invalid stage value');
     }
-    
+
     // Validate probability
     if (updates.probability !== undefined) {
       if (updates.probability < 0 || updates.probability > 100) {
         throw new Error('Probability must be between 0 and 100');
       }
     }
-    
+
     // Auto-set actual_close_date when stage changes to won/lost
     if (updates.stage === 'won' || updates.stage === 'lost') {
       updates.actual_close_date = updates.actual_close_date || new Date().toISOString();
     }
-    
+
     const { data, error } = await supabase
       .from('deals')
       .update({
@@ -70,7 +70,7 @@ export async function updateDeal({ id, ...updates }) {
       })
       .eq('id', id)
       .select();
-    
+
     if (error) throw error;
     return data?.[0];
   } catch (error) {
@@ -88,7 +88,7 @@ export async function addDeal(newDeal) {
     if (!newDeal.title) {
       throw new Error('Deal title is required');
     }
-    
+
     // Set defaults
     const dealData = {
       title: newDeal.title.trim(),
@@ -111,12 +111,12 @@ export async function addDeal(newDeal) {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-    
+
     const { data, error } = await supabase
       .from('deals')
       .insert([dealData])
       .select();
-    
+
     if (error) throw error;
     return data?.[0];
   } catch (error) {
@@ -133,12 +133,12 @@ export async function deleteDeals(ids) {
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new Error('At least one deal ID is required');
     }
-    
+
     const { error } = await supabase
       .from('deals')
       .delete()
       .in('id', ids);
-    
+
     if (error) throw error;
     return true;
   } catch (error) {
@@ -155,7 +155,7 @@ export async function bulkUpdateDeals(ids, updates) {
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new Error('At least one deal ID is required');
     }
-    
+
     const { data, error } = await supabase
       .from('deals')
       .update({
@@ -164,7 +164,7 @@ export async function bulkUpdateDeals(ids, updates) {
       })
       .in('id', ids)
       .select();
-    
+
     if (error) throw error;
     return data;
   } catch (error) {
@@ -179,22 +179,22 @@ export async function bulkUpdateDeals(ids, updates) {
 export async function searchDeals(query, filters = {}) {
   try {
     let builder = supabase.from('deals').select('*');
-    
+
     // Text search
     if (query) {
       builder = builder.or(`title.ilike.%${query}%,company.ilike.%${query}%`);
     }
-    
+
     // Stage filter
     if (filters.stage) {
       builder = builder.eq('stage', filters.stage);
     }
-    
+
     // Assigned to filter
     if (filters.assigned_to) {
       builder = builder.eq('assigned_to', filters.assigned_to);
     }
-    
+
     // Value range
     if (filters.minValue) {
       builder = builder.gte('value', filters.minValue);
@@ -202,9 +202,9 @@ export async function searchDeals(query, filters = {}) {
     if (filters.maxValue) {
       builder = builder.lte('value', filters.maxValue);
     }
-    
-    const { data, error } = await builder.order('createdAt', { ascending: false });
-    
+
+    const { data, error } = await builder.order('created_at', { ascending: false });
+
     if (error) throw error;
     return data || [];
   } catch (error) {

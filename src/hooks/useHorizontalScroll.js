@@ -22,7 +22,7 @@ export function useHorizontalScroll() {
     const handleMouseDown = (e) => {
       // Only trigger on empty space, not on cards
       if (e.target.closest('[data-draggable]')) return;
-      
+
       isDown = true;
       startX = e.pageX - element.offsetLeft;
       scrollLeft = element.scrollLeft;
@@ -119,7 +119,7 @@ export function usePipelineKeyboard(shortcuts = {}) {
       // Only trigger when not in input fields
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-      const { onMoveLeft, onMoveRight, onSelect, onEscape } = shortcuts;
+      const { onMoveLeft, onMoveRight, onEscape } = shortcuts;
 
       switch (e.key) {
         case 'ArrowLeft':

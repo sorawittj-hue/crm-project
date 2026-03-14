@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
+import { cn } from "../../lib/utils"
 
-const Sheet = ({ open, onOpenChange, children, title, description }) => {
+const Sheet = ({ open, onOpenChange, children }) => {
   return (
     <AnimatePresence>
       {open && (
@@ -11,35 +12,26 @@ const Sheet = ({ open, onOpenChange, children, title, description }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
             onClick={() => onOpenChange(false)}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm"
+            className="fixed inset-0 bg-background/60 backdrop-blur-md"
           />
 
-          {/* Content */}
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="relative w-full max-w-xl h-full border-l border-white/5 bg-card/80 backdrop-blur-3xl shadow-2xl flex flex-col"
-          >
-            <div className="flex items-center justify-between p-6 border-b border-white/5">
-              <div className="min-w-0">
-                <h2 className="text-lg font-black uppercase tracking-widest truncate">{title}</h2>
-                {description && <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] mt-1">{description}</p>}
-              </div>
-              <button
+          {/* Sidebar */}
+          {children}
+          
+          {/* Close trigger button (universal) */}
+          <div className="absolute top-6 right-[calc(100%-2rem+24px)] md:right-auto md:left-auto md:fixed md:top-8 md:right-[580px] z-[110]">
+             <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
                 onClick={() => onOpenChange(false)}
-                className="p-2 rounded-xl hover:bg-white/5 text-muted-foreground transition-colors shrink-0"
-              >
+                className="w-12 h-12 rounded-full bg-background/80 backdrop-blur-3xl border border-white/10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:scale-110 active:scale-95 transition-all shadow-2xl"
+             >
                 <X size={20} />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
-              {children}
-            </div>
-          </motion.div>
+             </motion.button>
+          </div>
         </div>
       )}
     </AnimatePresence>
@@ -48,12 +40,37 @@ const Sheet = ({ open, onOpenChange, children, title, description }) => {
 
 const SheetContent = ({ children, className }) => {
   return (
-    <div className={`relative w-full max-w-xl h-full border-l border-white/5 bg-card/80 backdrop-blur-3xl shadow-2xl flex flex-col ${className || ''}`}>
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        {children}
-      </div>
-    </div>
+    <motion.div
+      initial={{ x: "100%" }}
+      animate={{ x: 0 }}
+      exit={{ x: "100%" }}
+      transition={{ type: "spring", damping: 30, stiffness: 200 }}
+      className={cn(
+        "relative w-full max-w-xl h-full border-l border-white/5 bg-card/40 backdrop-blur-3xl shadow-2xl rounded-l-[3rem] flex flex-col overflow-hidden",
+        className
+      )}
+    >
+      {children}
+    </motion.div>
   )
 }
 
-export { Sheet, SheetContent }
+const SheetHeader = ({ children, className }) => (
+  <div className={cn("p-8 pb-0 space-y-2", className)}>
+    {children}
+  </div>
+)
+
+const SheetTitle = ({ children, className }) => (
+  <h2 className={cn("text-2xl font-black tracking-tight", className)}>
+    {children}
+  </h2>
+)
+
+const SheetDescription = ({ children, className }) => (
+  <p className={cn("text-sm text-muted-foreground", className)}>
+    {children}
+  </p>
+)
+
+export { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription }

@@ -163,9 +163,8 @@ Format as JSON:
 /**
  * Calculate deal risk score based on activity patterns
  */
-export function calculateRiskScore(deal, activities = []) {
-  const now = Date.now();
-  const lastActivityDate = new Date(deal.lastActivity || deal.createdAt).getTime();
+export function calculateRiskScore(deal, activities = [], now = Date.now()) {
+  const lastActivityDate = new Date(deal.lastActivity || deal.createdAt || deal.created_at || '1970-01-01').getTime();
   const daysSinceActivity = Math.floor((now - lastActivityDate) / (1000 * 60 * 60 * 24));
   
   let riskScore = 0;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, PhoneCall, CheckCircle2, Clock, User, TrendingUp } from 'lucide-react';
+import { AlertTriangle, PhoneCall, CheckCircle2, Clock, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { cn } from '../../lib/utils';
@@ -17,18 +17,18 @@ const STAGE_AGING_THRESHOLD = {
   critical: 14
 };
 
-export const PipelineCard = React.memo(React.forwardRef(({ 
-  deal, 
-  onClick, 
-  onDragStart, 
-  isSelected, 
+export const PipelineCard = React.memo(React.forwardRef(({
+  deal,
+  onClick,
+  onDragStart,
+  isSelected,
   onUpdateDeal,
-  teamMembers 
+  teamMembers
 }, ref) => {
   const daysInStage = daysSince(deal.lastActivity || deal.createdAt);
   const isStale = daysInStage >= STAGE_AGING_THRESHOLD.warning;
   const isCritical = daysInStage >= STAGE_AGING_THRESHOLD.critical;
-  
+
   const owner = teamMembers?.find(m => m.id === deal.assigned_to);
   const probability = deal.probability || 0;
 
@@ -75,7 +75,7 @@ export const PipelineCard = React.memo(React.forwardRef(({
                 {normalizeText(deal.company) || 'ENTITY'}
               </p>
             </div>
-            
+
             {isCritical && (
               <AlertTriangle size={14} className="text-red-500 flex-shrink-0 animate-pulse" title="Critical: No activity for 14+ days" />
             )}
@@ -85,7 +85,7 @@ export const PipelineCard = React.memo(React.forwardRef(({
           </div>
 
           {/* TITLE */}
-          <h4 
+          <h4
             className="text-xs font-bold leading-tight line-clamp-2 tracking-tight text-foreground/90 min-h-[2.5rem]"
             title={normalizeText(deal.title)}
           >
@@ -111,9 +111,9 @@ export const PipelineCard = React.memo(React.forwardRef(({
             <div className="flex items-center gap-1.5">
               <div className={cn(
                 "px-1.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider tabular-nums",
-                isCritical ? "bg-red-500/20 text-red-400" : 
-                isStale ? "bg-amber-500/20 text-amber-400" : 
-                "bg-emerald-500/20 text-emerald-400"
+                isCritical ? "bg-red-500/20 text-red-400" :
+                  isStale ? "bg-amber-500/20 text-amber-400" :
+                    "bg-emerald-500/20 text-emerald-400"
               )}>
                 {daysInStage}d
               </div>
@@ -126,9 +126,9 @@ export const PipelineCard = React.memo(React.forwardRef(({
               <div
                 className={cn(
                   "h-full transition-all duration-500",
-                  probability >= 70 ? "bg-emerald-500" : 
-                  probability >= 40 ? "bg-amber-500" : 
-                  "bg-red-500"
+                  probability >= 70 ? "bg-emerald-500" :
+                    probability >= 40 ? "bg-amber-500" :
+                      "bg-red-500"
                 )}
                 style={{ width: `${probability}%` }}
               />
@@ -140,9 +140,9 @@ export const PipelineCard = React.memo(React.forwardRef(({
             <Button
               size="xs"
               className="h-8 w-8 rounded-full bg-primary hover:bg-primary/80"
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                onUpdateDeal(deal.id, { lastActivity: new Date().toISOString() }); 
+              onClick={(e) => {
+                e.stopPropagation();
+                onUpdateDeal(deal.id, { lastActivity: new Date().toISOString() });
               }}
               title="Log Activity"
             >
@@ -151,9 +151,9 @@ export const PipelineCard = React.memo(React.forwardRef(({
             <Button
               size="xs"
               className="h-8 w-8 rounded-full bg-emerald-600 hover:bg-emerald-700"
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                onUpdateDeal(deal.id, { stage: 'won' }); 
+              onClick={(e) => {
+                e.stopPropagation();
+                onUpdateDeal(deal.id, { stage: 'won' });
               }}
               title="Mark as Won"
             >

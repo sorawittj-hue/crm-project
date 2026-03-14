@@ -2,23 +2,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import React, { useMemo, useState, useEffect } from 'react';
 import {
   Sparkles, UserCheck, ShieldCheck, Flame, Cpu,
-  Zap, Target, Bell, MessageSquare, Calendar, Clock,
-  TrendingUp, AlertCircle, CheckCircle, ArrowUpRight,
-  Users, Briefcase, DollarSign, Activity, BarChart3,
-  Play, Pause, RotateCcw, MessageCircle, Mail, Phone,
-  MoreVertical, Star, Award, ChevronRight, X
+  Zap, Target, Bell, MessageSquare, Calendar,
+  AlertCircle, CheckCircle, RotateCcw,
+  Users, Briefcase, Activity, BarChart3,
+  MessageCircle, Mail, Phone,
+  ChevronRight, X
 } from 'lucide-react';
 import { CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { cn } from '../../lib/utils';
-import { Input } from '../ui/Input';
-import { Textarea } from '../ui/Textarea';
 
 const formatCurrency = (n) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', notation: 'compact' }).format(n || 0);
 const formatFullCurrency = (n) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(n || 0);
 const daysSince = (dateStr) => Math.floor((Date.now() - new Date(dateStr || Date.now())) / 86400000);
-const formatTime = (date) => new Date(date).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 
 // War Card Component
 const WarCard = ({ children, className, delay = 0, gradient = false }) => (
@@ -29,7 +26,7 @@ const WarCard = ({ children, className, delay = 0, gradient = false }) => (
     className={cn(
       "relative overflow-hidden rounded-3xl border backdrop-blur-xl shadow-xl",
       gradient ? "bg-gradient-to-br from-primary/20 via-purple-500/10 to-primary/20 border-primary/30" :
-      "border-white/5 bg-black/40",
+        "border-white/5 bg-black/40",
       className
     )}
   >
@@ -53,7 +50,7 @@ const TeamUnitStatus = ({ name, role, won, target, color, icon_type, activeNow }
           </span>
         </div>
       )}
-      
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shadow-lg", color?.split(' ')[0] || 'bg-primary')}>
@@ -116,7 +113,7 @@ const UrgentDealNode = React.memo(({ deal, onClick }) => {
         <div className={cn(
           "w-3 h-3 rounded-full shrink-0",
           isCritical ? "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.6)] animate-pulse" :
-          isUrgent ? "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" : "bg-emerald-500"
+            isUrgent ? "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" : "bg-emerald-500"
         )} />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-black tracking-tight truncate uppercase group-hover:text-primary transition-colors">{deal.title}</p>
@@ -130,8 +127,8 @@ const UrgentDealNode = React.memo(({ deal, onClick }) => {
         <Badge variant="outline" className={cn(
           "text-[8px] font-black border-white/10 shrink-0",
           isCritical ? "bg-red-500/20 text-red-400" :
-          isUrgent ? "bg-amber-500/20 text-amber-400" :
-          "bg-emerald-500/20 text-emerald-400"
+            isUrgent ? "bg-amber-500/20 text-amber-400" :
+              "bg-emerald-500/20 text-emerald-400"
         )}>
           {days}D IDLE
         </Badge>
@@ -153,14 +150,14 @@ const ActivityFeedItem = ({ activity, index }) => (
     <div className={cn(
       "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
       activity.type === 'deal_won' ? "bg-emerald-500/20 text-emerald-500" :
-      activity.type === 'deal_created' ? "bg-primary/20 text-primary" :
-      activity.type === 'activity' ? "bg-amber-500/20 text-amber-500" :
-      "bg-white/10 text-white"
+        activity.type === 'deal_created' ? "bg-primary/20 text-primary" :
+          activity.type === 'activity' ? "bg-amber-500/20 text-amber-500" :
+            "bg-white/10 text-white"
     )}>
       {activity.type === 'deal_won' ? <CheckCircle size={14} /> :
-       activity.type === 'deal_created' ? <Briefcase size={14} /> :
-       activity.type === 'activity' ? <Activity size={14} /> :
-       <Bell size={14} />}
+        activity.type === 'deal_created' ? <Briefcase size={14} /> :
+          activity.type === 'activity' ? <Activity size={14} /> :
+            <Bell size={14} />}
     </div>
     <div className="flex-1 min-w-0">
       <p className="text-xs font-medium truncate">{activity.title}</p>
@@ -178,9 +175,9 @@ const QuickAction = ({ icon: Icon, label, onClick, color = "primary" }) => (
     className={cn(
       "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all",
       color === "primary" ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20" :
-      color === "emerald" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20" :
-      color === "amber" ? "bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20" :
-      "bg-white/5 border-white/10 hover:bg-white/10"
+        color === "emerald" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20" :
+          color === "amber" ? "bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20" :
+            "bg-white/5 border-white/10 hover:bg-white/10"
     )}
   >
     <Icon size={20} className="mb-2" />
@@ -217,10 +214,7 @@ const CommandCenter = ({
   onGenerateMandates,
   zenithMode
 }) => {
-  const [notificationCount, setNotificationCount] = useState(3);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [quickNote, setQuickNote] = useState('');
-  const [isFocusMode, setIsFocusMode] = useState(false);
 
   const stats = useMemo(() => {
     const today = new Date();
@@ -269,7 +263,7 @@ const CommandCenter = ({
     if (!battlePlan && onGeneratePlan) {
       onGeneratePlan();
     }
-  }, []);
+  }, [battlePlan, onGeneratePlan]);
 
   return (
     <div className={cn("max-w-[1800px] mx-auto space-y-6 pb-10", zenithMode && "zenith-theme")}>
@@ -286,7 +280,7 @@ const CommandCenter = ({
         </div>
 
         <div className="flex items-center gap-3">
-          <NotificationBell count={notificationCount} onClick={() => setShowNotifications(!showNotifications)} />
+          <NotificationBell count={0} onClick={() => setShowNotifications(!showNotifications)} />
           <Button
             onClick={onAddDeal}
             className="h-12 px-6 rounded-xl bg-primary font-black uppercase tracking-widest text-[9px] shadow-xl shadow-primary/20 hover:scale-105 transition-all"
@@ -343,8 +337,8 @@ const CommandCenter = ({
                 className={cn(
                   "h-full rounded-full relative overflow-hidden",
                   stats.pct >= 100 ? "bg-gradient-to-r from-emerald-500 to-emerald-400" :
-                  stats.pct >= 50 ? "bg-gradient-to-r from-primary to-indigo-400" :
-                  "bg-gradient-to-r from-red-500 to-orange-400"
+                    stats.pct >= 50 ? "bg-gradient-to-r from-primary to-indigo-400" :
+                      "bg-gradient-to-r from-red-500 to-orange-400"
                 )}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
@@ -387,7 +381,7 @@ const CommandCenter = ({
               </Badge>
             </CardHeader>
             <CardContent className="p-4 grid md:grid-cols-2 gap-4">
-              {teamMembers.map((m, i) => {
+              {teamMembers.map((m) => {
                 const mWon = deals.filter(d => d.assigned_to === m.id && d.stage === 'won' && new Date(d.createdAt).getMonth() === new Date().getMonth()).reduce((s, d) => s + (d.value || 0), 0);
                 return (
                   <TeamUnitStatus
@@ -516,15 +510,15 @@ const CommandCenter = ({
                   className={cn(
                     "p-4 rounded-2xl border flex gap-3 items-start",
                     m.urgency === 'high' ? "bg-red-500/10 border-red-500/20" :
-                    m.urgency === 'medium' ? "bg-amber-500/10 border-amber-500/20" :
-                    "bg-white/5 border-white/10"
+                      m.urgency === 'medium' ? "bg-amber-500/10 border-amber-500/20" :
+                        "bg-white/5 border-white/10"
                   )}
                 >
                   <div className={cn(
                     "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
                     m.urgency === 'high' ? "bg-red-500/20 text-red-500" :
-                    m.urgency === 'medium' ? "bg-amber-500/20 text-amber-500" :
-                    "bg-primary/20 text-primary"
+                      m.urgency === 'medium' ? "bg-amber-500/20 text-amber-500" :
+                        "bg-primary/20 text-primary"
                   )}>
                     <Target size={16} />
                   </div>
@@ -544,7 +538,7 @@ const CommandCenter = ({
           <WarCard delay={0.5}>
             <CardHeader className="px-6 py-4 border-b border-white/5">
               <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                <Activity size={16} className="text-emerald-500" /> Today's Activity
+                <Activity size={16} className="text-emerald-500" /> Today&apos;s Activity
               </CardTitle>
             </CardHeader>
             <CardContent className="p-2">

@@ -4,76 +4,87 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 224 71.4% 4.1%;
+    /* Premium Zenith Light Theme */
+    --background: 210 20% 98%;
+    --foreground: 220 40% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 224 71.4% 4.1%;
+    --card-foreground: 220 40% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
+    --popover-foreground: 220 40% 10%;
 
-    --primary: 220.9 39.3% 11%;
-    --primary-foreground: 210 20% 98%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14.3% 95.9%;
-    --secondary-foreground: 220.9 39.3% 11%;
+    --secondary: 210 20% 90%;
+    --secondary-foreground: 220 40% 10%;
 
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 220 8.9% 46.1%;
+    --muted: 210 20% 94%;
+    --muted-foreground: 215 15% 45%;
 
-    --accent: 220 14.3% 95.9%;
-    --accent-foreground: 220.9 39.3% 11%;
+    --accent: 190 90% 45%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 20% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 224 71.4% 4.1%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 160 84% 39%;
 
-    --radius: 0.5rem;
+    --radius: 1.25rem;
+
+    /* Font Families */
+    --font-sans: 'Nunito', 'Quicksand', 'Comfortaa', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
+
+    /* Semantic Soft Colors */
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+    --error: 0 84% 60%;
+
+    /* Branding Accents */
+    --zenith-emerald: 160 84% 39%;
+    --zenith-blue: 217 91% 60%;
+    --zenith-purple: 262 83% 58%;
+    --zenith-gold: 45 93% 47%;
   }
 
   .dark {
-    --background: 224 71.4% 4.1%;
-    --foreground: 210 20% 98%;
-
-    --card: 224 71.4% 4.1%;
-    --card-foreground: 210 20% 98%;
-
-    --popover: 224 71.4% 4.1%;
-    --popover-foreground: 210 20% 98%;
-
-    --primary: 210 20% 98%;
-    --primary-foreground: 220.9 39.3% 11%;
-
-    --secondary: 215 27.9% 16.9%;
-    --secondary-foreground: 210 20% 98%;
-
-    --muted: 215 27.9% 16.9%;
-    --muted-foreground: 217.9 10.6% 64.9%;
-
-    --accent: 215 27.9% 16.9%;
-    --accent-foreground: 210 20% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 20% 98%;
-
-    --border: 215 27.9% 16.9%;
-    --input: 215 27.9% 16.9%;
-    --ring: 216 12.2% 83.9%;
+    /* Ultra-Premium Zenith Dark Theme */
+    --background: 222 47% 4%;
+    --foreground: 210 40% 98%;
+    
+    --card: 222 47% 6%;
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 222 47% 6%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 160 84% 45%;
+    --primary-foreground: 210 40% 98%;
+    
+    --secondary: 222 47% 12%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 222 47% 12%;
+    --muted-foreground: 215 20% 65%;
+    
+    --accent: 190 90% 50%;
+    --accent-foreground: 210 40% 98%;
+    
+    --border: 222 47% 15%;
+    --input: 222 47% 15%;
+    --ring: 160 84% 45%;
   }
 
-  /* Zenith Theme Variables */
   .zenith-theme {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --border: 240 5.9% 15%;
-    --primary: 48 100% 50%; /* Golden */
-    --primary-foreground: 240 10% 3.9%;
-    --ring: 48 100% 50%;
+    /* Extreme Performance Mode */
+    --background: 230 50% 2%;
+    --card: 230 50% 4%;
+    --border: 230 50% 8%;
+    --primary: 190 100% 50%;
   }
 }
 
@@ -82,25 +93,16 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: var(--font-sans);
+    @apply bg-background text-foreground antialiased selection:bg-primary/20;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
-/* Linear-style clean transitions */
-.transition-linear {
-  @apply transition-all duration-300 ease-in-out;
-}
-
-/* Subtle Card Glow */
-.glass-card {
-  @apply bg-card/50 backdrop-blur-md border border-white/10;
-}
-
-/* Scrollbar refinement */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -108,97 +110,96 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40 transition-colors;
+  @apply bg-muted-foreground/20 rounded-full transition-colors hover:bg-muted-foreground/40;
 }
 
-/* Animations */
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Glassmorphism System */
+.glass {
+  @apply backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/10 dark:border-white/5;
 }
 
-.animate-fade-up {
-  animation: fade-up 0.4s ease-out forwards;
+.glass-card {
+  @apply glass rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.1)];
 }
 
-.delay-100 { animation-delay: 100ms; }
-.delay-200 { animation-delay: 200ms; }
-.delay-300 { animation-delay: 300ms; }
-
-/* HUD Glowing Effects */
-.glow-primary {
-  box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.5);
+/* Premium Animations */
+@layer utilities {
+  .animate-reveal {
+    animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,0.05) 50%,
+      rgba(255,255,255,0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
 }
 
-.glow-destructive {
-  box-shadow: 0 0 20px -5px hsl(var(--destructive) / 0.5);
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Stagnant Pulse for blocked deals */
-@keyframes stagnant-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-  50% { box-shadow: 0 0 15px 2px rgba(239, 68, 68, 0.3); }
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
-.stagnant-pulse {
-  animation: stagnant-pulse 2s infinite;
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
-/* Glass Surface Utilities */
-.glass-surface {
-  @apply bg-background/40 backdrop-blur-2xl border border-white/5 shadow-2xl;
+/* Page Transition Wrapper */
+.page-transition-enter {
+  opacity: 0;
+  transform: scale(0.99);
+}
+.page-transition-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 300ms, transform 300ms;
 }
 
-/* Custom Scrollbar for Next-Gen Feel */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Layout Utilities */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: hsl(var(--background) / 0.3);
-  border-radius: 10px;
+.premium-card {
+  @apply relative overflow-hidden bg-card border border-border/50 rounded-[2rem] p-8 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.3);
-  border-radius: 10px;
+.premium-gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70;
+  font-family: var(--font-display);
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary) / 0.6);
+/* Form Styles */
+.input-field {
+  @apply h-12 bg-muted/50 border-transparent rounded-2xl px-4 transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary/50;
 }
 
-/* Enhanced Horizontal Scrollbar for Pipeline Board */
-.overflow-x-auto::-webkit-scrollbar,
-[class*="overflow-x"]::-webkit-scrollbar {
-  height: 10px;
+/* Button Variants */
+.btn-zenith {
+  @apply inline-flex items-center justify-center rounded-2xl font-semibold px-6 h-12 transition-all active:scale-95;
 }
 
-.overflow-x-auto::-webkit-scrollbar-track,
-[class*="overflow-x"]::-webkit-scrollbar-track {
-  background: hsl(var(--background) / 0.5);
-  border-radius: 10px;
+.btn-zenith-primary {
+  @apply btn-zenith bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:brightness-110;
 }
 
-.overflow-x-auto::-webkit-scrollbar-thumb,
-[class*="overflow-x"]::-webkit-scrollbar-thumb {
-  background: linear-gradient(90deg, hsl(var(--primary) / 0.4), hsl(var(--primary) / 0.6));
-  border-radius: 10px;
-}
-
-.overflow-x-auto::-webkit-scrollbar-thumb:hover,
-[class*="overflow-x"]::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(90deg, hsl(var(--primary) / 0.6), hsl(var(--primary) / 0.8));
-}
-
-/* Firefox scrollbar */
-.overflow-x-auto {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--primary) / 0.5) hsl(var(--background) / 0.3);
-}
-
-/* Zenith HUD Specifics */
-.zenith-theme .glass-card {
-  @apply border-primary/20 shadow-primary/10 bg-black/60;
+.btn-zenith-outline {
+  @apply btn-zenith border border-border hover:bg-muted;
 }

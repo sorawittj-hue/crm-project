@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -7,44 +7,44 @@ import PipelineCard from './PipelineCard';
 const formatCurrency = (n) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(n || 0);
 
 const STAGE_INFO = {
-  lead: { 
-    label: 'Inbound', 
-    color: 'bg-blue-500', 
+  lead: {
+    label: 'Inbound',
+    color: 'bg-blue-500',
     glow: 'shadow-blue-500/20',
     description: 'New leads not yet engaged',
     icon: '📥'
   },
-  contact: { 
-    label: 'Engagement', 
-    color: 'bg-indigo-500', 
+  contact: {
+    label: 'Engagement',
+    color: 'bg-indigo-500',
     glow: 'shadow-indigo-500/20',
     description: 'Initial contact made',
     icon: '🤝'
   },
-  proposal: { 
-    label: 'Quotation', 
-    color: 'bg-amber-500', 
+  proposal: {
+    label: 'Quotation',
+    color: 'bg-amber-500',
     glow: 'shadow-amber-500/20',
     description: 'Proposal sent to client',
     icon: '📄'
   },
-  negotiation: { 
-    label: 'Tactical', 
-    color: 'bg-orange-500', 
+  negotiation: {
+    label: 'Tactical',
+    color: 'bg-orange-500',
     glow: 'shadow-orange-500/20',
     description: 'Active negotiation phase',
     icon: '⚔️'
   },
-  won: { 
-    label: 'Closed', 
-    color: 'bg-emerald-500', 
+  won: {
+    label: 'Closed',
+    color: 'bg-emerald-500',
     glow: 'shadow-emerald-500/20',
     description: 'Successfully closed deals',
     icon: '✅'
   },
-  lost: { 
-    label: 'Lost', 
-    color: 'bg-red-500', 
+  lost: {
+    label: 'Lost',
+    color: 'bg-red-500',
     glow: 'shadow-red-500/20',
     description: 'Lost or rejected opportunities',
     icon: '❌'
@@ -54,7 +54,7 @@ const STAGE_INFO = {
 const PipelineColumn = ({ stage, deals, onDealClick, onUpdateDeal, selectedDeals, teamMembers }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isOver, setIsOver] = useState(false);
-  
+
   const totalValue = deals.reduce((sum, d) => sum + (d.value || 0), 0);
   const dealCount = deals.length;
   const stageInfo = STAGE_INFO[stage.id] || STAGE_INFO.lead;
@@ -64,10 +64,10 @@ const PipelineColumn = ({ stage, deals, onDealClick, onUpdateDeal, selectedDeals
     <div
       onDragOver={(e) => { e.preventDefault(); setIsOver(true); }}
       onDragLeave={() => setIsOver(false)}
-      onDrop={(e) => { 
-        e.preventDefault(); 
-        setIsOver(false); 
-        onUpdateDeal(e.dataTransfer.getData('dealId'), { stage: stage.id }); 
+      onDrop={(e) => {
+        e.preventDefault();
+        setIsOver(false);
+        onUpdateDeal(e.dataTransfer.getData('dealId'), { stage: stage.id });
       }}
       className={cn(
         "flex-shrink-0 w-[320px] flex flex-col h-full rounded-3xl transition-all duration-300",
@@ -76,7 +76,7 @@ const PipelineColumn = ({ stage, deals, onDealClick, onUpdateDeal, selectedDeals
       )}
     >
       {/* HEADER */}
-      <div 
+      <div
         className={cn(
           "p-4 flex flex-col gap-2 sticky top-0 z-10 cursor-pointer transition-colors",
           isLost ? "bg-red-500/10" : "bg-black/20",
@@ -109,7 +109,7 @@ const PipelineColumn = ({ stage, deals, onDealClick, onUpdateDeal, selectedDeals
             )}
           </div>
         </div>
-        
+
         {/* Description */}
         <p className="text-[8px] font-medium text-muted-foreground leading-tight">
           {stageInfo.description}
