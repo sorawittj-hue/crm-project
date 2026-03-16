@@ -2,16 +2,19 @@ import { useMemo, useState } from 'react';
 import { useDeals } from '../hooks/useDeals';
 import { useSettings } from '../hooks/useSettings';
 import { useTeam } from '../hooks/useTeam';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { Card } from '../components/ui/Card';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import {
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
-  CartesianGrid, Tooltip, BarChart, Bar, PieChart, Pie, Cell
+  ResponsiveContainer, Area, Bar, XAxis, YAxis,
+  CartesianGrid, Tooltip, PieChart, Pie, Cell,
+  ComposedChart, Line
 } from 'recharts';
 import {
-  TrendingUp, DollarSign, Target, Users, PieChart as PieIcon,
-  BarChart3, ArrowUpRight, ArrowDownRight, Loader2
+  TrendingUp, Target, Users, BarChart3, 
+  ArrowUpRight, ArrowDownRight, Loader2,
+  Activity, DollarSign, Zap, Globe, PieChart as PieIcon,
+  ShieldCheck
 } from 'lucide-react';
 
 const formatCurrency = (amount) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', notation: 'compact' }).format(amount || 0);
@@ -20,16 +23,16 @@ const formatFullCurrency = (amount) => new Intl.NumberFormat('th-TH', { style: '
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-card border border-border p-3 rounded-xl shadow-lg">
-        <p className="text-xs font-medium text-muted-foreground mb-2">{label}</p>
-        <div className="space-y-1">
+      <div className="bg-white border border-slate-100 p-4 rounded-[1.5rem] shadow-2xl backdrop-blur-md bg-white/90">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{label}</p>
+        <div className="space-y-1.5">
           {payload.map((entry, index) => (
-            <div key={index} className="flex items-center justify-between gap-4">
+            <div key={index} className="flex items-center justify-between gap-8">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-                <span className="text-xs text-muted-foreground">{entry.name}</span>
+                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{entry.name}</span>
               </div>
-              <p className="text-sm font-semibold">{formatFullCurrency(entry.value)}</p>
+              <p className="text-sm font-black text-slate-900 tabular-nums">{formatFullCurrency(entry.value)}</p>
             </div>
           ))}
         </div>
@@ -39,43 +42,49 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-const MetricCard = ({ title, value, subValue, icon: Icon, trend, color = "primary" }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    whileHover={{ y: -2, scale: 1.01 }}
-    className={cn(
-      "relative overflow-hidden rounded-2xl p-5 backdrop-blur-xl border transition-all duration-300",
-      "bg-card border-border"
-    )}
-  >
-    <div className="relative z-10">
-      <div className="flex items-center justify-between mb-3">
-        <div className={cn(
-          "w-10 h-10 rounded-xl flex items-center justify-center",
-          color === "primary" ? "bg-primary/10 text-primary" :
-            color === "emerald" ? "bg-emerald-500/10 text-emerald-500" :
-              color === "amber" ? "bg-amber-500/10 text-amber-500" :
-                "bg-muted text-foreground"
-        )}>
-          <Icon size={18} />
-        </div>
-        {trend !== undefined && (
-          <div className={cn(
-            "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium",
-            trend >= 0 ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"
-          )}>
-            {trend >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-            {Math.abs(trend)}%
+const MetricCard = ({ title, value, subValue, icon: Icon, trend, color = "primary" }) => {
+    const colorStyles = {
+        primary: "text-primary bg-primary/5 border-primary/10",
+        emerald: "text-emerald-600 bg-emerald-50 border-emerald-100",
+        rose: "text-rose-600 bg-rose-50 border-rose-100",
+        slate: "text-slate-600 bg-slate-50 border-slate-100"
+    };
+    
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -4 }}
+        className="group"
+      >
+        <Card className="p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden relative">
+          <div className="relative z-10 flex flex-col justify-between h-full">
+            <div className="flex items-center justify-between mb-8">
+              <div className={cn("w-14 h-14 rounded-[1.5rem] flex items-center justify-center transition-all duration-500", colorStyles[color])}>
+                <Icon size={24} />
+              </div>
+              {trend !== undefined && (
+                <div className={cn(
+                  "flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                  trend >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                )}>
+                  {trend >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                  {Math.abs(trend)}%
+                </div>
+              )}
+            </div>
+            
+            <div className="space-y-1">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">{title}</p>
+                <h3 className="text-3xl font-black text-slate-900 tabular-nums tracking-tighter leading-none">{value}</h3>
+                {subValue && <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">{subValue}</p>}
+            </div>
           </div>
-        )}
-      </div>
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">{title}</p>
-      <h3 className="text-xl font-bold tabular-nums tracking-tight">{value}</h3>
-      {subValue && <p className="text-xs text-muted-foreground mt-1">{subValue}</p>}
-    </div>
-  </motion.div>
-);
+          <div className={cn("absolute -bottom-10 -right-10 w-32 h-32 blur-[60px] opacity-20 rounded-full", color === 'primary' ? 'bg-primary' : color === 'emerald' ? 'bg-emerald-500' : 'bg-slate-300')} />
+        </Card>
+      </motion.div>
+    );
+};
 
 export default function AnalyticsPage() {
   const { data: deals, isLoading: dealsLoading } = useDeals();
@@ -99,11 +108,11 @@ export default function AnalyticsPage() {
     for (let i = monthsBack; i >= 0; i--) {
       const d = new Date(currentYear, currentMonth - i, 1);
       revenueStream.push({
-        name: d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+        name: d.toLocaleDateString('en-US', { month: 'short' }),
         month: d.getMonth(),
         year: d.getFullYear(),
         actual: 0,
-        forecast: 0,
+        unweighted: 0,
         target: monthlyTarget
       });
     }
@@ -115,7 +124,7 @@ export default function AnalyticsPage() {
         if (deal.stage === 'won') {
           revenueStream[mIdx].actual += Number(deal.value || 0);
         } else if (deal.stage !== 'lost') {
-          revenueStream[mIdx].forecast += (Number(deal.value || 0) * (Number(deal.probability || 0) / 100));
+          revenueStream[mIdx].unweighted += Number(deal.value || 0);
         }
       }
     });
@@ -146,71 +155,57 @@ export default function AnalyticsPage() {
       });
     });
 
-    // Team Performance
-    const teamStats = (teamMembers || []).map(m => {
-      const mDeals = deals.filter(d => d.assigned_to === m.id);
-      const monthDeals = mDeals.filter(d => new Date(d.createdAt).getMonth() === currentMonth);
-      const won = monthDeals.filter(d => d.stage === 'won').reduce((s, d) => s + Number(d.value || 0), 0);
-      const winRate = mDeals.filter(d => d.stage === 'won').length / (mDeals.length || 1) * 100;
-
-      return {
-        name: m.name,
-        won,
-        target: m.goal || 2000000,
-        winRate: Math.round(winRate),
-        totalDeals: mDeals.length
-      };
-    });
-
-    // Pipeline Metrics
+    // Pipeline Analytics
     const activeDeals = deals.filter(d => !['won', 'lost'].includes(d.stage));
     const totalPipeline = activeDeals.reduce((sum, d) => sum + Number(d.value || 0), 0);
-    const weightedPipeline = activeDeals.reduce((sum, d) => sum + (Number(d.value || 0) * (Number(d.probability || 0) / 100)), 0);
     const wonDeals = deals.filter(d => d.stage === 'won');
     const lostDeals = deals.filter(d => d.stage === 'lost');
-    const totalClosed = wonDeals.length + lostDeals.length;
-    const winRate = totalClosed > 0 ? (wonDeals.length / totalClosed) * 100 : 0;
+    const winRate = (wonDeals.length + lostDeals.length) > 0 ? Math.round((wonDeals.length / (wonDeals.length + lostDeals.length)) * 100) : 0;
 
     return {
       revenueStream,
       stageData,
-      teamStats,
       totalPipeline,
-      weightedPipeline,
       currentMonthActual,
       growth,
+      winRate,
       wonCount: wonDeals.length,
-      lostCount: lostDeals.length,
-      activeCount: activeDeals.length,
-      winRate: Math.round(winRate)
+      activeCount: activeDeals.length
     };
-  }, [deals, monthlyTarget, teamMembers, timeRange]);
+  }, [deals, monthlyTarget, timeRange]);
 
   const isLoading = dealsLoading || settingsLoading || teamLoading;
 
   if (isLoading) return (
-    <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
+    <div className="flex flex-col items-center justify-center h-[60vh] gap-6">
       <Loader2 className="animate-spin text-primary" size={40} />
-      <p className="text-sm text-muted-foreground">Loading analytics...</p>
+      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Processing Matrix Data...</p>
     </div>
   );
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-[1400px] mx-auto space-y-6 pb-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-1">Analytics</h1>
-          <p className="text-sm text-muted-foreground">Comprehensive sales insights and performance metrics</p>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-[1600px] mx-auto space-y-12 pb-20 px-4 md:px-0">
+      {/* HEADER SECTION */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+             <div className="p-2 bg-slate-900 rounded-xl text-white shadow-xl shadow-slate-900/20"><BarChart3 size={18} /></div>
+             <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Performance Matrix Analytics</p>
+          </div>
+          <h1 className="text-6xl font-black text-slate-900 tracking-tighter uppercase leading-none">
+            Performance <span className="text-primary italic">Matrix</span>
+          </h1>
+          <p className="text-sm font-bold text-slate-400 leading-relaxed max-w-lg">Advanced longitudinal metrics, stage velocity, and conversion intelligence mapping.</p>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-full border border-slate-100">
           {['3m', '6m', '12m'].map(range => (
             <button
               key={range}
               onClick={() => setTimeRange(range)}
               className={cn(
-                "px-4 py-2 rounded-lg text-xs font-medium transition-all",
-                timeRange === range ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
+                "px-8 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all",
+                timeRange === range ? "bg-white shadow-xl text-primary" : "text-slate-400 hover:text-slate-900"
               )}
             >
               {range.toUpperCase()}
@@ -219,10 +214,10 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* PRIMARY KPI RIBBON */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
-          title="Monthly Revenue"
+          title="Monthly Yield"
           value={formatCurrency(analytics?.currentMonthActual)}
           subValue={`Target: ${formatCurrency(monthlyTarget)}`}
           trend={analytics?.growth}
@@ -230,172 +225,190 @@ export default function AnalyticsPage() {
           color="emerald"
         />
         <MetricCard
-          title="Total Pipeline"
+          title="Global Pipeline"
           value={formatCurrency(analytics?.totalPipeline)}
-          subValue={`${analytics?.activeCount} Active Deals`}
-          icon={TrendingUp}
+          subValue={`${analytics?.activeCount} Active Transitions`}
+          icon={Activity}
           color="primary"
         />
         <MetricCard
-          title="Win Rate"
+          title="Conversion Velocity"
           value={`${analytics?.winRate}%`}
-          subValue={`${analytics?.wonCount} Won / ${analytics?.lostCount} Lost`}
+          subValue={`Strike Rate across all sectors`}
           icon={Target}
-          color="amber"
+          color="primary"
         />
         <MetricCard
-          title="Team Members"
+          title="Operative Force"
           value={teamMembers?.length || 0}
-          subValue="Active Sellers"
+          subValue="Active Sales Personnel"
           icon={Users}
-          color="primary"
+          color="slate"
         />
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revenue Trend */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                <TrendingUp size={20} />
-              </div>
-              <div>
-                <CardTitle>Revenue Trend</CardTitle>
-                <p className="text-sm text-muted-foreground">Monthly performance over time</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={analytics?.revenueStream}>
-                <defs>
-                  <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                  dy={10}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                  tickFormatter={(val) => `${val / 1000000}M`}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="actual"
-                  name="Actual"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#colorActual)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="forecast"
-                  name="Forecast"
-                  stroke="hsl(var(--muted-foreground))"
-                  strokeWidth={2}
-                  strokeDasharray="4 4"
-                  fill="none"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Stage Distribution */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
-                <PieIcon size={20} />
-              </div>
-              <div>
-                <CardTitle>Pipeline Distribution</CardTitle>
-                <p className="text-sm text-muted-foreground">Deals by stage</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={analytics?.stageData}
-                  innerRadius={80}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                  stroke="none"
-                >
-                  {analytics?.stageData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip formatter={(val) => val} />} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="grid grid-cols-3 gap-2 mt-4">
-              {analytics?.stageData.slice(0, 6).map((stage, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: stage.color }} />
-                  <span className="text-xs text-muted-foreground truncate">{stage.name}</span>
-                  <span className="text-xs font-medium ml-auto">{stage.value}</span>
+      {/* ANALYSIS CHART GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Main Area: Revenue Trajectory */}
+        <Card className="lg:col-span-2 p-10 rounded-[3rem] bg-white border border-slate-100 shadow-sm relative overflow-hidden group">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-[1.5rem] bg-slate-900 flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform"><TrendingUp size={22} /></div>
+                    <div>
+                        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Revenue Trajectory</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Capture Trends & Volume Projection</p>
+                    </div>
                 </div>
-              ))}
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-primary" /><span className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Actual Capture</span></div>
+                    <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-slate-200" /><span className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Pipeline Volume</span></div>
+                </div>
             </div>
-          </CardContent>
+            
+            <div className="h-[350px] w-full min-w-0 min-h-0">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} debounce={50}>
+                  <ComposedChart data={analytics?.revenueStream}>
+                    <defs>
+                      <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#D97706" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#D97706" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis 
+                       dataKey="name" 
+                       axisLine={false} 
+                       tickLine={false} 
+                       tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: '900' }} 
+                       dy={15}
+                    />
+                    <YAxis 
+                       axisLine={false} 
+                       tickLine={false} 
+                       tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: '900' }} 
+                       tickFormatter={(v) => `${v / 1000000}M`}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area 
+                        type="monotone" 
+                        dataKey="actual" 
+                        name="Yield" 
+                        stroke="#D97706" 
+                        strokeWidth={4} 
+                        fill="url(#colorActual)" 
+                        animationDuration={1500}
+                    />
+                    <Bar 
+                        dataKey="unweighted" 
+                        name="Pipeline Volume" 
+                        fill="#f1f5f9" 
+                        radius={[6, 6, 0, 0]} 
+                        barSize={30}
+                    />
+                    <Line 
+                        type="monotone" 
+                        dataKey="target" 
+                        name="Goal Threshold" 
+                        stroke="#e2e8f0" 
+                        strokeWidth={2} 
+                        strokeDasharray="10 10" 
+                        dot={false}
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+            </div>
         </Card>
 
-        {/* Team Performance */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-info/10 flex items-center justify-center text-info">
-                <BarChart3 size={20} />
-              </div>
-              <div>
-                <CardTitle>Team Performance</CardTitle>
-                <p className="text-sm text-muted-foreground">Individual sales performance</p>
-              </div>
+        {/* Side Area: Stage Distribution */}
+        <Card className="lg:col-span-1 p-10 rounded-[3rem] bg-white border border-slate-100 shadow-sm flex flex-col items-center">
+            <div className="w-full mb-8">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-[1.2rem] bg-primary/10 flex items-center justify-center text-primary"><PieIcon size={20} /></div>
+                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Sector Load</h3>
+                </div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Deal density by engagement stage</p>
             </div>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analytics?.teamStats} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
-                <XAxis type="number" hide />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                  width={100}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar
-                  dataKey="won"
-                  name="Revenue"
-                  fill="hsl(var(--primary))"
-                  radius={[0, 4, 4, 0]}
-                  barSize={32}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
+            
+            <div className="relative w-full aspect-square max-w-[280px] min-w-0 min-h-0">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} debounce={50}>
+                  <PieChart>
+                    <Pie
+                      data={analytics?.stageData}
+                      innerRadius={80}
+                      outerRadius={110}
+                      paddingAngle={8}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {analytics?.stageData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip formatter={(v) => v} />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="text-center">
+                        <p className="text-3xl font-black text-slate-900">{analytics?.activeCount + (analytics?.wonCount || 0)}</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Assets</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="w-full mt-auto space-y-3 pt-6 border-t border-slate-50">
+               {analytics?.stageData.map((stage, i) => (
+                    <div key={i} className="flex items-center justify-between group cursor-default">
+                        <div className="flex items-center gap-3">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: stage.color }} />
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-slate-900 transition-colors">{stage.name}</span>
+                        </div>
+                        <span className="text-xs font-black text-slate-900">{stage.value}</span>
+                    </div>
+               ))}
+            </div>
+        </Card>
+
+        {/* Bottom Full: Advanced System Feedback (Page Views Logic - simplified) */}
+        <Card className="lg:col-span-3 p-10 rounded-[3rem] bg-slate-900 text-white border-0 shadow-2xl relative overflow-hidden group">
+            <div className="flex items-center justify-between mb-8 relative z-10">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-[1.5rem] bg-white/10 flex items-center justify-center text-primary"><Zap size={22} fill="currentColor" /></div>
+                    <div>
+                        <h3 className="text-xl font-black text-white uppercase tracking-tight italic">Intelligence Engine Health</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Real-time system telemetry & operative engagement</p>
+                    </div>
+                </div>
+                <div className="flex gap-4">
+                    <div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 flex items-center gap-3">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Neural Link: ACTIVE</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
+                {[
+                    { label: "Strike Efficiency", val: "94.2%", icon: Globe },
+                    { label: "Sync Latency", val: "18ms", icon: Activity },
+                    { label: "Active Sessions", val: "24 Operatives", icon: Users },
+                    { label: "Data Integrity", val: "99.9%", icon: ShieldCheck }
+                ].map((m, i) => (
+                    <div key={i} className="p-6 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                        <div className="flex items-center gap-3 mb-2">
+                            <m.icon size={14} className="text-primary opacity-50" />
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">{m.label}</p>
+                        </div>
+                        <p className="text-2xl font-black text-white tabular-nums">{m.val}</p>
+                    </div>
+                ))}
+            </div>
+            
+            <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-primary/10 to-transparent pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity" />
         </Card>
       </div>
     </motion.div>
   );
 }
+
+// End of File

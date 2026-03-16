@@ -1,12 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, forwardRef } from 'react';
 import { useDeals } from '../hooks/useDeals';
 import {
   Briefcase, Search,
-  TrendingUp, Clock, AlertCircle, Star, SortAsc
+  TrendingUp, Clock, Star, SortAsc,
+  ChevronRight, Filter
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent } from '../components/ui/Card';
-import { Badge } from '../components/ui/Badge';
+import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { cn } from '../lib/utils';
@@ -14,73 +14,108 @@ import { cn } from '../lib/utils';
 const formatCurrency = (amount) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', notation: 'compact' }).format(amount || 0);
 const formatFullCurrency = (amount) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(amount || 0);
 
-const ClientCard = ({ client, index }) => {
+const ClientGradeBadge = ({ grade }) => {
+  const styles = {
+    'VIP': "bg-primary text-white shadow-[0_0_15px_rgba(217,119,6,0.2)]",
+    'Grade A': "bg-emerald-500 text-white",
+    'Grade B': "bg-amber-100 text-amber-700",
+    'Grade C': "bg-slate-100 text-slate-500"
+  };
+  return (
+    <span className={cn("px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest", styles[grade] || styles['Grade C'])}>
+      {grade}
+    </span>
+  );
+};
+
+const ClientCard = forwardRef(({ client, index, onSelect }, ref) => {
   const isStagnant = client.daysSinceLast > 30;
   
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      ref={ref}
+      layout
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
+      whileHover={{ y: -4 }}
       className="group"
+      onClick={() => onSelect(client)}
     >
-      <Card className="overflow-hidden border-slate-200/60 hover:shadow-lg transition-all">
-        <CardContent className="p-0 flex flex-col lg:flex-row">
-          <div className={cn("w-1.5 lg:w-2 shrink-0", 
-            client.grade === 'VIP' ? "bg-primary" : 
-            client.grade === 'Grade A' ? "bg-emerald-500" :
-            client.grade === 'Grade B' ? "bg-amber-500" : "bg-slate-300"
-          )} />
-          
-          <div className="flex-1 p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="flex items-center gap-4 min-w-[300px]">
-              <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-primary/5 transition-colors">
-                <Briefcase size={22} className="text-slate-400 group-hover:text-primary transition-colors" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 leading-tight">{client.name}</h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-wider">{client.grade}</Badge>
-                  {isStagnant && <Badge className="bg-rose-50 text-rose-500 text-[9px] border-rose-100 flex items-center gap-1"><AlertCircle size={8} /> Needs Contact</Badge>}
-                  {client.activeCount > 0 && <Badge className="bg-primary/5 text-primary text-[9px] border-primary/10">{client.activeCount} Ongoing</Badge>}
-                </div>
-              </div>
+      <Card className={cn(
+        "p-2 rounded-[2.5rem] border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 cursor-pointer overflow-hidden relative",
+        client.grade === 'VIP' ? "bg-gradient-to-br from-white to-primary/5 border-primary/10" : "bg-white"
+      )}>
+        {client.grade === 'VIP' && (
+            <div className="absolute top-0 right-0 p-4">
+                <Star size={16} className="text-primary animate-pulse" fill="currentColor" />
             </div>
+        )}
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 lg:px-10 lg:border-l lg:border-slate-100 flex-1">
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Portfolio Value</p>
-                <p className="text-base font-black text-slate-900">{formatCurrency(client.wonValue)}</p>
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Last Order</p>
-                <p className="text-base font-black text-slate-900">{client.daysSinceLast}d ago</p>
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Projects</p>
-                <p className="text-base font-black text-slate-900">{client.totalDeals}</p>
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Confidence</p>
-                <p className="text-base font-black text-emerald-600">{client.winRate}%</p>
-              </div>
+        <div className="flex flex-col lg:flex-row items-center gap-6 p-4">
+          <div className="flex items-center gap-6 flex-1">
+            <div className={cn(
+                "w-16 h-16 rounded-[1.5rem] flex items-center justify-center border transition-colors",
+                client.grade === 'VIP' ? "bg-primary/10 border-primary/20 text-primary" : "bg-slate-50 border-slate-100 text-slate-400 group-hover:bg-primary group-hover:text-white"
+            )}>
+              <Briefcase size={28} />
             </div>
-
-            <div className="flex items-center gap-3">
-              <Button variant="outline" className="rounded-full px-6 h-10 font-bold text-xs uppercase tracking-widest">Profile</Button>
+            
+            <div className="space-y-1">
+              <div className="flex items-center gap-3">
+                <h3 className="text-xl font-black text-slate-900 tracking-tight group-hover:text-primary transition-colors">{client.name}</h3>
+                <ClientGradeBadge grade={client.grade} />
+              </div>
+              <div className="flex items-center gap-4">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 line-clamp-1">
+                    <Briefcase size={10} /> {client.contact || 'No Primary Contact'}
+                </p>
+                {client.activeCount > 0 && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+                {client.activeCount > 0 && <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{client.activeCount} Ongoing Projects</p>}
+              </div>
             </div>
           </div>
-        </CardContent>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:px-12 lg:border-l lg:border-slate-100 shrink-0">
+            <div>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Portfolio Worth</p>
+              <p className="text-lg font-black text-slate-900 tabular-nums">{formatCurrency(client.wonValue)}</p>
+            </div>
+            <div>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Last Interaction</p>
+              <p className={cn("text-lg font-black tabular-nums", isStagnant ? "text-rose-500" : "text-slate-900")}>
+                {client.daysSinceLast}d ago
+              </p>
+            </div>
+            <div className="hidden sm:block">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Deal Volume</p>
+              <p className="text-lg font-black text-slate-900 tabular-nums">{client.totalDeals}</p>
+            </div>
+            <div className="hidden sm:block">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Win Velocity</p>
+              <p className="text-lg font-black text-emerald-600 tabular-nums">{client.winRate}%</p>
+            </div>
+          </div>
+
+          <div className="lg:pl-6">
+            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all">
+                <ChevronRight size={18} />
+            </div>
+          </div>
+        </div>
       </Card>
     </motion.div>
   );
-};
+});
+
+ClientCard.displayName = 'ClientCard';
 
 export default function CustomersPage() {
   const { data: deals, isLoading } = useDeals();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [sortBy, setSortBy] = useState('value');
+  const [selectedClient, setSelectedClient] = useState(null);
 
   const clients = useMemo(() => {
     if (!deals) return [];
@@ -138,90 +173,164 @@ export default function CustomersPage() {
     });
   }, [clients, activeFilter, searchTerm, sortBy]);
 
-  if (isLoading) return <div className="p-20 text-center text-slate-400">Loading Portfolio...</div>;
+  if (isLoading) return (
+    <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
+      <Loader2 className="animate-spin text-primary" size={32} />
+      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Index Loading...</p>
+    </div>
+  );
 
   const totalWonValue = clients.reduce((sum, c) => sum + c.wonValue, 0);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-7xl mx-auto space-y-8 pb-20">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-1">
-          <h1 className="text-4xl font-black tracking-tight text-slate-900">Intelligence Portfolio</h1>
-          <p className="text-muted-foreground font-medium">Customer grading and relationship management.</p>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-[1500px] mx-auto space-y-12 pb-20">
+      {/* HEADER SECTION */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+             <div className="p-2 bg-primary/10 rounded-xl text-primary"><Star size={18} /></div>
+             <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Client Relationship Engine</p>
+          </div>
+          <h1 className="text-6xl font-black text-slate-900 tracking-tighter uppercase leading-none">
+            Intelligence <span className="text-primary italic">Index</span>
+          </h1>
+          <p className="text-sm font-bold text-slate-400 leading-relaxed max-w-lg">Global performance tracking across all enterprise sectors and VIP stakeholders.</p>
         </div>
       </div>
 
+      {/* METRIC RIBBON */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6 border-slate-200/60 shadow-sm bg-white">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><TrendingUp size={20} /></div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Portfolio Worth</p>
+        <Card className="p-8 rounded-[2.5rem] bg-[#141210] text-white border-0 shadow-2xl relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-2">Aggregate Worth</p>
+                <p className="text-3xl font-black text-white tabular-nums tracking-tighter">{formatFullCurrency(totalWonValue)}</p>
+            </div>
+            <div className="w-14 h-14 rounded-[1.5rem] bg-white/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                <TrendingUp size={24} />
+            </div>
           </div>
-          <p className="text-2xl font-black text-slate-900">{formatFullCurrency(totalWonValue)}</p>
+          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-[60px]" />
         </Card>
-        <Card className="p-6 border-slate-200/60 shadow-sm bg-white">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600"><Star size={20} /></div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">VIP Clients</p>
-          </div>
-          <p className="text-2xl font-black text-slate-900">{clients.filter(c => c.grade === 'VIP').length}</p>
+        
+        <Card className="p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm flex items-center justify-between group hover:shadow-xl transition-all duration-500">
+           <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2">Priority VIP Assets</p>
+              <p className="text-3xl font-black text-slate-900 tabular-nums tracking-tighter">{clients.filter(c => c.grade === 'VIP').length} Sector Heads</p>
+           </div>
+           <div className="w-14 h-14 rounded-[1.5rem] bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-500">
+              <Star size={24} />
+           </div>
         </Card>
-        <Card className="p-6 border-slate-200/60 shadow-sm bg-white">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500"><Clock size={20} /></div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Requires Attention</p>
-          </div>
-          <p className="text-2xl font-black text-slate-900">{clients.filter(c => c.daysSinceLast > 30).length}</p>
+
+        <Card className="p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm flex items-center justify-between group hover:shadow-xl transition-all duration-500">
+           <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2">Recon Required</p>
+              <p className="text-3xl font-black text-rose-500 tabular-nums tracking-tighter">{clients.filter(c => c.daysSinceLast > 30).length} Stagnant</p>
+           </div>
+           <div className="w-14 h-14 rounded-[1.5rem] bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-rose-500 group-hover:text-white transition-all duration-500">
+              <Clock size={24} />
+           </div>
         </Card>
       </div>
 
-      <Card className="p-4 border-slate-200/60 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-6">
-          <div className="relative flex-1 min-w-[300px]">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+      {/* FILTER CONTROL CENTER */}
+      <Card className="p-6 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm backdrop-blur-xl">
+        <div className="flex flex-wrap items-center justify-between gap-8">
+          <div className="relative flex-1 min-w-[350px]">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
             <Input 
-              placeholder="Search portfolio..." 
-              className="pl-12 h-12 bg-slate-50 border-transparent rounded-full font-medium"
+              placeholder="Query intelligence index..." 
+              className="pl-14 h-16 bg-slate-50 border-transparent rounded-[1.5rem] font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-slate-300 placeholder:font-black placeholder:uppercase placeholder:tracking-[0.2em] placeholder:text-[10px]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-3">
-             <div className="flex items-center bg-slate-50 border border-transparent p-1 rounded-full gap-1">
+          <div className="flex items-center gap-6">
+             <div className="flex items-center bg-slate-50 p-1.5 rounded-full border border-slate-100">
                 {['all', 'vip', 'stagnant'].map(f => (
                   <button 
                     key={f}
                     onClick={() => setActiveFilter(f)}
-                    className={cn("px-5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all", 
-                      activeFilter === f ? "bg-white shadow-sm text-primary" : "text-slate-500 hover:text-slate-900"
+                    className={cn("px-8 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all", 
+                      activeFilter === f ? "bg-white shadow-xl text-primary" : "text-slate-400 hover:text-slate-900"
                     )}
                   >
                     {f}
                   </button>
                 ))}
              </div>
-             <div className="flex items-center gap-2 bg-slate-50 border border-transparent rounded-full px-4 h-11">
-                <SortAsc size={16} className="text-slate-400" />
-                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent border-none text-[10px] font-bold uppercase tracking-widest outline-none">
-                   <option value="value">Value</option>
-                   <option value="name">Name</option>
-                   <option value="recency">Recency</option>
+             <div className="h-10 w-[1px] bg-slate-100 hidden md:block" />
+             <div className="flex items-center gap-3 bg-slate-50 rounded-full px-6 h-14 border border-slate-100 group hover:border-primary/20 transition-all">
+                <SortAsc size={16} className="text-slate-400 group-hover:text-primary transition-colors" />
+                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent border-none text-[10px] font-black uppercase tracking-[0.2em] outline-none cursor-pointer text-slate-600">
+                   <option value="value">Sort: Value</option>
+                   <option value="name">Sort: Name</option>
+                   <option value="recency">Sort: Recency</option>
                 </select>
              </div>
           </div>
         </div>
       </Card>
       
-      <div className="space-y-4">
-        <AnimatePresence>
+      {/* PORTFOLIO GRID */}
+      <div className="space-y-6">
+        <AnimatePresence mode="popLayout">
           {filteredClients.map((client, idx) => (
-            <ClientCard key={client.id} client={client} index={idx} />
+            <ClientCard key={client.id} client={client} index={idx} onSelect={setSelectedClient} />
           ))}
         </AnimatePresence>
+        
         {filteredClients.length === 0 && (
-          <div className="py-20 text-center text-slate-400 italic">No intelligence matching filters found.</div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-32 text-center space-y-4">
+            <div className="w-20 h-20 rounded-[2rem] bg-slate-50 flex items-center justify-center text-slate-200 mx-auto">
+                <Filter size={32} />
+            </div>
+            <div className="space-y-1">
+                <p className="text-lg font-black text-slate-900 uppercase tracking-tighter">No intelligence detected</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Adjust filters to re-scan sectors.</p>
+            </div>
+            <Button variant="ghost" onClick={() => { setSearchTerm(''); setActiveFilter('all'); }} className="text-[10px] font-black uppercase tracking-widest text-primary">Clear all parameters</Button>
+          </motion.div>
         )}
       </div>
+
+      {/* SELECTED CLIENT SIDEBAR/DRAWER (Future Expansion) */}
+      <AnimatePresence>
+        {selectedClient && (
+            <div className="hidden">
+                {/* Reserved for Detail Sidebar */}
+            </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
+
+function Loader2(props) {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width={props.size} 
+      height={props.size} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={props.className}
+    >
+      <path d="M12 2v4" />
+      <path d="M12 18v4" />
+      <path d="M4.93 4.93l2.83 2.83" />
+      <path d="M16.24 16.24l2.83 2.83" />
+      <path d="M2 12h4" />
+      <path d="M18 12h4" />
+      <path d="M4.93 19.07l2.83-2.83" />
+      <path d="M16.24 7.76l2.83-2.83" />
+    </svg>
+  );
+}
+
+// End of File

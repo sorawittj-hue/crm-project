@@ -202,32 +202,32 @@ export default function PipelineBoard({
 
   return (
     <div className="h-full flex flex-col space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center gap-4">
-          <div className="relative flex-1 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 p-4 rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:bg-white">
+          <div className="relative flex-1 max-w-md group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
             <input
               type="text"
-              placeholder="Search projects by name or client..."
+              placeholder="Search Intelligence Index..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 h-12 bg-slate-50 border-none rounded-full font-bold focus:ring-primary/20 transition-all text-sm"
+              className="w-full pl-12 pr-4 h-12 bg-slate-50 border-none rounded-2xl font-bold focus:ring-0 transition-all text-xs"
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
             {QUICK_FILTERS.map((filter) => (
               <button
                 key={filter.id}
                 onClick={() => setActiveFilter(filter.id)}
                 className={cn(
-                  "flex items-center gap-2 px-6 h-12 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all",
+                  "flex items-center gap-2.5 px-6 h-11 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
                   activeFilter === filter.id
-                    ? "bg-primary text-white shadow-lg"
-                    : "bg-slate-50 text-slate-400 hover:text-slate-900"
+                    ? "bg-slate-900 text-white shadow-xl shadow-slate-900/10 scale-105"
+                    : "bg-white text-slate-400 border border-slate-100 hover:border-slate-200 hover:text-slate-900"
                 )}
               >
-                <filter.icon size={14} />
-                <span className="hidden lg:block">{filter.label}</span>
+                <filter.icon size={13} strokeWidth={3} />
+                <span>{filter.label}</span>
               </button>
             ))}
           </div>
@@ -383,35 +383,40 @@ const DealCard = forwardRef(({
     >
       <div className="space-y-4">
          <div className="flex justify-between items-start">
-            <div className="flex items-center gap-2">
-               <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-sm", deal.assigned_to === 'leader' ? 'bg-slate-900 shadow-slate-900/10' : 'bg-slate-400')}>
-                  {(deal.assigned_to || 'U').charAt(0)}
+            <div className="space-y-1 flex-1">
+               <div className="flex items-center gap-2">
+                  <p className="text-[10px] font-black text-slate-900 uppercase tracking-tight leading-none">
+                     {deal.company || 'Private Client'}
+                  </p>
+                  {isStagnant && !['won', 'lost'].includes(deal.stage) && (
+                    <span className="flex items-center gap-1 text-[8px] font-black bg-rose-50 text-rose-500 px-1.5 py-0.5 rounded-md border border-rose-100">
+                       STAGNANT {deal.agingDays}D
+                    </span>
+                  )}
                </div>
-               <div>
-                  <p className="text-[10px] font-bold text-slate-400 leading-none mb-1 uppercase tracking-tight">{deal.company || 'Private Client'}</p>
-               </div>
+               <h4 className="text-[12px] font-bold text-slate-500 leading-snug group-hover:text-slate-900 transition-colors line-clamp-1">{deal.title}</h4>
             </div>
             {isPinned && <Star size={12} className="text-amber-500 fill-current" />}
          </div>
 
-         <div className="space-y-0.5">
-            <h4 className="text-xs font-black text-slate-900 leading-snug group-hover:text-primary transition-colors">{deal.title}</h4>
-            <div className="flex items-center gap-2">
-               <p className="text-[9px] font-bold text-slate-400">Aging: <span className={cn(deal.agingDays > 5 ? "text-amber-600" : "text-emerald-600")}>{deal.agingDays}d</span></p>
-               {isStagnant && !['won', 'lost'].includes(deal.stage) && <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />}
-            </div>
+         <div className="flex items-baseline gap-2">
+            <span className="text-sm font-black text-slate-900 leading-none">{formatCurrency(deal.value)}</span>
          </div>
 
-         <div className="pt-3 border-t border-slate-100 flex justify-between items-end">
-            <div>
-               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Value</p>
-               <p className="text-xs font-black text-slate-900">{formatCurrency(deal.value)}</p>
+         <div className="flex items-center justify-between gap-4 pt-2">
+            <div className="flex -space-x-2">
+               <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-black text-white border-2 border-white", deal.assigned_to === 'leader' ? 'bg-slate-900' : 'bg-slate-400')}>
+                  {(deal.assigned_to || 'U').charAt(0)}
+               </div>
             </div>
-            <div className="text-right">
-               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">{deal.probability}% Confidence</p>
-               <div className="h-1 w-12 bg-slate-100 rounded-full overflow-hidden">
+            <div className="flex-1 space-y-1.5">
+               <div className="flex justify-between text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                  <span>CONFIDENCE</span>
+                  <span className={deal.probability >= 70 ? "text-emerald-500" : "text-slate-900"}>{deal.probability}%</span>
+               </div>
+               <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
                   <div 
-                    className={cn("h-full rounded-full transition-all duration-1000", deal.probability >= 70 ? "bg-emerald-500" : deal.probability >= 40 ? "bg-amber-500" : "bg-rose-500")}
+                    className={cn("h-full rounded-full transition-all duration-1000", deal.probability >= 70 ? "bg-emerald-500" : deal.probability >= 40 ? "bg-slate-900" : "bg-slate-400")}
                     style={{ width: `${deal.probability}%` }}
                   />
                </div>

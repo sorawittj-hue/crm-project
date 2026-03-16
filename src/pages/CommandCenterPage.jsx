@@ -2,113 +2,45 @@ import { useState, useEffect, useMemo } from 'react';
 import { useDeals } from '../hooks/useDeals';
 import { useTeam } from '../hooks/useTeam';
 import { useSettings } from '../hooks/useSettings';
-import { Card, CardContent } from '../components/ui/Card';
+import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import {
-  Zap, Target, Users, AlertCircle,
-  Sparkles, Loader2,
-  TrendingUp, ShieldCheck, Crosshair, Trophy
+  Sliders, Loader2, TrendingUp, 
+  ShieldCheck, Crosshair, Users, AlertCircle,
+  ArrowUpRight, Briefcase,
+  Target, Clock, RefreshCw
 } from 'lucide-react';
+import {
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
+  CartesianGrid, Tooltip as RechartsTooltip
+} from 'recharts';
 
-const formatCurrency = (n) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', notation: 'compact' }).format(n || 0);
+const formatCurrency = (n) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', notation: 'compact', maximumFractionDigits: 1 }).format(n || 0);
+const formatFullCurrency = (n) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(n || 0);
 const daysSince = (dateStr) => Math.floor((Date.now() - new Date(dateStr || Date.now())) / 86400000);
 
-// Rule Engine - Strategic Intelligence
-const RuleEngine = {
-  generateBattlePlan: (deals) => {
-    const today = new Date();
-    const currentMonth = today.getMonth();
-
-    const urgentDeals = deals
-      .filter(d => !['won', 'lost'].includes(d.stage))
-      .filter(d => daysSince(d.last_activity || d.created_at) >= 3)
-      .sort((a, b) => daysSince(b.last_activity || b.created_at) - daysSince(a.last_activity || a.created_at))
-      .slice(0, 5);
-
-    const highValueDeals = deals
-      .filter(d => d.stage === 'negotiation' && Number(d.value) >= 500000)
-      .slice(0, 3);
-
-    const monthDeals = deals.filter(d =>
-      d.stage === 'won' &&
-      new Date(d.created_at).getMonth() === currentMonth
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white border border-slate-100 p-4 rounded-[1.5rem] shadow-2xl backdrop-blur-md bg-white/90">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{label}</p>
+        <div className="space-y-1.5">
+          {payload.map((entry, index) => (
+            <div key={index} className="flex items-center justify-between gap-8">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{entry.name}</span>
+              </div>
+              <p className="text-sm font-black text-slate-900 tabular-nums">{formatFullCurrency(entry.value)}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     );
-    const totalWon = monthDeals.reduce((s, d) => s + Number(d.value), 0);
-
-    const plan = [];
-
-    if (urgentDeals.length > 0) {
-      plan.push(`Critical: Execute immediate follow-up on ${urgentDeals.length} high-risk assets.`);
-    }
-
-    if (highValueDeals.length > 0) {
-      plan.push(`High Value: Prioritize closing sequence for ${highValueDeals.length} premium contracts.`);
-    }
-
-    plan.push(`Trajectory: Monthly capture is at ${formatCurrency(totalWon)}. Accelerate pipeline conversion.`);
-
-    return {
-      plan: plan.join('\n\n'),
-      urgentCount: urgentDeals.length,
-      highValueCount: highValueDeals.length,
-      totalWon
-    };
-  },
-
-  generateStrategicMandates: (deals) => {
-    const mandates = [];
-    const wonDeals = deals.filter(d => d.stage === 'won');
-    const lostDeals = deals.filter(d => d.stage === 'lost');
-    const winRate = (wonDeals.length / (wonDeals.length + lostDeals.length)) * 100 || 0;
-
-    if (winRate < 40) {
-      mandates.push({
-        mandate: "Optimize Strike Rate",
-        desc: `Current efficiency: ${Math.round(winRate)}%. Mandate: Refine lead qualification protocols.`,
-        urgency: "high",
-        metric: `${Math.round(winRate)}% Efficiency`
-      });
-    }
-
-    const staleDeals = deals.filter(d =>
-      !['won', 'lost'].includes(d.stage) &&
-      daysSince(d.last_activity || d.created_at) > 5
-    );
-
-    if (staleDeals.length > 3) {
-      mandates.push({
-        mandate: "Asset Reclamation",
-        desc: `${staleDeals.length} assets are nearing expiration. Initiate re-engagement sequence.`,
-        urgency: "high",
-        metric: `${staleDeals.length} Assets`
-      });
-    }
-
-    const activeDeals = deals.filter(d => !['won', 'lost'].includes(d.stage));
-    const pipelineValue = activeDeals.reduce((s, d) => s + Number(d.value), 0);
-
-    if (pipelineValue < 5000000) {
-      mandates.push({
-        mandate: "Pipeline Saturation",
-        desc: `Reserve levels below threshold (${formatCurrency(pipelineValue)}). Deploy outreach initiatives.`,
-        urgency: "medium",
-        metric: formatCurrency(pipelineValue)
-      });
-    }
-
-    if (mandates.length === 0) {
-      mandates.push({
-        mandate: "Operational Excellence",
-        desc: "All systems nominal. Maintain current velocity and monitor edge cases.",
-        urgency: "low",
-        metric: "Operational"
-      });
-    }
-
-    return mandates.slice(0, 3);
   }
+  return null;
 };
 
 export default function CommandCenterPage() {
@@ -116,297 +48,341 @@ export default function CommandCenterPage() {
   const { data: teamMembers, isLoading: teamLoading } = useTeam();
   const { data: settings, isLoading: settingsLoading } = useSettings();
 
-  const [battlePlan, setBattlePlan] = useState(null);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [strategicMandates, setStrategicMandates] = useState([]);
-  const [isGeneratingMandates, setIsGeneratingMandates] = useState(false);
 
   const monthlyGoal = settings?.monthly_target || 10000000;
 
   const stats = useMemo(() => {
     if (!deals) return null;
-    const today = new Date();
-    const currentMonth = today.getMonth();
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
 
-    const wonDeals = deals.filter(d => d.stage === 'won' && new Date(d.created_at).getMonth() === currentMonth);
-    const totalWonValue = wonDeals.reduce((s, d) => s + (Number(d.value) || 0), 0);
+    // Stats
+    const wonDealsThisMonth = deals.filter(d => d.stage === 'won' && new Date(d.createdAt).getMonth() === currentMonth);
+    const totalWonValue = wonDealsThisMonth.reduce((s, d) => s + (Number(d.value) || 0), 0);
     const activePipeline = deals.filter(d => !['won', 'lost'].includes(d.stage));
+    const totalPipelineValue = activePipeline.reduce((s, d) => s + (Number(d.value) || 0), 0);
+    const achievementPercent = Math.round((totalWonValue / monthlyGoal) * 100);
+
+    // Revenue Stream (Last 6 Months)
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(currentYear, currentMonth - i, 1);
+      months.push({
+        name: d.toLocaleDateString('en-US', { month: 'short' }),
+        month: d.getMonth(),
+        year: d.getFullYear(),
+        actual: 0,
+        forecast: 0
+      });
+    }
+
+    deals.forEach(deal => {
+      const dealDate = new Date(deal.createdAt);
+      const mIdx = months.findIndex(m => m.month === dealDate.getMonth() && m.year === dealDate.getFullYear());
+      if (mIdx !== -1) {
+        if (deal.stage === 'won') months[mIdx].actual += Number(deal.value || 0);
+        else if (deal.stage !== 'lost') {
+            const weightedValue = Number(deal.value || 0) * (Number(deal.probability || 0) / 100);
+            months[mIdx].forecast += weightedValue;
+        }
+      }
+    });
+
+    // Strategy Logic
     const urgentDeals = activePipeline
-      .filter(d => daysSince(d.last_activity || d.created_at) >= 2)
-      .sort((a, b) => daysSince(b.last_activity || b.created_at) - daysSince(a.last_activity || a.created_at))
-      .slice(0, 5);
+      .filter(d => daysSince(d.lastActivity || d.createdAt) >= 3)
+      .sort((a,b) => (Number(b.value) * (b.probability/100)) - (Number(a.value) * (a.probability/100)))
+      .slice(0, 3);
 
-    const pct = Math.round((totalWonValue / monthlyGoal) * 100);
-
-    return { totalWonValue, urgentDeals, pct, activeCount: activePipeline.length };
+    return { 
+        totalWonValue, 
+        totalPipelineValue, 
+        achievementPercent, 
+        activeCount: activePipeline.length,
+        urgentDeals,
+        revenueStream: months
+    };
   }, [deals, monthlyGoal]);
 
-  const handleGeneratePlan = () => {
+  const handleGenerateRules = useMemo(() => () => {
     if (!deals) return;
     setIsGeneratingPlan(true);
     setTimeout(() => {
-      const result = RuleEngine.generateBattlePlan(deals);
-      setBattlePlan(result);
-      setIsGeneratingPlan(false);
-    }, 1200);
-  };
-
-  const handleGenerateMandates = () => {
-    if (!deals) return;
-    setIsGeneratingMandates(true);
-    setTimeout(() => {
-      const result = RuleEngine.generateStrategicMandates(deals);
-      setStrategicMandates(result);
-      setIsGeneratingMandates(false);
-    }, 1200);
-  };
+        // Logic Rule Engine
+        const active = deals.filter(d => !['won', 'lost'].includes(d.stage));
+        const mandates = [
+            { id: 1, title: 'Asset Reclamation', desc: `Follow up with ${stats?.urgentDeals?.length} high-value stale assets in the next 24h.`, urgency: 'high', icon: Clock },
+            { id: 2, title: 'Closing Sequence', desc: `Move ${active.filter(d => d.stage === 'negotiation').length} deals from Closing to Won to hit ${stats?.achievementPercent + 15}% target.`, urgency: 'high', icon: Crosshair },
+            { id: 3, title: 'Pipeline Injection', desc: "New lead volume is down 20%. Inject 10+ new prospects into the Qualification sector.", urgency: 'medium', icon: Sliders }
+        ];
+        setStrategicMandates(mandates);
+        setIsGeneratingPlan(false);
+    }, 1500);
+  }, [deals, stats]);
 
   useEffect(() => {
-    if (!battlePlan && deals) handleGeneratePlan();
-    if (strategicMandates.length === 0 && deals) handleGenerateMandates();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deals]);
+    if (deals && strategicMandates.length === 0) handleGenerateRules();
+  }, [deals, strategicMandates.length, handleGenerateRules]);
 
   const isLoading = dealsLoading || teamLoading || settingsLoading;
 
   if (isLoading) return (
-    <div className="flex flex-col items-center justify-center h-[70vh] space-y-4">
-      <motion.div
-        animate={{ rotate: 360, scale: [1, 1.2, 1], borderRadius: ["20%", "50%", "20%"] }}
-        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-        className="w-16 h-16 bg-primary/20 flex items-center justify-center border-2 border-primary/50"
-      >
-        <Zap className="text-primary" size={32} />
-      </motion.div>
-      <p className="text-sm font-black uppercase tracking-widest text-muted-foreground animate-pulse">Initializing Command...</p>
+    <div className="flex flex-col items-center justify-center h-[70vh] gap-6">
+      <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="w-12 h-12 border-4 border-slate-100 border-t-primary rounded-full" />
+      <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-400">Synchronizing Command Center...</p>
     </div>
   );
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="max-w-7xl mx-auto space-y-12 pb-20"
-    >
-      {/* Strategic Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-2">
+    <div className="max-w-[1600px] mx-auto space-y-12 pb-20 px-4 md:px-0">
+      {/* 1. BRAVO HERO SECTION */}
+      <header className="flex flex-col md:flex-row items-start md:items-end justify-between gap-10">
+        <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 flex items-center gap-1.5">
-              <ShieldCheck size={12} className="text-primary" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-primary leading-none">Security Level: Alpha</span>
-            </div>
+             <div className="px-3 py-1 bg-primary text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-full">Secure ALPHA</div>
+             <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-1.5"><ShieldCheck size={12} /> System Status: Operational</p>
           </div>
-          <h1 className="text-5xl font-black tracking-tighter premium-gradient-text uppercase">COMMAND CENTER</h1>
-          <p className="text-muted-foreground font-medium">Real-time planetary sales overview and strategic intelligence.</p>
+          <h1 className="text-6xl font-black text-slate-900 tracking-[calc(-0.06em)] leading-none uppercase">
+            Command <span className="text-primary italic">Center</span>
+          </h1>
+          <p className="text-sm font-bold text-slate-400 leading-relaxed max-w-md">Global strategic overview and tactical mandates for executive sales management.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button onClick={() => window.location.href = '/pipeline'} className="btn-zenith-primary">
-            <Crosshair size={18} className="mr-2" /> Deploy Resource
-          </Button>
-        </div>
-      </div>
 
-      {/* Primary KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="premium-card bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
-          <CardContent className="p-0">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary">
-                <Trophy size={24} />
-              </div>
-              <div>
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Captured Revenue</p>
-                <h2 className="text-3xl font-black tabular-nums">{formatCurrency(stats?.totalWonValue)}</h2>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs font-bold uppercase tracking-widest">
-                <span>Objective Progress</span>
-                <span className="text-primary">{stats?.pct}%</span>
-              </div>
-              <div className="h-3 bg-muted rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min(100, stats?.pct || 0)}%` }}
-                  transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
-                  className="h-full bg-primary rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)]"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="premium-card">
-          <CardContent className="p-0">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center text-accent">
-                <TrendingUp size={24} />
-              </div>
-              <div>
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Active Pipeline</p>
-                <h2 className="text-3xl font-black tabular-nums">{stats?.activeCount} Units</h2>
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground font-medium">Assets currently in transition through engagement sectors.</p>
-          </CardContent>
-        </Card>
-
-        <Card className="premium-card">
-          <CardContent className="p-0">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-destructive/20 flex items-center justify-center text-destructive">
-                <AlertCircle size={24} />
-              </div>
-              <div>
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">High Urgency</p>
-                <h2 className="text-3xl font-black tabular-nums">{stats?.urgentDeals?.length} Risks</h2>
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground font-medium">Immediate reclamation protocols required for these sectors.</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Intelligence Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Battle Intelligence column */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-xl">
-                <Sparkles size={18} className="text-primary" />
-              </div>
-              <h3 className="text-xl font-black uppercase tracking-tight">Battle Intelligence</h3>
-            </div>
-            <Button variant="ghost" size="sm" onClick={handleGeneratePlan} disabled={isGeneratingPlan} className="rounded-xl font-bold">
-              {isGeneratingPlan ? <Loader2 className="animate-spin mr-2" size={14} /> : <Zap size={14} className="mr-2" />} Reload Intel
+        <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={handleGenerateRules} className="h-14 px-8 rounded-2xl bg-white border border-slate-100 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50">
+               {isGeneratingPlan ? <Loader2 size={16} className="animate-spin mr-2" /> : <RefreshCw size={16} className="mr-2" />} Recalculate Rules
             </Button>
-          </div>
-
-          <div className="space-y-4">
-            {battlePlan?.plan.split('\n\n').map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="p-6 rounded-[2rem] bg-card border border-border/40 hover:border-primary/30 transition-all group"
-              >
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-xs shrink-0">
-                    0{i + 1}
-                  </div>
-                  <p className="text-sm leading-relaxed font-semibold group-hover:text-foreground transition-colors">{item}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* Tactical Status column */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-accent/10 rounded-xl">
-                <Target size={18} className="text-accent" />
-              </div>
-              <h3 className="text-xl font-black uppercase tracking-tight">Tactical Status</h3>
-            </div>
-            <Button variant="ghost" size="sm" onClick={handleGenerateMandates} disabled={isGeneratingMandates} className="rounded-xl font-bold">
-              {isGeneratingMandates ? <Loader2 className="animate-spin mr-2" size={14} /> : <Target size={14} className="mr-2" />} Deploy Target
+            <Button onClick={() => window.location.href='/pipeline'} className="h-14 px-10 rounded-2xl bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-slate-900/20 hover:scale-105 transition-transform">
+               <Sliders size={16} className="mr-2" /> Deploy Strategy
             </Button>
-          </div>
-
-          <div className="space-y-4">
-            {strategicMandates.map((m, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.1 }}
-                className={cn(
-                  "p-6 rounded-[2rem] border relative overflow-hidden group transition-all",
-                  m.urgency === 'high' ? "bg-destructive/5 border-destructive/20" : "bg-card border-border/40"
-                )}
-              >
-                <div className="flex items-start justify-between relative z-10">
-                  <div className="space-y-1">
-                    <p className={cn("text-xs font-black uppercase tracking-widest", m.urgency === 'high' ? "text-destructive" : "text-primary")}>
-                      {m.urgency} Priority Mandate
-                    </p>
-                    <h4 className="text-lg font-black">{m.mandate}</h4>
-                    <p className="text-sm text-muted-foreground font-medium">{m.desc}</p>
-                  </div>
-                  <div className="px-3 py-1 bg-background border border-border rounded-full text-[10px] font-black uppercase tracking-wider">
-                    {m.metric}
-                  </div>
-                </div>
-                <div className={cn(
-                  "absolute top-0 right-0 w-32 h-32 blur-3xl opacity-10 rounded-full -mr-16 -mt-16",
-                  m.urgency === 'high' ? "bg-destructive" : "bg-primary"
-                )} />
-              </motion.div>
-            ))}
-          </div>
         </div>
-      </div>
+      </header>
 
-      {/* Resources & Assets */}
-      <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-muted rounded-xl">
-            <Users size={18} className="text-foreground" />
-          </div>
-          <h3 className="text-xl font-black uppercase tracking-tight">Field Operatives</h3>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {teamMembers?.map((m, i) => {
-            const mWon = deals?.filter(d => d.assigned_to === m.id && d.stage === 'won' && new Date(d.created_at).getMonth() === new Date().getMonth()).reduce((s, d) => s + (Number(d.value) || 0), 0) || 0;
-            const pct = Math.round((mWon / (m.goal || 1)) * 100);
-            return (
-              <motion.div
-                key={m.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="premium-card group"
-              >
-                <div className="flex items-center gap-4 mb-6">
-                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-xl", m.color?.split(' ')[0] || 'bg-primary')}>
-                    {m.name?.charAt(0)}
-                  </div>
+      {/* 2. WAR ROOM KPI GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="p-8 rounded-[2.5rem] bg-[#141210] text-white border-0 shadow-2xl relative overflow-hidden lg:col-span-2 group">
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/10 to-transparent pointer-events-none" />
+            <div className="relative z-10 flex flex-col justify-between h-full">
+               <div className="flex justify-between items-start mb-8">
                   <div>
-                    <h4 className="font-black leading-none group-hover:text-primary transition-colors">{m.name}</h4>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">{m.role}</p>
+                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1">Monthly Yield Goal</h3>
+                    <p className="text-4xl font-black text-white tabular-nums tracking-tighter">{formatFullCurrency(monthlyGoal)}</p>
                   </div>
-                </div>
-                <div className="space-y-4">
+                  <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full text-[9px] font-black border border-emerald-500/20">
+                     <TrendingUp size={12} /> +12.4% VS LAST MO
+                  </div>
+               </div>
+               
+               <div className="space-y-4">
                   <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Efficiency</p>
-                      <p className="text-xl font-black tabular-nums">{pct}%</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Metric</p>
-                      <p className="text-sm font-black text-primary">{formatCurrency(mWon)}</p>
-                    </div>
+                     <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Current Execution</p>
+                        <p className="text-3xl font-black text-primary tabular-nums tracking-tight">{formatFullCurrency(stats?.totalWonValue)}</p>
+                     </div>
+                     <p className="text-6xl font-black text-white/5 tracking-tighter tabular-nums">{stats?.achievementPercent}%</p>
                   </div>
-                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(100, pct)}%` }}
-                      transition={{ duration: 1, delay: i * 0.1 }}
-                      className="h-full bg-primary rounded-full group-hover:shadow-[0_0_10px_rgba(var(--primary),0.5)] transition-shadow"
-                    />
+                  <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                     <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(100, stats?.achievementPercent)}%` }}
+                        transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
+                        className="h-full bg-primary rounded-full shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                     />
                   </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+               </div>
+            </div>
+        </Card>
+
+        <Card className="p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm flex flex-col justify-between group hover:shadow-xl transition-all duration-500">
+            <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm">
+               <Briefcase size={22} />
+            </div>
+            <div>
+               <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2">Active Multiplier</h3>
+               <p className="text-4xl font-black text-slate-900 tabular-nums tracking-tighter">{stats?.activeCount}<span className="text-lg text-slate-300 ml-2">Units</span></p>
+               <p className="text-xs font-bold text-slate-400 mt-2">Currently in engagement</p>
+            </div>
+        </Card>
+
+        <Card className="p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm flex flex-col justify-between group hover:shadow-xl transition-all duration-500">
+            <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-rose-500 group-hover:text-white transition-all duration-500 shadow-sm">
+               <AlertCircle size={22} />
+            </div>
+            <div>
+               <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2">Stagnancy Risk</h3>
+               <p className="text-4xl font-black text-rose-500 tabular-nums tracking-tighter">{stats?.urgentDeals?.length}<span className="text-lg text-slate-300 ml-2">Assets</span></p>
+               <p className="text-xs font-bold text-slate-400 mt-2">Requires immediate recon</p>
+            </div>
+        </Card>
       </div>
-    </motion.div>
+
+      {/* 3. INTELLIGENCE MATRIX */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left: Strategic Mandates */}
+        <div className="lg:col-span-1 space-y-6">
+            <div className="flex items-center gap-3">
+               <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><Target size={18} /></div>
+               <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Daily Mandates</h3>
+            </div>
+            <div className="space-y-4">
+               {strategicMandates.map((m, i) => (
+                 <motion.div 
+                    key={m.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className={cn(
+                        "p-6 rounded-[2rem] border transition-all cursor-default group",
+                        m.urgency === 'high' ? "bg-rose-50/30 border-rose-100 hover:bg-rose-50" : "bg-white border-slate-100 hover:border-primary/20 hover:bg-slate-50/50"
+                    )}
+                 >
+                    <div className="flex gap-4">
+                       <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm shrink-0", m.urgency === 'high' ? "bg-white text-rose-500" : "bg-white text-primary")}>
+                          <m.icon size={20} />
+                       </div>
+                       <div className="space-y-1">
+                          <p className={cn("text-[9px] font-black uppercase tracking-[0.2em]", m.urgency === 'high' ? "text-rose-400" : "text-slate-400")}>{m.urgency} Priority</p>
+                          <h4 className="text-sm font-black text-slate-900 tracking-tight">{m.title}</h4>
+                          <p className="text-xs text-slate-500 leading-relaxed font-medium">{m.desc}</p>
+                       </div>
+                    </div>
+                 </motion.div>
+               ))}
+               {isGeneratingPlan && (
+                 <div className="p-10 text-center space-y-3">
+                    <Loader2 className="animate-spin text-primary mx-auto" size={24} />
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Executing Logic Rules...</p>
+                 </div>
+               )}
+            </div>
+        </div>
+
+        {/* Center/Right: Revenue Matrix Map */}
+        <Card className="lg:col-span-2 p-10 rounded-[3rem] bg-white border border-slate-100 shadow-sm relative overflow-hidden">
+            <div className="flex justify-between items-center mb-10">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center text-white"><ArrowUpRight size={20} /></div>
+                    <div>
+                        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Performance Matrix</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Actual Capture vs. Weighted Forecast</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-primary" /><span className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Actual</span></div>
+                    <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-slate-200" /><span className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Forecast</span></div>
+                </div>
+            </div>
+            
+            <div className="h-[350px] w-full min-w-0 min-h-0">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} debounce={50}>
+                  <AreaChart data={stats?.revenueStream}>
+                    <defs>
+                      <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#D97706" stopOpacity={0.15} />
+                        <stop offset="95%" stopColor="#D97706" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorForecast" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.05} />
+                        <stop offset="95%" stopColor="#94a3b8" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
+                    <XAxis 
+                       dataKey="name" 
+                       axisLine={false} 
+                       tickLine={false} 
+                       tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: '900' }} 
+                       dy={15}
+                    />
+                    <YAxis 
+                       axisLine={false} 
+                       tickLine={false} 
+                       tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: '900' }} 
+                       tickFormatter={(v) => `${v / 1000000}M`}
+                    />
+                    <RechartsTooltip content={<CustomTooltip />} />
+                    <Area 
+                        type="monotone" 
+                        dataKey="actual" 
+                        name="Actual Capture" 
+                        stroke="#D97706" 
+                        strokeWidth={4} 
+                        fill="url(#colorActual)" 
+                        animationDuration={2000}
+                    />
+                    <Area 
+                        type="monotone" 
+                        dataKey="forecast" 
+                        name="Weighted Pipeline" 
+                        stroke="#cbd5e1" 
+                        strokeWidth={2} 
+                        strokeDasharray="6 6" 
+                        fill="url(#colorForecast)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+            </div>
+        </Card>
+      </div>
+
+      {/* 4. OPERATIVE PERFORMANCE (Leaderboard) */}
+      <div className="space-y-8">
+          <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-white"><Users size={18} /></div>
+                  <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Field Personnel</h3>
+              </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+             {teamMembers?.map((m, i) => {
+                // This is simplified, usually we'd filter deals per team member
+                const mWon = deals?.filter(d => d.assigned_to === m.id && new Date(d.createdAt).getMonth() === new Date().getMonth() && d.stage === 'won').reduce((s,d) => s + Number(d.value), 0) || 0;
+                const mPercent = Math.round((mWon / (m.goal || 2500000)) * 100);
+
+                return (
+                  <motion.div 
+                    key={m.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all"
+                  >
+                     <div className="flex items-center gap-4 mb-8">
+                        <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg transition-transform group-hover:scale-110", m.color?.split(' ')[0] || 'bg-slate-900')}>
+                            {m.name.charAt(0)}
+                        </div>
+                        <div>
+                            <h4 className="font-black text-slate-900 text-lg leading-none">{m.name}</h4>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">{m.role}</p>
+                        </div>
+                     </div>
+                     <div className="space-y-5">
+                         <div className="flex justify-between items-end">
+                            <div className="space-y-1">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Yield Capture</p>
+                                <p className="text-lg font-black text-slate-900 tabular-nums">{formatCurrency(mWon)}</p>
+                            </div>
+                            <p className="text-3xl font-black text-slate-100 tabular-nums group-hover:text-primary transition-colors">{mPercent}%</p>
+                         </div>
+                         <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
+                            <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${Math.min(100, mPercent)}%` }}
+                                transition={{ duration: 1.5, delay: 0.5 + (i * 0.1) }}
+                                className={cn("h-full rounded-full shadow-sm", m.color?.split(' ')[0] || 'bg-slate-900')}
+                            />
+                         </div>
+                     </div>
+                  </motion.div>
+                );
+             })}
+          </div>
+      </div>
+    </div>
   );
 }
+
+// End of File

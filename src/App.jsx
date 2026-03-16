@@ -7,7 +7,6 @@ import AppLayout from './components/layout/AppLayout';
 import CommandCenterPage from './pages/CommandCenterPage';
 import PipelinePage from './pages/PipelinePage';
 import CustomersPage from './pages/CustomersPage';
-import DashboardPage from './pages/DashboardPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import ToolsPage from './pages/ToolsPage';
 
@@ -30,7 +29,7 @@ function App() {
             <Route path="command" element={<CommandCenterPage />} />
             <Route path="pipeline" element={<PipelinePage />} />
             <Route path="customers" element={<CustomersPage />} />
-            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="dashboard" element={<Navigate replace to="/command" />} />
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="tools" element={<ToolsPage />} />
           </Route>

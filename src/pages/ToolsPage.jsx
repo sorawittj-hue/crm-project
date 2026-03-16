@@ -1,21 +1,20 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { Card } from '../components/ui/Card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/Tabs';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import {
-  Calculator, Mail, Brain,
-  CheckCircle, AlertCircle, Loader2, Copy
+  Calculator, Mail, Sliders,
+  CheckCircle, Loader2, Copy, FileText
 } from 'lucide-react';
 import { Textarea } from '../components/ui/Textarea';
-import { callGeminiAPI } from '../services/ai';
 
 const formatCurrency = (amount) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(amount || 0);
 const formatPercent = (num) => `${(Math.round(num * 100) / 100).toFixed(0)}%`;
 
-// ROI Calculator
+// ROI Calculator (Deterministic)
 const ROICalculator = () => {
   const [inputs, setInputs] = useState({ initialInvestment: '', monthlyRevenue: '', monthlyCost: '', period: '12' });
   const [results, setResults] = useState(null);
@@ -37,42 +36,42 @@ const ROICalculator = () => {
     <div className="space-y-6">
       <div className="grid md:grid-cols-4 gap-4">
         <div className="space-y-2">
-          <label className="text-xs font-medium text-muted-foreground">Initial Investment</label>
-          <Input type="number" placeholder="500000" value={inputs.initialInvestment} onChange={(e) => setInputs({ ...inputs, initialInvestment: e.target.value })} />
+          <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Initial Investment</label>
+          <Input type="number" placeholder="500000" value={inputs.initialInvestment} onChange={(e) => setInputs({ ...inputs, initialInvestment: e.target.value })} className="rounded-xl border-slate-200" />
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-medium text-muted-foreground">Monthly Revenue</label>
-          <Input type="number" placeholder="100000" value={inputs.monthlyRevenue} onChange={(e) => setInputs({ ...inputs, monthlyRevenue: e.target.value })} />
+          <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Monthly Revenue</label>
+          <Input type="number" placeholder="100000" value={inputs.monthlyRevenue} onChange={(e) => setInputs({ ...inputs, monthlyRevenue: e.target.value })} className="rounded-xl border-slate-200" />
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-medium text-muted-foreground">Monthly Cost</label>
-          <Input type="number" placeholder="30000" value={inputs.monthlyCost} onChange={(e) => setInputs({ ...inputs, monthlyCost: e.target.value })} />
+          <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Monthly Cost</label>
+          <Input type="number" placeholder="30000" value={inputs.monthlyCost} onChange={(e) => setInputs({ ...inputs, monthlyCost: e.target.value })} className="rounded-xl border-slate-200" />
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-medium text-muted-foreground">Period (Months)</label>
-          <Input type="number" value={inputs.period} onChange={(e) => setInputs({ ...inputs, period: e.target.value })} />
+          <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Period (Months)</label>
+          <Input type="number" value={inputs.period} onChange={(e) => setInputs({ ...inputs, period: e.target.value })} className="rounded-xl border-slate-200" />
         </div>
       </div>
 
-      <Button onClick={calculate} className="w-full">Calculate ROI</Button>
+      <Button onClick={calculate} className="w-full h-14 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-slate-900/10 hover:scale-[1.01] transition-all">Execute ROI Logic</Button>
 
       {results && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-xl bg-success/10 border border-success/20">
-            <p className="text-xs font-medium text-muted-foreground mb-1">Monthly Profit</p>
-            <p className="text-xl font-bold text-success">{formatCurrency(results.monthlyProfit)}</p>
+          <div className="p-6 rounded-3xl bg-emerald-50 border border-emerald-100/50">
+            <p className="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1 leading-none">Monthly Profit</p>
+            <p className="text-xl font-black text-emerald-600 tabular-nums leading-none mt-2">{formatCurrency(results.monthlyProfit)}</p>
           </div>
-          <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
-            <p className="text-xs font-medium text-muted-foreground mb-1">Total Return</p>
-            <p className="text-xl font-bold text-primary">{formatCurrency(results.totalReturn)}</p>
+          <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-none">Total Return</p>
+            <p className="text-xl font-black text-slate-900 tabular-nums leading-none mt-2">{formatCurrency(results.totalReturn)}</p>
           </div>
-          <div className="p-4 rounded-xl bg-warning/10 border border-warning/20">
-            <p className="text-xs font-medium text-muted-foreground mb-1">ROI</p>
-            <p className={cn("text-xl font-bold", results.roi >= 0 ? "text-success" : "text-destructive")}>{formatPercent(results.roi / 100)}</p>
+          <div className="p-6 rounded-3xl bg-primary/5 border border-primary/10">
+            <p className="text-[10px] font-black text-primary/60 uppercase tracking-widest mb-1 leading-none">ROI Index</p>
+            <p className={cn("text-xl font-black tabular-nums leading-none mt-2", results.roi >= 0 ? "text-primary" : "text-rose-600")}>{formatPercent(results.roi / 100)}</p>
           </div>
-          <div className="p-4 rounded-xl bg-info/10 border border-info/20">
-            <p className="text-xs font-medium text-muted-foreground mb-1">Payback Period</p>
-            <p className="text-xl font-bold text-info">{results.paybackPeriod === Infinity ? '∞' : `${results.paybackPeriod} mo`}</p>
+          <div className="p-6 rounded-3xl bg-slate-900 border-0">
+            <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1 leading-none">Payback Window</p>
+            <p className="text-xl font-black text-white tabular-nums leading-none mt-2">{results.paybackPeriod === Infinity ? '∞' : `${results.paybackPeriod} mo`}</p>
           </div>
         </motion.div>
       )}
@@ -80,23 +79,28 @@ const ROICalculator = () => {
   );
 };
 
-// AI Email Generator
-const AIEmailGenerator = () => {
+// Logic Protocol Generator (Template-based Email)
+const LogicProtocolGenerator = () => {
   const [inputs, setInputs] = useState({ type: 'follow_up', recipient: '', context: '', tone: 'professional' });
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState(null);
 
-  const generate = async () => {
+  const generate = () => {
     setIsGenerating(true);
-    const prompt = `Generate a ${inputs.tone} business email for: ${inputs.type}. Recipient: ${inputs.recipient}. Context: ${inputs.context}. Return ONLY JSON: { "subject": "email subject", "body": "email body in Thai" }`;
-    try {
-      const res = await callGeminiAPI(prompt);
-      setResult(res);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsGenerating(false);
-    }
+    setTimeout(() => {
+        // Deterministic templates based on type
+        const templates = {
+            follow_up: { subject: "ติดตามเรื่องใบเสนอราคา - [RECIPIENT]", body: "เรียนคุณ [RECIPIENT],\n\nผมเจจาก Zenith ครับ ต้องการติดตามผลการพิจารณาใบเสนอราคาที่เราส่งให้เมื่อสัปดาห์ก่อนเกี่ยวกับ [CONTEXT] ครับ ไม่ทราบว่ามีข้อสงสัยหรือต้องการให้ปรับปรุงตรงส่วนไหนไหมครับ\n\nหวังว่าจะได้ร่วมงานกันครับ" },
+            proposal: { subject: "ข้อเสนอโครงการพิเศษ - [RECIPIENT]", body: "เรียนคุณ [RECIPIENT],\n\nอ้างถึงการพูดคุยกันเรื่อง [CONTEXT] ผมได้จัดทำข้อเสนอที่ตอบโจทย์ความต้องการของบริษัทคุณไว้ให้ตามรายละเอียดแนบครับ\n\nขอบคุณครับ" },
+            thank_you: { subject: "ขอบคุณที่มอบความไว้วางใจให้เรา - [RECIPIENT]", body: "เรียนคุณ [RECIPIENT],\n\nในนามของทีมงานขอขอบคุณที่เลือกใช้บริการของเราในโปรเจกต์ [CONTEXT] ครับ เราจะดูแลให้ออกมาดีที่สุดครับ\n\nด้วยความเคารพ" }
+        };
+        const template = templates[inputs.type] || templates.follow_up;
+        setResult({
+            subject: template.subject.replace('[RECIPIENT]', inputs.recipient || 'ลูกค้า'),
+            body: template.body.replace('[RECIPIENT]', inputs.recipient || 'ลูกค้า').replace('[CONTEXT]', inputs.context || 'โครงการของเรา')
+        });
+        setIsGenerating(false);
+    }, 1000);
   };
 
   const copyToClipboard = () => {
@@ -104,48 +108,49 @@ const AIEmailGenerator = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-xs font-medium text-muted-foreground">Email Type</label>
-          <select value={inputs.type} onChange={(e) => setInputs({ ...inputs, type: e.target.value })} className="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm">
-            <option value="follow_up">Follow-up</option>
-            <option value="proposal">Proposal</option>
-            <option value="cold_outreach">Cold Outreach</option>
-            <option value="thank_you">Thank You</option>
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol Type</label>
+          <select value={inputs.type} onChange={(e) => setInputs({ ...inputs, type: e.target.value })} className="flex h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold outline-none border-0 ring-1 ring-slate-200">
+            <option value="follow_up">Follow-up Protocol</option>
+            <option value="proposal">Closing Sequence</option>
+            <option value="thank_you">Post-Sale Success</option>
           </select>
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-medium text-muted-foreground">Tone</label>
-          <select value={inputs.tone} onChange={(e) => setInputs({ ...inputs, tone: e.target.value })} className="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm">
-            <option value="professional">Professional</option>
-            <option value="friendly">Friendly</option>
-            <option value="persuasive">Persuasive</option>
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tone Matrix</label>
+          <select value={inputs.tone} onChange={(e) => setInputs({ ...inputs, tone: e.target.value })} className="flex h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold outline-none border-0 ring-1 ring-slate-200">
+            <option value="professional">Professional Engagement</option>
+            <option value="friendly">Direct Collaborative</option>
           </select>
         </div>
       </div>
       <div className="space-y-2">
-        <label className="text-xs font-medium text-muted-foreground">Recipient</label>
-        <Input placeholder="Company or person name" value={inputs.recipient} onChange={(e) => setInputs({ ...inputs, recipient: e.target.value })} />
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recipient Identity</label>
+        <Input placeholder="Enter Enterprise Name..." value={inputs.recipient} onChange={(e) => setInputs({ ...inputs, recipient: e.target.value })} className="rounded-2xl h-12 border-slate-200" />
       </div>
       <div className="space-y-2">
-        <label className="text-xs font-medium text-muted-foreground">Context</label>
-        <Textarea placeholder="Describe the purpose and key points" value={inputs.context} onChange={(e) => setInputs({ ...inputs, context: e.target.value })} className="min-h-[100px]" />
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Context Variables</label>
+        <Textarea placeholder="Define engagement parameters..." value={inputs.context} onChange={(e) => setInputs({ ...inputs, context: e.target.value })} className="min-h-[100px] rounded-[1.5rem] border-slate-200" />
       </div>
-      <Button onClick={generate} disabled={isGenerating} className="w-full">
+      <Button onClick={generate} disabled={isGenerating} className="w-full h-14 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-slate-900/10">
         {isGenerating ? <Loader2 className="animate-spin mr-2" size={16} /> : <Mail className="mr-2" size={16} />}
-        {isGenerating ? 'Generating...' : 'Generate Email'}
+        {isGenerating ? 'Compiling Registry...' : 'Generate Protocol'}
       </Button>
       {result && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 rounded-xl border bg-muted/30 space-y-3">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 rounded-[2rem] border-2 border-dashed border-slate-100 bg-slate-50/50 space-y-4">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold">Generated Email</h4>
-            <Button variant="outline" size="sm" onClick={copyToClipboard}><Copy size={14} className="mr-2" /> Copy</Button>
+            <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Generated Protocol</h4>
+            <Button variant="ghost" size="sm" onClick={copyToClipboard} className="text-[10px] font-black text-primary uppercase"><Copy size={14} className="mr-2" /> Copy to Clipboard</Button>
           </div>
-          <div className="p-3 rounded-lg bg-background border">
-            <p className="text-xs font-medium text-muted-foreground mb-2">Subject:</p>
-            <p className="text-sm font-semibold mb-3">{result.subject}</p>
-            <p className="text-sm whitespace-pre-wrap">{result.body}</p>
+          <div className="p-6 rounded-[1.5rem] bg-white border border-slate-100 shadow-sm space-y-3">
+            <div className="flex gap-4">
+                <span className="text-[10px] font-black text-slate-300 uppercase shrink-0">Subject:</span>
+                <p className="text-sm font-black text-slate-900">{result.subject}</p>
+            </div>
+            <div className="h-[1px] bg-slate-50 w-full" />
+            <p className="text-sm text-slate-600 whitespace-pre-wrap font-medium leading-relaxed">{result.body}</p>
           </div>
         </motion.div>
       )}
@@ -153,75 +158,72 @@ const AIEmailGenerator = () => {
   );
 };
 
-// AI Deal Analyzer
-const AIDealAnalyzer = () => {
+// System Health Analyzer (Rule based)
+const SystemHealthAnalyzer = () => {
   const [dealInfo, setDealInfo] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState(null);
 
-  const analyze = async () => {
+  const analyze = () => {
     setIsAnalyzing(true);
-    const prompt = `Analyze this sales deal: ${dealInfo}. Return ONLY JSON: { "strengths": ["point1"], "risks": ["risk1"], "recommendations": ["rec1"], "winProbability": 0-100, "summary": "brief summary" }`;
-    try {
-      const res = await callGeminiAPI(prompt);
-      setAnalysis(res);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsAnalyzing(false);
-    }
+    setTimeout(() => {
+        // Hardcoded logic rules based on text length/keywords
+        const hasValue = dealInfo.toLowerCase().includes('ล้าน') || dealInfo.toLowerCase().includes('00,000');
+        const hasStakeholders = dealInfo.toLowerCase().includes('manager') || dealInfo.toLowerCase().includes('ceo') || dealInfo.toLowerCase().includes('จัดซื้อ');
+        
+        setAnalysis({
+            summary: dealInfo.length > 50 ? "Engagement context identified. Running sector analysis based on input entropy." : "Input volume is insufficient for deep matrix extraction. Increase data density.",
+            strengths: hasValue ? ["High yield potential identified", "Clear budget signaling"] : ["Initial contact established"],
+            risks: hasStakeholders ? ["Decision chain complexity"] : ["Stakeholder invisibility - critical risk", "Decision maker not identified"],
+            winProbability: hasValue && hasStakeholders ? 75 : 30
+        });
+        setIsAnalyzing(false);
+    }, 1500);
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="space-y-2">
-        <label className="text-xs font-medium text-muted-foreground">Deal Information</label>
-        <Textarea placeholder="Describe the deal: company, value, stage, stakeholders, challenges..." value={dealInfo} onChange={(e) => setDealInfo(e.target.value)} className="min-h-[120px]" />
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Field Intelligence Feed</label>
+        <Textarea placeholder="Input deal parameters for rule-based risk assessment..." value={dealInfo} onChange={(e) => setDealInfo(e.target.value)} className="min-h-[120px] rounded-[1.8rem] border-slate-200" />
       </div>
-      <Button onClick={analyze} disabled={isAnalyzing} className="w-full">
-        {isAnalyzing ? <Loader2 className="animate-spin mr-2" size={16} /> : <Brain className="mr-2" size={16} />}
-        {isAnalyzing ? 'Analyzing...' : 'Analyze Deal'}
+      <Button onClick={analyze} disabled={isAnalyzing} className="w-full h-14 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em]">
+        {isAnalyzing ? <Loader2 className="animate-spin mr-2" size={16} /> : <Sliders className="mr-2" size={16} />}
+        {isAnalyzing ? 'Executing Risk Rules...' : 'Analyze Risk Matrix'}
       </Button>
       {analysis && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-          <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
-            <div className="flex items-center gap-2 mb-2">
-              <Brain size={18} className="text-primary" />
-              <h4 className="text-sm font-semibold">AI Assessment</h4>
-            </div>
-            <p className="text-sm">{analysis.summary}</p>
+          <div className="p-8 rounded-[2.5rem] bg-slate-900 text-white border-0">
+            <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-4 flex items-center gap-2 pt-2"><CheckCircle size={14} /> Rule Engine Assessment</h4>
+            <p className="text-sm font-medium leading-relaxed italic text-slate-300">&quot;{analysis.summary}&quot;</p>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-success/10 border border-success/20">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle size={16} className="text-success" />
-                <h4 className="text-xs font-semibold text-success">Strengths</h4>
-              </div>
-              <ul className="space-y-1">
-                {analysis.strengths?.map((s, i) => <li key={i} className="text-sm">• {s}</li>)}
-              </ul>
+            <div className="p-6 rounded-[2rem] bg-emerald-50 border border-emerald-100">
+               <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4">Positive Correlations</h4>
+               <ul className="space-y-2">
+                 {analysis.strengths?.map((s, i) => <li key={i} className="text-xs font-bold text-emerald-700 flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-emerald-400" /> {s}</li>)}
+               </ul>
             </div>
-            <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertCircle size={16} className="text-destructive" />
-                <h4 className="text-xs font-semibold text-destructive">Risks</h4>
-              </div>
-              <ul className="space-y-1">
-                {analysis.risks?.map((r, i) => <li key={i} className="text-sm">• {r}</li>)}
-              </ul>
+            <div className="p-6 rounded-[2rem] bg-rose-50 border border-rose-100">
+               <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-4">Risk Variables</h4>
+               <ul className="space-y-2">
+                 {analysis.risks?.map((r, i) => <li key={i} className="text-xs font-bold text-rose-700 flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-rose-400" /> {r}</li>)}
+               </ul>
             </div>
           </div>
-          {analysis.winProbability !== undefined && (
-            <div className="p-4 rounded-xl bg-info/10 border border-info/20">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-semibold">Win Probability</h4>
-                <span className="text-2xl font-bold text-info">{analysis.winProbability}%</span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${analysis.winProbability}%` }} className={cn("h-full rounded-full", analysis.winProbability >= 70 ? "bg-success" : analysis.winProbability >= 40 ? "bg-warning" : "bg-destructive")} />
-              </div>
-            </div>
-          )}
+          <div className="p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm">
+             <div className="flex items-center justify-between mb-4">
+               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Success Probability Matrix</h4>
+               <span className="text-4xl font-black text-slate-900 tabular-nums">{analysis.winProbability}%</span>
+             </div>
+             <div className="h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
+               <motion.div 
+                 initial={{ width: 0 }} 
+                 animate={{ width: `${analysis.winProbability}%` }} 
+                 className={cn("h-full transition-all duration-1000", analysis.winProbability >= 70 ? "bg-emerald-500" : analysis.winProbability >= 40 ? "bg-primary" : "bg-rose-500")} 
+               />
+             </div>
+          </div>
         </motion.div>
       )}
     </div>
@@ -232,75 +234,63 @@ export default function ToolsPage() {
   const [activeTab, setActiveTab] = useState('roi');
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-[1200px] mx-auto space-y-6 pb-8">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-[1400px] mx-auto space-y-12 pb-20 px-4 md:px-0">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight mb-1">Tools</h1>
-        <p className="text-sm text-muted-foreground">Calculators and AI assistants to boost your productivity</p>
-      </div>
+      <header className="space-y-4">
+        <div className="flex items-center gap-3">
+             <div className="p-2 bg-slate-900 text-white rounded-xl"><FileText size={18} /></div>
+             <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Operational Utility Matrix</p>
+        </div>
+        <h1 className="text-6xl font-black text-slate-900 tracking-tighter uppercase leading-none">
+          Strategic <span className="text-primary italic">Lab</span>
+        </h1>
+        <p className="text-sm font-bold text-slate-400 leading-relaxed max-w-lg">Advanced deterministic tools for fiscal projection and protocol execution.</p>
+      </header>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-3 bg-muted/50 rounded-xl p-1">
-          <TabsTrigger value="roi" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">ROI Calculator</TabsTrigger>
-          <TabsTrigger value="email" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">AI Email</TabsTrigger>
-          <TabsTrigger value="analyze" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">AI Deal</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-10">
+        <TabsList className="bg-white border border-slate-100 p-2 rounded-[2rem] inline-flex h-auto gap-2">
+          <TabsTrigger value="roi" className="rounded-[1.5rem] px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white text-[10px] font-black uppercase tracking-widest transition-all">Yield Calculator</TabsTrigger>
+          <TabsTrigger value="email" className="rounded-[1.5rem] px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white text-[10px] font-black uppercase tracking-widest transition-all">Protocol Generator</TabsTrigger>
+          <TabsTrigger value="analyze" className="rounded-[1.5rem] px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white text-[10px] font-black uppercase tracking-widest transition-all">Risk Matrix</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="roi" className="mt-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                  <Calculator size={20} />
-                </div>
-                <div>
-                  <CardTitle>ROI Calculator</CardTitle>
-                  <p className="text-sm text-muted-foreground">Calculate return on investment</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ROICalculator />
-            </CardContent>
+        <TabsContent value="roi" className="mt-0">
+          <Card className="p-10 rounded-[3rem] border-slate-100 shadow-sm bg-white overflow-visible">
+            <div className="flex flex-col md:flex-row md:items-center gap-6 mb-12">
+               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm"><Calculator size={28} /></div>
+               <div>
+                 <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Yield Calculator</h2>
+                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Deterministic fiscal return engine</p>
+               </div>
+            </div>
+            <ROICalculator />
           </Card>
         </TabsContent>
 
-        <TabsContent value="email" className="mt-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                  <Mail size={20} />
-                </div>
-                <div>
-                  <CardTitle>AI Email Generator</CardTitle>
-                  <p className="text-sm text-muted-foreground">Generate professional emails instantly</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <AIEmailGenerator />
-            </CardContent>
+        <TabsContent value="email" className="mt-0">
+          <Card className="p-10 rounded-[3rem] border-slate-100 shadow-sm bg-white overflow-visible">
+            <div className="flex flex-col md:flex-row md:items-center gap-6 mb-12">
+               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm"><Mail size={28} /></div>
+               <div>
+                 <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Protocol Generator</h2>
+                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Rule-based engagement templates</p>
+               </div>
+            </div>
+            <LogicProtocolGenerator />
           </Card>
         </TabsContent>
 
-        <TabsContent value="analyze" className="mt-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                  <Brain size={20} />
-                </div>
-                <div>
-                  <CardTitle>AI Deal Analyzer</CardTitle>
-                  <p className="text-sm text-muted-foreground">Get strategic insights on your deals</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <AIDealAnalyzer />
-            </CardContent>
+        <TabsContent value="analyze" className="mt-0">
+          <Card className="p-10 rounded-[3rem] border-slate-100 shadow-sm bg-white overflow-visible">
+            <div className="flex flex-col md:flex-row md:items-center gap-6 mb-12">
+               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm"><Sliders size={28} /></div>
+               <div>
+                 <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Risk Matrix Analyzer</h2>
+                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Heuristic deal vector evaluation</p>
+               </div>
+            </div>
+            <SystemHealthAnalyzer />
           </Card>
         </TabsContent>
       </Tabs>

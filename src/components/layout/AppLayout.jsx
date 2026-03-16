@@ -3,7 +3,7 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, ListTree, Users, BarChart3,
-  Menu, X, Wrench, Zap,
+  Menu, X, Wrench,
   Search, Sliders, Bell,
   ChevronRight, Target, ArrowUpCircle
 } from 'lucide-react';
@@ -40,11 +40,11 @@ export default function AppLayout() {
   }, [zenithMode]);
 
   const navItems = [
-    { to: '/command', icon: LayoutDashboard, label: 'Control Center' },
+    { to: '/command', icon: LayoutDashboard, label: 'Command Center' },
     { to: '/pipeline', icon: ListTree, label: 'Sales Matrix' },
-    { to: '/customers', icon: Users, label: 'Intelligence' },
-    { to: '/analytics', icon: BarChart3, label: 'Performance' },
-    { to: '/tools', icon: Wrench, label: 'Optimization' },
+    { to: '/customers', icon: Users, label: 'Intelligence Index' },
+    { to: '/analytics', icon: BarChart3, label: 'Performance Matrix' },
+    { to: '/tools', icon: Wrench, label: 'Strategic Lab' },
   ];
 
   return (
@@ -71,7 +71,7 @@ export default function AppLayout() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-xl font-black tracking-tight text-slate-900 leading-none">ZENITH</span>
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1">Prime Intelligence</span>
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1">Rule Engine Alpha</span>
                 </div>
               </div>
               <button onClick={closeSidebar} className="lg:hidden p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all">
@@ -139,10 +139,10 @@ export default function AppLayout() {
                <div className="flex items-center gap-3">
                   <Button 
                     variant="ghost" 
-                    className={cn("flex-1 h-12 rounded-2xl transition-all font-bold text-[10px] uppercase tracking-widest", zenithMode ? "bg-primary text-white" : "bg-slate-50 text-slate-500")}
+                    className={cn("flex-1 h-12 rounded-2xl transition-all font-bold text-[10px] uppercase tracking-widest", zenithMode ? "bg-slate-900 text-white" : "bg-slate-50 text-slate-500")}
                     onClick={toggleZenithMode}
                   >
-                    <Zap size={14} className="mr-2" /> AI Mode
+                    <Sliders size={14} className="mr-2" /> Logic Engine
                   </Button>
                   <Button 
                     variant="ghost" 
@@ -178,10 +178,10 @@ export default function AppLayout() {
             </button>
             <div className="h-4 w-px bg-slate-100" />
             <div className="flex items-center gap-4">
-               <div className="text-right hidden sm:block">
+                <div className="text-right hidden sm:block">
                   <p className="text-xs font-black text-slate-900 leading-none">Sorawit T.</p>
-                  <p className="text-[9px] font-bold text-primary uppercase tracking-widest mt-1">Lead Executive</p>
-               </div>
+                  <p className="text-[9px] font-bold text-primary uppercase tracking-widest mt-1">System Architect</p>
+                </div>
                <div className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center font-black text-[10px] text-slate-900">
                   ST
                </div>
