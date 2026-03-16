@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  DollarSign,
   Trash2, CheckCircle2, XCircle,
-  ChevronRight,
-  Briefcase, Phone, Mail,
-  Sparkles, Activity, Target, ShieldCheck, Zap, Cpu
+  Phone, Mail,
+  Sparkles, Activity, Target, ShieldCheck, Zap
 } from 'lucide-react';
 import { SheetContent, SheetHeader, SheetTitle } from '../ui/Sheet';
 import { Button } from '../ui/Button';
@@ -65,35 +63,35 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
   if (!deal) return null;
 
   return (
-    <SheetContent className="glass-card border-l border-border/40 w-full sm:max-w-xl p-0 overflow-y-auto custom-scrollbar">
+    <SheetContent className="bg-white border-l border-slate-200 w-full sm:max-w-xl p-0 overflow-y-auto custom-scrollbar">
       <div className="p-8 space-y-10 pb-24">
-        <SheetHeader className="space-y-4">
+        <SheetHeader className="space-y-2">
           <div className="flex items-center gap-3">
              <div className="w-1.5 h-8 bg-primary rounded-full" />
-             <SheetTitle className="text-3xl font-black uppercase tracking-tighter italic premium-gradient-text">
-               Signal Detailed
+             <SheetTitle className="text-3xl font-black text-slate-900 tracking-tight">
+               Deal Details
              </SheetTitle>
           </div>
-          <div className="flex items-center gap-3 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
              <ShieldCheck size={12} className="text-primary" />
-             <span>ID: {deal.id.slice(0, 8)} • Sector Synchronization Active</span>
+             <span>ID: {deal.id.slice(0, 8)} • System Verified</span>
           </div>
         </SheetHeader>
 
-        {/* HUD Stats */}
+        {/* Dashboard Cards */}
         <div className="grid grid-cols-2 gap-4">
-          <Card className="premium-card bg-muted/20">
-            <CardContent className="p-4">
-              <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1 leading-none">Capital Asset</p>
-              <p className="text-2xl font-black tabular-nums tracking-tighter leading-none">{formatCurrency(deal.value)}</p>
+          <Card className="rounded-[2rem] bg-slate-50 border-none">
+            <CardContent className="p-5">
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Project Value</p>
+              <p className="text-2xl font-black text-slate-900 tabular-nums">{formatCurrency(deal.value)}</p>
             </CardContent>
           </Card>
-          <Card className="premium-card bg-muted/20">
-            <CardContent className="p-4">
-              <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1 leading-none">Yield Matrix</p>
+          <Card className="rounded-[2rem] bg-slate-50 border-none">
+            <CardContent className="p-5">
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Confidence</p>
               <div className="flex items-center gap-3">
-                <p className="text-2xl font-black tabular-nums tracking-tighter leading-none">{deal.probability}%</p>
-                <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden border border-white/5">
+                <p className="text-2xl font-black text-slate-900 tabular-nums">{deal.probability}%</p>
+                <div className="h-1.5 flex-1 bg-slate-200 rounded-full overflow-hidden">
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${deal.probability}%` }}
@@ -105,26 +103,26 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
           </Card>
         </div>
 
-        {/* Action HUD */}
+        {/* Success Actions */}
         <div className="flex items-center gap-3">
           <Button 
-            className="flex-1 btn-zenith-primary h-12 text-[10px]"
+            className="flex-1 rounded-full h-12 text-xs font-bold uppercase tracking-widest shadow-lg shadow-primary/20"
             onClick={() => onUpdate(deal.id, { stage: 'won' })}
           >
-            <CheckCircle2 size={16} className="mr-2" /> Commit to Victory
+            <CheckCircle2 size={16} className="mr-2" /> Mark as Won
           </Button>
           <Button 
-            variant="ghost"
-            className="flex-1 btn-zenith-outline h-12 text-[10px]"
+            variant="outline"
+            className="flex-1 rounded-full h-12 text-xs font-bold uppercase tracking-widest"
             onClick={() => onUpdate(deal.id, { stage: 'lost' })}
           >
-            <XCircle size={16} className="mr-2" /> Scrap Signal
+            <XCircle size={16} className="mr-2" /> Mark as Lost
           </Button>
           <Button 
             variant="ghost" 
-            className="w-12 h-12 rounded-2xl bg-destructive/10 text-destructive hover:bg-destructive hover:text-white border border-destructive/20 transition-all"
+            className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
             onClick={() => {
-              if (window.confirm('Erase this signal from the matrix permanently?')) {
+              if (window.confirm('Are you sure you want to permanently delete this deal?')) {
                 onDelete(deal.id);
               }
             }}
@@ -133,20 +131,17 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
           </Button>
         </div>
 
-        {/* AI TACTICAL ENGINE */}
-        <Card className="relative overflow-hidden border-primary/20 bg-primary/[0.02]">
-           <div className="absolute top-0 right-0 p-2">
-              <Zap size={40} className="text-primary opacity-5" />
-           </div>
-           <CardContent className="p-6">
+        {/* AI STRATEGY ENGINE */}
+        <Card className="rounded-[2.5rem] border-primary/20 bg-primary/5 border">
+           <CardContent className="p-8">
               <div className="flex items-center justify-between mb-8">
                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                       <Sparkles size={20} />
+                    <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-primary shadow-sm">
+                       <Sparkles size={18} />
                     </div>
                     <div>
-                       <h3 className="text-xs font-black uppercase tracking-[0.2em] leading-none mb-1 text-primary">Neural Strategy</h3>
-                       <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Planetary Intel Analysis</p>
+                       <h3 className="text-xs font-black uppercase tracking-widest text-primary">AI Sales Strategy</h3>
+                       <p className="text-[9px] font-bold text-primary/60 uppercase tracking-widest">Intelligent Portfolio Analysis</p>
                     </div>
                  </div>
                  <Button 
@@ -154,162 +149,133 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
                    size="sm" 
                    onClick={handleAIAnalysis}
                    disabled={isAnalyzing}
-                   className="text-[9px] font-black uppercase tracking-widest text-primary border border-primary/20 rounded-xl px-4"
+                   className="text-[9px] font-bold uppercase tracking-widest text-primary hover:bg-primary/10 rounded-full px-4"
                  >
-                   {isAnalyzing ? 'Scanning...' : 'Recalibrate'}
+                   {isAnalyzing ? 'Analyzing...' : 'Refresh Strategy'}
                  </Button>
               </div>
 
               <AnimatePresence mode="wait">
                 {isAnalyzing ? (
                   <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="py-12 flex flex-col items-center justify-center gap-6"
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="py-12 flex flex-col items-center justify-center gap-4"
                   >
-                    <div className="relative">
-                       <motion.div 
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                          className="w-16 h-16 border-2 border-primary/20 border-t-primary rounded-full"
-                       />
-                       <Activity size={24} className="text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
-                    </div>
-                    <div className="text-center">
-                       <p className="text-[10px] font-black uppercase tracking-[0.4em] animate-reveal">Accessing Global Node Matrix</p>
-                       <p className="text-[8px] font-bold text-muted-foreground uppercase mt-2">Correlating market variables...</p>
-                    </div>
+                    <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">Consulting Intelligence Nodes...</p>
                   </motion.div>
                 ) : aiAnalysis ? (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-8"
-                  >
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-background/40 border border-border/40">
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                    <div className="flex items-center justify-between p-4 rounded-3xl bg-white border border-primary/10">
                        <div>
-                          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Success Probability</p>
-                          <span className="text-4xl font-black tabular-nums">{aiAnalysis.win_likelihood}%</span>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Win Likelihood</p>
+                          <span className="text-4xl font-black text-slate-900 tracking-tighter">{aiAnalysis.win_likelihood}%</span>
                        </div>
-                       <Badge className={cn(
-                          "font-black text-[9px] px-3 py-1 rounded-xl shadow-lg",
-                          aiAnalysis.risk_level === 'high' ? 'bg-destructive/20 text-destructive border-destructive/40' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                       <Badge className={cn("font-bold text-[9px] px-3 py-1 rounded-full",
+                          aiAnalysis.risk_level === 'high' ? 'bg-rose-50 text-rose-500 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                        )}>
-                          {aiAnalysis.risk_level.toUpperCase()} THREAT LEVEL
+                          {aiAnalysis.risk_level.toUpperCase()} RISK
                        </Badge>
                     </div>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                        <div className="flex items-center gap-2">
                           <Target size={14} className="text-primary" />
-                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Tactical Directives</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Strategic Directives</p>
                        </div>
-                       <p className="text-xs leading-relaxed font-bold border-l-2 border-primary/40 pl-4 py-1 italic opacity-90">{aiAnalysis.strategy}</p>
+                       <div className="text-xs leading-relaxed font-bold text-slate-700 bg-white p-5 rounded-3xl border border-slate-100 italic">
+                          &quot;{aiAnalysis.strategy}&quot;
+                       </div>
                     </div>
 
-                    <div className="pt-6 border-t border-border/40">
-                       <div className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-primary/10 border border-primary/20 group cursor-pointer hover:bg-primary/20 transition-all">
-                          <div>
-                             <p className="text-[9px] font-black text-primary uppercase tracking-widest mb-1">Recommended Sequence</p>
-                             <p className="text-sm font-black italic">&quot;{aiAnalysis.next_step}&quot;</p>
-                          </div>
-                          <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary group-hover:translate-x-1 transition-transform">
-                             <ChevronRight size={20} />
-                          </div>
+                    <div className="pt-6 border-t border-primary/10">
+                       <div className="p-4 rounded-3xl bg-primary text-white shadow-xl shadow-primary/20">
+                          <p className="text-[9px] font-bold uppercase tracking-widest opacity-70 mb-1">Recommended Next Step</p>
+                          <p className="text-sm font-black italic">&quot;{aiAnalysis.next_step}&quot;</p>
                        </div>
                     </div>
                   </motion.div>
                 ) : (
                   <div className="py-12 text-center">
-                     <div className="w-16 h-16 rounded-[2rem] bg-muted/30 flex items-center justify-center mx-auto mb-4 border border-border/40">
-                        <ShieldCheck size={32} className="text-muted-foreground opacity-20" />
+                     <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mx-auto mb-4 shadow-sm">
+                        <Zap size={24} className="text-slate-200" />
                      </div>
-                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Neural Diagnostics Pending</p>
+                     <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">AI Insights Available for Review</p>
                   </div>
                 )}
               </AnimatePresence>
            </CardContent>
         </Card>
 
-        {/* Intelligence Data Grid */}
+        {/* Deal Configuration */}
         <div className="space-y-6">
-          <div className="flex items-center gap-3 border-b border-border/40 pb-4">
-            <Cpu size={16} className="text-primary" />
-            <h3 className="text-[11px] font-black uppercase tracking-[0.3em]">Signal Configuration</h3>
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <Activity size={16} className="text-primary" />
+            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-900">Project Configuration</h3>
           </div>
           
           <div className="grid grid-cols-1 gap-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Mission Objective</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Project Name</label>
               <Input 
                 defaultValue={deal.title} 
                 onBlur={(e) => onUpdate(deal.id, { title: e.target.value })}
-                className="input-field h-12 bg-background/50"
+                className="rounded-2xl h-12 bg-slate-50 border-transparent font-bold"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Target Entity</label>
-              <div className="relative">
-                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                <Input 
-                  defaultValue={deal.company} 
-                  onBlur={(e) => onUpdate(deal.id, { company: e.target.value })}
-                  className="input-field pl-12 h-12 bg-background/50"
-                />
-              </div>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Client / Company</label>
+              <Input 
+                defaultValue={deal.company} 
+                onBlur={(e) => onUpdate(deal.id, { company: e.target.value })}
+                className="rounded-2xl h-12 bg-slate-50 border-transparent font-bold"
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Asset Value</label>
-                <div className="relative">
-                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                  <Input 
-                    type="number"
-                    defaultValue={deal.value} 
-                    onBlur={(e) => onUpdate(deal.id, { value: Number(e.target.value) })}
-                    className="input-field pl-12 h-12 bg-background/50"
-                  />
-                </div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Deal Value</label>
+                <Input 
+                  type="number"
+                  defaultValue={deal.value} 
+                  onBlur={(e) => onUpdate(deal.id, { value: Number(e.target.value) })}
+                  className="rounded-2xl h-12 bg-slate-50 border-transparent font-bold"
+                />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Confidence Rating</label>
-                <div className="relative">
-                  <Target className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                  <Input 
-                    type="number"
-                    defaultValue={deal.probability} 
-                    onBlur={(e) => onUpdate(deal.id, { probability: Number(e.target.value) })}
-                    className="input-field pl-12 h-12 bg-background/50"
-                  />
-                </div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Confidence (%)</label>
+                <Input 
+                  type="number"
+                  defaultValue={deal.probability} 
+                  onBlur={(e) => onUpdate(deal.id, { probability: Number(e.target.value) })}
+                  className="rounded-2xl h-12 bg-slate-50 border-transparent font-bold"
+                />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Transmission Node */}
+        {/* Timeline Hub */}
         <div className="pt-6">
-           <Card className="bg-muted/30 border-border/40 rounded-[2rem]">
-              <CardContent className="p-6">
+           <Card className="bg-slate-50 border-none rounded-[2.5rem]">
+              <CardContent className="p-8">
                  <div className="flex items-center gap-3 mb-6">
-                    <Activity size={16} className="text-primary" />
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Transmission Hub</h3>
+                    <Activity size={16} className="text-slate-400" />
+                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Contact History</h3>
                  </div>
-                 <div className="grid grid-cols-2 gap-3">
+                 <div className="grid grid-cols-2 gap-4">
                    <Button 
-                     variant="ghost" 
-                     className="h-12 border border-border/40 bg-background/40 font-black uppercase tracking-widest text-[9px] rounded-2xl hover:bg-primary hover:text-primary-foreground transition-all"
+                     variant="outline" 
+                     className="h-12 bg-white rounded-2xl font-bold uppercase tracking-widest text-[9px]"
                      onClick={() => onUpdate(deal.id, { lastActivity: new Date().toISOString() })}
                    >
-                     <Phone size={14} className="mr-2" /> Voice Comms
+                     <Phone size={14} className="mr-2" /> Log Call
                    </Button>
                    <Button 
-                     variant="ghost" 
-                     className="h-12 border border-border/40 bg-background/40 font-black uppercase tracking-widest text-[9px] rounded-2xl hover:bg-primary hover:text-primary-foreground transition-all"
+                     variant="outline" 
+                     className="h-12 bg-white rounded-2xl font-bold uppercase tracking-widest text-[9px]"
                      onClick={() => onUpdate(deal.id, { lastActivity: new Date().toISOString() })}
                    >
-                     <Mail size={14} className="mr-2" /> Digital Intel
+                     <Mail size={14} className="mr-2" /> Log Email
                    </Button>
                  </div>
               </CardContent>

@@ -1,77 +1,100 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Filter, Star, TrendingUp, AlertTriangle, 
-  ChevronUp, Zap,
-  ArrowRight, ArrowLeft, Keyboard,
-  GripVertical, ShieldAlert, Cpu
+  Zap,
+  ArrowRight, ArrowLeft, ThumbsUp, ThumbsDown
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useHorizontalScroll, usePipelineKeyboard } from '../../hooks/useHorizontalScroll';
 import { calculateRiskScore } from '../../services/aiDeals';
+import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter } from '../ui/Dialog';
+import { Button } from '../ui/Button';
+import { Textarea } from '../ui/Textarea';
 
 const formatCurrency = (n) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(n || 0);
 
 const STAGE_CONFIG = {
   lead: { 
-    label: 'Inbound', 
-    description: 'Lead Sector Alpha',
-    icon: <Cpu size={16} />,
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/20'
+    label: 'New Lead', 
+    description: 'Initial pipeline entry',
+    icon: <Search size={16} />,
+    color: 'text-slate-900',
+    bgColor: 'bg-slate-50',
+    borderColor: 'border-slate-200'
   },
   contact: { 
-    label: 'Engagement', 
-    description: 'Sector Bravo Contact',
-    icon: <Star size={16} />,
-    color: 'text-indigo-500',
-    bgColor: 'bg-indigo-500/10',
-    borderColor: 'border-indigo-500/20'
+    label: 'Meeting', 
+    description: 'First engagement',
+    icon: <Users size={16} />,
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-50',
+    borderColor: 'border-amber-200'
   },
   proposal: { 
     label: 'Quotation', 
-    description: 'Proposal Matrix',
+    description: 'Quote provided',
     icon: <TrendingUp size={16} />,
-    color: 'text-amber-500',
-    bgColor: 'bg-amber-500/10',
-    borderColor: 'border-amber-500/20'
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-emerald-200'
   },
   negotiation: { 
-    label: 'Tactical', 
-    description: 'Negotiation Zone',
+    label: 'Closing', 
+    description: 'Final negotiations',
     icon: <Zap size={16} />,
-    color: 'text-orange-500',
-    bgColor: 'bg-orange-500/10',
-    borderColor: 'border-orange-500/20'
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-200'
   },
   won: { 
-    label: 'Closed', 
-    description: 'Archive Victory',
-    icon: <ShieldAlert size={16} />,
-    color: 'text-emerald-500',
-    bgColor: 'bg-emerald-500/10',
-    borderColor: 'border-emerald-500/20'
+    label: 'Won', 
+    description: 'Successfully closed',
+    icon: <ThumbsUp size={16} />,
+    color: 'text-emerald-700',
+    bgColor: 'bg-emerald-100/50',
+    borderColor: 'border-emerald-300'
   },
   lost: { 
     label: 'Lost', 
-    description: 'Sector Expired',
-    icon: <AlertTriangle size={16} />,
-    color: 'text-red-500',
-    bgColor: 'bg-red-500/10',
-    borderColor: 'border-red-500/20'
+    description: 'Opportunity missed',
+    icon: <ThumbsDown size={16} />,
+    color: 'text-rose-600',
+    bgColor: 'bg-rose-50',
+    borderColor: 'border-rose-200'
   },
 };
 
 const STAGES = Object.keys(STAGE_CONFIG);
 
 const QUICK_FILTERS = [
-  { id: 'all', label: 'All Signals', icon: Filter },
-  { id: 'my-deals', label: 'My Units', icon: Star },
-  { id: 'hot', label: 'High Yield', icon: Zap },
-  { id: 'at-risk', label: 'Risk Detected', icon: AlertTriangle },
-  { id: 'high-value', label: 'Tier 1 Assets', icon: TrendingUp },
+  { id: 'all', label: 'All Projects', icon: Filter },
+  { id: 'my-deals', label: 'My Pipeline', icon: Star },
+  { id: 'high-value', label: 'Tier A', icon: TrendingUp },
+  { id: 'at-risk', label: 'Stagnant', icon: AlertTriangle },
 ];
+
+function Users({ size, className }) {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width={size} 
+      height={size} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
 
 export default function PipelineBoard({ 
   deals = [], 
@@ -83,51 +106,42 @@ export default function PipelineBoard({
   const [selectedDealId, setSelectedDealId] = useState(null);
   const [pinnedDealIds, setPinnedDealIds] = useState([]);
   const [dropTarget, setDropTarget] = useState(null);
-  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  
+  // Win/Loss Reason State
+  const [reasonModal, setReasonModal] = useState({ open: false, dealId: null, targetStage: null });
+  const [reasonText, setReasonText] = useState('');
 
   const scrollRef = useHorizontalScroll();
 
-  // Pure data processing
   const processedDeals = useMemo(() => {
-    // We use a fixed reference point for relative time in this render cycle
-    // to ensure predictability during re-renders.
-    const now = new Date().getTime(); 
-    let result = deals.map(deal => ({
-      ...deal,
-      risk: calculateRiskScore(deal, [], now)
-    }));
+    const now = new Date(); 
+    let result = deals.map(deal => {
+      const createdDate = new Date(deal.createdAt || deal.created_at || now);
+      const agingDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
+      return {
+        ...deal,
+        risk: calculateRiskScore(deal, [], now.getTime()),
+        agingDays
+      };
+    });
 
-    // Search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(deal => 
         deal.title?.toLowerCase().includes(term) ||
-        deal.company?.toLowerCase().includes(term) ||
-        deal.assigned_to?.toLowerCase().includes(term)
+        deal.company?.toLowerCase().includes(term)
       );
     }
 
-    // Quick filters
     switch (activeFilter) {
-      case 'my-deals':
-        result = result.filter(deal => deal.assigned_to === 'leader');
-        break;
-      case 'hot':
-        result = result.filter(deal => deal.probability >= 70 || deal.risk.level === 'low');
-        break;
-      case 'at-risk':
-        result = result.filter(deal => deal.risk.level === 'high' || deal.risk.daysSinceActivity > 7);
-        break;
-      case 'high-value':
-        result = result.filter(deal => Number(deal.value) >= 1000000);
-        break;
+      case 'my-deals': result = result.filter(deal => deal.assigned_to === 'leader'); break;
+      case 'high-value': result = result.filter(deal => Number(deal.value) >= 1000000); break;
+      case 'at-risk': result = result.filter(deal => deal.agingDays > 7 && !['won', 'lost'].includes(deal.stage)); break;
       default: break;
     }
-
     return result;
   }, [deals, searchTerm, activeFilter]);
 
-  // Group deals by stage
   const dealsByStage = useMemo(() => {
     return STAGES.reduce((acc, stageId) => {
       acc[stageId] = processedDeals.filter(d => d.stage === stageId);
@@ -143,8 +157,35 @@ export default function PipelineBoard({
     const newIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
 
     if (newIndex >= 0 && newIndex < STAGES.length) {
-      onUpdateDeal(dealId, { stage: STAGES[newIndex] });
+      const targetStage = STAGES[newIndex];
+      initiateMove(dealId, targetStage);
     }
+  };
+
+  const initiateMove = (dealId, targetStage) => {
+    if (targetStage === 'won' || targetStage === 'lost') {
+      setReasonModal({ open: true, dealId, targetStage });
+      setReasonText('');
+    } else {
+      onUpdateDeal(dealId, { 
+        stage: targetStage,
+        lastActivity: new Date().toISOString()
+      });
+    }
+  };
+
+  const submitReason = () => {
+    if (reasonText.trim().length < 5) {
+      alert("Please provide a more detailed reason.");
+      return;
+    }
+    onUpdateDeal(reasonModal.dealId, {
+      stage: reasonModal.targetStage,
+      lastActivity: new Date().toISOString(),
+      closingReason: reasonText,
+      closedAt: new Date().toISOString()
+    });
+    setReasonModal({ open: false, dealId: null, targetStage: null });
   };
 
   usePipelineKeyboard({
@@ -161,16 +202,15 @@ export default function PipelineBoard({
 
   return (
     <div className="h-full flex flex-col space-y-6">
-      {/* Search & Quick Filters Container */}
       <div className="flex flex-col md:flex-row md:items-center gap-4">
-          <div className="relative flex-1 max-w-xl group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={18} />
+          <div className="relative flex-1 group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
               type="text"
-              placeholder="Filter board matrix..."
+              placeholder="Search projects by name or client..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 h-12 bg-background/50 border border-border/40 rounded-2xl font-bold focus:ring-primary/20 transition-all text-sm"
+              className="w-full pl-12 pr-4 h-12 bg-slate-50 border-none rounded-full font-bold focus:ring-primary/20 transition-all text-sm"
             />
           </div>
 
@@ -180,62 +220,19 @@ export default function PipelineBoard({
                 key={filter.id}
                 onClick={() => setActiveFilter(filter.id)}
                 className={cn(
-                  "flex items-center gap-2 px-4 h-12 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border",
+                  "flex items-center gap-2 px-6 h-12 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all",
                   activeFilter === filter.id
-                    ? "bg-primary border-transparent text-primary-foreground shadow-lg shadow-primary/20 scale-105"
-                    : "bg-muted/30 text-muted-foreground border-border/40 hover:border-border/60"
+                    ? "bg-primary text-white shadow-lg"
+                    : "bg-slate-50 text-slate-400 hover:text-slate-900"
                 )}
               >
                 <filter.icon size={14} />
                 <span className="hidden lg:block">{filter.label}</span>
               </button>
             ))}
-            
-            <button
-              onClick={() => setShowKeyboardHelp(!showKeyboardHelp)}
-              className="w-12 h-12 flex items-center justify-center rounded-2xl bg-muted/30 border border-border/40 text-muted-foreground hover:text-foreground transition-all"
-              title="Keyboard Logic"
-            >
-              <Keyboard size={20} />
-            </button>
           </div>
       </div>
 
-      {/* Keyboard Help Panel */}
-      <AnimatePresence>
-        {showKeyboardHelp && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="p-6 rounded-3xl bg-primary/5 border border-primary/20 mb-4">
-              <div className="flex items-start justify-between">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="flex items-center gap-4">
-                    <kbd className="px-3 py-1.5 rounded-xl bg-background border border-border/60 text-[10px] font-black shadow-inner">SHIFT + →</kbd>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Advance Section</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <kbd className="px-3 py-1.5 rounded-xl bg-background border border-border/60 text-[10px] font-black shadow-inner">SHIFT + ←</kbd>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Revert Section</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <kbd className="px-3 py-1.5 rounded-xl bg-background border border-border/60 text-[10px] font-black shadow-inner">ESC</kbd>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Clear Focus</span>
-                  </div>
-                </div>
-                <button onClick={() => setShowKeyboardHelp(false)} className="text-muted-foreground hover:text-foreground">
-                  <ChevronUp size={20} className="rotate-45" />
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* HORIZONTAL SCROLL SURFACE */}
       <div 
         ref={scrollRef}
         className="flex-1 min-h-[600px] relative overflow-hidden custom-scrollbar-horizontal"
@@ -252,9 +249,8 @@ export default function PipelineBoard({
               <div
                 key={stageId}
                 className={cn(
-                  "flex-shrink-0 flex flex-col w-80 h-full rounded-[3rem] transition-all duration-500 border relative",
-                  stage.borderColor,
-                  isDropTarget ? "bg-primary/5 border-primary/40 scale-[1.01]" : "bg-muted/10 border-border/40"
+                  "flex-shrink-0 flex flex-col w-80 h-full rounded-[2.5rem] transition-all duration-300 border relative",
+                  isDropTarget ? "bg-slate-50 border-primary" : "bg-slate-50/50 border-slate-200/60"
                 )}
                 onDragOver={(e) => { e.preventDefault(); setDropTarget(stageId); }}
                 onDragLeave={() => setDropTarget(null)}
@@ -262,32 +258,27 @@ export default function PipelineBoard({
                   e.preventDefault();
                   setDropTarget(null);
                   const dealId = e.dataTransfer.getData('dealId');
-                  if (dealId) onUpdateDeal(dealId, { stage: stageId });
+                  if (dealId) initiateMove(dealId, stageId);
                 }}
               >
-                {/* Visual Glow */}
-                <div className={cn("absolute -top-10 left-1/2 -translate-x-1/2 w-40 h-40 blur-[80px] rounded-full opacity-10 transition-opacity pointer-events-none", stage.bgColor)} />
-
-                {/* Column Header */}
                 <div className="p-6 pb-2">
                    <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
-                         <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center border shadow-inner transition-transform", stage.bgColor, stage.borderColor, isDropTarget && "scale-110")}>
+                         <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center border bg-white shadow-sm", isDropTarget && "scale-110")}>
                             <span className={stage.color}>{stage.icon}</span>
                          </div>
                          <div>
-                            <h3 className="text-sm font-black uppercase tracking-widest leading-none mb-1">{stage.label}</h3>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{stageDeals.length} Signals</p>
+                            <h3 className="text-sm font-black uppercase tracking-widest leading-none mb-1 text-slate-900">{stage.label}</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{stageDeals.length} Deals</p>
                          </div>
                       </div>
                    </div>
-                   <div className="px-3 py-1.5 rounded-xl bg-background/40 border border-border/20 flex justify-between items-center">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Yield</p>
-                      <p className="text-[10px] font-black tabular-nums">{formatCurrency(totalValue)}</p>
+                   <div className="px-4 py-2 rounded-2xl bg-white border border-slate-100 flex justify-between items-center shadow-sm">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Total Value</p>
+                      <p className="text-[11px] font-black tabular-nums text-slate-900">{formatCurrency(totalValue)}</p>
                    </div>
                 </div>
 
-                {/* Scrollable Cards Area */}
                 <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 custom-scrollbar-thin">
                    <AnimatePresence mode="popLayout">
                       {stageDeals.map((deal) => (
@@ -305,14 +296,9 @@ export default function PipelineBoard({
                    </AnimatePresence>
                    
                    {stageDeals.length === 0 && (
-                     <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="h-40 border-2 border-dashed border-border/20 rounded-[2rem] flex flex-col items-center justify-center text-muted-foreground group/drop"
-                     >
-                        <Zap size={24} className="mb-2 opacity-20 group-hover/drop:opacity-100 group-hover/drop:text-primary transition-all duration-500" />
-                        <p className="text-[9px] font-black uppercase tracking-widest">Awaiting Input</p>
-                     </motion.div>
+                     <div className="h-40 border-2 border-dashed border-slate-200/60 rounded-[2rem] flex flex-col items-center justify-center text-slate-300">
+                        <p className="text-[9px] font-black uppercase tracking-widest">No Projects</p>
+                     </div>
                    )}
                 </div>
               </div>
@@ -320,11 +306,47 @@ export default function PipelineBoard({
           })}
         </div>
       </div>
+
+      {/* WIN/LOSS REASON MODAL */}
+      <Dialog open={reasonModal.open} onOpenChange={(val) => !val && setReasonModal({ ...reasonModal, open: false })}>
+        <DialogContent className="max-w-md rounded-[2rem] p-8">
+           <DialogHeader className="mb-6">
+              <div className={cn("w-16 h-16 rounded-[2rem] flex items-center justify-center mb-4 mx-auto", 
+                reasonModal.targetStage === 'won' ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-500"
+              )}>
+                {reasonModal.targetStage === 'won' ? <ThumbsUp size={32} /> : <ThumbsDown size={32} />}
+              </div>
+              <DialogTitle className="text-2xl font-black text-center uppercase tracking-tight">
+                {reasonModal.targetStage === 'won' ? 'Congratulations!' : 'Project Unresolved'}
+              </DialogTitle>
+              <p className="text-xs text-center text-slate-500 mt-2">
+                Please provide a brief reason for closing this deal. This helps us improve our sales strategy.
+              </p>
+           </DialogHeader>
+           
+           <div className="space-y-4">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Closing Reason</label>
+              <Textarea 
+                placeholder={reasonModal.targetStage === 'won' ? "e.g. Better pricing than competitors, Strong relationship..." : "e.g. Budget cuts, Chose competitor X..."}
+                value={reasonText}
+                onChange={(e) => setReasonText(e.target.value)}
+                className="min-h-[120px] rounded-2xl bg-slate-50 border-none resize-none p-4 font-medium"
+              />
+           </div>
+
+           <DialogFooter className="mt-8 flex gap-3">
+              <Button variant="ghost" className="flex-1 rounded-full" onClick={() => setReasonModal({ open: false, dealId: null, targetStage: null })}>Cancel</Button>
+              <Button className={cn("flex-1 rounded-full py-6", reasonModal.targetStage === 'won' ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700")} onClick={submitReason}>
+                Confirm Closing
+              </Button>
+           </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-const DealCard = ({ 
+const DealCard = forwardRef(({ 
   deal, 
   isSelected, 
   isPinned, 
@@ -332,16 +354,16 @@ const DealCard = ({
   onClick, 
   onPin,
   onMove 
-}) => {
-  const isHighRisk = deal.risk?.level === 'high';
-  const isPriority = deal.probability >= 80;
+}, ref) => {
+  const isStagnant = deal.agingDays > 7;
 
   return (
     <motion.div
+      ref={ref}
       layout
-      initial={{ opacity: 0, scale: 0.9 }}
+      initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
+      exit={{ opacity: 0, scale: 0.95 }}
       draggable
       onDragStart={(e) => {
         e.dataTransfer.setData('dealId', deal.id);
@@ -353,79 +375,58 @@ const DealCard = ({
         onClick(deal);
       }}
       className={cn(
-        "group relative p-4 rounded-[2rem] border transition-all duration-500 cursor-grab active:cursor-grabbing hover:shadow-2xl hover:shadow-primary/10",
-        isSelected ? "bg-primary/10 border-primary ring-1 ring-primary/50" : "bg-card border-border/40 hover:border-primary/40",
-        isPinned && "border-amber-500/50 bg-amber-500/[0.02] shadow-lg shadow-amber-500/5",
-        isHighRisk && !isSelected && "border-destructive/40 bg-destructive/[0.02]"
+        "group relative p-5 rounded-[1.8rem] border transition-all duration-300 cursor-grab active:cursor-grabbing hover:shadow-lg",
+        isSelected ? "bg-white border-primary shadow-md" : "bg-white border-slate-200/60 hover:border-slate-300",
+        isPinned && "bg-amber-50/30 border-amber-200",
+        isStagnant && !isSelected && !['won', 'lost'].includes(deal.stage) && "bg-rose-50/10 border-rose-100"
       )}
     >
-      {/* Visual Accent */}
-      <div className={cn(
-        "absolute -left-[1px] top-8 w-1 h-8 rounded-r-full transition-opacity",
-        isPriority ? "bg-emerald-500" : isHighRisk ? "bg-destructive" : "bg-primary",
-        isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-      )} />
-
-      {/* Content */}
-      <div className="space-y-3">
+      <div className="space-y-4">
          <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
-               <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center text-[10px] font-black text-white shadow-lg", deal.assigned_to === 'leader' ? 'bg-primary' : 'bg-indigo-600')}>
+               <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-sm", deal.assigned_to === 'leader' ? 'bg-slate-900 shadow-slate-900/10' : 'bg-slate-400')}>
                   {(deal.assigned_to || 'U').charAt(0)}
                </div>
                <div>
-                  <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-1">Entity</p>
-                  <p className="text-[10px] font-black truncate max-w-[120px]">{deal.company || 'Unknown Consortium'}</p>
+                  <p className="text-[10px] font-bold text-slate-400 leading-none mb-1 uppercase tracking-tight">{deal.company || 'Private Client'}</p>
                </div>
             </div>
-            <div className="flex items-center gap-1">
-               {isPinned && <Star size={12} className="text-amber-500 fill-current" />}
-               {isHighRisk && <ShieldAlert size={12} className="text-destructive" />}
+            {isPinned && <Star size={12} className="text-amber-500 fill-current" />}
+         </div>
+
+         <div className="space-y-0.5">
+            <h4 className="text-xs font-black text-slate-900 leading-snug group-hover:text-primary transition-colors">{deal.title}</h4>
+            <div className="flex items-center gap-2">
+               <p className="text-[9px] font-bold text-slate-400">Aging: <span className={cn(deal.agingDays > 5 ? "text-amber-600" : "text-emerald-600")}>{deal.agingDays}d</span></p>
+               {isStagnant && !['won', 'lost'].includes(deal.stage) && <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />}
             </div>
          </div>
 
-         <h4 className="text-sm font-black leading-tight group-hover:text-primary transition-colors">{deal.title}</h4>
-
-         <div className="pt-3 border-t border-border/40 flex justify-between items-end">
+         <div className="pt-3 border-t border-slate-100 flex justify-between items-end">
             <div>
-               <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mb-1">Capital Asset</p>
-               <p className="text-xs font-black tabular-nums">{formatCurrency(deal.value)}</p>
+               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Value</p>
+               <p className="text-xs font-black text-slate-900">{formatCurrency(deal.value)}</p>
             </div>
             <div className="text-right">
-               <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mb-1">Yield {deal.probability}%</p>
-               <div className="h-1.5 w-16 bg-muted rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${deal.probability}%` }}
-                    className={cn(
-                      "h-full rounded-full",
-                      deal.probability >= 70 ? "bg-emerald-500" : deal.probability >= 40 ? "bg-amber-500" : "bg-destructive"
-                    )}
+               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">{deal.probability}% Confidence</p>
+               <div className="h-1 w-12 bg-slate-100 rounded-full overflow-hidden">
+                  <div 
+                    className={cn("h-full rounded-full transition-all duration-1000", deal.probability >= 70 ? "bg-emerald-500" : deal.probability >= 40 ? "bg-amber-500" : "bg-rose-500")}
+                    style={{ width: `${deal.probability}%` }}
                   />
                </div>
             </div>
          </div>
       </div>
 
-      {/* ACTION OVERLAY */}
-      <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-[2px] rounded-[2rem] flex items-center justify-center gap-2">
-         <button onClick={(e) => { e.stopPropagation(); onPin(); }} className="w-10 h-10 rounded-xl bg-card border border-border/40 flex items-center justify-center hover:bg-amber-500 hover:text-white transition-all">
-            <Star size={16} fill={isPinned ? "currentColor" : "none"} />
-         </button>
-         <button onClick={(e) => { e.stopPropagation(); onMove('left'); }} className="w-10 h-10 rounded-xl bg-card border border-border/40 flex items-center justify-center hover:bg-primary hover:text-white transition-all">
-            <ArrowLeft size={16} />
-         </button>
-         <button onClick={(e) => { e.stopPropagation(); onMove('right'); }} className="w-10 h-10 rounded-xl bg-card border border-border/40 flex items-center justify-center hover:bg-primary hover:text-white transition-all">
-            <ArrowRight size={16} />
-         </button>
-         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-            <div className="px-3 py-1 bg-black text-white text-[8px] font-black uppercase tracking-widest rounded-full border border-white/20 whitespace-nowrap">
-               <GripVertical size={10} className="inline mr-1" /> Tactical Control
-            </div>
-         </div>
+      {/* GENTLE OVERLAY */}
+      <div className="absolute inset-0 bg-white/40 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[1px] rounded-[1.8rem] flex items-center justify-center gap-2">
+         <button onClick={(e) => { e.stopPropagation(); onPin(); }} className="w-9 h-9 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center hover:bg-amber-50 hover:text-amber-600"><Star size={16} fill={isPinned ? "currentColor" : "none"} /></button>
+         <button onClick={(e) => { e.stopPropagation(); onMove('left'); }} className="w-9 h-9 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center hover:bg-slate-900 hover:text-white"><ArrowLeft size={16} /></button>
+         <button onClick={(e) => { e.stopPropagation(); onMove('right'); }} className="w-9 h-9 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center hover:bg-slate-900 hover:text-white"><ArrowRight size={16} /></button>
       </div>
     </motion.div>
   );
-};
+});
 
-DealCard.displayName = "DealCard";
+DealCard.displayName = 'DealCard';

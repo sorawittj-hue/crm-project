@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "../../lib/utils"
 import { motion } from "framer-motion"
 
-const Tabs = React.forwardRef(({ className, ...props }, ref) => (
+const Tabs = React.forwardRef(({ className, value, onValueChange, ...props }, ref) => (
   <div ref={ref} className={cn("inline-flex h-12 items-center justify-center rounded-2xl bg-muted/50 p-1 text-muted-foreground", className)} {...props} />
 ))
 Tabs.displayName = "Tabs"

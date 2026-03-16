@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Sparkles, Plus, Cpu, ScanLine } from 'lucide-react';
+import { Sparkles, Plus, FileText, ScanLine } from 'lucide-react';
 import { Button } from '../ui/Button';
 import DealDetailSidebar from './DealDetailSidebar';
 import PDFImporter from './PDFImporter';
@@ -72,9 +72,8 @@ export default function MonthlyPipeline({
         lastMonthTotal={lastMonthTotal}
       />
 
-      {/* PIPELINE BOARD WITH NATURAL SCROLL */}
-      <div className="flex-1 min-h-[600px] bg-muted/10 rounded-[3rem] p-8 border border-border/40 overflow-hidden relative group">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+      {/* PIPELINE BOARD */}
+      <div className="flex-1 min-h-[600px] bg-white rounded-[3rem] p-8 border border-slate-200/60 overflow-hidden relative shadow-sm">
         <div className="relative z-10 h-full">
           <PipelineBoard
             deals={filteredDeals}
@@ -86,45 +85,45 @@ export default function MonthlyPipeline({
         </div>
       </div>
 
-      {/* ADVANCED TOOLS BAR */}
-      <div className="flex items-center justify-between bg-card p-4 rounded-[2rem] border border-border/40 shadow-xl shadow-black/5">
+      {/* ACTION BAR */}
+      <div className="flex items-center justify-between bg-white p-6 rounded-[2.5rem] border border-slate-200/60 shadow-lg shadow-slate-200/20">
         <div className="flex items-center gap-4">
-           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <Cpu size={20} />
+           <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400">
+              <FileText size={22} />
            </div>
            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-1">Neural Integration</p>
-              <p className="text-xs font-bold">Planetary Signal Extractor Ready</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-none mb-1">Advanced Tools</p>
+              <p className="text-xs font-bold text-slate-900">Import Quotation & AI Intelligence</p>
            </div>
         </div>
         
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
-            className="h-12 btn-zenith-outline px-6 group"
+            className="h-12 rounded-full px-6 group hover:bg-slate-50 font-bold text-xs uppercase tracking-widest"
             onClick={() => setIsScanOpen(true)}
           >
-            <Sparkles size={18} className="mr-2 text-primary group-hover:animate-pulse" /> AI Extract
+            <Sparkles size={18} className="mr-2 text-primary" /> Register via AI
           </Button>
 
           <Button
-            className="h-12 btn-zenith-primary px-8"
+            className="h-12 rounded-full px-8 shadow-lg shadow-primary/20 font-bold text-xs uppercase tracking-widest"
             onClick={() => onAddDeal()}
           >
-            <Plus size={20} className="mr-2" /> New Deal
+            <Plus size={20} className="mr-2" /> New Project
           </Button>
         </div>
       </div>
 
       <Dialog open={isScanOpen} onOpenChange={setIsScanOpen}>
-        <DialogContent className="glass-card max-w-xl p-0 overflow-hidden">
+        <DialogContent className="max-w-xl p-0 overflow-hidden rounded-[2.5rem]">
           <div className="p-8">
-            <DialogHeader className="mb-8 text-center">
-              <div className="w-16 h-16 rounded-[2rem] bg-primary/20 flex items-center justify-center text-primary mx-auto mb-4 animate-reveal">
+            <DialogHeader className="mb-10 text-center">
+              <div className="w-16 h-16 rounded-[2rem] bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
                  <ScanLine size={32} />
               </div>
-              <DialogTitle className="text-3xl font-black uppercase tracking-tighter premium-gradient-text">SIGNAL EXTRACTION</DialogTitle>
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mt-2">Neural PDF Analysis & Data Mining</p>
+              <DialogTitle className="text-3xl font-black text-slate-900 tracking-tight uppercase">AI QUOTE SCANNER</DialogTitle>
+              <p className="text-xs text-slate-500 mt-2">Automatically extract deal details from your PDF quotation files.</p>
             </DialogHeader>
             
             <PDFImporter

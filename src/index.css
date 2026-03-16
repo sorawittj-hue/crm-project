@@ -4,88 +4,52 @@
 
 @layer base {
   :root {
-    /* Premium Zenith Light Theme */
-    --background: 210 20% 98%;
-    --foreground: 220 40% 10%;
+    /* Premium Minimal Cream Theme */
+    --background: 35 20% 99%; /* Soft Off-White */
+    --foreground: 25 20% 15%; /* Deep Charcoal with warmth */
 
     --card: 0 0% 100%;
-    --card-foreground: 220 40% 10%;
+    --card-foreground: 25 20% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 40% 10%;
+    --popover-foreground: 25 20% 15%;
 
-    --primary: 160 84% 39%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 35 35% 35%; /* Sophisticated Bronze */
+    --primary-foreground: 35 30% 98%;
 
-    --secondary: 210 20% 90%;
-    --secondary-foreground: 220 40% 10%;
+    --secondary: 40 40% 96%; /* Cream */
+    --secondary-foreground: 35 35% 25%;
 
-    --muted: 210 20% 94%;
-    --muted-foreground: 215 15% 45%;
+    --muted: 40 30% 94%;
+    --muted-foreground: 25 10% 45%;
 
-    --accent: 190 90% 45%;
+    --accent: 45 40% 60%; /* Gold highlight */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 50% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 160 84% 39%;
+    --border: 35 20% 90%;
+    --input: 35 20% 90%;
+    --ring: 35 35% 35%;
 
-    --radius: 1.25rem;
+    --radius: 1.5rem;
 
     /* Font Families */
-    --font-sans: 'Nunito', 'Quicksand', 'Comfortaa', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-display: 'Outfit', system-ui, sans-serif;
 
     /* Semantic Soft Colors */
-    --success: 142 71% 45%;
+    --success: 142 50% 45%;
     --warning: 38 92% 50%;
     --error: 0 84% 60%;
 
-    /* Branding Accents */
-    --zenith-emerald: 160 84% 39%;
-    --zenith-blue: 217 91% 60%;
-    --zenith-purple: 262 83% 58%;
-    --zenith-gold: 45 93% 47%;
+    /* Premium Accents */
+    --cream-light: 40 40% 98%;
+    --cream-medium: 40 30% 94%;
+    --gold-premium: 45 45% 45%;
   }
 
-  .dark {
-    /* Ultra-Premium Zenith Dark Theme */
-    --background: 222 47% 4%;
-    --foreground: 210 40% 98%;
-    
-    --card: 222 47% 6%;
-    --card-foreground: 210 40% 98%;
-    
-    --popover: 222 47% 6%;
-    --popover-foreground: 210 40% 98%;
-    
-    --primary: 160 84% 45%;
-    --primary-foreground: 210 40% 98%;
-    
-    --secondary: 222 47% 12%;
-    --secondary-foreground: 210 40% 98%;
-    
-    --muted: 222 47% 12%;
-    --muted-foreground: 215 20% 65%;
-    
-    --accent: 190 90% 50%;
-    --accent-foreground: 210 40% 98%;
-    
-    --border: 222 47% 15%;
-    --input: 222 47% 15%;
-    --ring: 160 84% 45%;
-  }
-
-  .zenith-theme {
-    /* Extreme Performance Mode */
-    --background: 230 50% 2%;
-    --card: 230 50% 4%;
-    --border: 230 50% 8%;
-    --primary: 190 100% 50%;
-  }
 }
 
 @layer base {
@@ -201,5 +165,27 @@
 }
 
 .btn-zenith-outline {
-  @apply btn-zenith border border-border hover:bg-muted;
+  @apply btn-zenith border border-border hover:bg-muted font-bold;
+}
+
+/* World-Class Premium Utilities */
+.bronze-glow {
+  box-shadow: 0 0 30px -10px hsl(var(--primary) / 0.5);
+}
+
+.cream-card {
+  background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--secondary)) 100%);
+  @apply border border-primary/10 shadow-sm;
+}
+
+.gold-badge {
+  @apply bg-accent/10 text-accent-foreground border-accent/20 border font-black uppercase text-[8px] tracking-[0.2em] px-2 py-0.5 rounded-full;
+}
+
+.soft-shadow {
+  box-shadow: 0 20px 40px -12px rgba(35, 30, 20, 0.08);
+}
+
+.hover-lift {
+  @apply transition-transform duration-500 hover:-translate-y-2;
 }

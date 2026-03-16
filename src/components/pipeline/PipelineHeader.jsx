@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Target, Activity, Zap, ShieldCheck } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, Activity } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Card, CardContent } from '../ui/Card';
 import { motion } from 'framer-motion';
@@ -48,19 +48,18 @@ export default function PipelineHeader({
       {/* HEADER SECTION */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-           <div className="w-1.5 h-12 bg-primary rounded-full shadow-[0_0_20px_rgba(var(--primary),0.8)]" />
+           <div className="w-1.5 h-10 bg-primary/40 rounded-full" />
            <div>
-              <h2 className="text-3xl font-black uppercase tracking-tighter italic">Tactical Board</h2>
-              <div className="flex items-center gap-2 mt-1">
-                 <ShieldCheck size={12} className="text-primary" />
-                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Sector Synchronization: Online</p>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900">Pipeline Performance</h2>
+              <div className="flex items-center gap-2 mt-0.5">
+                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Global Overview • Real-time Data</p>
               </div>
            </div>
         </div>
 
         {/* TIME NAVIGATION */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-muted/30 border border-border/40 p-1 rounded-2xl">
+          <div className="flex items-center gap-1 bg-white border border-border/60 p-1 rounded-full shadow-sm">
              {MONTHS.map((m) => {
                const isActive = selectedMonth === m.value;
                const isToday = currentMonth === m.value && currentYear === selectedYear;
@@ -69,11 +68,11 @@ export default function PipelineHeader({
                    key={m.value}
                    onClick={() => onMonthChange(m.value)}
                    className={cn(
-                     "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                     "px-3.5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all",
                      isActive 
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105" 
-                      : "text-muted-foreground hover:text-foreground hover:bg-white/5",
-                     isToday && !isActive && "text-primary border-b border-primary/40 rounded-none"
+                      ? "bg-primary text-white shadow-md shadow-primary/10" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-slate-50",
+                     isToday && !isActive && "text-primary bg-primary/5"
                    )}
                  >
                    {m.short}
@@ -82,23 +81,25 @@ export default function PipelineHeader({
              })}
           </div>
           
-          <select 
-            value={selectedYear} 
-            onChange={(e) => onYearChange(Number(e.target.value))}
-            className="h-10 bg-muted/30 border border-border/40 rounded-2xl px-3 text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer"
-          >
-            {[currentYear - 1, currentYear, currentYear + 1].map(y => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
+          <div className="relative">
+            <select 
+              value={selectedYear} 
+              onChange={(e) => onYearChange(Number(e.target.value))}
+              className="h-10 bg-white border border-border/60 rounded-full px-4 pr-8 text-[10px] font-bold uppercase tracking-wider outline-none cursor-pointer appearance-none shadow-sm"
+            >
+              {[currentYear - 1, currentYear, currentYear + 1].map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
 
           {(selectedMonth !== currentMonth || selectedYear !== currentYear) && (
             <button
               onClick={handleResetToCurrent}
-              className="h-10 w-10 flex items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-primary-foreground transition-all"
-              title="Back to Current Month"
+              className="h-10 w-10 flex items-center justify-center rounded-full bg-primary/5 text-primary border border-primary/10 hover:bg-primary hover:text-white transition-all shadow-sm"
+              title="Return to Today"
             >
-              <Zap size={18} />
+              <Target size={18} />
             </button>
           )}
         </div>
@@ -106,76 +107,74 @@ export default function PipelineHeader({
 
       {/* KPI GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="premium-card bg-gradient-to-br from-primary/10 to-transparent border-primary/20 lg:col-span-2">
+        <Card className="premium-card bg-white border-primary/10 shadow-sm lg:col-span-2 hover:shadow-md">
           <CardContent className="p-0">
             <div className="flex justify-between items-start mb-6">
                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Sector Goal Progress</p>
-                  <h3 className="text-4xl font-black tabular-nums">{formatValue(monthlyTotal)}</h3>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Monthly Sales Target</p>
+                  <h3 className="text-4xl font-black text-slate-900 tracking-tight">{formatValue(monthlyTotal)}</h3>
                </div>
-               <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center text-primary shadow-inner">
+               <div className="w-14 h-14 rounded-2xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10">
                   <Target size={28} />
                </div>
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-4">
                <div className="flex justify-between items-end">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Yield Efficiency</span>
-                  <span className="text-2xl font-black text-primary">{Math.round(progress)}%</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary/80">Progress Status</span>
+                  <span className="text-2xl font-black text-slate-900">{Math.round(progress)}%</span>
                </div>
-               <div className="h-3 bg-muted rounded-full overflow-hidden border border-white/5">
+               <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min(progress, 100)}%` }}
                     transition={{ duration: 1.5, ease: "easeOut" }}
-                    className="h-full bg-primary relative"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-                  </motion.div>
+                    className="h-full bg-primary relative rounded-full"
+                  />
                </div>
-               <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  <span>Threshold 0.0</span>
+               <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                  <span>Current Revenue</span>
                   <span>Target: {formatValue(monthlyTarget)}</span>
                </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="premium-card">
+        <Card className="premium-card bg-white shadow-sm hover:shadow-md">
            <CardContent className="p-0">
               <div className="flex justify-between items-start mb-6">
                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Momentum Trend</p>
-                    <h3 className="text-3xl font-black tabular-nums">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Growth Index</p>
+                    <h3 className="text-3xl font-black text-slate-900 tracking-tight">
                        {trend > 0 ? '+' : ''}{trend.toFixed(1)}%
                     </h3>
                  </div>
                  <div className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center shadow-inner",
-                    isPositiveTrend ? "bg-emerald-500/20 text-emerald-500" : "bg-destructive/20 text-destructive"
+                    "w-12 h-12 rounded-2xl flex items-center justify-center border",
+                    isPositiveTrend ? "bg-emerald-50 border-emerald-100 text-emerald-600" : "bg-rose-50 border-rose-100 text-rose-600"
                  )}>
                     {isPositiveTrend ? <TrendingUp size={24} /> : <TrendingDown size={24} />}
                  </div>
               </div>
               <p className="text-[10px] font-medium text-muted-foreground leading-relaxed uppercase tracking-wider">
-                 Performance delta relative to previous temporal cycle ({formatValue(lastMonthTotal)}).
+                 Revenue change compared to last month ({formatValue(lastMonthTotal)}).
               </p>
            </CardContent>
         </Card>
 
-        <Card className="premium-card border-blue-500/20">
+        <Card className="premium-card bg-white shadow-sm hover:shadow-md">
            <CardContent className="p-0">
               <div className="flex justify-between items-start mb-6">
                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Active Operatives</p>
-                    <h3 className="text-3xl font-black tabular-nums">{monthlyCount} Units</h3>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Active Deals</p>
+                    <h3 className="text-3xl font-black text-slate-900 tracking-tight">{monthlyCount} Projects</h3>
                  </div>
-                 <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-500 shadow-inner">
+                 <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
                     <Activity size={24} />
                  </div>
               </div>
               <p className="text-[10px] font-medium text-muted-foreground leading-relaxed uppercase tracking-wider">
-                 Concurrent high-value operations active in the signal matrix. Total lifetime assets: {totalDeals}.
+                 Deals currently in progress for this month. Lifetime deals: {totalDeals}.
               </p>
            </CardContent>
         </Card>

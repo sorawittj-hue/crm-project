@@ -5,11 +5,6 @@ export const useAppStore = create((set) => ({
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
   closeSidebar: () => set({ isSidebarOpen: false }),
   
-  theme: localStorage.getItem('theme') || 'dark', // Default to dark for high performance feel
-  setTheme: (theme) => {
-    localStorage.setItem('theme', theme);
-    set({ theme });
-  },
 
   // War Room Goals
   leaderTarget: 7000000,
