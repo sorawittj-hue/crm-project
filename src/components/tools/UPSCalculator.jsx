@@ -20,7 +20,7 @@ export default function UPSCalculator() {
     const pf = Number(inputs.powerFactor) || 0.9;
     const sysVolt = Number(inputs.systemVoltage) || 12;
 
-    if (powerWatt === 0 || timeMinutes === 0) return;
+    if (powerWatt <= 0 || timeMinutes <= 0) return;
 
     // 1. Calculate required VA (Volt-Ampere)
     const requiredVA = Math.ceil((powerWatt / pf) * 1.25); // 25% safety margin

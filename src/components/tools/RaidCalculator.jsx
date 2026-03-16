@@ -59,15 +59,15 @@ export default function RaidCalculator() {
       <div className="grid md:grid-cols-3 gap-6">
         <div className="space-y-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Drive Capacity</label>
-          <div className="relative">
+          <div className="relative flex items-center">
              <Input 
                type="number" 
                placeholder="1000" 
                value={inputs.driveCapacityGB} 
                onChange={(e) => setInputs({ ...inputs, driveCapacityGB: e.target.value })} 
-               className="rounded-xl border-slate-200 h-12 pr-12" 
+               className="rounded-xl border-slate-200 h-12 pr-12 w-full" 
              />
-             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">GB</span>
+             <span className="absolute right-4 text-[10px] font-black text-slate-400">GB</span>
           </div>
         </div>
         <div className="space-y-2">
