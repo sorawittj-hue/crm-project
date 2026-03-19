@@ -126,6 +126,50 @@ export async function addDeal(newDeal) {
 }
 
 /**
+ * Create multiple deals
+ */
+export async function addMultipleDeals(deals) {
+  try {
+    if (!Array.isArray(deals) || deals.length === 0) {
+      throw new Error('At least one deal is required');
+    }
+
+    const dealsData = deals.map(newDeal => ({
+      title: newDeal.title?.trim() || 'Untitled Deal',
+      company: newDeal.company?.trim() || null,
+      value: Number(newDeal.value) || 0,
+      stage: newDeal.stage || 'lead',
+      probability: newDeal.probability || 0,
+      assigned_to: newDeal.assigned_to || 'leader',
+      contact: newDeal.contact?.trim() || null,
+      contact_email: newDeal.contact_email?.trim() || null,
+      contact_phone: newDeal.contact_phone?.trim() || null,
+      description: newDeal.description?.trim() || null,
+      source: newDeal.source || 'inbound',
+      priority: newDeal.priority || 'medium',
+      expected_close_date: newDeal.expected_close_date || null,
+      last_activity: newDeal.last_activity || new Date().toISOString(),
+      next_step: newDeal.next_step || null,
+      tags: newDeal.tags || [],
+      metadata: newDeal.metadata || {},
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }));
+
+    const { data, error } = await supabase
+      .from('deals')
+      .insert(dealsData)
+      .select();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error creating multiple deals:', error);
+    throw new Error('Failed to create multiple deals: ' + error.message);
+  }
+}
+
+/**
  * Delete multiple deals
  */
 export async function deleteDeals(ids) {

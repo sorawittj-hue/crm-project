@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchDeals, updateDeal, addDeal, deleteDeals } from '../services/apiDeals';
+import { fetchDeals, updateDeal, addDeal, addMultipleDeals, deleteDeals } from '../services/apiDeals';
 import { useToast } from '../components/ui/Toast';
 
 export function useDeals() {
@@ -39,6 +39,22 @@ export function useAddDeal() {
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to create deal');
+    },
+  });
+}
+
+export function useAddMultipleDeals() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: addMultipleDeals,
+    onSuccess: (_, deals) => {
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
+      toast.success(`Successfully added ${deals.length} deal(s)`);
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to add multiple deals');
     },
   });
 }

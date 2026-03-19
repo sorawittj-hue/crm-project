@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Upload, AlertCircle, CheckCircle2, FileText, Sliders } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { motion, AnimatePresence } from 'framer-motion';
+import { GoogleGenAI, Type } from '@google/genai';
 import { Button } from '../ui/Button';
 import { cn } from '../../lib/utils';
 
@@ -33,55 +34,74 @@ const PDFImporter = ({ onDataExtracted }) => {
         }
     };
 
-    const deterministicSearch = (text, key) => {
-        const patterns = {
-            company: [/Company:\s*([^\n]+)/i, /Name:\s*([^\n]+)/i, /([A-Z][a-z]+ [A-Z].+)/],
-            total: [/Total:\s*([\d,.ผ]+)/i, /Amount:\s*([\d,.ผ]+)/i],
-            contact: [/Contact:\s*([^\n]+)/i, /Inquiry:\s*([^\n]+)/i]
-        };
-        const match = text.match(patterns[key]?.[0] || /./);
-        return match ? match[1]?.trim() : null;
-    };
-
-    const processFile = async (file) => {
-        if (!file) return;
-        if (file.type !== 'application/pdf') {
-            setError("Please upload a valid PDF file.");
+    const processFiles = async (fileList) => {
+        if (!fileList || fileList.length === 0) return;
+        const validFiles = Array.from(fileList).filter(f => f.type === 'application/pdf');
+        if (validFiles.length === 0) {
+            setError("Please upload valid PDF files.");
             return;
         }
+
         setIsProcessing(true);
         setError(null);
         setSuccess(false);
 
         try {
-            const text = await extractTextFromPDF(file);
-            
-            // Logic Rule Engine for extraction
-            // We use simple regex logic instead of AI
-            const company = deterministicSearch(text, 'company') || "Unknown Enterprise";
-            const contact = deterministicSearch(text, 'contact') || "Direct Inquiry";
-            const rawValue = deterministicSearch(text, 'total') || "0";
-            const cleanValue = parseFloat(rawValue.replace(/,/g, '')) || 500000; // Mock default for demo
+            const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+            const extractedDeals = [];
 
-            const ruleResult = {
-              contact,
-              company,
-              value: cleanValue,
-              title: `Procurement: ${company}`,
-              probability: 50,
-              sourceFilename: file.name
-            };
+            for (const file of validFiles) {
+                const text = await extractTextFromPDF(file);
+                
+                const prompt = `Extract the following details from this quote/proposal PDF text:
+                - company: The name of the client company or target enterprise.
+                - contact: The name of the contact person or reference.
+                - value: The total numeric value/amount of the quote.
+                - title: A short descriptive title for the deal based on the context (e.g. 'Server Upgrade for X').
 
+                PDF Text:
+                ${text}`;
+
+                const response = await ai.models.generateContent({
+                    model: 'gemini-2.5-flash',
+                    contents: prompt,
+                    config: {
+                        responseMimeType: 'application/json',
+                        responseSchema: {
+                            type: Type.OBJECT,
+                            properties: {
+                                company: { type: Type.STRING },
+                                contact: { type: Type.STRING },
+                                value: { type: Type.NUMBER },
+                                title: { type: Type.STRING }
+                            },
+                            required: ["company", "contact", "value", "title"]
+                        }
+                    }
+                });
+
+                const result = JSON.parse(response.text);
+
+                extractedDeals.push({
+                    contact: result.contact || "Direct Inquiry",
+                    company: result.company || "Unknown Enterprise",
+                    value: result.value || 0,
+                    title: result.title || `Procurement: ${result.company || "Unknown"}`,
+                    probability: 50,
+                    sourceFilename: file.name,
+                    stage: 'proposal'
+                });
+            }
+
+            setSuccess(true);
+            setIsProcessing(false);
             setTimeout(() => {
-                setSuccess(true);
-                setIsProcessing(false);
-                setTimeout(() => {
-                    onDataExtracted(ruleResult);
-                    setSuccess(false);
-                }, 1500);
-            }, 2000);
+                onDataExtracted(extractedDeals);
+                setSuccess(false);
+            }, 1500);
         } catch (err) {
-            setError(err.message || "Diagnostic error during rule-based extraction.");
+            console.error("Extraction error:", err);
+            setError(err.message || "Diagnostic error during AI extraction.");
             setIsProcessing(false);
         }
     };
@@ -96,20 +116,20 @@ const PDFImporter = ({ onDataExtracted }) => {
                 )}
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
-                onDrop={(e) => { e.preventDefault(); setIsDragging(false); processFile(e.dataTransfer.files[0]); }}
+                onDrop={(e) => { e.preventDefault(); setIsDragging(false); processFiles(e.dataTransfer.files); }}
             >
-                <input type="file" accept="application/pdf" className="hidden" ref={fileInputRef} onChange={(e) => processFile(e.target.files[0])} />
+                <input type="file" accept="application/pdf" className="hidden" multiple ref={fileInputRef} onChange={(e) => processFiles(e.target.files)} />
 
                 <AnimatePresence mode="wait">
                     {isProcessing ? (
                         <motion.div key="proc" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                             <div className="w-12 h-12 border-4 border-slate-900/20 border-t-slate-900 rounded-full animate-spin mx-auto" />
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-900 animate-pulse">Running Logic Rule Set...</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-900 animate-pulse">Running AI Extraction...</p>
                         </motion.div>
                     ) : success ? (
                         <motion.div key="succ" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4">
                             <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto"><CheckCircle2 size={32} className="text-emerald-500" /></div>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Rule Matching Complete</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Extraction Complete</p>
                         </motion.div>
                     ) : (
                         <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
@@ -117,9 +137,9 @@ const PDFImporter = ({ onDataExtracted }) => {
                                 <FileText size={40} className="text-slate-300" />
                             </div>
                             <div className="space-y-2">
-                                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Logic Importer</h3>
+                                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">AI Importer</h3>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest max-w-[250px] mx-auto">
-                                    Drop your Express-ERP PDF here for Rule Engine synchronization.
+                                    Drop your quote PDFs here for automatic AI synchronization.
                                 </p>
                             </div>
                             <Button onClick={() => fileInputRef.current?.click()} className="rounded-full px-10 h-14 shadow-lg shadow-slate-900/10 bg-slate-900 text-white font-black text-xs uppercase tracking-widest">
@@ -138,7 +158,7 @@ const PDFImporter = ({ onDataExtracted }) => {
             
             <div className="mt-6 flex items-center justify-center gap-2">
                <Sliders size={12} className="text-slate-400" />
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rule Engine Health: NOMINAL</p>
+               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gemini Engine Status: NOMINAL</p>
             </div>
         </div>
     );

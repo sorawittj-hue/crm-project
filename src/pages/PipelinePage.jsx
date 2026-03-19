@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useDeals, useUpdateDeal, useAddDeal, useDeleteDeals } from '../hooks/useDeals';
+import { useDeals, useUpdateDeal, useAddDeal, useAddMultipleDeals, useDeleteDeals } from '../hooks/useDeals';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
 import { Plus, Filter, Search, ListTree, Loader2, Sliders, ScanLine } from 'lucide-react';
 import PDFImporter from '../components/pipeline/PDFImporter';
@@ -25,6 +25,7 @@ export default function PipelinePage() {
   const { data: deals, isLoading, error } = useDeals();
   const updateDealMutation = useUpdateDeal();
   const addDealMutation = useAddDeal();
+  const addMultipleDealsMutation = useAddMultipleDeals();
   const deleteDealsMutation = useDeleteDeals();
 
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -256,14 +257,18 @@ export default function PipelinePage() {
               <div className="w-16 h-16 rounded-[2rem] bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
                  <ScanLine size={32} />
               </div>
-              <DialogTitle className="text-3xl font-black text-slate-900 tracking-tight uppercase">Logic Quote Scanner</DialogTitle>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2 px-10">Deterministic extraction of deal details via Rule Engine synchronization.</p>
+              <DialogTitle className="text-3xl font-black text-slate-900 tracking-tight uppercase">AI Quote Scanner</DialogTitle>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2 px-10">Automatic AI extraction of deal details from multiple quote PDFs.</p>
             </DialogHeader>
             
             <PDFImporter
               onDataExtracted={(data) => { 
                 setIsScanOpen(false); 
-                addDealMutation.mutate(data); 
+                if (Array.isArray(data)) {
+                  addMultipleDealsMutation.mutate(data);
+                } else {
+                  addDealMutation.mutate(data); 
+                }
               }}
               onClose={() => setIsScanOpen(false)}
             />
