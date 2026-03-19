@@ -25,7 +25,7 @@ export const PipelineCard = React.memo(React.forwardRef(({
   onUpdateDeal,
   teamMembers
 }, ref) => {
-  const daysInStage = daysSince(deal.lastActivity || deal.createdAt);
+  const daysInStage = daysSince(deal.last_activity || deal.lastActivity || deal.createdAt || deal.created_at);
   const isStale = daysInStage >= STAGE_AGING_THRESHOLD.warning;
   const isCritical = daysInStage >= STAGE_AGING_THRESHOLD.critical;
 
@@ -142,7 +142,7 @@ export const PipelineCard = React.memo(React.forwardRef(({
               className="h-8 w-8 rounded-full bg-primary hover:bg-primary/80"
               onClick={(e) => {
                 e.stopPropagation();
-                onUpdateDeal(deal.id, { lastActivity: new Date().toISOString() });
+                onUpdateDeal(deal.id, { last_activity: new Date().toISOString() });
               }}
               title="Log Activity"
             >

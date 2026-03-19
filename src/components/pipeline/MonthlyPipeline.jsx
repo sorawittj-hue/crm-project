@@ -68,7 +68,7 @@ export default function MonthlyPipeline({
       />
 
       {/* PIPELINE BOARD */}
-      <div className="flex-1 min-h-[600px] bg-white rounded-[3rem] p-8 border border-slate-200/60 overflow-hidden relative shadow-sm">
+      <div className="h-[70vh] min-h-[600px] bg-white rounded-[3rem] p-8 border border-slate-200/60 overflow-hidden relative shadow-sm">
         <div className="relative z-10 h-full">
           <PipelineBoard
             deals={filteredDeals}

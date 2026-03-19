@@ -169,7 +169,7 @@ export default function PipelineBoard({
     } else {
       onUpdateDeal(dealId, { 
         stage: targetStage,
-        lastActivity: new Date().toISOString()
+        last_activity: new Date().toISOString()
       });
     }
   };
@@ -181,9 +181,9 @@ export default function PipelineBoard({
     }
     onUpdateDeal(reasonModal.dealId, {
       stage: reasonModal.targetStage,
-      lastActivity: new Date().toISOString(),
-      closingReason: reasonText,
-      closedAt: new Date().toISOString()
+      last_activity: new Date().toISOString(),
+      actual_close_date: new Date().toISOString()
+      // closingReason is omitted since it might not have a corresponding column and causes 400 error
     });
     setReasonModal({ open: false, dealId: null, targetStage: null });
   };

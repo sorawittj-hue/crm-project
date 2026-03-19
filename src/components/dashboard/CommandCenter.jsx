@@ -97,7 +97,7 @@ const TeamUnitStatus = ({ name, role, won, target, color, icon_type, activeNow }
 
 // Urgent Deal Node
 const UrgentDealNode = React.memo(({ deal, onClick }) => {
-  const days = daysSince(deal.lastActivity || deal.createdAt);
+  const days = daysSince(deal.last_activity || deal.lastActivity || deal.createdAt || deal.created_at);
   const isUrgent = days >= 2;
   const isCritical = days >= 5;
 
@@ -226,8 +226,8 @@ const CommandCenter = ({
     const totalWonValue = wonDeals.reduce((s, d) => s + (d.value || 0), 0);
     const activePipeline = deals.filter(d => !['won', 'lost'].includes(d.stage));
     const urgentDeals = activePipeline
-      .filter(d => daysSince(d.lastActivity || d.createdAt) >= 2)
-      .sort((a, b) => daysSince(b.lastActivity || b.createdAt) - daysSince(a.lastActivity || a.createdAt))
+      .filter(d => daysSince(d.last_activity || d.lastActivity || d.createdAt || d.created_at) >= 2)
+      .sort((a, b) => daysSince(b.last_activity || b.lastActivity || b.createdAt || b.created_at) - daysSince(a.last_activity || a.lastActivity || a.createdAt || a.created_at))
       .slice(0, 8);
 
     const pct = Math.round((totalWonValue / monthlyGoal) * 100);

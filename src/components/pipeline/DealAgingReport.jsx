@@ -16,7 +16,8 @@ const DealAgingReport = ({ deals }) => {
     deals.forEach(deal => {
       if (deal.stage === 'won' || deal.stage === 'lost') return;
       
-      const lastActivity = deal.lastActivity ? new Date(deal.lastActivity) : new Date(deal.createdAt);
+      const lastActivityStr = deal.last_activity || deal.lastActivity || deal.created_at || deal.createdAt;
+      const lastActivity = lastActivityStr ? new Date(lastActivityStr) : new Date();
       const daysSince = Math.floor((now - lastActivity) / (1000 * 60 * 60 * 24));
       
       if (daysSince <= 3) stats.fresh.push({ ...deal, daysSince });

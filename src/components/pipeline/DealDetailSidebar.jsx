@@ -266,14 +266,14 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
                    <Button 
                      variant="outline" 
                      className="h-12 bg-white rounded-2xl font-bold uppercase tracking-widest text-[9px]"
-                     onClick={() => onUpdate(deal.id, { lastActivity: new Date().toISOString() })}
+                     onClick={() => onUpdate(deal.id, { last_activity: new Date().toISOString() })}
                    >
                      <Phone size={14} className="mr-2" /> Log Call
                    </Button>
                    <Button 
                      variant="outline" 
                      className="h-12 bg-white rounded-2xl font-bold uppercase tracking-widest text-[9px]"
-                     onClick={() => onUpdate(deal.id, { lastActivity: new Date().toISOString() })}
+                     onClick={() => onUpdate(deal.id, { last_activity: new Date().toISOString() })}
                    >
                      <Mail size={14} className="mr-2" /> Log Email
                    </Button>
