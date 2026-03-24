@@ -17,11 +17,28 @@ export function useUpdateDeal() {
 
   return useMutation({
     mutationFn: updateDeal,
+    // Optimistic update for instant UI feedback
+    onMutate: async (updatedDeal) => {
+      await queryClient.cancelQueries({ queryKey: ['deals'] });
+      const previousDeals = queryClient.getQueryData(['deals']);
+
+      queryClient.setQueryData(['deals'], (old) => {
+        if (!old) return old;
+        return old.map(deal =>
+          deal.id === updatedDeal.id ? { ...deal, ...updatedDeal } : deal
+        );
+      });
+
+      return { previousDeals };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
-      toast.success('Deal updated successfully');
     },
-    onError: (error) => {
+    onError: (error, _, context) => {
+      // Rollback on error
+      if (context?.previousDeals) {
+        queryClient.setQueryData(['deals'], context.previousDeals);
+      }
       toast.error(error.message || 'Failed to update deal');
     },
   });

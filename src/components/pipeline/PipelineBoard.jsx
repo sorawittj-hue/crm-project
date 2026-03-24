@@ -2,17 +2,16 @@ import { useState, useMemo, forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Filter, Star, TrendingUp, AlertTriangle, 
-  Zap,
+  Zap, Users,
   ArrowRight, ArrowLeft, ThumbsUp, ThumbsDown
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { formatFullCurrency as formatCurrency } from '../../lib/formatters';
 import { useHorizontalScroll, usePipelineKeyboard } from '../../hooks/useHorizontalScroll';
 import { calculateRiskScore } from '../../services/aiDeals';
 import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { Textarea } from '../ui/Textarea';
-
-const formatCurrency = (n) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(n || 0);
 
 const STAGE_CONFIG = {
   lead: { 
@@ -74,27 +73,8 @@ const QUICK_FILTERS = [
   { id: 'at-risk', label: 'Stagnant', icon: AlertTriangle },
 ];
 
-function Users({ size, className }) {
-  return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width={size} 
-      height={size} 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      className={className}
-    >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
+
+
 
 export default function PipelineBoard({ 
   deals = [], 

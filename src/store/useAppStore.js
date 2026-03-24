@@ -1,26 +1,32 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-export const useAppStore = create((set) => ({
-  isSidebarOpen: false,
-  toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
-  closeSidebar: () => set({ isSidebarOpen: false }),
-  
+export const useAppStore = create(
+  persist(
+    (set) => ({
+      // Sidebar
+      isSidebarOpen: false,
+      toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+      closeSidebar: () => set({ isSidebarOpen: false }),
 
-  // War Room Goals
-  leaderTarget: 7000000,
-  memberTarget: 3000000,
-  monthlyTarget: 10000000,
-  
-  setTargets: (leader, member) => set({ 
-    leaderTarget: leader, 
-    memberTarget: member, 
-    monthlyTarget: leader + member 
-  }),
+      // Monthly Target (synced with settings via React Query, this is the local override)
+      monthlyTarget: 10000000,
+      setMonthlyTarget: (value) => set({ monthlyTarget: Number(value) || 10000000 }),
 
-  zenithMode: localStorage.getItem('zenithMode') === 'true',
-  toggleZenithMode: () => set((state) => {
-    const newVal = !state.zenithMode;
-    localStorage.setItem('zenithMode', String(newVal));
-    return { zenithMode: newVal };
-  }),
-}));
+      // Zenith Mode (dark theme toggle)
+      zenithMode: false,
+      toggleZenithMode: () => set((state) => ({ zenithMode: !state.zenithMode })),
+
+      // Global Search
+      globalSearchTerm: '',
+      setGlobalSearchTerm: (term) => set({ globalSearchTerm: term }),
+    }),
+    {
+      name: 'zenith-crm-store',
+      partialize: (state) => ({
+        zenithMode: state.zenithMode,
+        monthlyTarget: state.monthlyTarget,
+      }),
+    }
+  )
+);

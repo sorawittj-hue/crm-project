@@ -3,6 +3,7 @@ import { useDeals, useUpdateDeal, useAddDeal, useAddMultipleDeals, useDeleteDeal
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
 import { Plus, Filter, Search, ListTree, Loader2, Sliders, ScanLine } from 'lucide-react';
 import PDFImporter from '../components/pipeline/PDFImporter';
+import { STAGES } from '../lib/constants';
 
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -11,15 +12,6 @@ import { cn } from '../lib/utils';
 import { Card } from '../components/ui/Card';
 
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../components/ui/Dialog';
-
-const STAGES = [
-  { id: 'lead', label: 'New Lead' },
-  { id: 'contact', label: 'Meeting' },
-  { id: 'proposal', label: 'Quotation' },
-  { id: 'negotiation', label: 'Closing' },
-  { id: 'won', label: 'Won' },
-  { id: 'lost', label: 'Lost' },
-];
 
 export default function PipelinePage() {
   const { data: deals, isLoading, error } = useDeals();
@@ -52,7 +44,7 @@ export default function PipelinePage() {
     if (stageFilter.length > 0) result = result.filter(d => stageFilter.includes(d.stage));
 
     result = [...result].sort((a, b) => {
-      if (sortBy === 'createdAt') return new Date(b.createdAt) - new Date(a.createdAt);
+      if (sortBy === 'createdAt') return new Date(b.created_at || 0) - new Date(a.created_at || 0);
       if (sortBy === 'value') return Number(b.value) - Number(a.value);
       return 0;
     });
@@ -64,7 +56,6 @@ export default function PipelinePage() {
     addDealMutation.mutate({
         ...newDeal,
         value: Number(newDeal.value) || 0,
-        createdAt: new Date().toISOString()
     });
     setIsAddModalOpen(false);
     setNewDeal({ title: '', company: '', value: '', stage: 'lead' });

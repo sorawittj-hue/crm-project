@@ -5,6 +5,9 @@ import { useTeam } from '../hooks/useTeam';
 import { Card } from '../components/ui/Card';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
+import { formatCurrency } from '../lib/formatters';
+import { STAGE_COLORS } from '../lib/constants';
+import CustomTooltip from '../components/ui/CustomTooltip';
 import {
   ResponsiveContainer, Area, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, PieChart, Pie, Cell,
@@ -13,34 +16,9 @@ import {
 import {
   TrendingUp, Target, Users, BarChart3, 
   ArrowUpRight, ArrowDownRight, Loader2,
-  Activity, DollarSign, Zap, Globe, PieChart as PieIcon,
+  Activity, DollarSign, Zap, PieChart as PieIcon,
   ShieldCheck
 } from 'lucide-react';
-
-const formatCurrency = (amount) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', notation: 'compact' }).format(amount || 0);
-const formatFullCurrency = (amount) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(amount || 0);
-
-const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white border border-slate-100 p-4 rounded-[1.5rem] shadow-2xl backdrop-blur-md bg-white/90">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{label}</p>
-        <div className="space-y-1.5">
-          {payload.map((entry, index) => (
-            <div key={index} className="flex items-center justify-between gap-8">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{entry.name}</span>
-              </div>
-              <p className="text-sm font-black text-slate-900 tabular-nums">{formatFullCurrency(entry.value)}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-  return null;
-};
 
 const MetricCard = ({ title, value, subValue, icon: Icon, trend, color = "primary" }) => {
     const colorStyles = {
@@ -118,7 +96,7 @@ export default function AnalyticsPage() {
     }
 
     deals.forEach(deal => {
-      const dealDate = new Date(deal.createdAt);
+      const dealDate = new Date(deal.created_at);
       const mIdx = revenueStream.findIndex(m => m.month === dealDate.getMonth() && m.year === dealDate.getFullYear());
       if (mIdx !== -1) {
         if (deal.stage === 'won') {
@@ -136,14 +114,6 @@ export default function AnalyticsPage() {
     // Stage Distribution
     const stageData = [];
     const stageOrder = ['lead', 'contact', 'proposal', 'negotiation', 'won', 'lost'];
-    const stageColors = {
-      lead: '#6366f1',
-      contact: '#8b5cf6',
-      proposal: '#ec4899',
-      negotiation: '#f97316',
-      won: '#10b981',
-      lost: '#ef4444'
-    };
 
     stageOrder.forEach(stage => {
       const stageDeals = deals.filter(d => d.stage === stage);
@@ -151,7 +121,7 @@ export default function AnalyticsPage() {
         name: stage.toUpperCase(),
         value: stageDeals.length,
         totalValue: stageDeals.reduce((sum, d) => sum + Number(d.value || 0), 0),
-        color: stageColors[stage]
+        color: STAGE_COLORS[stage]
       });
     });
 
@@ -162,6 +132,16 @@ export default function AnalyticsPage() {
     const lostDeals = deals.filter(d => d.stage === 'lost');
     const winRate = (wonDeals.length + lostDeals.length) > 0 ? Math.round((wonDeals.length / (wonDeals.length + lostDeals.length)) * 100) : 0;
 
+    // Real system health metrics
+    const avgDealValue = wonDeals.length > 0 ? Math.round(wonDeals.reduce((s, d) => s + Number(d.value || 0), 0) / wonDeals.length) : 0;
+    const avgDaysToClose = wonDeals.length > 0 
+      ? Math.round(wonDeals.reduce((s, d) => {
+          const created = new Date(d.created_at);
+          const closed = new Date(d.actual_close_date || d.updated_at || d.created_at);
+          return s + Math.max(0, (closed - created) / 86400000);
+        }, 0) / wonDeals.length) 
+      : 0;
+
     return {
       revenueStream,
       stageData,
@@ -170,7 +150,10 @@ export default function AnalyticsPage() {
       growth,
       winRate,
       wonCount: wonDeals.length,
-      activeCount: activeDeals.length
+      activeCount: activeDeals.length,
+      avgDealValue,
+      avgDaysToClose,
+      totalDeals: deals.length
     };
   }, [deals, monthlyTarget, timeRange]);
 
@@ -270,7 +253,7 @@ export default function AnalyticsPage() {
                 <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} debounce={50}>
                   <ComposedChart data={analytics?.revenueStream}>
                     <defs>
-                      <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
+                      <linearGradient id="colorActualAnalytics" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#D97706" stopOpacity={0.2} />
                         <stop offset="95%" stopColor="#D97706" stopOpacity={0} />
                       </linearGradient>
@@ -296,7 +279,7 @@ export default function AnalyticsPage() {
                         name="Yield" 
                         stroke="#D97706" 
                         strokeWidth={4} 
-                        fill="url(#colorActual)" 
+                        fill="url(#colorActualAnalytics)" 
                         animationDuration={1500}
                     />
                     <Bar 
@@ -345,12 +328,12 @@ export default function AnalyticsPage() {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip content={<CustomTooltip formatter={(v) => v} />} />
+                    <Tooltip content={<CustomTooltip />} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="text-center">
-                        <p className="text-3xl font-black text-slate-900">{analytics?.activeCount + (analytics?.wonCount || 0)}</p>
+                        <p className="text-3xl font-black text-slate-900">{analytics?.totalDeals || 0}</p>
                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Assets</p>
                     </div>
                 </div>
@@ -369,30 +352,30 @@ export default function AnalyticsPage() {
             </div>
         </Card>
 
-        {/* Bottom Full: Advanced System Feedback (Page Views Logic - simplified) */}
+        {/* Bottom Full: Real Performance Metrics */}
         <Card className="lg:col-span-3 p-10 rounded-[3rem] bg-slate-900 text-white border-0 shadow-2xl relative overflow-hidden group">
             <div className="flex items-center justify-between mb-8 relative z-10">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-[1.5rem] bg-white/10 flex items-center justify-center text-primary"><Zap size={22} fill="currentColor" /></div>
                     <div>
-                        <h3 className="text-xl font-black text-white uppercase tracking-tight italic">Intelligence Engine Health</h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Real-time system telemetry & operative engagement</p>
+                        <h3 className="text-xl font-black text-white uppercase tracking-tight italic">Performance Insights</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Real-time deal analytics & conversion metrics</p>
                     </div>
                 </div>
                 <div className="flex gap-4">
                     <div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 flex items-center gap-3">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Neural Link: ACTIVE</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">System: ACTIVE</p>
                     </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
                 {[
-                    { label: "Strike Efficiency", val: "94.2%", icon: Globe },
-                    { label: "Sync Latency", val: "18ms", icon: Activity },
-                    { label: "Active Sessions", val: "24 Operatives", icon: Users },
-                    { label: "Data Integrity", val: "99.9%", icon: ShieldCheck }
+                    { label: "Win Rate", val: `${analytics?.winRate || 0}%`, icon: ShieldCheck },
+                    { label: "Avg Deal Size", val: formatCurrency(analytics?.avgDealValue), icon: Activity },
+                    { label: "Avg Days to Close", val: `${analytics?.avgDaysToClose || 0} Days`, icon: Users },
+                    { label: "Total Deals", val: `${analytics?.totalDeals || 0} Assets`, icon: Target }
                 ].map((m, i) => (
                     <div key={i} className="p-6 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
                         <div className="flex items-center gap-3 mb-2">
@@ -410,5 +393,3 @@ export default function AnalyticsPage() {
     </motion.div>
   );
 }
-
-// End of File

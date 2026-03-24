@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, ListTree, Users, BarChart3,
@@ -8,9 +8,12 @@ import {
   ChevronRight, Target, ArrowUpCircle
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
+import { useDeals } from '../../hooks/useDeals';
+import { useSettings } from '../../hooks/useSettings';
 import { cn } from '../../lib/utils';
+import { formatCurrency } from '../../lib/formatters';
 import { Button } from '../ui/Button';
-import { Dialog, DialogHeader, DialogTitle } from '../ui/Dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/Dialog';
 import { Input } from '../ui/Input';
 
 const sidebarVariants = {
@@ -19,11 +22,22 @@ const sidebarVariants = {
 };
 
 export default function AppLayout() {
-  const { isSidebarOpen, closeSidebar, toggleSidebar, zenithMode, toggleZenithMode, monthlyTarget, setMonthlyTarget } = useAppStore();
+  const { isSidebarOpen, closeSidebar, toggleSidebar, zenithMode, toggleZenithMode, monthlyTarget, setMonthlyTarget, globalSearchTerm, setGlobalSearchTerm } = useAppStore();
+  const { data: deals } = useDeals();
+  const { data: settings } = useSettings();
+  const navigate = useNavigate();
   const location = useLocation();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
+  const [localTarget, setLocalTarget] = useState(monthlyTarget);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+
+  // Sync monthly target from DB settings on first load
+  useEffect(() => {
+    if (settings?.monthly_target && settings.monthly_target !== monthlyTarget) {
+      setMonthlyTarget(settings.monthly_target);
+      setLocalTarget(settings.monthly_target);
+    }
+  }, [settings, monthlyTarget, setMonthlyTarget]);
 
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
@@ -38,6 +52,23 @@ export default function AppLayout() {
       document.documentElement.classList.remove('zenith-theme');
     }
   }, [zenithMode]);
+
+  // Calculate real goal progress
+  const goalProgress = useMemo(() => {
+    if (!deals || !monthlyTarget) return 0;
+    const now = new Date();
+    const wonThisMonth = deals
+      .filter(d => d.stage === 'won' && new Date(d.created_at).getMonth() === now.getMonth() && new Date(d.created_at).getFullYear() === now.getFullYear())
+      .reduce((s, d) => s + Number(d.value || 0), 0);
+    return Math.min(100, Math.round((wonThisMonth / monthlyTarget) * 100));
+  }, [deals, monthlyTarget]);
+
+  // Header search navigation
+  const handleSearch = (e) => {
+    if (e.key === 'Enter' && globalSearchTerm.trim()) {
+      navigate('/pipeline');
+    }
+  };
 
   const navItems = [
     { to: '/command', icon: LayoutDashboard, label: 'Command Center' },
@@ -63,7 +94,7 @@ export default function AppLayout() {
               "shadow-[20px_0_40px_-20px_rgba(0,0,0,0.02)]"
             )}
           >
-            {/* Elegant Header */}
+            {/* Header */}
             <div className="h-28 flex items-center justify-between border-b border-slate-100/10 mb-6">
               <div className="flex items-center gap-3.5">
                 <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
@@ -79,7 +110,7 @@ export default function AppLayout() {
               </button>
             </div>
 
-            {/* Premium Navigation */}
+            {/* Navigation */}
             <nav className="flex-1 space-y-2 py-4">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.to;
@@ -113,23 +144,23 @@ export default function AppLayout() {
               })}
             </nav>
 
-            {/* Bottom Insight Section */}
+            {/* Bottom Insight Section — Real Goal Progress */}
             <div className="py-8 space-y-6 border-t border-slate-100">
                <div className="bg-slate-50/50 p-5 rounded-[2rem] border border-slate-100/50 space-y-4">
                   <div className="flex items-center justify-between">
-                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Global Goal</p>
-                     <p className="text-[10px] font-black text-primary">High Yield</p>
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Monthly Goal</p>
+                     <p className="text-[10px] font-black text-primary">{goalProgress}%</p>
                   </div>
                   <div className="space-y-2">
                      <div className="flex justify-between items-end">
-                        <p className="text-lg font-black text-slate-900 leading-none">10M <span className="text-[9px] text-slate-400">THB</span></p>
-                        <ArrowUpCircle size={16} className="text-emerald-500" />
+                        <p className="text-lg font-black text-slate-900 leading-none">{formatCurrency(monthlyTarget)}</p>
+                        <ArrowUpCircle size={16} className={goalProgress >= 100 ? "text-emerald-500" : "text-slate-300"} />
                      </div>
                      <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
                         <motion.div 
                           initial={{ width: 0 }}
-                          animate={{ width: '65%' }}
-                          className="h-full bg-slate-900 rounded-full"
+                          animate={{ width: `${goalProgress}%` }}
+                          className={cn("h-full rounded-full", goalProgress >= 75 ? "bg-emerald-500" : goalProgress >= 50 ? "bg-primary" : "bg-slate-900")}
                         />
                      </div>
                   </div>
@@ -147,7 +178,7 @@ export default function AppLayout() {
                   <Button 
                     variant="ghost" 
                     className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400"
-                    onClick={() => setIsSettingsOpen(true)}
+                    onClick={() => { setLocalTarget(monthlyTarget); setIsSettingsOpen(true); }}
                   >
                     <Sliders size={18} />
                   </Button>
@@ -159,20 +190,27 @@ export default function AppLayout() {
 
       {/* MAIN CONTENT SURFACE */}
       <div className="flex-1 flex flex-col relative overflow-hidden bg-white shadow-[0_0_80px_rgba(0,0,0,0.02)]">
-        {/* Dynamic Header */}
+        {/* Dynamic Header with working search */}
         <header className="h-20 flex items-center justify-between px-10 z-20 border-b border-slate-50">
           <div className="flex items-center gap-6">
             <button onClick={toggleSidebar} className="lg:hidden p-2 text-slate-400">
               <Menu size={22} />
             </button>
-            <div className="hidden md:flex items-center gap-3 text-slate-300">
-               <Search size={18} />
-               <span className="text-xs font-bold uppercase tracking-widest">Portfolio Index</span>
+            <div className="hidden md:flex items-center gap-3">
+               <Search size={18} className="text-slate-300" />
+               <input
+                 type="text"
+                 placeholder="Search portfolio..."
+                 value={globalSearchTerm}
+                 onChange={(e) => setGlobalSearchTerm(e.target.value)}
+                 onKeyDown={handleSearch}
+                 className="text-xs font-bold uppercase tracking-widest text-slate-700 bg-transparent border-none outline-none placeholder:text-slate-300 w-48"
+               />
             </div>
           </div>
 
           <div className="flex items-center gap-6">
-            <button onClick={() => setShowNotifications(!showNotifications)} className="p-2 text-slate-400 relative">
+            <button className="p-2 text-slate-400 relative">
               <Bell size={20} />
               <div className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full border-2 border-white" />
             </button>
@@ -206,9 +244,9 @@ export default function AppLayout() {
         </main>
       </div>
 
-      {/* Settings Modal */}
+      {/* Settings Modal — Fixed with DialogContent and working setMonthlyTarget */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-8 bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 max-w-sm mx-auto">
+        <DialogContent className="max-w-sm rounded-[2.5rem] p-8 bg-white border-0 shadow-2xl">
           <DialogHeader className="mb-6 text-center">
             <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight uppercase">Configurations</DialogTitle>
           </DialogHeader>
@@ -217,16 +255,22 @@ export default function AppLayout() {
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Monthly Target (THB)</label>
               <Input
                 type="number"
-                defaultValue={monthlyTarget}
-                onChange={(e) => setMonthlyTarget(Number(e.target.value))}
+                value={localTarget}
+                onChange={(e) => setLocalTarget(Number(e.target.value))}
                 className="h-14 bg-slate-50 border-none rounded-2xl font-black text-lg text-center"
               />
             </div>
-            <Button onClick={() => setIsSettingsOpen(false)} className="w-full h-14 rounded-full font-black uppercase tracking-widest shadow-xl shadow-primary/20">
+            <Button 
+              onClick={() => {
+                setMonthlyTarget(localTarget);
+                setIsSettingsOpen(false);
+              }} 
+              className="w-full h-14 rounded-full font-black uppercase tracking-widest shadow-xl shadow-primary/20"
+            >
               Apply Changes
             </Button>
           </div>
-        </motion.div>
+        </DialogContent>
       </Dialog>
     </div>
   );

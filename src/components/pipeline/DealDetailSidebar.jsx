@@ -10,10 +10,9 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Badge } from '../ui/Badge';
 import { cn } from '../../lib/utils';
+import { formatFullCurrency as formatCurrency } from '../../lib/formatters';
 import { callGeminiAPI } from '../../services/ai';
 import { Card, CardContent } from '../ui/Card';
-
-const formatCurrency = (n) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(n || 0);
 
 export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);

@@ -1,45 +1,46 @@
-export async function callGeminiAPI(prompt) {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) {
-    console.error("API Key Missing");
-    return null;
+import { GoogleGenAI } from '@google/genai';
+
+let aiClient = null;
+
+function getClient() {
+  if (!aiClient) {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error("Gemini API Key Missing — set VITE_GEMINI_API_KEY in .env");
+      return null;
+    }
+    aiClient = new GoogleGenAI({ apiKey });
   }
+  return aiClient;
+}
+
+/**
+ * Call Gemini API using the official SDK
+ * @param {string} prompt - The prompt to send
+ * @returns {object|string|null} Parsed JSON or text response
+ */
+export async function callGeminiAPI(prompt) {
+  const client = getClient();
+  if (!client) return null;
 
   try {
-    const listResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-    const listData = await listResponse.json();
-
-    if (listData.error) throw new Error(listData.error.message);
-
-    const validModel = listData.models?.find(m =>
-      m.supportedGenerationMethods?.includes("generateContent") &&
-      (m.name.includes("gemini") || m.name.includes("pro") || m.name.includes("flash"))
-    );
-
-    if (!validModel) throw new Error("No compatible Gemini models found.");
-
-    const modelName = validModel.name.replace("models/", "");
-    
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    const response = await client.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: prompt,
     });
 
-    const data = await response.json();
-    if (data.error) throw new Error(data.error.message);
+    const text = response.text;
+    if (!text) return null;
 
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (text) {
-      const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      try {
-        return JSON.parse(jsonStr);
-      } catch {
-        return { text }; // Fallback if not JSON
-      }
+    // Try parsing as JSON
+    const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    try {
+      return JSON.parse(jsonStr);
+    } catch {
+      return { text }; // Fallback if not JSON
     }
-  } catch {
-    console.error("AI Error");
+  } catch (error) {
+    console.error("AI Error:", error.message);
     return null;
   }
 }

@@ -9,11 +9,12 @@ import PipelinePage from './pages/PipelinePage';
 import CustomersPage from './pages/CustomersPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import ToolsPage from './pages/ToolsPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000, // 1 minute
+      staleTime: 5 * 60 * 1000, // 5 minutes (consistent across app)
       refetchOnWindowFocus: false,
     },
   },
@@ -32,6 +33,7 @@ function App() {
             <Route path="dashboard" element={<Navigate replace to="/command" />} />
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="tools" element={<ToolsPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
       </Router>

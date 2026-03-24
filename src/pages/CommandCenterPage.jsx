@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDeals } from '../hooks/useDeals';
 import { useTeam } from '../hooks/useTeam';
 import { useSettings } from '../hooks/useSettings';
@@ -6,6 +7,8 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
+import { formatCurrency, formatFullCurrency, daysSince } from '../lib/formatters';
+import CustomTooltip from '../components/ui/CustomTooltip';
 import {
   Sliders, Loader2, TrendingUp, 
   ShieldCheck, Crosshair, Users, AlertCircle,
@@ -17,33 +20,8 @@ import {
   CartesianGrid, Tooltip as RechartsTooltip
 } from 'recharts';
 
-const formatCurrency = (n) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', notation: 'compact', maximumFractionDigits: 1 }).format(n || 0);
-const formatFullCurrency = (n) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(n || 0);
-const daysSince = (dateStr) => Math.floor((Date.now() - new Date(dateStr || Date.now())) / 86400000);
-
-const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white border border-slate-100 p-4 rounded-[1.5rem] shadow-2xl backdrop-blur-md bg-white/90">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{label}</p>
-        <div className="space-y-1.5">
-          {payload.map((entry, index) => (
-            <div key={index} className="flex items-center justify-between gap-8">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{entry.name}</span>
-              </div>
-              <p className="text-sm font-black text-slate-900 tabular-nums">{formatFullCurrency(entry.value)}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-  return null;
-};
-
 export default function CommandCenterPage() {
+  const navigate = useNavigate();
   const { data: deals, isLoading: dealsLoading } = useDeals();
   const { data: teamMembers, isLoading: teamLoading } = useTeam();
   const { data: settings, isLoading: settingsLoading } = useSettings();
@@ -60,7 +38,7 @@ export default function CommandCenterPage() {
     const currentYear = now.getFullYear();
 
     // Stats
-    const wonDealsThisMonth = deals.filter(d => d.stage === 'won' && new Date(d.createdAt).getMonth() === currentMonth);
+    const wonDealsThisMonth = deals.filter(d => d.stage === 'won' && new Date(d.created_at).getMonth() === currentMonth);
     const totalWonValue = wonDealsThisMonth.reduce((s, d) => s + (Number(d.value) || 0), 0);
     const activePipeline = deals.filter(d => !['won', 'lost'].includes(d.stage));
     const totalPipelineValue = activePipeline.reduce((s, d) => s + (Number(d.value) || 0), 0);
@@ -80,7 +58,7 @@ export default function CommandCenterPage() {
     }
 
     deals.forEach(deal => {
-      const dealDate = new Date(deal.createdAt);
+      const dealDate = new Date(deal.created_at);
       const mIdx = months.findIndex(m => m.month === dealDate.getMonth() && m.year === dealDate.getFullYear());
       if (mIdx !== -1) {
         if (deal.stage === 'won') months[mIdx].actual += Number(deal.value || 0);
@@ -93,9 +71,17 @@ export default function CommandCenterPage() {
 
     // Strategy Logic
     const urgentDeals = activePipeline
-      .filter(d => daysSince(d.lastActivity || d.createdAt) >= 3)
+      .filter(d => daysSince(d.last_activity || d.created_at) >= 3)
       .sort((a,b) => (Number(b.value) * (b.probability/100)) - (Number(a.value) * (a.probability/100)))
       .slice(0, 3);
+
+    // Last month comparison
+    const prevMonthIdx = months.length >= 2 ? months.length - 2 : 0;
+    const currentMonthActual = months[months.length - 1]?.actual || 0;
+    const prevMonthActual = months[prevMonthIdx]?.actual || 0;
+    const growthPercent = prevMonthActual > 0 
+      ? ((currentMonthActual - prevMonthActual) / prevMonthActual * 100).toFixed(1)
+      : 0;
 
     return { 
         totalWonValue, 
@@ -103,7 +89,8 @@ export default function CommandCenterPage() {
         achievementPercent, 
         activeCount: activePipeline.length,
         urgentDeals,
-        revenueStream: months
+        revenueStream: months,
+        growthPercent
     };
   }, [deals, monthlyGoal]);
 
@@ -111,16 +98,19 @@ export default function CommandCenterPage() {
     if (!deals) return;
     setIsGeneratingPlan(true);
     setTimeout(() => {
-        // Logic Rule Engine
         const active = deals.filter(d => !['won', 'lost'].includes(d.stage));
+        const staleCount = active.filter(d => daysSince(d.last_activity || d.created_at) >= 3).length;
+        const closingCount = active.filter(d => d.stage === 'negotiation').length;
+        const leadCount = active.filter(d => d.stage === 'lead').length;
+
         const mandates = [
-            { id: 1, title: 'Asset Reclamation', desc: `Follow up with ${stats?.urgentDeals?.length} high-value stale assets in the next 24h.`, urgency: 'high', icon: Clock },
-            { id: 2, title: 'Closing Sequence', desc: `Move ${active.filter(d => d.stage === 'negotiation').length} deals from Closing to Won to hit ${stats?.achievementPercent + 15}% target.`, urgency: 'high', icon: Crosshair },
-            { id: 3, title: 'Pipeline Injection', desc: "New lead volume is down 20%. Inject 10+ new prospects into the Qualification sector.", urgency: 'medium', icon: Sliders }
+            { id: 1, title: 'Asset Reclamation', desc: `Follow up with ${staleCount} stale assets (inactive 3+ days) in the next 24h.`, urgency: staleCount > 0 ? 'high' : 'medium', icon: Clock },
+            { id: 2, title: 'Closing Sequence', desc: `Move ${closingCount} deals from Closing to Won. Current achievement: ${stats?.achievementPercent}%.`, urgency: closingCount > 0 ? 'high' : 'medium', icon: Crosshair },
+            { id: 3, title: 'Pipeline Injection', desc: `Currently ${leadCount} leads in qualification. ${leadCount < 5 ? 'Inject 10+ new prospects.' : 'Pipeline health is stable.'}`, urgency: leadCount < 5 ? 'medium' : 'low', icon: Sliders }
         ];
         setStrategicMandates(mandates);
         setIsGeneratingPlan(false);
-    }, 1500);
+    }, 800);
   }, [deals, stats]);
 
   useEffect(() => {
@@ -155,7 +145,7 @@ export default function CommandCenterPage() {
             <Button variant="ghost" onClick={handleGenerateRules} className="h-14 px-8 rounded-2xl bg-white border border-slate-100 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50">
                {isGeneratingPlan ? <Loader2 size={16} className="animate-spin mr-2" /> : <RefreshCw size={16} className="mr-2" />} Recalculate Rules
             </Button>
-            <Button onClick={() => window.location.href='/pipeline'} className="h-14 px-10 rounded-2xl bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-slate-900/20 hover:scale-105 transition-transform">
+            <Button onClick={() => navigate('/pipeline')} className="h-14 px-10 rounded-2xl bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-slate-900/20 hover:scale-105 transition-transform">
                <Sliders size={16} className="mr-2" /> Deploy Strategy
             </Button>
         </div>
@@ -171,8 +161,12 @@ export default function CommandCenterPage() {
                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1">Monthly Yield Goal</h3>
                     <p className="text-4xl font-black text-white tabular-nums tracking-tighter">{formatFullCurrency(monthlyGoal)}</p>
                   </div>
-                  <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full text-[9px] font-black border border-emerald-500/20">
-                     <TrendingUp size={12} /> +12.4% VS LAST MO
+                  <div className={cn("flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black border",
+                    Number(stats?.growthPercent) >= 0 
+                      ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" 
+                      : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                  )}>
+                     <TrendingUp size={12} /> {stats?.growthPercent > 0 ? '+' : ''}{stats?.growthPercent}% VS LAST MO
                   </div>
                </div>
                
@@ -338,8 +332,7 @@ export default function CommandCenterPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
              {teamMembers?.map((m, i) => {
-                // This is simplified, usually we'd filter deals per team member
-                const mWon = deals?.filter(d => d.assigned_to === m.id && new Date(d.createdAt).getMonth() === new Date().getMonth() && d.stage === 'won').reduce((s,d) => s + Number(d.value), 0) || 0;
+                const mWon = deals?.filter(d => d.assigned_to === m.id && new Date(d.created_at).getMonth() === new Date().getMonth() && d.stage === 'won').reduce((s,d) => s + Number(d.value), 0) || 0;
                 const mPercent = Math.round((mWon / (m.goal || 2500000)) * 100);
 
                 return (
@@ -384,5 +377,3 @@ export default function CommandCenterPage() {
     </div>
   );
 }
-
-// End of File
