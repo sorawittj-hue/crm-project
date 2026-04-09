@@ -80,6 +80,14 @@ export async function updateDeal({ id, ...updates }) {
 }
 
 /**
+ * Get current authenticated user ID from Supabase session
+ */
+async function getCurrentUserId() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user?.id ?? null;
+}
+
+/**
  * Create a new deal with validation
  */
 export async function addDeal(newDeal) {
@@ -89,14 +97,18 @@ export async function addDeal(newDeal) {
       throw new Error('Deal title is required');
     }
 
-    // Set defaults
+    // Get current user ID for assigned_to
+    const userId = await getCurrentUserId();
+
+    // Set defaults - use authenticated user ID or null (not hardcoded 'leader')
     const dealData = {
       title: newDeal.title.trim(),
       company: newDeal.company?.trim() || null,
       value: Number(newDeal.value) || 0,
       stage: newDeal.stage || 'lead',
       probability: newDeal.probability || 0,
-      assigned_to: newDeal.assigned_to || 'leader',
+      // Use provided assigned_to, or authenticated user ID, or null
+      assigned_to: newDeal.assigned_to ?? userId ?? null,
       contact: newDeal.contact?.trim() || null,
       contact_email: newDeal.contact_email?.trim() || null,
       contact_phone: newDeal.contact_phone?.trim() || null,
@@ -134,13 +146,17 @@ export async function addMultipleDeals(deals) {
       throw new Error('At least one deal is required');
     }
 
+    // Get current user ID for assigned_to
+    const userId = await getCurrentUserId();
+
     const dealsData = deals.map(newDeal => ({
       title: newDeal.title?.trim() || 'Untitled Deal',
       company: newDeal.company?.trim() || null,
       value: Number(newDeal.value) || 0,
       stage: newDeal.stage || 'lead',
       probability: newDeal.probability || 0,
-      assigned_to: newDeal.assigned_to || 'leader',
+      // Use provided assigned_to, or authenticated user ID, or null
+      assigned_to: newDeal.assigned_to ?? userId ?? null,
       contact: newDeal.contact?.trim() || null,
       contact_email: newDeal.contact_email?.trim() || null,
       contact_phone: newDeal.contact_phone?.trim() || null,
@@ -218,7 +234,7 @@ export async function bulkUpdateDeals(ids, updates) {
 }
 
 /**
- * Search deals
+ * Search deals - throws errors so react-query can catch them
  */
 export async function searchDeals(query, filters = {}) {
   try {
@@ -249,10 +265,12 @@ export async function searchDeals(query, filters = {}) {
 
     const { data, error } = await builder.order('created_at', { ascending: false });
 
+    // Throw error instead of returning empty array
     if (error) throw error;
     return data || [];
   } catch (error) {
     console.error('Error searching deals:', error);
-    return [];
+    // Throw error so react-query can catch it and display error message
+    throw new Error('Failed to search deals: ' + error.message);
   }
 }
