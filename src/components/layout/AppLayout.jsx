@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -15,6 +15,7 @@ import { formatCurrency } from '../../lib/formatters';
 import { Button } from '../ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/Dialog';
 import { Input } from '../ui/Input';
+import CommandPalette from '../ui/CommandPalette';
 
 const sidebarVariants = {
   open: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 30 } },
@@ -23,13 +24,26 @@ const sidebarVariants = {
 
 export default function AppLayout() {
   const { isSidebarOpen, closeSidebar, toggleSidebar, zenithMode, toggleZenithMode, monthlyTarget, setMonthlyTarget, globalSearchTerm, setGlobalSearchTerm } = useAppStore();
-  const { data: deals } = useDeals();
+  const { data: deals = [] } = useDeals();
   const { data: settings } = useSettings();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [localTarget, setLocalTarget] = useState(monthlyTarget);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
+  // Command Palette keyboard shortcut (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(true);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Sync monthly target from DB settings on first load
   useEffect(() => {
@@ -191,22 +205,20 @@ export default function AppLayout() {
       {/* MAIN CONTENT SURFACE */}
       <div className="flex-1 flex flex-col relative overflow-hidden bg-white shadow-[0_0_80px_rgba(0,0,0,0.02)]">
         {/* Dynamic Header with working search */}
-        <header className="h-20 flex items-center justify-between px-10 z-20 border-b border-slate-50">
+        <header className="h-20 flex items-center justify-between px-10 z-20 border-b border-slate-50 backdrop-blur-xl bg-white/50">
           <div className="flex items-center gap-6">
             <button onClick={toggleSidebar} className="lg:hidden p-2 text-slate-400">
               <Menu size={22} />
             </button>
-            <div className="hidden md:flex items-center gap-3">
-               <Search size={18} className="text-slate-300" />
-               <input
-                 type="text"
-                 placeholder="Search portfolio..."
-                 value={globalSearchTerm}
-                 onChange={(e) => setGlobalSearchTerm(e.target.value)}
-                 onKeyDown={handleSearch}
-                 className="text-xs font-bold uppercase tracking-widest text-slate-700 bg-transparent border-none outline-none placeholder:text-slate-300 w-48"
-               />
-            </div>
+            {/* Command Palette Trigger */}
+            <button 
+              onClick={() => setIsCommandPaletteOpen(true)}
+              className="hidden md:flex items-center gap-3 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl transition-all group"
+            >
+               <Search size={16} className="text-slate-400 group-hover:text-slate-600" />
+               <span className="text-xs font-bold uppercase tracking-widest text-slate-400 group-hover:text-slate-600">Search...</span>
+               <kbd className="text-[10px] px-1.5 py-0.5 bg-white rounded border border-slate-200 text-slate-400">⌘K</kbd>
+            </button>
           </div>
 
           <div className="flex items-center gap-6">
@@ -272,6 +284,14 @@ export default function AppLayout() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Global Command Palette */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        deals={deals}
+        customers={[]}
+      />
     </div>
   );
 }

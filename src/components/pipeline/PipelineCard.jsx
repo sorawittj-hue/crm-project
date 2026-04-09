@@ -45,6 +45,9 @@ export const PipelineCard = React.memo(React.forwardRef(({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
+      whileHover={{ scale: 1.02, y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       className="mb-3"
     >
       <Card
@@ -52,7 +55,7 @@ export const PipelineCard = React.memo(React.forwardRef(({
         onDragStart={(e) => onDragStart(e, deal)}
         onClick={() => onClick(deal)}
         className={cn(
-          "group relative cursor-grab active:cursor-grabbing border border-white/5 bg-white/5 backdrop-blur-lg transition-all overflow-hidden hover:border-primary/30",
+          "group relative cursor-grab active:cursor-grabbing border border-white/5 bg-white/5 backdrop-blur-lg transition-all overflow-hidden hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10",
           isSelected && "ring-2 ring-primary bg-primary/10",
           isCritical && "border-red-500/30 shadow-lg shadow-red-500/10",
           isStale && !isCritical && "border-amber-500/30"

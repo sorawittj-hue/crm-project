@@ -61,7 +61,7 @@ const PipelineColumn = ({ stage, deals, onDealClick, onUpdateDeal, selectedDeals
   const isLost = stage.id === 'lost';
 
   return (
-    <div
+    <motion.div
       onDragOver={(e) => { e.preventDefault(); setIsOver(true); }}
       onDragLeave={() => setIsOver(false)}
       onDrop={(e) => {
@@ -69,9 +69,15 @@ const PipelineColumn = ({ stage, deals, onDealClick, onUpdateDeal, selectedDeals
         setIsOver(false);
         onUpdateDeal(e.dataTransfer.getData('dealId'), { stage: stage.id });
       }}
+      animate={{
+        scale: isOver ? 1.02 : 1,
+        borderColor: isOver ? 'rgba(139, 115, 85, 0.5)' : 'rgba(255, 255, 255, 0.05)',
+        boxShadow: isOver ? '0 0 20px rgba(139, 115, 85, 0.3)' : '0 0 0px rgba(0, 0, 0, 0)',
+      }}
+      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       className={cn(
         "flex-shrink-0 w-[320px] flex flex-col h-full rounded-3xl transition-all duration-300",
-        isOver ? "bg-white/10 border-2 border-primary/50 scale-[1.02]" : "bg-white/5 border border-white/5",
+        isOver ? "bg-primary/10" : "bg-white/5 border border-white/5",
         isLost && "bg-red-500/5 border-red-500/20"
       )}
     >
@@ -168,7 +174,7 @@ const PipelineColumn = ({ stage, deals, onDealClick, onUpdateDeal, selectedDeals
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };
 
