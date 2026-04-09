@@ -187,5 +187,3 @@ const styles = {
     margin: 0,
   },
 };
-
-export default LoginPage;
