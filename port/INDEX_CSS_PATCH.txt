@@ -1,0 +1,12 @@
+// src/index.css replacement snippet — add this at top
+// (หรือ import ใน main.jsx: import './styles/zenith-kawaii.css')
+
+// =========== file: src/index.css (ทับของเดิม) ===========
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import './styles/zenith-kawaii.css';
+
+html, body { font-family: var(--zfont); }
+body { background: var(--zbg); color: var(--ink-900); }

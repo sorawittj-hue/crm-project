@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zenith CRM — Redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="data.jsx"></script>
+<script type="text/babel" src="shell.jsx"></script>
+<script type="text/babel" src="page_command.jsx"></script>
+<script type="text/babel" src="page_pipeline.jsx"></script>
+<script type="text/babel" src="page_customers.jsx"></script>
+<script type="text/babel" src="page_analytics.jsx"></script>
+<script type="text/babel" src="page_tools.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo, useCallback } = React;
+
+const TWEAKS_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "lavender",
+  "density": "normal"
+}/*EDITMODE-END*/;
+
+function App() {
+  const [page, setPage] = useState(() => localStorage.getItem('z-page') || 'command');
+  const [deals, setDeals] = useState(DEALS);
+  const [search, setSearch] = useState('');
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [tweaks, setTweaks] = useState(TWEAKS_DEFAULTS);
+  const [tweaksMode, setTweaksMode] = useState(false);
+
+  useEffect(() => { localStorage.setItem('z-page', page); }, [page]);
+
+  // Apply theme + density to body
+  useEffect(() => {
+    document.body.className = '';
+    if (tweaks.theme === 'mint')     document.body.classList.add('theme-mint');
+    if (tweaks.theme === 'lavender') document.body.classList.add('theme-lavender');
+    if (tweaks.density === 'compact') document.body.classList.add('density-compact');
+  }, [tweaks]);
+
+  // Tweaks protocol
+  useEffect(() => {
+    const handler = (e) => {
+      if (!e.data) return;
+      if (e.data.type === '__activate_edit_mode')   setTweaksMode(true);
+      if (e.data.type === '__deactivate_edit_mode') setTweaksMode(false);
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  const pushToast = useCallback((t) => {
+    setToast(t);
+    setTimeout(() => setToast(null), 2600);
+  }, []);
+
+  const updateTweak = (key, value) => {
+    const next = { ...tweaks, [key]: value };
+    setTweaks(next);
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [key]: value } }, '*');
+  };
+
+  // Goal
+  const wonThisMonth = deals.filter(d => d.stage === 'won').reduce((s, d) => s + d.value, 0);
+  const monthlyTarget = 7000000;
+  const goalPct = Math.min(100, Math.round((wonThisMonth / monthlyTarget) * 100));
+
+  // Titles
+  const titles = {
+    command:   { title: 'หน้าแรก',           sub: 'ภาพรวมทีมและงานวันนี้' },
+    pipeline:  { title: 'ดีลทั้งหมด',         sub: 'ลากเพื่อเปลี่ยนสถานะดีล' },
+    customers: { title: 'ลูกค้าของเรา',       sub: 'รวมฐานข้อมูลลูกค้าทั้งหมด' },
+    analytics: { title: 'วิเคราะห์ยอดขาย',    sub: 'ข้อมูลเชิงลึกและแนวโน้ม' },
+    tools:     { title: 'เครื่องมือ & AI',     sub: 'ตัวช่วยสำหรับทีมขาย' },
+  };
+
+  const PageComp = {
+    command:   <CommandPage pushToast={pushToast} setPage={setPage} />,
+    pipeline:  <PipelinePage deals={deals} setDeals={setDeals} pushToast={pushToast} search={search}/>,
+    customers: <CustomersPage search={search} pushToast={pushToast}/>,
+    analytics: <AnalyticsPage deals={deals}/>,
+    tools:     <ToolsPage pushToast={pushToast}/>,
+  }[page];
+
+  return (
+    <div className="app">
+      <Sidebar
+        page={page} setPage={setPage}
+        goalPct={goalPct}
+        monthlyValue={wonThisMonth}
+        monthlyTarget={monthlyTarget}
+      />
+      <div className="main-area">
+        <Header
+          pageTitle={titles[page].title}
+          pageSubtitle={titles[page].sub}
+          search={search} setSearch={setSearch}
+          onBellClick={() => setNotifOpen(true)}
+          notifCount={NOTIFICATIONS.length}
+        />
+        <div className="main-scroll">{PageComp}</div>
+      </div>
+
+      <NotificationsDrawer open={notifOpen} onClose={() => setNotifOpen(false)} items={NOTIFICATIONS}/>
+      <Toast toast={toast}/>
+
+      {tweaksMode && (
+        <div className="tweaks-panel">
+          <div className="tweaks-head">🎨 Tweaks</div>
+          <div className="tweaks-row">
+            <div className="tweaks-label">โทนสี</div>
+            <div className="tweaks-options">
+              {[
+                { id: 'pink', label: '🌸 Pink' },
+                { id: 'mint', label: '🌿 Mint' },
+                { id: 'lavender', label: '💜 Lavender' },
+              ].map(o => (
+                <button key={o.id}
+                  className={`tweaks-opt ${tweaks.theme === o.id ? 'is-active' : ''}`}
+                  onClick={() => updateTweak('theme', o.id)}>{o.label}</button>
+              ))}
+            </div>
+          </div>
+          <div className="tweaks-row">
+            <div className="tweaks-label">ความหนาแน่น</div>
+            <div className="tweaks-options">
+              {[{id:'normal',label:'ปกติ'},{id:'compact',label:'กระชับ'}].map(o => (
+                <button key={o.id}
+                  className={`tweaks-opt ${tweaks.density === o.id ? 'is-active' : ''}`}
+                  onClick={() => updateTweak('density', o.id)}>{o.label}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
