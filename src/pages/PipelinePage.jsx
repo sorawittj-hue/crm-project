@@ -1,5 +1,6 @@
 import { useState, useMemo, lazy, Suspense } from 'react';
 import { useDeals, useUpdateDeal, useAddDeal, useAddMultipleDeals, useDeleteDeals } from '../hooks/useDeals';
+import { useCustomers } from '../hooks/useCustomers';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
 import { Plus, Filter, Search, Loader2, Sliders, ScanLine } from 'lucide-react';
 
@@ -17,6 +18,7 @@ import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../components/
 
 export default function PipelinePage() {
   const { data: deals, isLoading, error } = useDeals();
+  const { data: customers = [] } = useCustomers();
   const updateDealMutation = useUpdateDeal();
   const addDealMutation = useAddDeal();
   const addMultipleDealsMutation = useAddMultipleDeals();
@@ -30,7 +32,7 @@ export default function PipelinePage() {
   const [stageFilter, setStageFilter] = useState([]);
   const [sortBy, setSortBy] = useState('createdAt');
 
-  const [newDeal, setNewDeal] = useState({ title: '', company: '', value: '', stage: 'lead' });
+  const [newDeal, setNewDeal] = useState({ title: '', company: '', value: '', stage: 'lead', customer_id: '' });
 
   // We filter the input to MonthlyPipeline based on search and parameters
   const filteredDeals = useMemo(() => {
@@ -65,7 +67,7 @@ export default function PipelinePage() {
         value: Number(newDeal.value) || 0,
       });
       setIsAddModalOpen(false);
-      setNewDeal({ title: '', company: '', value: '', stage: 'lead' });
+      setNewDeal({ title: '', company: '', value: '', stage: 'lead', customer_id: '' });
     } catch (err) {
       setFormError(err?.message || 'ไม่สามารถบันทึกดีลได้ กรุณาลองใหม่');
     }
@@ -235,6 +237,24 @@ export default function PipelinePage() {
           </DialogHeader>
           
           <form onSubmit={handleAddSubmit} className="space-y-6">
+             {/* Customer selector */}
+             <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-600">ลูกค้า (ถ้ามีในระบบ)</label>
+                <select
+                   value={newDeal.customer_id}
+                   onChange={(e) => {
+                     const cid = e.target.value;
+                     const c = customers.find(x => x.id === cid);
+                     setNewDeal({ ...newDeal, customer_id: cid, company: c?.company || c?.name || newDeal.company });
+                   }}
+                   className="w-full h-14 rounded-2xl border-0 ring-1 ring-slate-100 bg-slate-50/50 px-4 font-semibold outline-none focus:ring-primary transition-all text-sm"
+                >
+                   <option value="">— ไม่เลือกลูกค้า —</option>
+                   {customers.map(c => (
+                     <option key={c.id} value={c.id}>{c.name}{c.company ? ` (${c.company})` : ''}</option>
+                   ))}
+                </select>
+             </div>
              <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-600">ชื่อดีล</label>
                 <Input

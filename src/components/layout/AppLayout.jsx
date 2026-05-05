@@ -1,19 +1,18 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, ListTree, Users, BarChart3,
   Menu, X, Wrench,
   Search, Settings, Bell,
-  ChevronRight, Target, TrendingUp
+  ChevronRight, Target, TrendingUp,
+  AlertCircle, Clock, CheckCircle2
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useDeals } from '../../hooks/useDeals';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useSettings } from '../../hooks/useSettings';
 import { useAuth } from '../../hooks/useAuth';
-import { cn } from '../../lib/utils';
-import { formatCurrency } from '../../lib/formatters';
 import { Button } from '../ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/Dialog';
 import { Input } from '../ui/Input';
@@ -39,10 +38,13 @@ export default function AppLayout() {
   const { data: settings } = useSettings();
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [localTarget, setLocalTarget] = useState(monthlyTarget);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const notifRef = useRef(null);
 
   // Derive display name from auth session
   const displayName = useMemo(() => {
@@ -75,6 +77,29 @@ export default function AppLayout() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Close notification panel on outside click
+  useEffect(() => {
+    if (!isNotifOpen) return;
+    const handler = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) setIsNotifOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [isNotifOpen]);
+
+  // Stale deals = active deals with no activity for 3+ days
+  const staleDeals = useMemo(() => {
+    const now = Date.now();
+    return deals
+      .filter(d => {
+        if (['won', 'lost'].includes(d.stage)) return false;
+        const last = new Date(d.last_activity || d.created_at).getTime();
+        return (now - last) / 86_400_000 >= 3;
+      })
+      .sort((a, b) => Number(b.value) - Number(a.value))
+      .slice(0, 8);
+  }, [deals]);
 
   const goalProgress = useMemo(() => {
     if (!deals || !monthlyTarget) return 0;
@@ -214,10 +239,82 @@ export default function AppLayout() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button aria-label="การแจ้งเตือน" className="relative p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all">
-              <Bell size={18} />
-              <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-violet-500 rounded-full" />
-            </button>
+            {/* Notification Bell */}
+            <div className="relative" ref={notifRef}>
+              <button
+                aria-label="การแจ้งเตือน"
+                onClick={() => setIsNotifOpen(v => !v)}
+                className="relative p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all"
+              >
+                <Bell size={18} />
+                {staleDeals.length > 0 && (
+                  <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">
+                    {staleDeals.length}
+                  </span>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {isNotifOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-10 w-80 bg-white rounded-2xl border border-slate-100 shadow-2xl z-50 overflow-hidden"
+                  >
+                    <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle size={14} className="text-rose-500" />
+                        <span className="text-sm font-bold text-slate-800">ดีลที่ต้องติดตาม</span>
+                      </div>
+                      <span className="text-xs text-slate-400">ไม่มีกิจกรรม 3+ วัน</span>
+                    </div>
+
+                    <div className="max-h-80 overflow-y-auto divide-y divide-slate-50">
+                      {staleDeals.length === 0 ? (
+                        <div className="py-10 text-center space-y-2">
+                          <CheckCircle2 size={24} className="text-emerald-400 mx-auto" />
+                          <p className="text-xs font-medium text-slate-400">ดีลทั้งหมดอัพเดทแล้ว 🎉</p>
+                        </div>
+                      ) : staleDeals.map(d => {
+                        const days = Math.floor((Date.now() - new Date(d.last_activity || d.created_at).getTime()) / 86_400_000);
+                        return (
+                          <button
+                            key={d.id}
+                            onClick={() => { navigate('/pipeline'); setIsNotifOpen(false); }}
+                            className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-start gap-3"
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center shrink-0 mt-0.5">
+                              <Clock size={14} className="text-rose-500" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-slate-800 truncate">{d.company || d.title}</p>
+                              <p className="text-xs text-slate-500 truncate mt-0.5">{d.title}</p>
+                              <div className="flex items-center justify-between mt-1">
+                                <span className="text-xs font-bold text-rose-500">{days} วันที่แล้ว</span>
+                                <span className="text-xs text-slate-400">{formatCurrency(d.value)}</span>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {staleDeals.length > 0 && (
+                      <div className="px-4 py-2.5 border-t border-slate-100">
+                        <button
+                          onClick={() => { navigate('/pipeline'); setIsNotifOpen(false); }}
+                          className="text-xs font-semibold text-violet-600 hover:text-violet-800 transition-colors"
+                        >
+                          ดูดีลทั้งหมดใน Pipeline →
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <div className="h-4 w-px bg-slate-100" />
             <div className="flex items-center gap-2.5">
               <div className="text-right hidden sm:block">
