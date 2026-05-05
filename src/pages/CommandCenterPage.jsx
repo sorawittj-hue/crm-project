@@ -9,6 +9,7 @@ import { Button } from '../components/ui/Button';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { formatCurrency, formatFullCurrency, daysSince } from '../lib/formatters';
+import { buildPipelineIntelligence } from '../utils/salesIntelligence';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import {
   TrendingUp,
@@ -35,17 +36,11 @@ export default function CommandCenterPage() {
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
-
-    const wonDealsThisMonth = deals.filter(d => {
-      if (d.stage !== 'won') return false;
-      // Use actual_close_date if available, fallback to created_at
-      const dt = new Date(d.actual_close_date || d.created_at);
-      return dt.getMonth() === currentMonth && dt.getFullYear() === currentYear;
-    });
-    const totalWonValue = wonDealsThisMonth.reduce((s, d) => s + (Number(d.value) || 0), 0);
-    const activePipeline = deals.filter(d => !['won', 'lost'].includes(d.stage));
-    const totalPipelineValue = activePipeline.reduce((s, d) => s + (Number(d.value) || 0), 0);
-    const achievementPercent = Math.round((totalWonValue / monthlyGoal) * 100);
+    const intelligence = buildPipelineIntelligence(deals, { monthlyGoal, now });
+    const totalWonValue = intelligence.currentMonthWonValue;
+    const activePipeline = intelligence.activeDeals;
+    const totalPipelineValue = intelligence.activePipelineValue;
+    const achievementPercent = monthlyGoal > 0 ? Math.round((totalWonValue / monthlyGoal) * 100) : 0;
 
     const months = [];
     for (let i = 5; i >= 0; i--) {
@@ -70,7 +65,7 @@ export default function CommandCenterPage() {
       }
     });
 
-    const urgentDeals = activePipeline
+    const urgentDeals = (intelligence.highImpactRisks.length > 0 ? intelligence.highImpactRisks : activePipeline)
       .filter(d => daysSince(d.last_activity || d.created_at) >= 3)
       .sort((a, b) => (Number(b.value) * (b.probability / 100)) - (Number(a.value) * (a.probability / 100)))
       .slice(0, 3);
@@ -81,7 +76,16 @@ export default function CommandCenterPage() {
       ? ((currentMonthActual - prevMonthActual) / prevMonthActual * 100).toFixed(1)
       : 0;
 
-    return { totalWonValue, totalPipelineValue, achievementPercent, activeCount: activePipeline.length, urgentDeals, revenueStream: months, growthPercent };
+    return {
+      totalWonValue,
+      totalPipelineValue,
+      achievementPercent,
+      activeCount: activePipeline.length,
+      urgentDeals,
+      revenueStream: months,
+      growthPercent,
+      intelligence,
+    };
   }, [deals, monthlyGoal]);
 
   // Today's Action Plan — pulls real data from activities + deals
@@ -222,6 +226,53 @@ export default function CommandCenterPage() {
         </Card>
       </div>
 
+      {/* Executive Forecast Strip */}
+      <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[
+            {
+              label: 'Weighted forecast',
+              value: formatCurrency(stats?.intelligence?.forecastToGoalValue),
+              detail: `${Math.round((stats?.intelligence?.weightedCoverageRatio || 0) * 100)}% to goal`,
+              icon: Target,
+              tone: 'text-violet-600 bg-violet-50',
+            },
+            {
+              label: 'Next 30 days',
+              value: formatCurrency(stats?.intelligence?.next30DayWeightedValue),
+              detail: `${stats?.intelligence?.closingSoonDeals?.length || 0} closing plays`,
+              icon: CalendarClock,
+              tone: 'text-blue-600 bg-blue-50',
+            },
+            {
+              label: 'At-risk revenue',
+              value: formatCurrency(stats?.intelligence?.atRiskValue),
+              detail: `${stats?.intelligence?.highImpactRisks?.length || 0} rescue targets`,
+              icon: AlertCircle,
+              tone: 'text-rose-600 bg-rose-50',
+            },
+            {
+              label: 'Commit value',
+              value: formatCurrency(stats?.intelligence?.commitValue),
+              detail: `${stats?.intelligence?.averageInactiveDays || 0} avg idle days`,
+              icon: CheckCircle2,
+              tone: 'text-emerald-600 bg-emerald-50',
+            },
+          ].map((item) => (
+            <div key={item.label} className="flex items-center gap-3 min-w-0">
+              <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0', item.tone)}>
+                <item.icon size={18} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-slate-400">{item.label}</p>
+                <p className="text-xl font-bold text-slate-900 tabular-nums truncate">{item.value}</p>
+                <p className="text-xs text-slate-400">{item.detail}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       {/* Tasks + Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
@@ -233,6 +284,52 @@ export default function CommandCenterPage() {
             </div>
             <h3 className="font-semibold text-slate-800">วันนี้ต้องทำ</h3>
           </div>
+
+          {stats?.intelligence?.executiveActions?.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Executive action queue</p>
+                <span className="text-xs text-slate-400">{stats.intelligence.executiveActions.length}</span>
+              </div>
+              {stats.intelligence.executiveActions.slice(0, 3).map((action) => (
+                <button
+                  key={action.id}
+                  onClick={() => navigate('/pipeline')}
+                  className={cn(
+                    'w-full text-left p-3 rounded-2xl border transition-all flex items-start gap-3 hover:shadow-sm',
+                    action.priority === 'critical'
+                      ? 'bg-rose-50 border-rose-100'
+                      : action.priority === 'high'
+                      ? 'bg-violet-50 border-violet-100'
+                      : 'bg-slate-50 border-slate-100'
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'w-8 h-8 rounded-xl flex items-center justify-center shrink-0',
+                      action.priority === 'critical'
+                        ? 'bg-rose-100 text-rose-600'
+                        : action.priority === 'high'
+                        ? 'bg-violet-100 text-violet-600'
+                        : 'bg-slate-100 text-slate-600'
+                    )}
+                  >
+                    <AlertCircle size={15} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-slate-800 truncate">{action.title}</p>
+                      <span className="text-xs font-bold text-slate-500 tabular-nums shrink-0">
+                        {formatCurrency(action.impactValue)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 line-clamp-2">{action.description}</p>
+                  </div>
+                  <ChevronRight size={14} className="text-slate-300 mt-1" />
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Today's Follow-ups */}
           <div className="space-y-2">

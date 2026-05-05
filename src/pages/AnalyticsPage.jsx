@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/formatters';
 import { STAGE_COLORS, STAGE_LABELS } from '../lib/constants';
+import { buildPipelineIntelligence, DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import {
   ResponsiveContainer, Area, Bar, XAxis, YAxis,
@@ -17,7 +18,7 @@ import {
   Target, Users,
   ArrowUpRight, ArrowDownRight, Loader2,
   Activity, DollarSign,
-  ShieldCheck, ThumbsUp, ThumbsDown
+  ShieldCheck, ThumbsUp, ThumbsDown, AlertCircle
 } from 'lucide-react';
 
 const MetricCard = ({ title, value, subValue, icon: Icon, trend, color = "primary" }) => {
@@ -74,6 +75,7 @@ export default function AnalyticsPage() {
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
     const monthsBack = timeRange === '3m' ? 2 : timeRange === '6m' ? 5 : 11;
+    const intelligence = buildPipelineIntelligence(deals, { monthlyGoal: monthlyTarget, now: today });
 
     // Revenue Stream
     const revenueStream = [];
@@ -85,6 +87,7 @@ export default function AnalyticsPage() {
         year: d.getFullYear(),
         actual: 0,
         unweighted: 0,
+        weighted: 0,
         target: monthlyTarget
       });
     }
@@ -96,7 +99,12 @@ export default function AnalyticsPage() {
         if (deal.stage === 'won') {
           revenueStream[mIdx].actual += Number(deal.value || 0);
         } else if (deal.stage !== 'lost') {
-          revenueStream[mIdx].unweighted += Number(deal.value || 0);
+          const value = Number(deal.value || 0);
+          const probability = Number.isFinite(Number(deal.probability))
+            ? Number(deal.probability)
+            : DEFAULT_STAGE_PROBABILITY[deal.stage] || 0;
+          revenueStream[mIdx].unweighted += value;
+          revenueStream[mIdx].weighted += Math.round(value * (probability / 100));
         }
       }
     });
@@ -172,6 +180,7 @@ export default function AnalyticsPage() {
       totalDeals: deals.length,
       lostReasons,
       wonReasons,
+      intelligence,
     };
   }, [deals, monthlyTarget, timeRange]);
 
@@ -210,7 +219,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* PRIMARY KPI RIBBON */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <MetricCard
           title="ยอดขายเดือนนี้"
           value={formatCurrency(analytics?.currentMonthActual)}
@@ -225,6 +234,13 @@ export default function AnalyticsPage() {
           subValue={`${analytics?.activeCount} ดีลที่กำลังดำเนินการ`}
           icon={Activity}
           color="primary"
+        />
+        <MetricCard
+          title="Weighted Forecast"
+          value={formatCurrency(analytics?.intelligence?.forecastToGoalValue)}
+          subValue={`${Math.round((analytics?.intelligence?.weightedCoverageRatio || 0) * 100)}% forecast coverage`}
+          icon={ShieldCheck}
+          color="emerald"
         />
         <MetricCard
           title="อัตราปิดดีล"
@@ -255,6 +271,7 @@ export default function AnalyticsPage() {
                 <div className="flex items-center gap-5">
                     <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500" /><span className="text-xs text-slate-400">จริง</span></div>
                     <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-slate-200" /><span className="text-xs text-slate-400">Pipeline</span></div>
+                    <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-violet-500" /><span className="text-xs text-slate-400">Weighted</span></div>
                 </div>
             </div>
             
@@ -297,6 +314,14 @@ export default function AnalyticsPage() {
                         fill="#f1f5f9" 
                         radius={[6, 6, 0, 0]} 
                         barSize={30}
+                    />
+                    <Line
+                        type="monotone"
+                        dataKey="weighted"
+                        name="Weighted Forecast"
+                        stroke="#7c3aed"
+                        strokeWidth={3}
+                        dot={{ r: 3, fill: '#7c3aed', strokeWidth: 0 }}
                     />
                     <Line 
                         type="monotone" 
@@ -371,12 +396,13 @@ export default function AnalyticsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 relative z-10">
                 {[
                     { label: "อัตราปิดดีล", val: `${analytics?.winRate || 0}%`, icon: ShieldCheck },
                     { label: "มูลค่าดีลเฉลี่ย", val: formatCurrency(analytics?.avgDealValue), icon: Activity },
                     { label: "เฉลี่ยวันในการปิด", val: `${analytics?.avgDaysToClose || 0} วัน`, icon: Users },
-                    { label: "ดีลทั้งหมด", val: `${analytics?.totalDeals || 0} ดีล`, icon: Target }
+                    { label: "ดีลทั้งหมด", val: `${analytics?.totalDeals || 0} ดีล`, icon: Target },
+                    { label: "At-risk forecast", val: formatCurrency(analytics?.intelligence?.atRiskValue), icon: AlertCircle }
                 ].map((m, i) => (
                     <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
                         <div className="flex items-center gap-2 mb-2">

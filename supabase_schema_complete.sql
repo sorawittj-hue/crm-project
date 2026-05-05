@@ -174,6 +174,23 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
 
 -- ===========================================
+-- TABLE: audit_log
+-- ===========================================
+CREATE TABLE IF NOT EXISTS audit_log (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  table_name TEXT NOT NULL,
+  record_id TEXT NOT NULL,
+  action TEXT NOT NULL CHECK (action IN ('INSERT', 'UPDATE', 'DELETE')),
+  changed_by UUID DEFAULT auth.uid(),
+  old_data JSONB,
+  new_data JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_log_table_record ON audit_log(table_name, record_id);
+CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at DESC);
+
+-- ===========================================
 -- Enable Row Level Security (RLS)
 -- ===========================================
 ALTER TABLE team_members ENABLE ROW LEVEL SECURITY;
@@ -183,32 +200,54 @@ ALTER TABLE deals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE email_templates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
 
 -- ===========================================
--- RLS Policies (Allow all operations for now)
--- In production, you should restrict based on user authentication
+-- RLS Policies
+-- The app UI already requires Supabase Auth. These policies make the
+-- database match that boundary so anonymous clients cannot read or write CRM data.
 -- ===========================================
 
-CREATE POLICY "Allow all operations on team_members"
-  ON team_members FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow all operations on team_members" ON team_members;
+DROP POLICY IF EXISTS "Allow all operations on app_settings" ON app_settings;
+DROP POLICY IF EXISTS "Allow all operations on customers" ON customers;
+DROP POLICY IF EXISTS "Allow all operations on deals" ON deals;
+DROP POLICY IF EXISTS "Allow all operations on activities" ON activities;
+DROP POLICY IF EXISTS "Allow all operations on email_templates" ON email_templates;
+DROP POLICY IF EXISTS "Allow all operations on notifications" ON notifications;
 
-CREATE POLICY "Allow all operations on app_settings"
-  ON app_settings FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated users can manage team_members" ON team_members;
+DROP POLICY IF EXISTS "Authenticated users can manage app_settings" ON app_settings;
+DROP POLICY IF EXISTS "Authenticated users can manage customers" ON customers;
+DROP POLICY IF EXISTS "Authenticated users can manage deals" ON deals;
+DROP POLICY IF EXISTS "Authenticated users can manage activities" ON activities;
+DROP POLICY IF EXISTS "Authenticated users can manage email_templates" ON email_templates;
+DROP POLICY IF EXISTS "Authenticated users can manage notifications" ON notifications;
+DROP POLICY IF EXISTS "Authenticated users can read audit_log" ON audit_log;
 
-CREATE POLICY "Allow all operations on customers"
-  ON customers FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Authenticated users can manage team_members"
+  ON team_members FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
-CREATE POLICY "Allow all operations on deals"
-  ON deals FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Authenticated users can manage app_settings"
+  ON app_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
-CREATE POLICY "Allow all operations on activities"
-  ON activities FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Authenticated users can manage customers"
+  ON customers FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
-CREATE POLICY "Allow all operations on email_templates"
-  ON email_templates FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Authenticated users can manage deals"
+  ON deals FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
-CREATE POLICY "Allow all operations on notifications"
-  ON notifications FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Authenticated users can manage activities"
+  ON activities FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can manage email_templates"
+  ON email_templates FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can manage notifications"
+  ON notifications FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can read audit_log"
+  ON audit_log FOR SELECT TO authenticated USING (true);
 
 -- ===========================================
 -- FUNCTIONS & TRIGGERS
@@ -255,6 +294,59 @@ CREATE TRIGGER activity_created_update_deal
   FOR EACH ROW
   WHEN (NEW.deal_id IS NOT NULL)
   EXECUTE FUNCTION update_deal_last_activity();
+
+-- Audit mutations for core CRM records. The trigger runs as SECURITY DEFINER
+-- so app users can read audit history without receiving direct insert rights.
+CREATE OR REPLACE FUNCTION record_audit_event()
+RETURNS TRIGGER AS $$
+DECLARE
+  affected_record_id TEXT;
+  old_payload JSONB;
+  new_payload JSONB;
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    affected_record_id = OLD.id::TEXT;
+    old_payload = TO_JSONB(OLD);
+  ELSE
+    affected_record_id = NEW.id::TEXT;
+    new_payload = TO_JSONB(NEW);
+    IF TG_OP = 'UPDATE' THEN
+      old_payload = TO_JSONB(OLD);
+    END IF;
+  END IF;
+
+  INSERT INTO audit_log (table_name, record_id, action, changed_by, old_data, new_data)
+  VALUES (
+    TG_TABLE_NAME,
+    affected_record_id,
+    TG_OP,
+    auth.uid(),
+    old_payload,
+    new_payload
+  );
+
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+DROP TRIGGER IF EXISTS audit_customers_changes ON customers;
+CREATE TRIGGER audit_customers_changes
+  AFTER INSERT OR UPDATE OR DELETE ON customers
+  FOR EACH ROW EXECUTE FUNCTION record_audit_event();
+
+DROP TRIGGER IF EXISTS audit_deals_changes ON deals;
+CREATE TRIGGER audit_deals_changes
+  AFTER INSERT OR UPDATE OR DELETE ON deals
+  FOR EACH ROW EXECUTE FUNCTION record_audit_event();
+
+DROP TRIGGER IF EXISTS audit_activities_changes ON activities;
+CREATE TRIGGER audit_activities_changes
+  AFTER INSERT OR UPDATE OR DELETE ON activities
+  FOR EACH ROW EXECUTE FUNCTION record_audit_event();
 
 -- ===========================================
 -- VIEWS FOR ANALYTICS

@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Validate environment variables - throw clear error if missing
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Throw error early to prevent silent failures in production
 if (!supabaseUrl) {
@@ -15,7 +15,8 @@ if (!supabaseUrl) {
 if (!supabaseKey) {
   throw new Error(
     'Missing VITE_SUPABASE_KEY environment variable. ' +
-    'Please create a .env file with VITE_SUPABASE_KEY=your-anon-key'
+    'Please create a .env file with VITE_SUPABASE_KEY=your-anon-key ' +
+    '(VITE_SUPABASE_ANON_KEY is also supported for older deployments).'
   );
 }
 

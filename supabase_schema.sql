@@ -1,5 +1,5 @@
 -- CRM Application Database Schema
--- Run this in your Supabase SQL Editor: https://ycjccjvndgqtwertpfep.supabase.co/project/_/sql
+-- Run this in your Supabase SQL Editor.
 
 -- ===========================================
 -- TABLE: team_members
@@ -45,20 +45,24 @@ ALTER TABLE team_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
 
 -- ===========================================
--- RLS Policies (Allow all operations)
+-- RLS Policies
+-- Match the app's Supabase Auth boundary: anonymous clients cannot read or write CRM data.
 -- ===========================================
 
--- team_members policies
-CREATE POLICY "Allow all operations on team_members"
+DROP POLICY IF EXISTS "Allow all operations on team_members" ON team_members;
+DROP POLICY IF EXISTS "Allow all operations on app_settings" ON app_settings;
+DROP POLICY IF EXISTS "Authenticated users can manage team_members" ON team_members;
+DROP POLICY IF EXISTS "Authenticated users can manage app_settings" ON app_settings;
+
+CREATE POLICY "Authenticated users can manage team_members"
   ON team_members
-  FOR ALL
+  FOR ALL TO authenticated
   USING (true)
   WITH CHECK (true);
 
--- app_settings policies
-CREATE POLICY "Allow all operations on app_settings"
+CREATE POLICY "Authenticated users can manage app_settings"
   ON app_settings
-  FOR ALL
+  FOR ALL TO authenticated
   USING (true)
   WITH CHECK (true);
 

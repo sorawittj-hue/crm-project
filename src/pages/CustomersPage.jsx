@@ -10,11 +10,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { formatCurrency, formatFullCurrency } from '../lib/formatters';
 import { STAGE_LABELS } from '../lib/constants';
+import { buildCustomerHealth } from '../utils/salesIntelligence';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import {
   Search, Plus, Users, Building2, Mail, Phone,
   Star, ChevronRight, Loader2,
-  TrendingUp, DollarSign, BarChart3, Trash2
+  TrendingUp, DollarSign, BarChart3, Trash2, AlertTriangle, HeartPulse
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../components/ui/Sheet';
 
@@ -22,6 +23,13 @@ const TIER_CONFIG = {
   Silver: { color: 'bg-slate-100 text-slate-700 border-slate-200', icon: '🥈' },
   Gold: { color: 'bg-amber-50 text-amber-700 border-amber-200', icon: '🥇' },
   Platinum: { color: 'bg-violet-50 text-violet-700 border-violet-200', icon: '💎' },
+};
+
+const HEALTH_CONFIG = {
+  healthy: { label: 'Healthy', color: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+  growth: { label: 'Growth', color: 'bg-blue-50 text-blue-700 border-blue-100' },
+  watch: { label: 'Watch', color: 'bg-amber-50 text-amber-700 border-amber-100' },
+  at_risk: { label: 'At risk', color: 'bg-rose-50 text-rose-600 border-rose-100' },
 };
 
 const EMPTY_FORM = { name: '', company: '', email: '', phone: '', industry: '', tier: 'Silver', notes: '' };
@@ -54,28 +62,9 @@ export default function CustomersPage() {
     }
   };
 
-  // Enrich customers with deal stats
   const enrichedCustomers = useMemo(() => {
     if (!customers) return [];
-    const dealMap = {};
-    (deals || []).forEach(deal => {
-      const cid = deal.customer_id;
-      if (!cid) return;
-      if (!dealMap[cid]) dealMap[cid] = { total: 0, won: 0, wonValue: 0, activeValue: 0, deals: [] };
-      dealMap[cid].total++;
-      dealMap[cid].deals.push(deal);
-      if (deal.stage === 'won') {
-        dealMap[cid].won++;
-        dealMap[cid].wonValue += Number(deal.value || 0);
-      } else if (deal.stage !== 'lost') {
-        dealMap[cid].activeValue += Number(deal.value || 0);
-      }
-    });
-
-    return customers.map(c => ({
-      ...c,
-      dealStats: dealMap[c.id] || { total: 0, won: 0, wonValue: 0, activeValue: 0, deals: [] },
-    }));
+    return buildCustomerHealth(customers, deals || []);
   }, [customers, deals]);
 
   const filteredCustomers = useMemo(() => {
@@ -89,7 +78,13 @@ export default function CustomersPage() {
         c.industry?.toLowerCase().includes(term)
       );
     }
-    if (tierFilter !== 'all') result = result.filter(c => c.tier === tierFilter);
+    if (tierFilter === 'at_risk') {
+      result = result.filter(c => ['at_risk', 'watch'].includes(c.health?.status));
+    } else if (tierFilter === 'growth') {
+      result = result.filter(c => c.health?.status === 'growth');
+    } else if (tierFilter !== 'all') {
+      result = result.filter(c => c.tier === tierFilter);
+    }
     return result;
   }, [enrichedCustomers, searchTerm, tierFilter]);
 
@@ -97,7 +92,8 @@ export default function CustomersPage() {
     const total = filteredCustomers.length;
     const totalWonValue = filteredCustomers.reduce((sum, c) => sum + c.dealStats.wonValue, 0);
     const totalActiveValue = filteredCustomers.reduce((sum, c) => sum + c.dealStats.activeValue, 0);
-    return { total, totalWonValue, totalActiveValue };
+    const atRiskAccounts = filteredCustomers.filter(c => ['at_risk', 'watch'].includes(c.health?.status)).length;
+    return { total, totalWonValue, totalActiveValue, atRiskAccounts };
   }, [filteredCustomers]);
 
   const isLoading = customersLoading || dealsLoading;
@@ -128,7 +124,7 @@ export default function CustomersPage() {
       </header>
 
       {/* KPI RIBBON */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600"><Users size={20} /></div>
@@ -156,6 +152,15 @@ export default function CustomersPage() {
             </div>
           </div>
         </Card>
+        <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500"><AlertTriangle size={20} /></div>
+            <div>
+              <p className="text-xs font-medium text-slate-400">บัญชีที่ต้องดูแล</p>
+              <p className="text-2xl font-bold text-rose-500 tabular-nums">{totalStats.atRiskAccounts}</p>
+            </div>
+          </div>
+        </Card>
       </div>
 
       {/* SEARCH & FILTERS */}
@@ -169,8 +174,15 @@ export default function CustomersPage() {
             className="h-10 pl-11 bg-white border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:ring-violet-500/20"
           />
         </div>
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
-          {['all', 'Platinum', 'Gold', 'Silver'].map(tier => (
+        <div className="flex items-center gap-1.5 overflow-x-auto bg-slate-100 p-1 rounded-xl border border-slate-200">
+          {[
+            ['all', 'ทุกระดับ'],
+            ['at_risk', 'ต้องดูแล'],
+            ['growth', 'ขยายต่อ'],
+            ['Platinum', 'Platinum'],
+            ['Gold', 'Gold'],
+            ['Silver', 'Silver'],
+          ].map(([tier, label]) => (
             <button
               key={tier}
               onClick={() => setTierFilter(tier)}
@@ -179,7 +191,7 @@ export default function CustomersPage() {
                 tierFilter === tier ? "bg-white shadow text-violet-700" : "text-slate-500 hover:text-slate-800"
               )}
             >
-              {tier === 'all' ? 'ทุกระดับ' : tier}
+              {label}
             </button>
           ))}
         </div>
@@ -219,9 +231,17 @@ export default function CustomersPage() {
                           )}
                         </div>
                       </div>
-                      <span className={cn("px-2.5 py-1 rounded-full text-xs font-medium border", tierStyle.color)}>
-                        {tierStyle.icon} {customer.tier}
-                      </span>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <span className={cn("px-2.5 py-1 rounded-full text-xs font-medium border", tierStyle.color)}>
+                          {tierStyle.icon} {customer.tier}
+                        </span>
+                        <span className={cn(
+                          "px-2 py-0.5 rounded-full text-[10px] font-bold border",
+                          HEALTH_CONFIG[customer.health?.status]?.color || HEALTH_CONFIG.healthy.color
+                        )}>
+                          {HEALTH_CONFIG[customer.health?.status]?.label || 'Healthy'} {customer.health?.score ?? 0}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Contact */}
@@ -241,6 +261,30 @@ export default function CustomersPage() {
                           <BarChart3 size={10} /> {customer.industry}
                         </span>
                       )}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-medium text-slate-400 flex items-center gap-1">
+                          <HeartPulse size={11} /> Health
+                        </span>
+                        <span className="text-xs font-bold text-slate-500 tabular-nums">{customer.health?.score ?? 0}%</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className={cn(
+                            'h-full rounded-full',
+                            customer.health?.status === 'at_risk'
+                              ? 'bg-rose-500'
+                              : customer.health?.status === 'watch'
+                              ? 'bg-amber-500'
+                              : customer.health?.status === 'growth'
+                              ? 'bg-blue-500'
+                              : 'bg-emerald-500'
+                          )}
+                          style={{ width: `${Math.max(0, Math.min(100, customer.health?.score || 0))}%` }}
+                        />
+                      </div>
                     </div>
 
                     {/* Stats */}
@@ -339,6 +383,45 @@ export default function CustomersPage() {
                         <span className="text-sm font-bold text-slate-700">Tax ID: {selectedCustomer.tax_id}</span>
                       </div>
                     )}
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="rounded-[2rem] bg-white border border-slate-100 shadow-sm">
+                <div className="p-6 space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                        <HeartPulse size={16} />
+                      </div>
+                      <div>
+                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Account health</h3>
+                        <p className="text-sm font-bold text-slate-800">
+                          {HEALTH_CONFIG[selectedCustomer.health?.status]?.label || 'Healthy'}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-2xl font-black text-slate-900 tabular-nums">{selectedCustomer.health?.score ?? 0}%</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="rounded-2xl bg-slate-50 p-3">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Win rate</p>
+                      <p className="text-lg font-black text-slate-900 tabular-nums">{selectedCustomer.health?.winRate || 0}%</p>
+                    </div>
+                    <div className="rounded-2xl bg-slate-50 p-3">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Risks</p>
+                      <p className="text-lg font-black text-rose-500 tabular-nums">{selectedCustomer.health?.riskCount || 0}</p>
+                    </div>
+                    <div className="rounded-2xl bg-slate-50 p-3">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Idle</p>
+                      <p className="text-lg font-black text-slate-900 tabular-nums">
+                        {selectedCustomer.health?.inactiveDays ?? 0}d
+                      </p>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4">
+                    <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1">Next best action</p>
+                    <p className="text-sm font-bold text-slate-700">{selectedCustomer.health?.nextAction}</p>
                   </div>
                 </div>
               </Card>

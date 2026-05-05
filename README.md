@@ -10,6 +10,8 @@ A modern, enterprise-grade CRM application built with React, Supabase, and AI-po
 - **Command Center**: Real-time dashboard with AI-generated battle plans
 - **Analytics**: Comprehensive sales metrics and forecasting
 - **AI Tools**: Intelligent deal analysis, email generation, and prioritization
+- **Sales Intelligence**: Weighted forecast, quota coverage, at-risk revenue, and executive action queue
+- **Account Health**: Customer health scoring, expansion signals, and risk filters
 
 ### 🛠️ Technical Features
 - **Real-time Database**: Supabase backend with automatic sync
@@ -18,6 +20,7 @@ A modern, enterprise-grade CRM application built with React, Supabase, and AI-po
 - **Responsive Design**: Works on desktop, tablet, and mobile
 - **Keyboard Shortcuts**: Power user features for efficiency
 - **Natural Scrolling**: Drag-to-scroll, swipe support, enhanced scrollbars
+- **Database Auditability**: Authenticated-only RLS and mutation audit log for core CRM records
 
 ## 📋 Prerequisites
 
@@ -48,7 +51,7 @@ Before deploying, ensure you have:
 2. **Update `.env` with your credentials**:
    ```env
    VITE_SUPABASE_URL=your_supabase_project_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_SUPABASE_KEY=your_supabase_anon_key
    VITE_GEMINI_API_KEY=your_gemini_api_key
    ```
 
@@ -56,6 +59,7 @@ Before deploying, ensure you have:
    - **Supabase URL**: Go to Project Settings → API → Project URL
    - **Supabase Anon Key**: Project Settings → API → anon/public key
    - **Gemini API Key**: https://makersuite.google.com/app/apikey (optional, for AI features)
+   - Legacy deployments using `VITE_SUPABASE_ANON_KEY` still work, but `VITE_SUPABASE_KEY` is the documented default.
 
 ### Step 3: Install Dependencies
 
@@ -208,15 +212,15 @@ npm run build
 ## 🔐 Security Notes
 
 ### Current Setup (Development)
-- RLS policies allow all operations (open access)
-- Suitable for single-user/small team internal use
+- Supabase Auth is required before CRM tables can be read or changed
+- Core CRM tables are protected with authenticated-only RLS policies
+- Customer, deal, and activity mutations are captured in `audit_log`
 
 ### Production Recommendations
-1. **Enable Authentication**: Use Supabase Auth
-2. **Restrict RLS Policies**: Limit access by user_id
-3. **Add Role-based Access**: Different permissions per role
-4. **Enable Audit Logging**: Track all data changes
-5. **Use Environment Variables**: Never commit `.env` file
+1. **Map Supabase users to team members**: Add per-user ownership when multiple companies or regions share one database
+2. **Add Role-based Access**: Different permissions per role
+3. **Review Audit Logs**: Track customer/deal/activity changes during weekly sales operations
+4. **Use Environment Variables**: Never commit `.env` file
 
 ## 📈 Performance Optimization
 
