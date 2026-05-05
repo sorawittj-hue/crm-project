@@ -159,15 +159,27 @@ export default function PipelineBoard({
   };
 
   const submitReason = () => {
-    if (reasonText.trim().length < 5) {
+    const reason = reasonText.trim();
+    if (reason.length < 5) {
       toast.warning('กรุณาระบุเหตุผลให้ชัดเจนขึ้น (อย่างน้อย 5 ตัวอักษร)');
       return;
     }
-    onUpdateDeal(reasonModal.dealId, {
+    const isWon = reasonModal.targetStage === 'won';
+    const deal = deals.find(d => d.id === reasonModal.dealId);
+    const updates = {
       stage: reasonModal.targetStage,
       last_activity: new Date().toISOString(),
       actual_close_date: new Date().toISOString(),
-    });
+      // Save lost_reason for losses; for wins, store in metadata.win_reason
+      lost_reason: isWon ? null : reason,
+      metadata: {
+        ...(deal?.metadata || {}),
+        ...(isWon ? { win_reason: reason } : {}),
+        close_reason: reason,
+        closed_at: new Date().toISOString(),
+      },
+    };
+    onUpdateDeal(reasonModal.dealId, updates);
     setReasonModal({ open: false, dealId: null, targetStage: null });
   };
 

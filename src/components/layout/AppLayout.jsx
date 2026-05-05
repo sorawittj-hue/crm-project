@@ -6,12 +6,13 @@ import {
   Menu, X, Wrench,
   Search, Settings, Bell,
   ChevronRight, Target, TrendingUp,
-  AlertCircle, Clock, CheckCircle2
+  AlertCircle, Clock, CheckCircle2, CalendarClock, Briefcase
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useDeals } from '../../hooks/useDeals';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useSettings } from '../../hooks/useSettings';
+import { useActivities } from '../../hooks/useActivities';
 import { useAuth } from '../../hooks/useAuth';
 import { cn } from '../../lib/utils';
 import { formatCurrency } from '../../lib/formatters';
@@ -38,6 +39,7 @@ export default function AppLayout() {
   const { data: deals = [] } = useDeals();
   const { data: customers = [] } = useCustomers();
   const { data: settings } = useSettings();
+  const { data: activities = [] } = useActivities();
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -92,6 +94,7 @@ export default function AppLayout() {
 
   // Stale deals = active deals with no activity for 3+ days
   const staleDeals = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity
     const now = Date.now();
     return deals
       .filter(d => {
@@ -100,8 +103,33 @@ export default function AppLayout() {
         return (now - last) / 86_400_000 >= 3;
       })
       .sort((a, b) => Number(b.value) - Number(a.value))
-      .slice(0, 8);
+      .slice(0, 6);
   }, [deals]);
+
+  // Pending follow-ups due today or overdue
+  const pendingFollowUps = useMemo(() => {
+    const dealMap = Object.fromEntries(deals.map(d => [d.id, d]));
+    const endOfToday = new Date(); endOfToday.setHours(23, 59, 59, 999);
+    return activities
+      .filter(a => a.scheduled_at && !a.completed_at && a.deal_id && dealMap[a.deal_id])
+      .filter(a => new Date(a.scheduled_at).getTime() <= endOfToday.getTime())
+      .map(a => ({ ...a, deal: dealMap[a.deal_id] }))
+      .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))
+      .slice(0, 6);
+  }, [activities, deals]);
+
+  // Deals expected to close in next 7 days
+  const closingSoon = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity
+    const sevenDays = Date.now() + 7 * 86_400_000;
+    return deals
+      .filter(d => !['won', 'lost'].includes(d.stage) && d.expected_close_date)
+      .filter(d => new Date(d.expected_close_date).getTime() <= sevenDays)
+      .sort((a, b) => new Date(a.expected_close_date) - new Date(b.expected_close_date))
+      .slice(0, 6);
+  }, [deals]);
+
+  const totalNotifs = pendingFollowUps.length + staleDeals.length + closingSoon.length;
 
   const goalProgress = useMemo(() => {
     if (!deals || !monthlyTarget) return 0;
@@ -249,9 +277,9 @@ export default function AppLayout() {
                 className="relative p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all"
               >
                 <Bell size={18} />
-                {staleDeals.length > 0 && (
-                  <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">
-                    {staleDeals.length}
+                {totalNotifs > 0 && (
+                  <span className="absolute top-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">
+                    {totalNotifs > 9 ? '9+' : totalNotifs}
                   </span>
                 )}
               </button>
@@ -263,47 +291,126 @@ export default function AppLayout() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 4, scale: 0.97 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-10 w-80 bg-white rounded-2xl border border-slate-100 shadow-2xl z-50 overflow-hidden"
+                    className="absolute right-0 top-10 w-96 bg-white rounded-2xl border border-slate-100 shadow-2xl z-50 overflow-hidden"
                   >
                     <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <AlertCircle size={14} className="text-rose-500" />
-                        <span className="text-sm font-bold text-slate-800">ดีลที่ต้องติดตาม</span>
+                        <Bell size={14} className="text-violet-600" />
+                        <span className="text-sm font-bold text-slate-800">การแจ้งเตือน</span>
                       </div>
-                      <span className="text-xs text-slate-400">ไม่มีกิจกรรม 3+ วัน</span>
+                      <span className="text-xs text-slate-400">{totalNotifs} รายการ</span>
                     </div>
 
-                    <div className="max-h-80 overflow-y-auto divide-y divide-slate-50">
-                      {staleDeals.length === 0 ? (
-                        <div className="py-10 text-center space-y-2">
-                          <CheckCircle2 size={24} className="text-emerald-400 mx-auto" />
-                          <p className="text-xs font-medium text-slate-400">ดีลทั้งหมดอัพเดทแล้ว 🎉</p>
+                    <div className="max-h-[460px] overflow-y-auto">
+                      {totalNotifs === 0 && (
+                        <div className="py-12 text-center space-y-2">
+                          <CheckCircle2 size={26} className="text-emerald-400 mx-auto" />
+                          <p className="text-xs font-medium text-slate-400">ทุกดีลอัพเดทแล้ว 🎉</p>
                         </div>
-                      ) : staleDeals.map(d => {
-                        const days = Math.floor((Date.now() - new Date(d.last_activity || d.created_at).getTime()) / 86_400_000);
-                        return (
-                          <button
-                            key={d.id}
-                            onClick={() => { navigate('/pipeline'); setIsNotifOpen(false); }}
-                            className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-start gap-3"
-                          >
-                            <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center shrink-0 mt-0.5">
-                              <Clock size={14} className="text-rose-500" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-semibold text-slate-800 truncate">{d.company || d.title}</p>
-                              <p className="text-xs text-slate-500 truncate mt-0.5">{d.title}</p>
-                              <div className="flex items-center justify-between mt-1">
-                                <span className="text-xs font-bold text-rose-500">{days} วันที่แล้ว</span>
-                                <span className="text-xs text-slate-400">{formatCurrency(d.value)}</span>
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })}
+                      )}
+
+                      {/* Today's Follow-ups */}
+                      {pendingFollowUps.length > 0 && (
+                        <div>
+                          <div className="px-4 py-2 bg-amber-50/60 border-b border-amber-100 flex items-center gap-2">
+                            <CalendarClock size={12} className="text-amber-600" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-amber-700">นัดติดตามวันนี้/เลยกำหนด</span>
+                            <span className="ml-auto text-[10px] font-bold text-amber-700">{pendingFollowUps.length}</span>
+                          </div>
+                          <div className="divide-y divide-slate-50">
+                            {pendingFollowUps.map(a => {
+                              const overdue = new Date(a.scheduled_at).getTime() < new Date().setHours(0, 0, 0, 0);
+                              return (
+                                <button
+                                  key={a.id}
+                                  onClick={() => { navigate('/pipeline'); setIsNotifOpen(false); }}
+                                  className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-start gap-3"
+                                >
+                                  <div className={cn('w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5',
+                                    overdue ? 'bg-rose-100 text-rose-500' : 'bg-amber-100 text-amber-600'
+                                  )}>
+                                    <CalendarClock size={13} />
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-semibold text-slate-800 truncate">{a.title}</p>
+                                    <p className="text-xs text-slate-500 truncate">{a.deal.company || a.deal.title}</p>
+                                  </div>
+                                  {overdue && <span className="text-[9px] font-bold text-rose-600 uppercase">เลย</span>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Closing Soon */}
+                      {closingSoon.length > 0 && (
+                        <div>
+                          <div className="px-4 py-2 bg-violet-50/60 border-b border-violet-100 flex items-center gap-2">
+                            <Briefcase size={12} className="text-violet-600" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-violet-700">คาดว่าจะปิดใน 7 วัน</span>
+                            <span className="ml-auto text-[10px] font-bold text-violet-700">{closingSoon.length}</span>
+                          </div>
+                          <div className="divide-y divide-slate-50">
+                            {closingSoon.map(d => (
+                              <button
+                                key={d.id}
+                                onClick={() => { navigate('/pipeline'); setIsNotifOpen(false); }}
+                                className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-start gap-3"
+                              >
+                                <div className="w-7 h-7 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center shrink-0 mt-0.5">
+                                  <Briefcase size={13} />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-semibold text-slate-800 truncate">{d.title}</p>
+                                  <div className="flex items-center justify-between text-xs mt-0.5">
+                                    <span className="text-slate-500 truncate">{d.company}</span>
+                                    <span className="text-violet-600 font-bold">{formatCurrency(d.value)}</span>
+                                  </div>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Stale */}
+                      {staleDeals.length > 0 && (
+                        <div>
+                          <div className="px-4 py-2 bg-rose-50/60 border-b border-rose-100 flex items-center gap-2">
+                            <AlertCircle size={12} className="text-rose-500" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-rose-700">หยุดนิ่ง 3+ วัน</span>
+                            <span className="ml-auto text-[10px] font-bold text-rose-700">{staleDeals.length}</span>
+                          </div>
+                          <div className="divide-y divide-slate-50">
+                            {staleDeals.map(d => {
+                              // eslint-disable-next-line react-hooks/purity
+                              const days = Math.floor((Date.now() - new Date(d.last_activity || d.created_at).getTime()) / 86_400_000);
+                              return (
+                                <button
+                                  key={d.id}
+                                  onClick={() => { navigate('/pipeline'); setIsNotifOpen(false); }}
+                                  className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-start gap-3"
+                                >
+                                  <div className="w-7 h-7 rounded-lg bg-rose-100 text-rose-500 flex items-center justify-center shrink-0 mt-0.5">
+                                    <Clock size={13} />
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-semibold text-slate-800 truncate">{d.company || d.title}</p>
+                                    <div className="flex items-center justify-between text-xs mt-0.5">
+                                      <span className="text-rose-500 font-bold">{days} วันที่แล้ว</span>
+                                      <span className="text-slate-400">{formatCurrency(d.value)}</span>
+                                    </div>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    {staleDeals.length > 0 && (
+                    {totalNotifs > 0 && (
                       <div className="px-4 py-2.5 border-t border-slate-100">
                         <button
                           onClick={() => { navigate('/pipeline'); setIsNotifOpen(false); }}
