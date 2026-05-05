@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   LayoutDashboard, ListTree, Users, BarChart3,
   Menu, X, Wrench,
@@ -16,14 +16,15 @@ import { useActivities } from '../../hooks/useActivities';
 import { useAuth } from '../../hooks/useAuth';
 import { cn } from '../../lib/utils';
 import { formatCurrency } from '../../lib/formatters';
+import { pageMotion, reduceMotionProps, springSmooth } from '../../lib/motion';
 import { Button } from '../ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/Dialog';
 import { Input } from '../ui/Input';
 import CommandPalette from '../ui/CommandPalette';
 
 const sidebarVariants = {
-  open: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 30 } },
-  closed: { x: '-100%', opacity: 0, transition: { duration: 0.3, ease: 'easeInOut' } }
+  open: { x: 0, opacity: 1, transition: springSmooth },
+  closed: { x: '-100%', opacity: 0, transition: { duration: 0.2, ease: [0.19, 1, 0.22, 1] } }
 };
 
 const navItems = [
@@ -35,6 +36,7 @@ const navItems = [
 ];
 
 export default function AppLayout() {
+  const shouldReduceMotion = useReducedMotion();
   const { isSidebarOpen, closeSidebar, toggleSidebar, monthlyTarget, setMonthlyTarget } = useAppStore();
   const { data: deals = [] } = useDeals();
   const { data: customers = [] } = useCustomers();
@@ -130,6 +132,10 @@ export default function AppLayout() {
   }, [deals]);
 
   const totalNotifs = pendingFollowUps.length + staleDeals.length + closingSoon.length;
+  const routeMotionProps = shouldReduceMotion ? reduceMotionProps : pageMotion;
+  const mobileSidebarMotion = shouldReduceMotion
+    ? { initial: false, animate: 'open', exit: undefined }
+    : { initial: 'closed', animate: 'open', exit: 'closed' };
 
   const goalProgress = useMemo(() => {
     if (!deals || !monthlyTarget) return 0;
@@ -150,15 +156,25 @@ export default function AppLayout() {
     <div className="flex h-screen w-screen bg-slate-50 text-slate-900 overflow-hidden font-sans selection:bg-primary/10">
 
       {/* SIDEBAR */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
+        {isSidebarOpen && !isDesktop && (
+          <motion.button
+            type="button"
+            aria-label="ปิดเมนู"
+            className="fixed inset-0 z-40 bg-slate-900/25 backdrop-blur-sm lg:hidden"
+            initial={shouldReduceMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={shouldReduceMotion ? undefined : { opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            onClick={closeSidebar}
+          />
+        )}
         {(isSidebarOpen || isDesktop) && (
           <motion.aside
-            initial="closed"
-            animate="open"
-            exit="closed"
+            {...mobileSidebarMotion}
             variants={sidebarVariants}
             className={cn(
-              "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-100 px-4 flex flex-col",
+              "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-100 px-4 flex flex-col shadow-2xl shadow-slate-900/10",
               "lg:static lg:translate-x-0 lg:opacity-100",
             )}
           >
@@ -195,18 +211,29 @@ export default function AppLayout() {
                     )}
                   >
                     {isActive && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-violet-600 rounded-r-full" />
+                      <>
+                        <motion.span
+                          layoutId="activeNavBackground"
+                          className="absolute inset-0 rounded-xl bg-violet-50"
+                          transition={springSmooth}
+                        />
+                        <motion.span
+                          layoutId="activeNavRail"
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-violet-600 rounded-r-full"
+                          transition={springSmooth}
+                        />
+                      </>
                     )}
                     <item.icon
                       size={18}
                       strokeWidth={isActive ? 2.5 : 2}
-                      className={isActive ? 'text-violet-600' : 'text-slate-400 group-hover:text-slate-600'}
+                      className={cn('relative z-10', isActive ? 'text-violet-600' : 'text-slate-400 group-hover:text-slate-600')}
                     />
-                    <span className={cn('font-medium', isActive && 'font-semibold text-violet-700')}>
+                    <span className={cn('relative z-10 font-medium', isActive && 'font-semibold text-violet-700')}>
                       {item.label}
                     </span>
                     {!isActive && (
-                      <ChevronRight size={14} className="ml-auto opacity-0 group-hover:opacity-40 transition-opacity" />
+                      <ChevronRight size={14} className="relative z-10 ml-auto opacity-0 group-hover:opacity-40 transition-opacity" />
                     )}
                   </NavLink>
                 );
@@ -287,10 +314,10 @@ export default function AppLayout() {
               <AnimatePresence>
                 {isNotifOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                    initial={shouldReduceMotion ? false : { opacity: 0, y: 6, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 4, scale: 0.97 }}
-                    transition={{ duration: 0.15 }}
+                    exit={shouldReduceMotion ? undefined : { opacity: 0, y: 4, scale: 0.98 }}
+                    transition={{ duration: 0.16, ease: [0.19, 1, 0.22, 1] }}
                     className="absolute right-0 top-10 w-96 bg-white rounded-2xl border border-slate-100 shadow-2xl z-50 overflow-hidden"
                   >
                     <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
@@ -442,10 +469,7 @@ export default function AppLayout() {
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3, ease: [0.19, 1, 0.22, 1] }}
+              {...routeMotionProps}
               className="p-6 min-h-full"
             >
               <Outlet />

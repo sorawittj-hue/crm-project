@@ -1,39 +1,17 @@
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
+import { pageMotion, reduceMotionProps } from '../../lib/motion';
 
 /**
  * Page Transition Wrapper Component
  * Provides consistent entrance animations for all pages
  */
-const pageVariants = {
-  initial: {
-    opacity: 0,
-    y: 10,
-  },
-  enter: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.3,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  },
-  exit: {
-    opacity: 0,
-    y: -10,
-    transition: {
-      duration: 0.2,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  },
-};
-
 export default function PageTransition({ children }) {
+  const shouldReduceMotion = useReducedMotion();
+  const motionProps = shouldReduceMotion ? reduceMotionProps : pageMotion;
+
   return (
     <motion.div
-      variants={pageVariants}
-      initial="initial"
-      animate="enter"
-      exit="exit"
+      {...motionProps}
       style={styles.container}
     >
       {children}

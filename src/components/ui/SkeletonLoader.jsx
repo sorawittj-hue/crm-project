@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 /**
  * Skeleton Loader Component
@@ -16,10 +16,12 @@ const shimmerVariants = {
 };
 
 export function SkeletonLine({ width = '100%', height = '16px', style = {} }) {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <motion.div
       variants={shimmerVariants}
-      animate="animate"
+      animate={shouldReduceMotion ? undefined : 'animate'}
       style={{
         width,
         height,

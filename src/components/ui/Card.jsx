@@ -1,18 +1,20 @@
 import * as React from "react"
 import { cn } from "../../lib/utils"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
+import { getCardMotion } from "../../lib/motion"
 
 const Card = React.forwardRef(({ className, asChild = false, hover = true, ...props }, ref) => {
+  const shouldReduceMotion = useReducedMotion()
   const Comp = asChild ? motion.div : "div"
+  const motionProps = asChild ? getCardMotion(shouldReduceMotion) : {}
+
   return (
     <Comp
       ref={ref}
-      initial={{ opacity: 0, y: 16, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+      {...motionProps}
       className={cn(
-        "rounded-3xl border border-border bg-card text-card-foreground shadow-lg",
-        hover && "transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1 hover:border-pink-200",
+        "rounded-2xl border border-slate-100 bg-white text-card-foreground shadow-sm",
+        hover && "transition-all duration-200 ease-out hover:shadow-md hover:border-violet-200",
         className
       )}
       {...props}

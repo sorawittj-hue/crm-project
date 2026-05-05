@@ -1,6 +1,7 @@
 import * as React from "react"
 import { cn } from "../../lib/utils"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
+import { getPressMotion } from "../../lib/motion"
 
 const Button = React.forwardRef(({
   className,
@@ -10,22 +11,23 @@ const Button = React.forwardRef(({
   children,
   ...props
 }, ref) => {
+  const shouldReduceMotion = useReducedMotion()
   const Comp = asChild ? React.Fragment : motion.button
 
-  const baseStyles = "inline-flex items-center justify-center whitespace-nowrap rounded-2xl text-sm font-semibold ring-offset-background transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+  const baseStyles = "inline-flex items-center justify-center whitespace-nowrap rounded-2xl text-sm font-semibold ring-offset-background transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
 
   const variants = {
-    default: "bg-pink-500 text-white hover:bg-pink-600 hover:shadow-pink-glow hover:-translate-y-0.5 active:scale-[0.98]",
-    destructive: "bg-red-500 text-white hover:bg-red-600 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98]",
-    outline: "border-2 border-pink-200 bg-white hover:bg-pink-50 hover:border-pink-300 hover:text-pink-600 hover:shadow-md hover:-translate-y-0.5",
-    secondary: "bg-mint-100 text-mint-700 hover:bg-mint-200 hover:shadow-md hover:-translate-y-0.5",
-    ghost: "hover:bg-pink-50 hover:text-pink-600",
-    link: "text-pink-500 underline-offset-4 hover:underline hover:text-pink-600",
-    minimal: "bg-transparent hover:bg-pink-50",
-    pink: "bg-gradient-to-r from-pink-400 to-pink-500 text-white hover:from-pink-500 hover:to-pink-600 hover:shadow-pink-glow hover:-translate-y-0.5",
-    mint: "bg-gradient-to-r from-mint-400 to-mint-500 text-white hover:from-mint-500 hover:to-mint-600 hover:shadow-mint-glow hover:-translate-y-0.5",
-    lavender: "bg-gradient-to-r from-lavender-400 to-lavender-500 text-white hover:from-lavender-500 hover:to-lavender-600 hover:shadow-lavender-glow hover:-translate-y-0.5",
-    peach: "bg-gradient-to-r from-peach-400 to-peach-500 text-white hover:from-peach-500 hover:to-peach-600 hover:shadow-lg hover:-translate-y-0.5",
+    default: "bg-violet-600 text-white shadow-sm shadow-violet-500/15 hover:bg-violet-700 hover:shadow-md hover:shadow-violet-500/20",
+    destructive: "bg-rose-600 text-white shadow-sm shadow-rose-500/15 hover:bg-rose-700 hover:shadow-md hover:shadow-rose-500/20",
+    outline: "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-violet-200 hover:text-violet-700 hover:shadow-sm",
+    secondary: "bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900",
+    ghost: "text-slate-600 hover:bg-violet-50 hover:text-violet-700",
+    link: "text-violet-600 underline-offset-4 hover:underline hover:text-violet-700",
+    minimal: "bg-transparent text-slate-600 hover:bg-violet-50 hover:text-violet-700",
+    pink: "bg-pink-500 text-white hover:bg-pink-600 hover:shadow-md hover:shadow-pink-500/20",
+    mint: "bg-emerald-500 text-white hover:bg-emerald-600 hover:shadow-md hover:shadow-emerald-500/20",
+    lavender: "bg-violet-500 text-white hover:bg-violet-600 hover:shadow-md hover:shadow-violet-500/20",
+    peach: "bg-orange-500 text-white hover:bg-orange-600 hover:shadow-md hover:shadow-orange-500/20",
   }
 
   const sizes = {
@@ -48,9 +50,7 @@ const Button = React.forwardRef(({
       <Comp
         ref={ref}
         className={buttonVariants}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.96 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
+        {...getPressMotion(shouldReduceMotion)}
         {...props}
       >
         {children}
@@ -62,9 +62,7 @@ const Button = React.forwardRef(({
     <Comp
       ref={ref}
       className={buttonVariants}
-      whileHover={{ scale: 1.03, y: -2 }}
-      whileTap={{ scale: 0.97 }}
-      transition={{ duration: 0.2, ease: [0.34, 1.56, 0.64, 1] }}
+      {...getPressMotion(shouldReduceMotion)}
       {...props}
     >
       {children}
