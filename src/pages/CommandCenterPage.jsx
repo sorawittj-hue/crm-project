@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeals } from '../hooks/useDeals';
 import { useTeam } from '../hooks/useTeam';
@@ -85,7 +85,7 @@ export default function CommandCenterPage() {
     return { totalWonValue, totalPipelineValue, achievementPercent, activeCount: activePipeline.length, urgentDeals, revenueStream: months, growthPercent };
   }, [deals, monthlyGoal]);
 
-  const handleGenerateRules = useMemo(() => () => {
+  const handleGenerateRules = useCallback(() => {
     if (!deals) return;
     setIsGeneratingPlan(true);
     setTimeout(() => {

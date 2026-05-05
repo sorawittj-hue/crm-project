@@ -32,11 +32,26 @@ export function useCreateCustomer() {
 
   return useMutation({
     mutationFn: createCustomer,
+    onMutate: async (newCustomer) => {
+      await queryClient.cancelQueries({ queryKey: ['customers'] });
+      const previousCustomers = queryClient.getQueryData(['customers']);
+
+      const tempId = `temp-${Date.now()}`;
+      queryClient.setQueryData(['customers'], (old) => {
+        if (!old) return old;
+        return [...old, { ...newCustomer, id: tempId, tier: newCustomer.tier || 'Silver', created_at: new Date().toISOString() }];
+      });
+
+      return { previousCustomers };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
-      toast.success('Customer created successfully');
+      toast.success('เพิ่มลูกค้าสำเร็จ');
     },
-    onError: (error) => {
+    onError: (error, _, context) => {
+      if (context?.previousCustomers) {
+        queryClient.setQueryData(['customers'], context.previousCustomers);
+      }
       toast.error(error.message || 'Failed to create customer');
     },
   });
@@ -48,11 +63,27 @@ export function useUpdateCustomer() {
 
   return useMutation({
     mutationFn: updateCustomer,
+    onMutate: async (updatedCustomer) => {
+      await queryClient.cancelQueries({ queryKey: ['customers'] });
+      const previousCustomers = queryClient.getQueryData(['customers']);
+
+      queryClient.setQueryData(['customers'], (old) => {
+        if (!old) return old;
+        return old.map((c) =>
+          c.id === updatedCustomer.id ? { ...c, ...updatedCustomer } : c
+        );
+      });
+
+      return { previousCustomers };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
-      toast.success('Customer updated successfully');
+      toast.success('อัปเดตลูกค้าสำเร็จ');
     },
-    onError: (error) => {
+    onError: (error, _, context) => {
+      if (context?.previousCustomers) {
+        queryClient.setQueryData(['customers'], context.previousCustomers);
+      }
       toast.error(error.message || 'Failed to update customer');
     },
   });
@@ -64,11 +95,25 @@ export function useDeleteCustomer() {
 
   return useMutation({
     mutationFn: deleteCustomer,
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['customers'] });
+      const previousCustomers = queryClient.getQueryData(['customers']);
+
+      queryClient.setQueryData(['customers'], (old) => {
+        if (!old) return old;
+        return old.filter((c) => c.id !== id);
+      });
+
+      return { previousCustomers };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
-      toast.success('Customer deleted successfully');
+      toast.success('ลบลูกค้าสำเร็จ');
     },
-    onError: (error) => {
+    onError: (error, _, context) => {
+      if (context?.previousCustomers) {
+        queryClient.setQueryData(['customers'], context.previousCustomers);
+      }
       toast.error(error.message || 'Failed to delete customer');
     },
   });
