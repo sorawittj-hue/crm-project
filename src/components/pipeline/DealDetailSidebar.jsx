@@ -4,7 +4,7 @@ import {
   Trash2, CheckCircle2, XCircle,
   Phone, Mail, FileText, Clock,
   Sparkles, Activity, Target, ShieldCheck, Zap,
-  Loader2, Send
+  Loader2, Send, CalendarClock, ListTodo
 } from 'lucide-react';
 import { SheetContent, SheetHeader, SheetTitle } from '../ui/Sheet';
 import { Button } from '../ui/Button';
@@ -19,10 +19,11 @@ import { Card, CardContent } from '../ui/Card';
 import { useDealActivities, useAddActivity } from '../../hooks/useActivities';
 
 const ACTIVITY_TYPES = [
-  { id: 'call',    label: 'โทรหา',    icon: Phone,    color: 'bg-blue-50 text-blue-600 border-blue-100' },
-  { id: 'email',   label: 'อีเมล',    icon: Mail,     color: 'bg-violet-50 text-violet-600 border-violet-100' },
-  { id: 'meeting', label: 'ประชุม',   icon: Clock,    color: 'bg-amber-50 text-amber-600 border-amber-100' },
-  { id: 'note',    label: 'บันทึก',   icon: FileText, color: 'bg-slate-50 text-slate-600 border-slate-200' },
+  { id: 'call',    label: 'โทรหา',    icon: Phone,        color: 'bg-blue-50 text-blue-600 border-blue-100' },
+  { id: 'email',   label: 'อีเมล',    icon: Mail,         color: 'bg-violet-50 text-violet-600 border-violet-100' },
+  { id: 'meeting', label: 'ประชุม',   icon: Clock,        color: 'bg-amber-50 text-amber-600 border-amber-100' },
+  { id: 'note',    label: 'บันทึก',   icon: FileText,     color: 'bg-slate-50 text-slate-600 border-slate-200' },
+  { id: 'task',    label: 'นัดติดตาม', icon: CalendarClock, color: 'bg-amber-50 text-amber-700 border-amber-200' },
 ];
 
 function timeAgo(dateStr) {
@@ -34,12 +35,21 @@ function timeAgo(dateStr) {
   return `${Math.floor(diff / 86400)} วันที่แล้ว`;
 }
 
+// Local YYYY-MM-DD for <input type="date">
+const todayLocalISO = () => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+};
+
 export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [activeType, setActiveType] = useState('call');
   const [noteText, setNoteText] = useState('');
+  const [followUpDate, setFollowUpDate] = useState('');
+  const [followUpNote, setFollowUpNote] = useState('');
 
   const { data: activities = [], isLoading: activitiesLoading } = useDealActivities(deal?.id);
   const addActivityMutation = useAddActivity();
@@ -84,8 +94,26 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
     }
   }, [deal, aiAnalysis, handleAIAnalysis]);
 
-  // Reset note text when deal changes
-  useEffect(() => { setNoteText(''); }, [deal?.id]);
+  // Reset inputs when deal changes
+  useEffect(() => {
+    setNoteText('');
+    setFollowUpDate('');
+    setFollowUpNote('');
+  }, [deal?.id]);
+
+  const handleScheduleFollowUp = async () => {
+    if (!deal || !followUpDate) return;
+    const scheduledAt = new Date(`${followUpDate}T09:00:00`).toISOString();
+    await addActivityMutation.mutateAsync({
+      deal_id: deal.id,
+      type: 'task',
+      title: followUpNote.trim() || `ติดตามดีล: ${deal.title}`,
+      description: followUpNote.trim() || null,
+      scheduled_at: scheduledAt,
+    });
+    setFollowUpDate('');
+    setFollowUpNote('');
+  };
 
   const handleLogActivity = async () => {
     if (!deal) return;
@@ -175,6 +203,69 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
             </Button>
           </div>
 
+          {/* Quick Contact */}
+          {(deal.contact_email || deal.contact_phone) && (
+            <div className="grid grid-cols-2 gap-3">
+              {deal.contact_phone && (
+                <a
+                  href={`tel:${deal.contact_phone}`}
+                  onClick={() => addActivityMutation.mutate({
+                    deal_id: deal.id, type: 'call',
+                    title: `โทรหา ${deal.contact || deal.contact_phone}`,
+                    completed_at: new Date().toISOString(),
+                  })}
+                  className="flex items-center justify-center gap-2 h-11 rounded-2xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold transition-colors border border-blue-100"
+                >
+                  <Phone size={14} /> โทร
+                </a>
+              )}
+              {deal.contact_email && (
+                <a
+                  href={`mailto:${deal.contact_email}?subject=${encodeURIComponent(deal.title)}`}
+                  onClick={() => addActivityMutation.mutate({
+                    deal_id: deal.id, type: 'email',
+                    title: `ส่งอีเมลถึง ${deal.contact_email}`,
+                    completed_at: new Date().toISOString(),
+                  })}
+                  className="flex items-center justify-center gap-2 h-11 rounded-2xl bg-violet-50 hover:bg-violet-100 text-violet-700 text-sm font-semibold transition-colors border border-violet-100"
+                >
+                  <Mail size={14} /> อีเมล
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* Schedule Follow-up */}
+          <div className="space-y-3 p-5 rounded-2xl bg-amber-50/40 border border-amber-100">
+            <div className="flex items-center gap-2">
+              <CalendarClock size={15} className="text-amber-600" />
+              <h3 className="text-[11px] font-black uppercase tracking-widest text-amber-700">นัดติดตามครั้งถัดไป</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="date"
+                min={todayLocalISO()}
+                value={followUpDate}
+                onChange={(e) => setFollowUpDate(e.target.value)}
+                className="h-11 px-3 rounded-xl bg-white border border-amber-200 text-sm font-semibold focus:border-amber-400 outline-none"
+              />
+              <Input
+                placeholder="เช่น โทรเช็คงบ"
+                value={followUpNote}
+                onChange={(e) => setFollowUpNote(e.target.value)}
+                className="h-11 rounded-xl bg-white border-amber-200 text-sm"
+              />
+            </div>
+            <Button
+              onClick={handleScheduleFollowUp}
+              disabled={!followUpDate || addActivityMutation.isPending}
+              className="w-full h-10 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <ListTodo size={13} />
+              สร้างนัดติดตาม
+            </Button>
+          </div>
+
           {/* Activity Logger */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
@@ -184,7 +275,7 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
 
             {/* Type selector */}
             <div className="flex gap-2 flex-wrap">
-              {ACTIVITY_TYPES.map((t) => {
+              {ACTIVITY_TYPES.filter(t => t.id !== 'task').map((t) => {
                 const Icon = t.icon;
                 return (
                   <button
@@ -252,11 +343,20 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
                           <Icon size={12} />
                         </div>
                         <div className="flex-1 min-w-0 pb-3">
-                          <p className="text-sm font-semibold text-slate-800 leading-tight">{act.title}</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-semibold text-slate-800 leading-tight">{act.title}</p>
+                            {act.scheduled_at && !act.completed_at && (
+                              <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">รอดำเนินการ</span>
+                            )}
+                          </div>
                           {act.description && (
                             <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{act.description}</p>
                           )}
-                          <p className="text-[10px] text-slate-400 mt-1">{timeAgo(act.created_at)}</p>
+                          <p className="text-[10px] text-slate-400 mt-1">
+                            {act.scheduled_at && !act.completed_at
+                              ? `นัด ${new Date(act.scheduled_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })}`
+                              : timeAgo(act.created_at)}
+                          </p>
                         </div>
                       </motion.div>
                     );

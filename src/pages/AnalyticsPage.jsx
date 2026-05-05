@@ -17,7 +17,7 @@ import {
   Target, Users,
   ArrowUpRight, ArrowDownRight, Loader2,
   Activity, DollarSign,
-  ShieldCheck
+  ShieldCheck, ThumbsUp, ThumbsDown
 } from 'lucide-react';
 
 const MetricCard = ({ title, value, subValue, icon: Icon, trend, color = "primary" }) => {
@@ -128,13 +128,34 @@ export default function AnalyticsPage() {
 
     // Real system health metrics
     const avgDealValue = wonDeals.length > 0 ? Math.round(wonDeals.reduce((s, d) => s + Number(d.value || 0), 0) / wonDeals.length) : 0;
-    const avgDaysToClose = wonDeals.length > 0 
+    const avgDaysToClose = wonDeals.length > 0
       ? Math.round(wonDeals.reduce((s, d) => {
           const created = new Date(d.created_at);
           const closed = new Date(d.actual_close_date || d.updated_at || d.created_at);
           return s + Math.max(0, (closed - created) / 86400000);
-        }, 0) / wonDeals.length) 
+        }, 0) / wonDeals.length)
       : 0;
+
+    // Top win/loss reasons — group by trimmed text (case-insensitive)
+    const reasonCount = (list, getter) => {
+      const map = new Map();
+      list.forEach((d) => {
+        const raw = getter(d);
+        if (!raw) return;
+        const key = String(raw).trim().toLowerCase();
+        if (!key || key.length < 3) return;
+        const entry = map.get(key) || { reason: String(raw).trim(), count: 0, totalValue: 0 };
+        entry.count += 1;
+        entry.totalValue += Number(d.value) || 0;
+        map.set(key, entry);
+      });
+      return Array.from(map.values())
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+    };
+
+    const lostReasons = reasonCount(lostDeals, (d) => d.lost_reason || d.metadata?.close_reason);
+    const wonReasons = reasonCount(wonDeals, (d) => d.metadata?.win_reason || d.metadata?.close_reason);
 
     return {
       revenueStream,
@@ -144,10 +165,13 @@ export default function AnalyticsPage() {
       growth,
       winRate,
       wonCount: wonDeals.length,
+      lostCount: lostDeals.length,
       activeCount: activeDeals.length,
       avgDealValue,
       avgDaysToClose,
-      totalDeals: deals.length
+      totalDeals: deals.length,
+      lostReasons,
+      wonReasons,
     };
   }, [deals, monthlyTarget, timeRange]);
 
@@ -363,6 +387,93 @@ export default function AnalyticsPage() {
                     </div>
                 ))}
             </div>
+        </Card>
+      </div>
+
+      {/* WIN / LOSS REASONS */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+                <ThumbsUp size={15} className="text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">เหตุผลที่ชนะ</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Top {analytics?.wonReasons?.length || 0} จากดีลที่ปิดได้</p>
+              </div>
+            </div>
+            <span className="text-xs font-bold text-emerald-600 tabular-nums">{analytics?.wonCount || 0} ดีล</span>
+          </div>
+          <div className="space-y-3">
+            {!analytics?.wonReasons?.length ? (
+              <p className="text-xs text-slate-300 text-center py-8 font-medium">ยังไม่มีข้อมูลเหตุผลการชนะ</p>
+            ) : analytics.wonReasons.map((r, i) => {
+              const max = analytics.wonReasons[0].count;
+              const pct = Math.round((r.count / max) * 100);
+              return (
+                <div key={i} className="space-y-1.5">
+                  <div className="flex justify-between items-center gap-3">
+                    <p className="text-sm font-semibold text-slate-700 truncate flex-1">{r.reason}</p>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs font-bold text-slate-500 tabular-nums">{r.count}×</span>
+                      <span className="text-xs text-emerald-600 tabular-nums">{formatCurrency(r.totalValue)}</span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.8, delay: i * 0.08 }}
+                      className="h-full bg-emerald-500 rounded-full"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        <Card className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center">
+                <ThumbsDown size={15} className="text-rose-500" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">เหตุผลที่แพ้</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Top {analytics?.lostReasons?.length || 0} จากดีลที่แพ้</p>
+              </div>
+            </div>
+            <span className="text-xs font-bold text-rose-500 tabular-nums">{analytics?.lostCount || 0} ดีล</span>
+          </div>
+          <div className="space-y-3">
+            {!analytics?.lostReasons?.length ? (
+              <p className="text-xs text-slate-300 text-center py-8 font-medium">ยังไม่มีข้อมูลเหตุผลการแพ้</p>
+            ) : analytics.lostReasons.map((r, i) => {
+              const max = analytics.lostReasons[0].count;
+              const pct = Math.round((r.count / max) * 100);
+              return (
+                <div key={i} className="space-y-1.5">
+                  <div className="flex justify-between items-center gap-3">
+                    <p className="text-sm font-semibold text-slate-700 truncate flex-1">{r.reason}</p>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs font-bold text-slate-500 tabular-nums">{r.count}×</span>
+                      <span className="text-xs text-rose-500 tabular-nums">{formatCurrency(r.totalValue)}</span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.8, delay: i * 0.08 }}
+                      className="h-full bg-rose-500 rounded-full"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </Card>
       </div>
     </motion.div>

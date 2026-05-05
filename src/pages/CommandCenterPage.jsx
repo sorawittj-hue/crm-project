@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeals } from '../hooks/useDeals';
 import { useTeam } from '../hooks/useTeam';
 import { useSettings } from '../hooks/useSettings';
+import { useActivities } from '../hooks/useActivities';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { motion } from 'framer-motion';
@@ -10,10 +11,10 @@ import { cn } from '../lib/utils';
 import { formatCurrency, formatFullCurrency, daysSince } from '../lib/formatters';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import {
-  Loader2, TrendingUp,
+  TrendingUp,
   Users, AlertCircle,
   ArrowUpRight, Briefcase,
-  Target, Clock, RefreshCw, Crosshair, Zap
+  Target, Clock, CalendarClock, ChevronRight, CheckCircle2
 } from 'lucide-react';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
@@ -25,9 +26,7 @@ export default function CommandCenterPage() {
   const { data: deals, isLoading: dealsLoading } = useDeals();
   const { data: teamMembers, isLoading: teamLoading } = useTeam();
   const { data: settings, isLoading: settingsLoading } = useSettings();
-
-  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
-  const [strategicMandates, setStrategicMandates] = useState([]);
+  const { data: activities = [] } = useActivities();
 
   const monthlyGoal = settings?.monthly_target || 10000000;
 
@@ -85,42 +84,45 @@ export default function CommandCenterPage() {
     return { totalWonValue, totalPipelineValue, achievementPercent, activeCount: activePipeline.length, urgentDeals, revenueStream: months, growthPercent };
   }, [deals, monthlyGoal]);
 
-  const handleGenerateRules = useCallback(() => {
-    if (!deals) return;
-    setIsGeneratingPlan(true);
-    setTimeout(() => {
-      const active = deals.filter(d => !['won', 'lost'].includes(d.stage));
-      const staleCount = active.filter(d => daysSince(d.last_activity || d.created_at) >= 3).length;
-      const closingCount = active.filter(d => d.stage === 'negotiation').length;
-      const leadCount = active.filter(d => d.stage === 'lead').length;
+  // Today's Action Plan — pulls real data from activities + deals
+  const actionPlan = useMemo(() => {
+    if (!deals) return { followUps: [], closingThisWeek: [], stale: [] };
+    // eslint-disable-next-line react-hooks/purity
+    const now = Date.now();
+    const endOfToday = new Date(now); endOfToday.setHours(23, 59, 59, 999);
+    const dealMap = Object.fromEntries(deals.map(d => [d.id, d]));
 
-      setStrategicMandates([
-        {
-          id: 1, icon: Clock,
-          title: 'ติดตามดีลที่หยุดนิ่ง',
-          desc: `มี ${staleCount} ดีลที่ไม่มีความเคลื่อนไหวมากกว่า 3 วัน — ควรติดต่อลูกค้าภายใน 24 ชม.`,
-          urgency: staleCount > 0 ? 'high' : 'medium',
-        },
-        {
-          id: 2, icon: Crosshair,
-          title: 'ผลักดันการปิดดีล',
-          desc: `มี ${closingCount} ดีลอยู่ในขั้นตอนกำลังปิด — ยอดขายเดือนนี้ ${stats?.achievementPercent ?? 0}% ของเป้า`,
-          urgency: closingCount > 0 ? 'high' : 'medium',
-        },
-        {
-          id: 3, icon: Zap,
-          title: 'เพิ่ม Lead ใหม่',
-          desc: `ปัจจุบันมี ${leadCount} lead — ${leadCount < 5 ? 'ควรเพิ่ม lead ใหม่อีกอย่างน้อย 10 ราย' : 'pipeline อยู่ในระดับดี'}`,
-          urgency: leadCount < 5 ? 'medium' : 'low',
-        },
-      ]);
-      setIsGeneratingPlan(false);
-    }, 800);
-  }, [deals, stats]);
+    // Pending follow-ups scheduled for today or overdue
+    const followUps = activities
+      .filter(a => a.scheduled_at && !a.completed_at && a.deal_id && dealMap[a.deal_id])
+      .filter(a => new Date(a.scheduled_at).getTime() <= endOfToday.getTime())
+      .map(a => ({
+        ...a,
+        deal: dealMap[a.deal_id],
+        overdue: new Date(a.scheduled_at).getTime() < new Date().setHours(0, 0, 0, 0),
+      }))
+      .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at));
 
-  useEffect(() => {
-    if (deals && strategicMandates.length === 0) handleGenerateRules();
-  }, [deals, strategicMandates.length, handleGenerateRules]);
+    // Active deals expected to close within 7 days
+    const sevenDays = now + 7 * 86_400_000;
+    const closingThisWeek = deals
+      .filter(d => !['won', 'lost'].includes(d.stage) && d.expected_close_date)
+      .filter(d => {
+        const t = new Date(d.expected_close_date).getTime();
+        return t <= sevenDays;
+      })
+      .sort((a, b) => Number(b.value) - Number(a.value))
+      .slice(0, 5);
+
+    // Stale active deals
+    const stale = deals
+      .filter(d => !['won', 'lost'].includes(d.stage))
+      .filter(d => daysSince(d.last_activity || d.created_at) >= 3)
+      .sort((a, b) => Number(b.value) - Number(a.value))
+      .slice(0, 5);
+
+    return { followUps, closingThisWeek, stale };
+  }, [deals, activities]);
 
   const isLoading = dealsLoading || teamLoading || settingsLoading;
 
@@ -142,11 +144,6 @@ export default function CommandCenterPage() {
           <p className="text-sm text-slate-500 mt-1">สถานะดีลและงานสำคัญประจำวัน</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={handleGenerateRules}
-            className="h-9 px-4 rounded-xl text-sm border-slate-200 bg-white text-slate-600 hover:bg-slate-50">
-            {isGeneratingPlan ? <Loader2 size={14} className="animate-spin mr-2" /> : <RefreshCw size={14} className="mr-2" />}
-            รีเฟรช
-          </Button>
           <Button onClick={() => navigate('/pipeline')}
             className="h-9 px-5 rounded-xl text-sm bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20">
             <ArrowUpRight size={14} className="mr-2" />
@@ -228,64 +225,111 @@ export default function CommandCenterPage() {
       {/* Tasks + Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-        {/* Daily Tasks */}
+        {/* Today's Action Plan — real follow-ups + closing this week + stale */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center">
-                <Target size={14} className="text-violet-600" />
-              </div>
-              <h3 className="font-semibold text-slate-800">งานสำคัญวันนี้</h3>
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center">
+              <Target size={14} className="text-violet-600" />
             </div>
+            <h3 className="font-semibold text-slate-800">วันนี้ต้องทำ</h3>
           </div>
 
-          <div className="space-y-3">
-            {strategicMandates.map((m, i) => (
-              <motion.div
-                key={m.id}
-                initial={{ opacity: 0, x: -16 }}
+          {/* Today's Follow-ups */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider">นัดติดตามถึงกำหนด</p>
+              <span className="text-xs text-slate-400">{actionPlan.followUps.length}</span>
+            </div>
+            {actionPlan.followUps.length === 0 ? (
+              <div className="p-4 rounded-2xl bg-white border border-slate-100 text-center">
+                <CheckCircle2 size={18} className="text-emerald-400 mx-auto mb-1" />
+                <p className="text-xs text-slate-400 font-medium">ไม่มีนัดวันนี้</p>
+              </div>
+            ) : actionPlan.followUps.slice(0, 4).map((a, i) => (
+              <motion.button
+                key={a.id}
+                initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.08 }}
+                transition={{ delay: i * 0.05 }}
+                onClick={() => navigate('/pipeline')}
                 className={cn(
-                  'p-4 rounded-2xl border transition-all',
-                  m.urgency === 'high'
-                    ? 'bg-rose-50 border-rose-100'
-                    : m.urgency === 'medium'
-                    ? 'bg-amber-50 border-amber-100'
-                    : 'bg-white border-slate-100'
+                  'w-full text-left p-3 rounded-2xl border transition-all flex items-start gap-3 hover:shadow-sm',
+                  a.overdue ? 'bg-rose-50 border-rose-100' : 'bg-amber-50 border-amber-100'
                 )}
               >
-                <div className="flex gap-3">
-                  <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center shrink-0',
-                    m.urgency === 'high' ? 'bg-rose-100 text-rose-500' :
-                    m.urgency === 'medium' ? 'bg-amber-100 text-amber-500' :
-                    'bg-slate-100 text-slate-400'
-                  )}>
-                    <m.icon size={16} />
-                  </div>
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded-full',
-                        m.urgency === 'high' ? 'bg-rose-100 text-rose-600' :
-                        m.urgency === 'medium' ? 'bg-amber-100 text-amber-600' :
-                        'bg-slate-100 text-slate-500'
-                      )}>
-                        {m.urgency === 'high' ? 'เร่งด่วน' : m.urgency === 'medium' ? 'ปานกลาง' : 'ทั่วไป'}
-                      </span>
-                    </div>
-                    <h4 className="text-sm font-semibold text-slate-800">{m.title}</h4>
-                    <p className="text-xs text-slate-500 leading-relaxed">{m.desc}</p>
-                  </div>
+                <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center shrink-0',
+                  a.overdue ? 'bg-rose-100 text-rose-500' : 'bg-amber-100 text-amber-600'
+                )}>
+                  <CalendarClock size={15} />
                 </div>
-              </motion.div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    {a.overdue && (
+                      <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">เลยกำหนด</span>
+                    )}
+                    <span className="text-[10px] text-slate-500 font-semibold">{a.deal.company || a.deal.title}</span>
+                  </div>
+                  <p className="text-sm font-semibold text-slate-800 truncate">{a.title}</p>
+                </div>
+                <ChevronRight size={14} className="text-slate-300 mt-1" />
+              </motion.button>
             ))}
-            {isGeneratingPlan && (
-              <div className="p-8 text-center">
-                <Loader2 className="animate-spin text-violet-400 mx-auto" size={20} />
-                <p className="text-xs text-slate-400 mt-2">กำลังวิเคราะห์...</p>
-              </div>
-            )}
           </div>
+
+          {/* Closing this week */}
+          {actionPlan.closingThisWeek.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-violet-700 uppercase tracking-wider">คาดว่าจะปิดสัปดาห์นี้</p>
+                <span className="text-xs text-slate-400">{actionPlan.closingThisWeek.length}</span>
+              </div>
+              {actionPlan.closingThisWeek.slice(0, 3).map((d) => (
+                <button
+                  key={d.id}
+                  onClick={() => navigate('/pipeline')}
+                  className="w-full text-left p-3 rounded-2xl bg-violet-50 border border-violet-100 hover:shadow-sm transition-all flex items-center gap-3"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center shrink-0">
+                    <Briefcase size={14} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-slate-800 truncate">{d.title}</p>
+                    <p className="text-xs text-slate-500">{formatCurrency(d.value)} • {d.probability}%</p>
+                  </div>
+                  <ChevronRight size={14} className="text-slate-300" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Stale */}
+          {actionPlan.stale.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-rose-700 uppercase tracking-wider">หยุดนิ่ง 3+ วัน</p>
+                <span className="text-xs text-slate-400">{actionPlan.stale.length}</span>
+              </div>
+              {actionPlan.stale.slice(0, 3).map((d) => {
+                const days = daysSince(d.last_activity || d.created_at);
+                return (
+                  <button
+                    key={d.id}
+                    onClick={() => navigate('/pipeline')}
+                    className="w-full text-left p-3 rounded-2xl bg-rose-50 border border-rose-100 hover:shadow-sm transition-all flex items-center gap-3"
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-500 flex items-center justify-center shrink-0">
+                      <Clock size={14} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-slate-800 truncate">{d.company || d.title}</p>
+                      <p className="text-xs text-rose-500 font-bold">{days} วันไม่มีกิจกรรม</p>
+                    </div>
+                    <ChevronRight size={14} className="text-slate-300" />
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Revenue Chart */}
