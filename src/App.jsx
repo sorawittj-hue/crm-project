@@ -2,19 +2,20 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-// Components
+// Components (not lazy — always needed)
 import AppLayout from './components/layout/AppLayout';
 import ErrorBoundary from './components/layout/ErrorBoundary';
 import ProtectedRoute from './components/layout/ProtectedRoute';
+import SkeletonLoader from './components/ui/SkeletonLoader';
 
-// Pages
-import CommandCenterPage from './pages/CommandCenterPage';
-import PipelinePage from './pages/PipelinePage';
-import CustomersPage from './pages/CustomersPage';
-import AnalyticsPage from './pages/AnalyticsPage';
-import ToolsPage from './pages/ToolsPage';
-import NotFoundPage from './pages/NotFoundPage';
-import LoginPage from './pages/LoginPage';
+// Pages — lazy-loaded so each page only loads when visited
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const CommandCenterPage = lazy(() => import('./pages/CommandCenterPage'));
+const PipelinePage = lazy(() => import('./pages/PipelinePage'));
+const CustomersPage = lazy(() => import('./pages/CustomersPage'));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
+const ToolsPage = lazy(() => import('./pages/ToolsPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // DevTools — only imported in development, excluded from production bundle by Vite
 const DevTools = import.meta.env.DEV
@@ -36,33 +37,41 @@ const queryClient = new QueryClient({
   },
 });
 
+const PageFallback = () => (
+  <div className="p-6">
+    <SkeletonLoader />
+  </div>
+);
+
 function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <Router>
-          <Routes>
-            {/* Public route */}
-            <Route path="/login" element={<LoginPage />} />
+          <Suspense fallback={<PageFallback />}>
+            <Routes>
+              {/* Public route */}
+              <Route path="/login" element={<LoginPage />} />
 
-            {/* Protected routes */}
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate replace to="/command" />} />
-              <Route path="command" element={<CommandCenterPage />} />
-              <Route path="pipeline" element={<PipelinePage />} />
-              <Route path="customers" element={<CustomersPage />} />
-              <Route path="dashboard" element={<Navigate replace to="/command" />} />
-              <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="tools" element={<ToolsPage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Route>
-          </Routes>
+              {/* Protected routes */}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate replace to="/command" />} />
+                <Route path="command" element={<CommandCenterPage />} />
+                <Route path="pipeline" element={<PipelinePage />} />
+                <Route path="customers" element={<CustomersPage />} />
+                <Route path="dashboard" element={<Navigate replace to="/command" />} />
+                <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="tools" element={<ToolsPage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Route>
+            </Routes>
+          </Suspense>
         </Router>
 
         {/* ReactQueryDevtools — only rendered in dev, tree-shaken in production */}

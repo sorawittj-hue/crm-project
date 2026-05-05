@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
-import { useCustomers, useDeleteCustomer } from '../hooks/useCustomers';
+import { useCustomers, useDeleteCustomer, useCreateCustomer } from '../hooks/useCustomers';
 import { useDeals } from '../hooks/useDeals';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../components/ui/Dialog';
+import { Textarea } from '../components/ui/Textarea';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { formatCurrency, formatFullCurrency } from '../lib/formatters';
@@ -22,16 +24,35 @@ const TIER_CONFIG = {
   Platinum: { color: 'bg-violet-50 text-violet-700 border-violet-200', icon: '💎' },
 };
 
+const EMPTY_FORM = { name: '', company: '', email: '', phone: '', industry: '', tier: 'Silver', notes: '' };
+
 export default function CustomersPage() {
   const { data: customers, isLoading: customersLoading } = useCustomers();
   const { data: deals, isLoading: dealsLoading } = useDeals();
   const deleteCustomerMutation = useDeleteCustomer();
+  const createCustomerMutation = useCreateCustomer();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState('all');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, customerId: null });
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newCustomer, setNewCustomer] = useState(EMPTY_FORM);
+  const [formError, setFormError] = useState(null);
+
+  const handleAddSubmit = async (e) => {
+    e.preventDefault();
+    if (createCustomerMutation.isPending) return;
+    setFormError(null);
+    try {
+      await createCustomerMutation.mutateAsync(newCustomer);
+      setIsAddModalOpen(false);
+      setNewCustomer(EMPTY_FORM);
+    } catch (err) {
+      setFormError(err?.message || 'ไม่สามารถบันทึกได้ กรุณาลองใหม่');
+    }
+  };
 
   // Enrich customers with deal stats
   const enrichedCustomers = useMemo(() => {
@@ -97,7 +118,10 @@ export default function CustomersPage() {
           <p className="text-sm text-slate-500 mt-1">จัดการข้อมูลลูกค้าครบวงจร พร้อมติดตามมูลค่าดีลและประวัติการขาย</p>
         </div>
         <div className="flex items-center gap-4">
-          <Button className="h-10 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold shadow-md shadow-violet-500/20 border-0">
+          <Button
+            onClick={() => { setNewCustomer(EMPTY_FORM); setFormError(null); setIsAddModalOpen(true); }}
+            className="h-10 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold shadow-md shadow-violet-500/20 border-0"
+          >
             <Plus size={14} className="mr-2" /> เพิ่มลูกค้าใหม่
           </Button>
         </div>
@@ -382,6 +406,115 @@ export default function CustomersPage() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* ADD CUSTOMER MODAL */}
+      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+        <DialogContent className="max-w-xl bg-white rounded-[3rem] p-12 border-0 shadow-2xl">
+          <DialogHeader className="mb-8">
+            <DialogTitle className="text-xl font-bold text-slate-900">เพิ่มลูกค้าใหม่</DialogTitle>
+            <p className="text-sm text-slate-400 mt-1">กรอกข้อมูลลูกค้าที่ต้องการเพิ่ม</p>
+          </DialogHeader>
+
+          <form onSubmit={handleAddSubmit} className="space-y-5">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2 space-y-2">
+                <label className="text-sm font-semibold text-slate-600">ชื่อลูกค้า *</label>
+                <Input
+                  required
+                  placeholder="เช่น คุณสมชาย ใจดี"
+                  value={newCustomer.name}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                  className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 font-bold focus:bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-600">บริษัท</label>
+                <Input
+                  placeholder="เช่น บริษัท ABC จำกัด"
+                  value={newCustomer.company}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, company: e.target.value })}
+                  className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-600">อุตสาหกรรม</label>
+                <Input
+                  placeholder="เช่น IT, Manufacturing"
+                  value={newCustomer.industry}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, industry: e.target.value })}
+                  className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-600">อีเมล</label>
+                <Input
+                  type="email"
+                  placeholder="example@company.com"
+                  value={newCustomer.email}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                  className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-600">เบอร์โทร</label>
+                <Input
+                  placeholder="0XX-XXX-XXXX"
+                  value={newCustomer.phone}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                  className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white"
+                />
+              </div>
+              <div className="col-span-2 space-y-2">
+                <label className="text-sm font-semibold text-slate-600">ระดับลูกค้า</label>
+                <select
+                  value={newCustomer.tier}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, tier: e.target.value })}
+                  className="w-full h-12 rounded-2xl border-0 ring-1 ring-slate-100 bg-slate-50/50 px-4 font-semibold outline-none focus:ring-violet-400"
+                >
+                  <option value="Silver">🥈 Silver</option>
+                  <option value="Gold">🥇 Gold</option>
+                  <option value="Platinum">💎 Platinum</option>
+                </select>
+              </div>
+              <div className="col-span-2 space-y-2">
+                <label className="text-sm font-semibold text-slate-600">บันทึก</label>
+                <Textarea
+                  placeholder="บันทึกข้อมูลเพิ่มเติม..."
+                  value={newCustomer.notes}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, notes: e.target.value })}
+                  className="rounded-2xl border-slate-100 bg-slate-50/50 resize-none min-h-[80px] focus:bg-white"
+                />
+              </div>
+            </div>
+
+            {formError && (
+              <div className="px-4 py-3 rounded-xl bg-rose-50 border border-rose-100 text-sm text-rose-600 font-medium">
+                {formError}
+              </div>
+            )}
+
+            <div className="pt-4 flex gap-4">
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={createCustomerMutation.isPending}
+                onClick={() => setIsAddModalOpen(false)}
+                className="flex-1 h-11 rounded-xl text-sm text-slate-500"
+              >
+                ยกเลิก
+              </Button>
+              <Button
+                type="submit"
+                disabled={createCustomerMutation.isPending}
+                className="flex-[2] h-11 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-violet-500/20 disabled:opacity-70 flex items-center justify-center gap-2"
+              >
+                {createCustomerMutation.isPending && <Loader2 size={14} className="animate-spin" />}
+                {createCustomerMutation.isPending ? 'กำลังบันทึก...' : 'บันทึกลูกค้า'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Confirm Delete Dialog */}
       <ConfirmDialog

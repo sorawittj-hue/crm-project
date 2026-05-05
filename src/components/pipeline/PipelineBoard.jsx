@@ -14,6 +14,7 @@ import { STAGE_IDS } from '../../lib/constants';
 import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { Textarea } from '../ui/Textarea';
+import { useToast } from '../ui/Toast';
 
 const STAGE_CONFIG = {
   lead: {
@@ -76,6 +77,7 @@ export default function PipelineBoard({
   onDealClick,
   onUpdateDeal,
 }) {
+  const toast = useToast();
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedDealId, setSelectedDealId] = useState(null);
   const [pinnedDealIds, setPinnedDealIds] = useState([]);
@@ -158,7 +160,7 @@ export default function PipelineBoard({
 
   const submitReason = () => {
     if (reasonText.trim().length < 5) {
-      alert('กรุณาระบุเหตุผลให้ชัดเจนขึ้น (อย่างน้อย 5 ตัวอักษร)');
+      toast.warning('กรุณาระบุเหตุผลให้ชัดเจนขึ้น (อย่างน้อย 5 ตัวอักษร)');
       return;
     }
     onUpdateDeal(reasonModal.dealId, {

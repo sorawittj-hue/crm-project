@@ -14,9 +14,12 @@ export default defineConfig({
         manualChunks: {
           // Split vendor chunks for better caching
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select', '@radix-ui/react-tabs', '@radix-ui/react-tooltip'],
+          'vendor-query': ['@tanstack/react-query', 'zustand'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select', '@radix-ui/react-tabs', '@radix-ui/react-tooltip', '@radix-ui/react-switch', 'cmdk'],
           'vendor-charts': ['recharts'],
-          'vendor-utils': ['framer-motion', 'lucide-react', 'clsx', 'tailwind-merge'],
+          'vendor-motion': ['framer-motion'],
+          'vendor-utils': ['lucide-react', 'clsx', 'tailwind-merge'],
         },
       },
     },
