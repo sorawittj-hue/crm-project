@@ -13,6 +13,8 @@ import { useDeals } from '../../hooks/useDeals';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useSettings } from '../../hooks/useSettings';
 import { useAuth } from '../../hooks/useAuth';
+import { cn } from '../../lib/utils';
+import { formatCurrency } from '../../lib/formatters';
 import { Button } from '../ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/Dialog';
 import { Input } from '../ui/Input';
