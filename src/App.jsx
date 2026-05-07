@@ -15,6 +15,7 @@ const PipelinePage = lazy(() => import('./pages/PipelinePage'));
 const CustomersPage = lazy(() => import('./pages/CustomersPage'));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 const ToolsPage = lazy(() => import('./pages/ToolsPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // DevTools — only imported in development, excluded from production bundle by Vite
@@ -68,6 +69,7 @@ function App() {
                 <Route path="dashboard" element={<Navigate replace to="/command" />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="tools" element={<ToolsPage />} />
+                <Route path="settings" element={<SettingsPage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Route>
             </Routes>

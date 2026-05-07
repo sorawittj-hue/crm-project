@@ -33,6 +33,7 @@ const navItems = [
   { to: '/customers', icon: Users,            label: 'ลูกค้า',        sub: 'Customers' },
   { to: '/analytics', icon: BarChart3,        label: 'รายงาน',        sub: 'Analytics' },
   { to: '/tools',     icon: Wrench,           label: 'เครื่องมือ',    sub: 'Tools' },
+  { to: '/settings',  icon: Settings,         label: 'ตั้งค่า',        sub: 'Settings' },
 ];
 
 export default function AppLayout() {

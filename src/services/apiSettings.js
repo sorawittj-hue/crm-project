@@ -1,24 +1,27 @@
 import { supabase } from '../utils/supabase';
 
+const DEFAULTS = {
+  id: 'global',
+  monthly_target: 10000000,
+  leader_target: 7000000,
+  member_target: 3000000,
+  company_name: '',
+  company_industry: '',
+  currency: 'THB',
+  fiscal_month_start: 1,
+};
+
 export async function fetchAppSettings() {
   const { data, error } = await supabase.from('app_settings').select('*').eq('id', 'global').single();
-  if (error) {
-    // Table doesn't exist yet - use defaults (no warning to avoid console spam)
-    return {
-      monthly_target: 10000000,
-      leader_target: 7000000,
-      member_target: 3000000
-    };
-  }
-  return data;
+  if (error) return { ...DEFAULTS };
+  return { ...DEFAULTS, ...data };
 }
 
 export async function updateAppSettings(updates) {
   const { data, error } = await supabase
     .from('app_settings')
-    .update(updates)
-    .eq('id', 'global')
+    .upsert({ id: 'global', ...updates })
     .select();
-  if (error) throw new Error('Settings could not be updated');
-  return data;
+  if (error) throw new Error('Settings could not be updated: ' + error.message);
+  return data?.[0];
 }

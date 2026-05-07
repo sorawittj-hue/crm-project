@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchTeamMembers, updateTeamMember } from '../services/apiTeam';
+import { fetchTeamMembers, updateTeamMember, addTeamMember, deleteTeamMember } from '../services/apiTeam';
 import { useToast } from '../components/ui/Toast';
 
 export function useTeam() {
   return useQuery({
     queryKey: ['team'],
     queryFn: fetchTeamMembers,
-    staleTime: 10 * 60 * 1000, // Team data rarely changes
+    staleTime: 10 * 60 * 1000,
     retry: 1,
   });
 }
@@ -14,7 +14,6 @@ export function useTeam() {
 export function useUpdateTeamMember() {
   const queryClient = useQueryClient();
   const toast = useToast();
-
   return useMutation({
     mutationFn: updateTeamMember,
     onSuccess: () => {
@@ -23,6 +22,36 @@ export function useUpdateTeamMember() {
     },
     onError: (error) => {
       toast.error(error.message || 'ไม่สามารถอัปเดตข้อมูลทีมได้');
+    },
+  });
+}
+
+export function useAddTeamMember() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  return useMutation({
+    mutationFn: addTeamMember,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team'] });
+      toast.success('เพิ่มสมาชิกทีมเรียบร้อยแล้ว');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'ไม่สามารถเพิ่มสมาชิกได้');
+    },
+  });
+}
+
+export function useDeleteTeamMember() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  return useMutation({
+    mutationFn: deleteTeamMember,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team'] });
+      toast.success('ลบสมาชิกทีมเรียบร้อยแล้ว');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'ไม่สามารถลบสมาชิกได้');
     },
   });
 }
