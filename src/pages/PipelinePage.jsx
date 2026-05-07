@@ -1,6 +1,7 @@
 import { useState, useMemo, lazy, Suspense } from 'react';
 import { useDeals, useUpdateDeal, useAddDeal, useAddMultipleDeals, useDeleteDeals } from '../hooks/useDeals';
 import { useCustomers } from '../hooks/useCustomers';
+import { useTeam } from '../hooks/useTeam';
 import { useAppStore } from '../store/useAppStore';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
 import { Plus, Filter, Search, Loader2, Sliders, ScanLine } from 'lucide-react';
@@ -20,6 +21,7 @@ import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../components/
 export default function PipelinePage() {
   const { data: deals, isLoading, error } = useDeals();
   const { data: customers = [] } = useCustomers();
+  const { data: teamMembers = [] } = useTeam();
   const updateDealMutation = useUpdateDeal();
   const addDealMutation = useAddDeal();
   const addMultipleDealsMutation = useAddMultipleDeals();
@@ -39,7 +41,8 @@ export default function PipelinePage() {
 
   const [newDeal, setNewDeal] = useState({
     title: '', company: '', value: '', stage: 'lead', customer_id: '',
-    contact: '', contact_email: '', contact_phone: '', probability: '50', expected_close_date: '',
+    contact: '', contact_email: '', contact_phone: '', probability: '50',
+    expected_close_date: '', assigned_to: '',
   });
 
   // We filter the input to MonthlyPipeline based on search and parameters
@@ -84,9 +87,10 @@ export default function PipelinePage() {
         value: Number(newDeal.value) || 0,
         probability: Number(newDeal.probability) || 50,
         expected_close_date: newDeal.expected_close_date || null,
+        assigned_to: newDeal.assigned_to || null,
       });
       setIsAddModalOpen(false);
-      setNewDeal({ title: '', company: '', value: '', stage: 'lead', customer_id: '', contact: '', contact_email: '', contact_phone: '', probability: '50', expected_close_date: '' });
+      setNewDeal({ title: '', company: '', value: '', stage: 'lead', customer_id: '', contact: '', contact_email: '', contact_phone: '', probability: '50', expected_close_date: '', assigned_to: '' });
     } catch (err) {
       setFormError(err?.message || 'ไม่สามารถบันทึกดีลได้ กรุณาลองใหม่');
     }
@@ -389,6 +393,23 @@ export default function PipelinePage() {
                     </select>
                 </div>
              </div>
+             {/* Assigned to */}
+             {teamMembers.length > 0 && (
+               <div className="space-y-1">
+                 <label className="text-xs font-semibold text-slate-500">รับผิดชอบโดย</label>
+                 <select
+                   value={newDeal.assigned_to}
+                   onChange={(e) => setNewDeal({ ...newDeal, assigned_to: e.target.value })}
+                   className="w-full h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 transition-all text-sm"
+                 >
+                   <option value="">— ไม่ระบุ —</option>
+                   {teamMembers.map(m => (
+                     <option key={m.id} value={m.id}>{m.name}{m.role ? ` (${m.role})` : ''}</option>
+                   ))}
+                 </select>
+               </div>
+             )}
+
              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                     <label className="text-xs font-semibold text-slate-500">โอกาสปิด (%)</label>
