@@ -5,7 +5,7 @@ import { useTeam } from '../hooks/useTeam';
 import { useAuth } from '../hooks/useAuth';
 import { useAppStore } from '../store/useAppStore';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
-import { Plus, Filter, Search, Loader2, Sliders, ScanLine, Download, User } from 'lucide-react';
+import { Plus, Filter, Search, Loader2, Sliders, ScanLine, Download, User, Zap, X } from 'lucide-react';
 
 // Lazy-load PDFImporter to avoid bundling pdfjs-dist (~5MB) in initial load
 const PDFImporter = lazy(() => import('../components/pipeline/PDFImporter'));
@@ -34,6 +34,9 @@ export default function PipelinePage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [myDealsOnly, setMyDealsOnly] = useState(false);
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [quickDeal, setQuickDeal] = useState({ company: '', title: '', value: '', expected_close_date: '' });
+  const [quickError, setQuickError] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [stageFilter, setStageFilter] = useState([]);
@@ -116,6 +119,26 @@ export default function PipelinePage() {
     }
   };
 
+  const handleQuickAdd = async (e) => {
+    e.preventDefault();
+    if (!quickDeal.title && !quickDeal.company) { setQuickError('ใส่ชื่อดีลหรือบริษัทอย่างน้อย 1 อย่าง'); return; }
+    setQuickError(null);
+    try {
+      await addDealMutation.mutateAsync({
+        title: quickDeal.title || quickDeal.company,
+        company: quickDeal.company,
+        value: Number(quickDeal.value) || 0,
+        stage: 'lead',
+        probability: 50,
+        expected_close_date: quickDeal.expected_close_date || null,
+      });
+      setQuickDeal({ company: '', title: '', value: '', expected_close_date: '' });
+      setIsQuickAddOpen(false);
+    } catch (err) {
+      setQuickError(err?.message || 'ไม่สามารถบันทึกได้');
+    }
+  };
+
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center h-[60vh] gap-6">
       <Loader2 className="animate-spin text-primary" size={32} />
@@ -172,6 +195,17 @@ export default function PipelinePage() {
             <Sliders size={14} className="mr-2" /> สแกน PDF
           </Button>
           <Button
+            onClick={() => { setIsQuickAddOpen(v => !v); setQuickError(null); }}
+            className={cn(
+              'h-10 px-4 rounded-xl text-sm border-0 shadow-md flex items-center gap-2 transition-all',
+              isQuickAddOpen
+                ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-400/20'
+                : 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-400/20'
+            )}
+          >
+            <Zap size={14} /> Quick Add
+          </Button>
+          <Button
             onClick={() => setIsAddModalOpen(true)}
             className="h-10 px-4 rounded-xl text-sm bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20"
           >
@@ -179,6 +213,89 @@ export default function PipelinePage() {
           </Button>
         </div>
       </header>
+
+      {/* QUICK ADD PANEL */}
+      <AnimatePresence>
+        {isQuickAddOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -8, height: 0 }}
+            transition={{ duration: 0.2, ease: [0.19, 1, 0.22, 1] }}
+            className="overflow-hidden"
+          >
+            <form
+              onSubmit={handleQuickAdd}
+              className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 flex flex-col md:flex-row items-start md:items-end gap-3"
+            >
+              <div className="flex items-center gap-2 shrink-0 self-start md:self-auto md:pb-0.5">
+                <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center">
+                  <Zap size={13} className="text-white" />
+                </div>
+                <span className="text-sm font-bold text-amber-700">Quick Add</span>
+              </div>
+
+              <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-3 w-full">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">ชื่อบริษัท</label>
+                  <Input
+                    placeholder="เช่น บริษัท ABC"
+                    value={quickDeal.company}
+                    onChange={e => setQuickDeal(q => ({ ...q, company: e.target.value }))}
+                    className="h-9 rounded-xl text-sm border-amber-200 bg-white focus:ring-amber-400/30"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">ชื่อดีล</label>
+                  <Input
+                    placeholder="เช่น Server 2026"
+                    value={quickDeal.title}
+                    onChange={e => setQuickDeal(q => ({ ...q, title: e.target.value }))}
+                    className="h-9 rounded-xl text-sm border-amber-200 bg-white focus:ring-amber-400/30"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">ราคา (บาท)</label>
+                  <Input
+                    type="number"
+                    placeholder="500,000"
+                    value={quickDeal.value}
+                    onChange={e => setQuickDeal(q => ({ ...q, value: e.target.value }))}
+                    className="h-9 rounded-xl text-sm border-amber-200 bg-white focus:ring-amber-400/30"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">วันที่คาดปิด</label>
+                  <Input
+                    type="date"
+                    value={quickDeal.expected_close_date}
+                    onChange={e => setQuickDeal(q => ({ ...q, expected_close_date: e.target.value }))}
+                    className="h-9 rounded-xl text-sm border-amber-200 bg-white focus:ring-amber-400/30"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {quickError && <span className="text-xs text-rose-600 font-medium">{quickError}</span>}
+                <Button
+                  type="submit"
+                  disabled={addDealMutation.isPending}
+                  className="h-9 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold border-0 shadow-sm"
+                >
+                  {addDealMutation.isPending ? <Loader2 size={13} className="animate-spin" /> : 'บันทึก'}
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => setIsQuickAddOpen(false)}
+                  className="p-2 rounded-xl text-amber-500 hover:bg-amber-100 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* TOOLBAR: search + filter toggle + sort */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
