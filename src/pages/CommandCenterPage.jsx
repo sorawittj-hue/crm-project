@@ -67,7 +67,10 @@ export default function CommandCenterPage() {
     }
 
     deals.forEach(deal => {
-      const dealDate = new Date(deal.created_at);
+      const rawDate = deal.stage === 'won'
+        ? (deal.actual_close_date || deal.updated_at || deal.created_at)
+        : deal.created_at;
+      const dealDate = new Date(rawDate);
       const mIdx = months.findIndex(m => m.month === dealDate.getMonth() && m.year === dealDate.getFullYear());
       if (mIdx !== -1) {
         if (deal.stage === 'won') months[mIdx].actual += Number(deal.value || 0);
@@ -186,10 +189,15 @@ export default function CommandCenterPage() {
           <h1 className="text-2xl font-bold text-slate-900">ภาพรวมยอดขาย</h1>
           <p className="text-sm text-slate-500 mt-1">สถานะดีลและงานสำคัญประจำวัน</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <Button onClick={() => navigate('/customers')}
+            className="h-9 px-4 rounded-xl text-sm bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm">
+            <Users size={14} className="mr-1.5" />
+            ลูกค้า
+          </Button>
           <Button onClick={() => navigate('/pipeline')}
             className="h-9 px-5 rounded-xl text-sm bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20">
-            <ArrowUpRight size={14} className="mr-2" />
+            <ArrowUpRight size={14} className="mr-1.5" />
             ดูดีลทั้งหมด
           </Button>
         </div>
@@ -257,7 +265,7 @@ export default function CommandCenterPage() {
           <div>
             <p className="text-xs text-slate-400 font-medium">ต้องติดตามด่วน</p>
             <p className="text-3xl font-bold text-rose-500 mt-1 tabular-nums">
-              {stats?.urgentDeals?.length}
+              {stats?.urgentDeals?.length || 0}
               <span className="text-base text-slate-300 font-normal ml-1.5">ดีล</span>
             </p>
             <p className="text-xs text-slate-400 mt-1">ไม่มีความเคลื่อนไหว 3+ วัน</p>
@@ -270,30 +278,30 @@ export default function CommandCenterPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[
             {
-              label: 'Weighted forecast',
+              label: 'คาดการณ์ถ่วงน้ำหนัก',
               value: formatCurrency(stats?.intelligence?.forecastToGoalValue),
-              detail: `${Math.round((stats?.intelligence?.weightedCoverageRatio || 0) * 100)}% to goal`,
+              detail: `${Math.round((stats?.intelligence?.weightedCoverageRatio || 0) * 100)}% ของเป้าหมาย`,
               icon: Target,
               tone: 'text-violet-600 bg-violet-50',
             },
             {
-              label: 'Next 30 days',
+              label: '30 วันข้างหน้า',
               value: formatCurrency(stats?.intelligence?.next30DayWeightedValue),
-              detail: `${stats?.intelligence?.closingSoonDeals?.length || 0} closing plays`,
+              detail: `${stats?.intelligence?.closingSoonDeals?.length || 0} ดีลใกล้ปิด`,
               icon: CalendarClock,
               tone: 'text-blue-600 bg-blue-50',
             },
             {
-              label: 'At-risk revenue',
+              label: 'ดีลเสี่ยงหลุด',
               value: formatCurrency(stats?.intelligence?.atRiskValue),
-              detail: `${stats?.intelligence?.highImpactRisks?.length || 0} rescue targets`,
+              detail: `${stats?.intelligence?.highImpactRisks?.length || 0} ดีลต้องช่วยด่วน`,
               icon: AlertCircle,
               tone: 'text-rose-600 bg-rose-50',
             },
             {
-              label: 'Commit value',
+              label: 'มูลค่ามั่นใจสูง',
               value: formatCurrency(stats?.intelligence?.commitValue),
-              detail: `${stats?.intelligence?.averageInactiveDays || 0} avg idle days`,
+              detail: `เฉลี่ย ${stats?.intelligence?.averageInactiveDays || 0} วันไม่มีกิจกรรม`,
               icon: CheckCircle2,
               tone: 'text-emerald-600 bg-emerald-50',
             },
@@ -324,10 +332,21 @@ export default function CommandCenterPage() {
             <h3 className="font-semibold text-slate-800">วันนี้ต้องทำ</h3>
           </div>
 
+          {stats?.intelligence?.executiveActions?.length === 0 &&
+            actionPlan.followUps.length === 0 &&
+            actionPlan.closingThisWeek.length === 0 &&
+            actionPlan.stale.length === 0 && (
+            <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-100 text-center">
+              <CheckCircle2 size={28} className="text-emerald-400 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-emerald-700">ทุกอย่างเรียบร้อยดี!</p>
+              <p className="text-xs text-emerald-500 mt-1">ไม่มีงานค้างหรือดีลที่ต้องติดตามเร่งด่วน</p>
+            </div>
+          )}
+
           {stats?.intelligence?.executiveActions?.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Executive action queue</p>
+                <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider">งานเร่งด่วน</p>
                 <span className="text-xs text-slate-400">{stats.intelligence.executiveActions.length}</span>
               </div>
               {stats.intelligence.executiveActions.slice(0, 3).map((action) => (
@@ -403,7 +422,7 @@ export default function CommandCenterPage() {
                     {a.overdue && (
                       <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">เลยกำหนด</span>
                     )}
-                    <span className="text-[10px] text-slate-500 font-semibold">{a.deal.company || a.deal.title}</span>
+                    <span className="text-[10px] text-slate-500 font-semibold">{a.deal?.company || a.deal?.title}</span>
                   </div>
                   <p className="text-sm font-semibold text-slate-800 truncate">{a.title}</p>
                 </div>
