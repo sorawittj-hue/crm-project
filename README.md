@@ -1,268 +1,161 @@
-# 🚀 ZENITH CRM - Production-Ready Sales Management System
+# Zenith CRM
 
-A modern, enterprise-grade CRM application built with React, Supabase, and AI-powered insights.
+**Modern Sales Management System** — built for high-performance sales teams.
 
-## ✨ Features
+Zenith CRM helps you manage your entire sales pipeline, track customer relationships, and close more deals with AI-powered insights.
 
-### 🎯 Core Functionality
-- **Pipeline Management**: Kanban-style deal board with drag-and-drop
-- **Customer Management**: Complete CRM with lifetime value tracking
-- **Command Center**: Real-time dashboard with AI-generated battle plans
-- **Analytics**: Comprehensive sales metrics and forecasting
-- **AI Tools**: Intelligent deal analysis, email generation, and prioritization
-- **Sales Intelligence**: Weighted forecast, quota coverage, at-risk revenue, and executive action queue
-- **Account Health**: Customer health scoring, expansion signals, and risk filters
+---
 
-### 🛠️ Technical Features
-- **Real-time Database**: Supabase backend with automatic sync
-- **Error Handling**: Global error boundary with graceful fallbacks
-- **Toast Notifications**: User feedback for all actions
-- **Responsive Design**: Works on desktop, tablet, and mobile
-- **Keyboard Shortcuts**: Power user features for efficiency
-- **Natural Scrolling**: Drag-to-scroll, swipe support, enhanced scrollbars
-- **Database Auditability**: Authenticated-only RLS and mutation audit log for core CRM records
+## Features
 
-## 📋 Prerequisites
+| Category | Capabilities |
+|---|---|
+| **Pipeline** | Kanban board, list view, deal filtering, stage management |
+| **Customers** | CRM database, health scoring, grade system (A–D), deal history |
+| **Command Center** | Daily action plan, revenue forecast, team performance |
+| **Analytics** | Monthly revenue trends, win rates, stage conversion |
+| **Settings** | Sales targets, team member management, company profile |
+| **AI Tools** | PDF deal scanner, AI email generator, strategic analysis |
 
-Before deploying, ensure you have:
-- Node.js 18+ and npm installed
-- A Supabase account and project created
-- Gemini API key for AI features (optional)
+---
 
-## 🚀 Deployment Guide
+## Tech Stack
 
-### Step 1: Database Setup
+- **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion
+- **Backend**: Supabase (PostgreSQL + Auth + RLS)
+- **State**: Zustand + React Query
+- **Charts**: Recharts
+- **AI**: Google Gemini API
 
-1. **Go to Supabase Dashboard**: https://supabase.com/dashboard
-2. **Create a new project** or select existing one
-3. **Run the SQL Schema**:
-   - Navigate to SQL Editor in Supabase
-   - Copy the contents of `supabase_schema_complete.sql`
-   - Paste and run the entire script
-   - Verify all tables are created successfully
+---
 
-### Step 2: Environment Configuration
+## Getting Started
 
-1. **Copy the example env file**:
-   ```bash
-   cp .env.example .env
-   ```
-
-2. **Update `.env` with your credentials**:
-   ```env
-   VITE_SUPABASE_URL=your_supabase_project_url
-   VITE_SUPABASE_KEY=your_supabase_anon_key
-   VITE_GEMINI_API_KEY=your_gemini_api_key
-   ```
-
-   **How to get these keys:**
-   - **Supabase URL**: Go to Project Settings → API → Project URL
-   - **Supabase Anon Key**: Project Settings → API → anon/public key
-   - **Gemini API Key**: https://makersuite.google.com/app/apikey (optional, for AI features)
-   - Legacy deployments using `VITE_SUPABASE_ANON_KEY` still work, but `VITE_SUPABASE_KEY` is the documented default.
-
-### Step 3: Install Dependencies
+### 1. Clone & Install
 
 ```bash
+git clone <repository-url>
+cd crm-project
 npm install
 ```
 
-### Step 4: Development
+### 2. Configure Environment
 
-Run the development server:
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_KEY=your-supabase-anon-key
+VITE_GEMINI_API_KEY=your-gemini-api-key   # optional — for AI features
+```
+
+Get your keys from:
+- **Supabase**: Project Settings → API
+- **Gemini**: [Google AI Studio](https://makersuite.google.com/app/apikey)
+
+### 3. Set Up Database
+
+In your Supabase project, go to **SQL Editor** and run `supabase_schema_complete.sql`.
+
+This creates:
+- `deals` — opportunity tracking
+- `customers` — contact database
+- `activities` — calls, emails, meetings, notes
+- `team_members` — sales team configuration
+- `app_settings` — targets and company profile
+- `notifications` — in-app alerts
+- `email_templates` — reusable email templates
+
+### 4. Run Locally
 
 ```bash
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
+Open [http://localhost:5173](http://localhost:5173)
 
-### Step 5: Production Build
+### 5. Build for Production
 
 ```bash
 npm run build
-npm run preview
 ```
 
-Or deploy to Vercel/Netlify:
+---
 
-#### Deploy to Vercel
+## Deployment
+
+### Vercel
+
 ```bash
 npm install -g vercel
 vercel
 ```
 
-#### Deploy to Netlify
+Add environment variables in Vercel Dashboard → Project Settings → Environment Variables.
+
+### Netlify
+
 ```bash
 npm run build
-# Drag and drop the `dist` folder to Netlify
+# Deploy the dist/ folder
 ```
 
-## 📊 Database Schema Overview
+---
 
-### Tables Created:
-1. **team_members**: Sales team configuration
-2. **app_settings**: Global app configuration (targets, currency)
-3. **customers**: Customer/contact database
-4. **deals**: Deal/opportunity tracking
-5. **activities**: Calls, emails, meetings, notes
-6. **email_templates**: Reusable email templates
-7. **notifications**: In-app notifications
+## Configuration
 
-### Views for Analytics:
-- `pipeline_summary`: Deals by stage
-- `team_performance`: Sales rep performance
-- `customer_lifetime_value`: Customer LTV metrics
-- `monthly_revenue`: Revenue trends
+### Sales Targets
 
-## 🎨 Customization
+Go to **Settings → เป้าหมายยอดขาย** to set monthly, leader, and member targets.
 
-### Branding
-Edit `src/index.css` to customize:
-- Color scheme (CSS variables in `:root`)
-- Typography
-- Spacing
+### Team Members
 
-### Team Configuration
-Update team members in Supabase `team_members` table:
-```sql
-UPDATE team_members 
-SET name = 'Your Name', 
-    goal = 5000000,
-    color = 'bg-blue-600'
-WHERE id = 'leader';
-```
+Go to **Settings → ทีมงาน** to add/edit/delete sales team members and their individual goals.
 
-### Email Templates
-Add custom templates in Supabase `email_templates` table:
-```sql
-INSERT INTO email_templates (name, subject, body, category)
-VALUES ('Custom Template', 'Subject', 'Body text...', 'custom');
-```
+### Pipeline Stages
 
-## 🔧 Troubleshooting
+Default stages (in order):
 
-### "Failed to load deals" error
-- Check Supabase credentials in `.env`
-- Verify `deals` table exists in Supabase
-- Check RLS policies allow read access
+| Stage | Thai | Description |
+|---|---|---|
+| `lead` | ลูกค้าใหม่ | New lead |
+| `contact` | นัดเจอ | In contact |
+| `proposal` | เสนอราคา | Proposal sent |
+| `negotiation` | กำลังปิด | Closing |
+| `won` | ปิดได้ | Deal won |
+| `lost` | ปิดไม่ได้ | Deal lost |
 
-### AI features not working
-- Verify Gemini API key is set in `.env`
-- Check API quota in Google Cloud Console
-- AI features are optional - app works without them
+---
 
-### Build errors
+## Security
+
+- **Authentication required** — all CRM data is protected by Supabase RLS
+- **Audit log** — customer, deal, and activity mutations are tracked
+- **Environment variables** — never commit `.env` to version control
+
+---
+
+## Troubleshooting
+
+**"Failed to load deals"**
+→ Check Supabase credentials in `.env` and verify the database schema is complete.
+
+**AI features not working**
+→ Verify `VITE_GEMINI_API_KEY` is set. AI features are optional — the app works without them.
+
+**Build errors**
 ```bash
-# Clear cache and reinstall
 rm -rf node_modules package-lock.json
 npm install
 npm run build
 ```
 
-### Database connection issues
-- Ensure Supabase project is active
-- Check firewall/network settings
-- Verify API keys have correct permissions
-
-## 📱 Usage Guide
-
-### Adding a Deal
-1. Click "New Deal" button in Pipeline
-2. Fill in required fields (Title, Company, Value)
-3. Select assigned team member
-4. Click "Create Deal"
-
-### Moving Deals
-- **Drag & Drop**: Drag card to different stage
-- **Keyboard**: Select deal + `Shift + ←/→`
-- **Quick Actions**: Hover + click arrow buttons
-
-### Customer Management
-1. Go to Customers page
-2. Search/filter by name, company, tier
-3. Click customer to view details
-4. View lifetime value and deal history
-
-### AI Features
-- **AI Scan**: Extract deal info from PDFs
-- **Battle Plan**: Generate daily action plan (Command page)
-- **Strategic Mandates**: AI-powered recommendations
-
-## 🎯 Best Practices
-
-### Data Entry
-- Always fill `company` and `contact` fields
-- Update `last_activity` after each interaction
-- Set `probability` for accurate forecasting
-- Add `tags` for better filtering
-
-### Pipeline Management
-- Review "At Risk" deals daily
-- Move stalled deals (>14 days) forward
-- Pin high-priority deals
-- Use quick filters for efficiency
-
-### Team Collaboration
-- Log all activities in the system
-- Use email templates for consistency
-- Set clear next steps for each deal
-- Update deal stage immediately
-
-## 🔐 Security Notes
-
-### Current Setup (Development)
-- Supabase Auth is required before CRM tables can be read or changed
-- Core CRM tables are protected with authenticated-only RLS policies
-- Customer, deal, and activity mutations are captured in `audit_log`
-
-### Production Recommendations
-1. **Map Supabase users to team members**: Add per-user ownership when multiple companies or regions share one database
-2. **Add Role-based Access**: Different permissions per role
-3. **Review Audit Logs**: Track customer/deal/activity changes during weekly sales operations
-4. **Use Environment Variables**: Never commit `.env` file
-
-## 📈 Performance Optimization
-
-The app includes:
-- React Query caching (5-minute stale time)
-- Lazy loading for heavy components
-- Memoized calculations (useMemo)
-- Optimized database queries with indexes
-- Debounced search inputs
-
-## 🆘 Support
-
-For issues or questions:
-1. Check this README
-2. Review error messages in browser console
-3. Check Supabase logs in dashboard
-4. Verify database schema is complete
-
-## 📝 Changelog
-
-### v2.0 - Current
-- ✅ Complete database schema
-- ✅ Error boundary and toast notifications
-- ✅ Enhanced API services with validation
-- ✅ Natural horizontal scrolling
-- ✅ Keyboard shortcuts
-- ✅ AI-powered deal analysis
-- ✅ Improved UX across all pages
-
-### Planned
-- [ ] Real-time collaboration
-- [ ] Advanced analytics dashboard
-- [ ] Mobile app (React Native)
-- [ ] Email integration
-- [ ] Calendar sync
-
-## 📄 License
-
-This is a proprietary application. All rights reserved.
-
 ---
 
-**Built with ❤️ using React, Supabase, and AI**
+## License
 
-*Zenith CRM - Your Sales, Orchestrated.*
+Proprietary. All rights reserved.
