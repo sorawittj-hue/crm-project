@@ -37,7 +37,7 @@ const navItems = [
 
 export default function AppLayout() {
   const shouldReduceMotion = useReducedMotion();
-  const { isSidebarOpen, closeSidebar, toggleSidebar, monthlyTarget, setMonthlyTarget } = useAppStore();
+  const { isSidebarOpen, closeSidebar, toggleSidebar, monthlyTarget, setMonthlyTarget, setPendingOpenDeal } = useAppStore();
   const { data: deals = [] } = useDeals();
   const { data: customers = [] } = useCustomers();
   const { data: settings } = useSettings();
@@ -382,7 +382,7 @@ export default function AppLayout() {
                               return (
                                 <button
                                   key={d.id}
-                                  onClick={() => { navigate('/pipeline'); setIsNotifOpen(false); }}
+                                  onClick={() => { setPendingOpenDeal(d); navigate('/pipeline'); setIsNotifOpen(false); }}
                                   className={cn('w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-start gap-3', cfg.row)}
                                 >
                                   <div className="w-7 h-7 rounded-lg bg-rose-100 text-rose-500 flex items-center justify-center shrink-0 mt-0.5">
@@ -419,7 +419,7 @@ export default function AppLayout() {
                               return (
                                 <button
                                   key={a.id}
-                                  onClick={() => { navigate('/pipeline'); setIsNotifOpen(false); }}
+                                  onClick={() => { if (a.deal) setPendingOpenDeal(a.deal); navigate('/pipeline'); setIsNotifOpen(false); }}
                                   className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-start gap-3"
                                 >
                                   <div className={cn('w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5',
@@ -451,7 +451,7 @@ export default function AppLayout() {
                             {closingSoon.map(d => (
                               <button
                                 key={d.id}
-                                onClick={() => { navigate('/pipeline'); setIsNotifOpen(false); }}
+                                onClick={() => { setPendingOpenDeal(d); navigate('/pipeline'); setIsNotifOpen(false); }}
                                 className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-start gap-3"
                               >
                                 <div className="w-7 h-7 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center shrink-0 mt-0.5">
@@ -485,7 +485,7 @@ export default function AppLayout() {
                               return (
                                 <button
                                   key={d.id}
-                                  onClick={() => { navigate('/pipeline'); setIsNotifOpen(false); }}
+                                  onClick={() => { setPendingOpenDeal(d); navigate('/pipeline'); setIsNotifOpen(false); }}
                                   className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-start gap-3"
                                 >
                                   <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 mt-0.5">

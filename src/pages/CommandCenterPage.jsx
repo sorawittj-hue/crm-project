@@ -4,6 +4,7 @@ import { useDeals } from '../hooks/useDeals';
 import { useTeam } from '../hooks/useTeam';
 import { useSettings } from '../hooks/useSettings';
 import { useActivities } from '../hooks/useActivities';
+import { useAppStore } from '../store/useAppStore';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { motion } from 'framer-motion';
@@ -15,12 +16,22 @@ import {
   TrendingUp,
   Users, AlertCircle,
   ArrowUpRight, Briefcase,
-  Target, Clock, CalendarClock, ChevronRight, CheckCircle2
+  Target, Clock, CalendarClock, ChevronRight, CheckCircle2,
+  Phone, Mail, FileText, MessageSquare, Activity
 } from 'lucide-react';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip as RechartsTooltip
 } from 'recharts';
+
+const ACTIVITY_ICON = {
+  call: { Icon: Phone, color: 'bg-blue-50 text-blue-500' },
+  email: { Icon: Mail, color: 'bg-violet-50 text-violet-500' },
+  meeting: { Icon: Clock, color: 'bg-amber-50 text-amber-600' },
+  note: { Icon: FileText, color: 'bg-slate-50 text-slate-500' },
+  task: { Icon: CalendarClock, color: 'bg-amber-50 text-amber-700' },
+  whatsapp: { Icon: MessageSquare, color: 'bg-emerald-50 text-emerald-600' },
+};
 
 export default function CommandCenterPage() {
   const navigate = useNavigate();
@@ -28,6 +39,7 @@ export default function CommandCenterPage() {
   const { data: teamMembers, isLoading: teamLoading } = useTeam();
   const { data: settings, isLoading: settingsLoading } = useSettings();
   const { data: activities = [] } = useActivities();
+  const { setPendingOpenDeal } = useAppStore();
 
   const monthlyGoal = settings?.monthly_target || 10000000;
 
@@ -127,6 +139,33 @@ export default function CommandCenterPage() {
 
     return { followUps, closingThisWeek, stale };
   }, [deals, activities]);
+
+  // Today's real activity feed
+  const todayActivities = useMemo(() => {
+    if (!activities.length) return [];
+    const dealMap = Object.fromEntries((deals || []).map(d => [d.id, d]));
+    return activities
+      .filter(a => a.created_at)
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, 8)
+      .map(a => ({
+        ...a,
+        deal: a.deal_id ? dealMap[a.deal_id] : null,
+        timeLabel: (() => {
+          const diff = (Date.now() - new Date(a.created_at).getTime()) / 1000;
+          if (diff < 60) return 'เมื่อกี้';
+          if (diff < 3600) return `${Math.floor(diff / 60)} นาทีที่แล้ว`;
+          if (diff < 86400) return `${Math.floor(diff / 3600)} ชั่วโมงที่แล้ว`;
+          return `${Math.floor(diff / 86400)} วันที่แล้ว`;
+        })(),
+      }));
+  }, [activities, deals]);
+
+  const openDeal = (deal) => {
+    if (!deal) return;
+    setPendingOpenDeal(deal);
+    navigate('/pipeline');
+  };
 
   const isLoading = dealsLoading || teamLoading || settingsLoading;
 
@@ -348,7 +387,7 @@ export default function CommandCenterPage() {
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.05 }}
-                onClick={() => navigate('/pipeline')}
+                onClick={() => openDeal(a.deal)}
                 className={cn(
                   'w-full text-left p-3 rounded-2xl border transition-all flex items-start gap-3 hover:shadow-sm',
                   a.overdue ? 'bg-rose-50 border-rose-100' : 'bg-amber-50 border-amber-100'
@@ -383,7 +422,7 @@ export default function CommandCenterPage() {
               {actionPlan.closingThisWeek.slice(0, 3).map((d) => (
                 <button
                   key={d.id}
-                  onClick={() => navigate('/pipeline')}
+                  onClick={() => openDeal(d)}
                   className="w-full text-left p-3 rounded-2xl bg-violet-50 border border-violet-100 hover:shadow-sm transition-all flex items-center gap-3"
                 >
                   <div className="w-8 h-8 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center shrink-0">
@@ -411,7 +450,7 @@ export default function CommandCenterPage() {
                 return (
                   <button
                     key={d.id}
-                    onClick={() => navigate('/pipeline')}
+                    onClick={() => openDeal(d)}
                     className="w-full text-left p-3 rounded-2xl bg-rose-50 border border-rose-100 hover:shadow-sm transition-all flex items-center gap-3"
                   >
                     <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-500 flex items-center justify-center shrink-0">
@@ -479,6 +518,47 @@ export default function CommandCenterPage() {
           </div>
         </Card>
       </div>
+
+      {/* Recent Activity Feed */}
+      {todayActivities.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
+              <Activity size={14} className="text-slate-600" />
+            </div>
+            <h3 className="font-semibold text-slate-800">กิจกรรมล่าสุด</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {todayActivities.map((a) => {
+              const cfg = ACTIVITY_ICON[a.type] || ACTIVITY_ICON.note;
+              const { Icon, color } = cfg;
+              return (
+                <button
+                  key={a.id}
+                  onClick={() => a.deal && openDeal(a.deal)}
+                  className="text-left p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all flex items-start gap-3"
+                >
+                  <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center shrink-0', color)}>
+                    <Icon size={16} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-slate-800 truncate">{a.title || a.type}</p>
+                      <span className="text-[10px] text-slate-400 shrink-0">{a.timeLabel}</span>
+                    </div>
+                    {a.deal && (
+                      <p className="text-xs text-slate-500 truncate mt-0.5">{a.deal.company || a.deal.title}</p>
+                    )}
+                    {a.notes && (
+                      <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{a.notes}</p>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Team Performance */}
       {teamMembers && teamMembers.length > 0 && (
