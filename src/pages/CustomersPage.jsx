@@ -223,22 +223,18 @@ export default function CustomersPage() {
         </div>
         <div className="flex items-center gap-1.5 overflow-x-auto bg-slate-100 p-1 rounded-xl border border-slate-200">
           {[
-            ['all', 'ทุกระดับ'],
-            ['grade-A', 'เกรด A (VIP)'],
-            ['grade-B', 'เกรด B'],
-            ['grade-C', 'เกรด C'],
-            ['grade-D', 'เกรด D'],
-            ['at_risk', 'ต้องดูแล'],
-            ['growth', 'ขยายต่อ'],
-            ['Platinum', '💎 Platinum'],
-            ['Gold', '🥇 Gold'],
-          ].map(([tier, label]) => (
+            ['all', 'ทั้งหมด'],
+            ['grade-A', 'A — VIP'],
+            ['grade-B', 'B — ดี'],
+            ['grade-C', 'C — ปกติ'],
+            ['grade-D', 'D — เสี่ยง'],
+          ].map(([val, label]) => (
             <button
-              key={tier}
-              onClick={() => setTierFilter(tier)}
+              key={val}
+              onClick={() => setTierFilter(val)}
               className={cn(
                 "px-4 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap",
-                tierFilter === tier ? "bg-white shadow text-violet-700" : "text-slate-500 hover:text-slate-800"
+                tierFilter === val ? "bg-white shadow text-violet-700" : "text-slate-500 hover:text-slate-800"
               )}
             >
               {label}
@@ -251,7 +247,6 @@ export default function CustomersPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <AnimatePresence mode="popLayout">
           {filteredCustomers.map((customer, i) => {
-            const tierStyle = TIER_CONFIG[customer.tier] || TIER_CONFIG.Silver;
             return (
               <motion.div
                 key={customer.id}
@@ -281,30 +276,21 @@ export default function CustomersPage() {
                           )}
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-1 shrink-0">
-                        <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                          {customer._fromDeals && (
-                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold border border-blue-200 bg-blue-50 text-blue-600">
-                              จากดีล
-                            </span>
-                          )}
-                          {customer.grade && (
-                            <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-black border", GRADE_CONFIG[customer.grade]?.color)}>
-                              เกรด {customer.grade}
-                            </span>
-                          )}
-                          {!customer._fromDeals && (
-                            <span className={cn("px-2.5 py-1 rounded-full text-xs font-medium border", tierStyle.color)}>
-                              {tierStyle.icon} {customer.tier}
-                            </span>
-                          )}
-                        </div>
-                        <span className={cn(
-                          "px-2 py-0.5 rounded-full text-[10px] font-bold border",
-                          HEALTH_CONFIG[customer.health?.status]?.color || HEALTH_CONFIG.healthy.color
-                        )}>
-                          {HEALTH_CONFIG[customer.health?.status]?.label || 'Healthy'} {customer.health?.score ?? 0}
-                        </span>
+                      <div className="flex flex-col items-end gap-1.5 shrink-0">
+                        {customer._fromDeals && (
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold border border-blue-200 bg-blue-50 text-blue-600">
+                            จากดีล
+                          </span>
+                        )}
+                        {customer.grade ? (
+                          <span className={cn("px-2.5 py-1 rounded-full text-xs font-black border", GRADE_CONFIG[customer.grade]?.color)}>
+                            เกรด {customer.grade}
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-400 border border-slate-200">
+                            ไม่มีดีล
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -327,23 +313,18 @@ export default function CustomersPage() {
                       )}
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-medium text-slate-400 flex items-center gap-1">
-                          <HeartPulse size={11} /> Health
-                        </span>
+                        <span className="text-xs text-slate-400">ความแข็งแรง</span>
                         <span className="text-xs font-bold text-slate-500 tabular-nums">{customer.health?.score ?? 0}%</span>
                       </div>
                       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                         <div
                           className={cn(
-                            'h-full rounded-full',
-                            customer.health?.status === 'at_risk'
-                              ? 'bg-rose-500'
-                              : customer.health?.status === 'watch'
-                              ? 'bg-amber-500'
-                              : customer.health?.status === 'growth'
-                              ? 'bg-blue-500'
+                            'h-full rounded-full transition-all',
+                            customer.health?.status === 'at_risk' ? 'bg-rose-500'
+                              : customer.health?.status === 'watch' ? 'bg-amber-500'
+                              : customer.health?.status === 'growth' ? 'bg-blue-500'
                               : 'bg-emerald-500'
                           )}
                           style={{ width: `${Math.max(0, Math.min(100, customer.health?.score || 0))}%` }}
