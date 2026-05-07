@@ -239,16 +239,16 @@ export default function PipelinePage() {
 
       {/* ADD ASSET MODAL */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-xl bg-white rounded-[3rem] p-12 border-0 shadow-2xl">
-          <DialogHeader className="mb-8">
-             <DialogTitle className="text-xl font-bold text-slate-900">เพิ่มดีลใหม่</DialogTitle>
-             <p className="text-sm text-slate-400 mt-1">กรอกรายละเอียดดีลที่ต้องการเพิ่ม</p>
+        <DialogContent className="max-w-lg bg-white rounded-2xl p-6 border-0 shadow-2xl">
+          <DialogHeader className="mb-4">
+             <DialogTitle className="text-lg font-bold text-slate-900">เพิ่มดีลใหม่</DialogTitle>
+             <p className="text-xs text-slate-400 mt-0.5">กรอกรายละเอียดดีลที่ต้องการเพิ่ม</p>
           </DialogHeader>
-          
-          <form onSubmit={handleAddSubmit} className="space-y-6">
+
+          <form onSubmit={handleAddSubmit} className="space-y-3">
              {/* Customer selector */}
-             <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-600">ลูกค้า (ถ้ามีในระบบ)</label>
+             <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-500">ลูกค้า (ถ้ามีในระบบ)</label>
                 <select
                    value={newDeal.customer_id}
                    onChange={(e) => {
@@ -256,7 +256,7 @@ export default function PipelinePage() {
                      const c = customers.find(x => x.id === cid);
                      setNewDeal({ ...newDeal, customer_id: cid, company: c?.company || c?.name || newDeal.company });
                    }}
-                   className="w-full h-14 rounded-2xl border-0 ring-1 ring-slate-100 bg-slate-50/50 px-4 font-semibold outline-none focus:ring-primary transition-all text-sm"
+                   className="w-full h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 transition-all text-sm"
                 >
                    <option value="">— ไม่เลือกลูกค้า —</option>
                    {customers.map(c => (
@@ -264,52 +264,65 @@ export default function PipelinePage() {
                    ))}
                 </select>
              </div>
-             <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-600">ชื่อดีล</label>
-                <Input
-                   required
-                   placeholder="เช่น โปรเจกต์ติดตั้งระบบ"
-                   value={newDeal.title}
-                   onChange={(e) => setNewDeal({...newDeal, title: e.target.value})}
-                   className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold focus:bg-white transition-all"
-                />
+             <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                   <label className="text-xs font-semibold text-slate-500">ชื่อดีล *</label>
+                   <Input
+                      required
+                      placeholder="เช่น โปรเจกต์ติดตั้งระบบ"
+                      value={newDeal.title}
+                      onChange={(e) => setNewDeal({...newDeal, title: e.target.value})}
+                      className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
+                   />
+                </div>
+                <div className="space-y-1">
+                   <label className="text-xs font-semibold text-slate-500">บริษัท *</label>
+                   <Input
+                      required
+                      placeholder="เช่น บริษัท ABC จำกัด"
+                      value={newDeal.company}
+                      onChange={(e) => {
+                        const company = e.target.value;
+                        const matched = customers.find(c =>
+                          c.company?.toLowerCase() === company.toLowerCase() ||
+                          c.name?.toLowerCase() === company.toLowerCase()
+                        );
+                        setNewDeal({
+                          ...newDeal,
+                          company,
+                          customer_id: matched ? matched.id : newDeal.customer_id,
+                        });
+                      }}
+                      className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
+                   />
+                </div>
              </div>
-             <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-600">บริษัท</label>
-                <Input
-                   required
-                   placeholder="เช่น บริษัท ABC จำกัด"
-                   value={newDeal.company}
-                   onChange={(e) => setNewDeal({...newDeal, company: e.target.value})}
-                   className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold focus:bg-white transition-all"
-                />
-             </div>
-             <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-600">มูลค่า (บาท)</label>
+             <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500">มูลค่า (บาท) *</label>
                     <Input
                        required
                        type="number"
                        placeholder="0"
                        value={newDeal.value}
                        onChange={(e) => setNewDeal({...newDeal, value: e.target.value})}
-                       className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold focus:bg-white transition-all"
+                       className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold"
                     />
                 </div>
-                <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-600">ขั้นตอน</label>
+                <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500">ขั้นตอน</label>
                     <select
                        value={newDeal.stage}
                        onChange={(e) => setNewDeal({...newDeal, stage: e.target.value})}
-                       className="w-full h-14 rounded-2xl border-0 ring-1 ring-slate-100 bg-slate-50/50 px-4 font-bold outline-none focus:ring-primary transition-all"
+                       className="w-full h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 transition-all text-sm"
                     >
                         {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                     </select>
                 </div>
              </div>
-             <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-600">โอกาสปิด (%)</label>
+             <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500">โอกาสปิด (%)</label>
                     <Input
                        type="number"
                        min="0"
@@ -317,70 +330,70 @@ export default function PipelinePage() {
                        placeholder="50"
                        value={newDeal.probability}
                        onChange={(e) => setNewDeal({...newDeal, probability: e.target.value})}
-                       className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold focus:bg-white transition-all"
+                       className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
                     />
                 </div>
-                <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-600">วันคาดว่าจะปิด</label>
+                <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500">วันคาดว่าจะปิด</label>
                     <input
                        type="date"
                        value={newDeal.expected_close_date}
                        onChange={(e) => setNewDeal({...newDeal, expected_close_date: e.target.value})}
-                       className="w-full h-14 rounded-2xl border-0 ring-1 ring-slate-100 bg-slate-50/50 px-4 font-bold outline-none focus:ring-primary transition-all text-sm"
+                       className="w-full h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 transition-all text-sm"
                     />
                 </div>
              </div>
-             <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-600">ผู้ติดต่อ</label>
-                <Input
-                   placeholder="ชื่อผู้ติดต่อ"
-                   value={newDeal.contact}
-                   onChange={(e) => setNewDeal({...newDeal, contact: e.target.value})}
-                   className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white transition-all"
-                />
-             </div>
-             <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-600">เบอร์โทร</label>
+             <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1">
+                   <label className="text-xs font-semibold text-slate-500">ผู้ติดต่อ</label>
+                   <Input
+                      placeholder="ชื่อ"
+                      value={newDeal.contact}
+                      onChange={(e) => setNewDeal({...newDeal, contact: e.target.value})}
+                      className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
+                   />
+                </div>
+                <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500">เบอร์โทร</label>
                     <Input
                        placeholder="0XX-XXX-XXXX"
                        value={newDeal.contact_phone}
                        onChange={(e) => setNewDeal({...newDeal, contact_phone: e.target.value})}
-                       className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white transition-all"
+                       className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
                     />
                 </div>
-                <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-600">อีเมล</label>
+                <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500">อีเมล</label>
                     <Input
                        type="email"
-                       placeholder="email@company.com"
+                       placeholder="email@co.com"
                        value={newDeal.contact_email}
                        onChange={(e) => setNewDeal({...newDeal, contact_email: e.target.value})}
-                       className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white transition-all"
+                       className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
                     />
                 </div>
              </div>
 
              {formError && (
-                <div className="px-4 py-3 rounded-xl bg-rose-50 border border-rose-100 text-sm text-rose-600 font-medium">
+                <div className="px-3 py-2 rounded-xl bg-rose-50 border border-rose-100 text-sm text-rose-600">
                   {formError}
                 </div>
              )}
 
-             <div className="pt-6 flex gap-4">
+             <div className="pt-2 flex gap-3">
                 <Button
                   type="button"
                   variant="ghost"
                   disabled={addDealMutation.isPending}
                   onClick={() => setIsAddModalOpen(false)}
-                  className="flex-1 h-11 rounded-xl text-sm text-slate-500"
+                  className="flex-1 h-10 rounded-xl text-sm text-slate-500"
                 >
                   ยกเลิก
                 </Button>
                 <Button
                   type="submit"
                   disabled={addDealMutation.isPending}
-                  className="flex-[2] h-11 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-violet-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-[2] h-10 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-violet-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {addDealMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                   {addDealMutation.isPending ? 'กำลังบันทึก...' : 'บันทึกดีล'}

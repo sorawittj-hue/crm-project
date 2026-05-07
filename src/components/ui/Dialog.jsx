@@ -22,7 +22,7 @@ const Dialog = ({ open, onOpenChange, children }) => {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
         transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-        className="relative z-[100] w-full max-w-lg border border-border bg-background p-6 shadow-2xl rounded-3xl"
+        className="relative z-[100] w-full max-w-lg border border-border bg-background p-6 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto"
       >
         {children}
         <button

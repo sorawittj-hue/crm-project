@@ -342,10 +342,19 @@ const getCustomerNextAction = (status) => {
 export const buildCustomerHealth = (customers = [], deals = [], options = {}) => {
   const now = parseDateValue(options.now) || new Date();
   const normalizedDeals = deals.map((deal) => normalizeDealForIntelligence(deal, now));
+  // Build a company-name → customer_id lookup for deals without customer_id
+  const companyToCustomerId = customers.reduce((acc, c) => {
+    if (c.company) acc[c.company.trim().toLowerCase()] = c.id;
+    if (c.name) acc[c.name.trim().toLowerCase()] = c.id;
+    return acc;
+  }, {});
+
   const dealsByCustomer = normalizedDeals.reduce((acc, deal) => {
-    if (!deal.customer_id) return acc;
-    if (!acc[deal.customer_id]) acc[deal.customer_id] = [];
-    acc[deal.customer_id].push(deal);
+    const cid = deal.customer_id ||
+      (deal.company && companyToCustomerId[deal.company.trim().toLowerCase()]);
+    if (!cid) return acc;
+    if (!acc[cid]) acc[cid] = [];
+    acc[cid].push(deal);
     return acc;
   }, {});
 
