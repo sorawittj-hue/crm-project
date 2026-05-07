@@ -25,6 +25,33 @@ const TIER_CONFIG = {
   Platinum: { color: 'bg-violet-50 text-violet-700 border-violet-200', icon: '💎' },
 };
 
+const GRADE_CONFIG = {
+  A: {
+    color: 'bg-emerald-600 text-white border-emerald-600',
+    label: 'A — VIP',
+    desc: 'ลูกค้าทองคำ ต้องรักษาให้ดีที่สุด ให้ความสำคัญสูงสุด',
+    priority: 'ประจบ / Keep อย่าปล่อย / ง้อได้',
+  },
+  B: {
+    color: 'bg-blue-600 text-white border-blue-600',
+    label: 'B — ดี',
+    desc: 'ลูกค้าดี มีศักยภาพขยายต่อ',
+    priority: 'ดูแลสม่ำเสมอ / หาโอกาส Upsell',
+  },
+  C: {
+    color: 'bg-amber-500 text-white border-amber-500',
+    label: 'C — ปกติ',
+    desc: 'ลูกค้าทั่วไป ดูแลตามมาตรฐาน',
+    priority: 'ดูแลปกติ / หาโอกาสเลื่อนขึ้น B',
+  },
+  D: {
+    color: 'bg-rose-500 text-white border-rose-500',
+    label: 'D — เสี่ยง',
+    desc: 'ลูกค้าที่ต้องฟื้นฟูหรือพิจารณาปล่อย',
+    priority: 'ต้องตัดสินใจ: ฟื้นฟูหรือลดลำดับความสำคัญ',
+  },
+};
+
 const HEALTH_CONFIG = {
   healthy: { label: 'Healthy', color: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
   growth: { label: 'Growth', color: 'bg-blue-50 text-blue-700 border-blue-100' },
@@ -82,6 +109,9 @@ export default function CustomersPage() {
       result = result.filter(c => ['at_risk', 'watch'].includes(c.health?.status));
     } else if (tierFilter === 'growth') {
       result = result.filter(c => c.health?.status === 'growth');
+    } else if (tierFilter.startsWith('grade-')) {
+      const g = tierFilter.replace('grade-', '');
+      result = result.filter(c => c.grade === g);
     } else if (tierFilter !== 'all') {
       result = result.filter(c => c.tier === tierFilter);
     }
@@ -177,11 +207,14 @@ export default function CustomersPage() {
         <div className="flex items-center gap-1.5 overflow-x-auto bg-slate-100 p-1 rounded-xl border border-slate-200">
           {[
             ['all', 'ทุกระดับ'],
+            ['grade-A', 'เกรด A (VIP)'],
+            ['grade-B', 'เกรด B'],
+            ['grade-C', 'เกรด C'],
+            ['grade-D', 'เกรด D'],
             ['at_risk', 'ต้องดูแล'],
             ['growth', 'ขยายต่อ'],
-            ['Platinum', 'Platinum'],
-            ['Gold', 'Gold'],
-            ['Silver', 'Silver'],
+            ['Platinum', '💎 Platinum'],
+            ['Gold', '🥇 Gold'],
           ].map(([tier, label]) => (
             <button
               key={tier}
@@ -232,9 +265,16 @@ export default function CustomersPage() {
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1 shrink-0">
-                        <span className={cn("px-2.5 py-1 rounded-full text-xs font-medium border", tierStyle.color)}>
-                          {tierStyle.icon} {customer.tier}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          {customer.grade && (
+                            <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-black border", GRADE_CONFIG[customer.grade]?.color)}>
+                              เกรด {customer.grade}
+                            </span>
+                          )}
+                          <span className={cn("px-2.5 py-1 rounded-full text-xs font-medium border", tierStyle.color)}>
+                            {tierStyle.icon} {customer.tier}
+                          </span>
+                        </div>
                         <span className={cn(
                           "px-2 py-0.5 rounded-full text-[10px] font-bold border",
                           HEALTH_CONFIG[customer.health?.status]?.color || HEALTH_CONFIG.healthy.color
@@ -342,7 +382,12 @@ export default function CustomersPage() {
                     {selectedCustomer.company && <p className="text-xs font-bold text-slate-400 flex items-center gap-1 mt-1"><Building2 size={12} /> {selectedCustomer.company}</p>}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {selectedCustomer.grade && (
+                    <span className={cn("px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border", GRADE_CONFIG[selectedCustomer.grade]?.color)}>
+                      เกรด {selectedCustomer.grade} — {GRADE_CONFIG[selectedCustomer.grade]?.label?.split('—')[1]?.trim()}
+                    </span>
+                  )}
                   <span className={cn("px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border", TIER_CONFIG[selectedCustomer.tier]?.color || '')}>
                     {TIER_CONFIG[selectedCustomer.tier]?.icon} {selectedCustomer.tier}
                   </span>
@@ -352,6 +397,13 @@ export default function CustomersPage() {
                     </span>
                   )}
                 </div>
+                {/* Grade description */}
+                {selectedCustomer.grade && (
+                  <div className={cn('mt-2 p-3 rounded-xl border text-xs', GRADE_CONFIG[selectedCustomer.grade]?.color.replace('text-white', 'text-slate-700').replace(/bg-\w+-\d+/, 'bg-slate-50'))}>
+                    <p className="font-bold">{GRADE_CONFIG[selectedCustomer.grade]?.desc}</p>
+                    <p className="text-slate-500 mt-0.5">{GRADE_CONFIG[selectedCustomer.grade]?.priority}</p>
+                  </div>
+                )}
               </SheetHeader>
 
               {/* Contact Info */}

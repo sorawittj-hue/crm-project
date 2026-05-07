@@ -303,6 +303,28 @@ export const buildPipelineIntelligence = (deals = [], options = {}) => {
   };
 };
 
+/**
+ * Calculate customer grade A/B/C/D based on revenue, win rate, and health.
+ * A = VIP / ลูกค้าทองคำ (ต้องรักษาให้ดีที่สุด)
+ * B = Good / ลูกค้าดี (ขยายต่อได้)
+ * C = Average / ลูกค้าทั่วไป (ดูแลปกติ)
+ * D = At-risk / ลูกค้าเสี่ยง (ต้องฟื้นฟูหรือปล่อย)
+ */
+export const getCustomerGrade = ({ wonValue, winRate, totalDeals, healthScore, tier }) => {
+  const tierBoost = { Platinum: 20, Gold: 10, Silver: 0 }[tier] || 0;
+  const score =
+    (wonValue >= 2_000_000 ? 40 : wonValue >= 500_000 ? 25 : wonValue >= 100_000 ? 12 : 0) +
+    (winRate >= 70 ? 25 : winRate >= 50 ? 15 : winRate >= 30 ? 8 : 0) +
+    (totalDeals >= 5 ? 15 : totalDeals >= 2 ? 8 : 0) +
+    (healthScore >= 80 ? 10 : healthScore >= 60 ? 5 : 0) +
+    tierBoost;
+
+  if (score >= 65) return 'A';
+  if (score >= 40) return 'B';
+  if (score >= 18) return 'C';
+  return 'D';
+};
+
 const getCustomerStatus = (healthScore, weightedActiveValue, riskCount) => {
   if (healthScore < 45 || riskCount >= 2) return 'at_risk';
   if (healthScore < 70 || riskCount === 1) return 'watch';
@@ -348,9 +370,17 @@ export const buildCustomerHealth = (customers = [], deals = [], options = {}) =>
     const riskPenalty = riskCount * 18;
     const score = clamp(Math.round(62 + tierBonus + winRate * 0.18 - inactivityPenalty - riskPenalty), 0, 100);
     const status = getCustomerStatus(score, weightedActiveValue, riskCount);
+    const grade = getCustomerGrade({
+      wonValue,
+      winRate,
+      totalDeals: customerDeals.length,
+      healthScore: score,
+      tier: customer.tier,
+    });
 
     return {
       ...customer,
+      grade,
       dealStats: {
         total: customerDeals.length,
         won: wonDeals.length,

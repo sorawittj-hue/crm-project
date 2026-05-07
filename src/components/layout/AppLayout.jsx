@@ -94,13 +94,39 @@ export default function AppLayout() {
     return () => document.removeEventListener('mousedown', handler);
   }, [isNotifOpen]);
 
-  // Stale deals = active deals with no activity for 3+ days
+  // Stage-specific urgency deals — proposal/negotiation with inactivity tiers
+  const urgentDeals = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity
+    const now = Date.now();
+    const HIGH_INTENT = ['proposal', 'negotiation'];
+    return deals
+      .filter(d => HIGH_INTENT.includes(d.stage))
+      .map(d => {
+        const last = new Date(d.last_activity || d.created_at).getTime();
+        const days = Math.floor((now - last) / 86_400_000);
+        let urgency = null;
+        if (days >= 7) urgency = 'critical';
+        else if (days >= 5) urgency = 'high';
+        else if (days >= 3) urgency = 'medium';
+        return { ...d, daysInactive: days, urgency };
+      })
+      .filter(d => d.urgency !== null)
+      .sort((a, b) => {
+        const order = { critical: 0, high: 1, medium: 2 };
+        return order[a.urgency] - order[b.urgency] || Number(b.value) - Number(a.value);
+      })
+      .slice(0, 8);
+  }, [deals]);
+
+  // Stale deals = other active deals with no activity for 3+ days (not proposal/negotiation)
   const staleDeals = useMemo(() => {
     // eslint-disable-next-line react-hooks/purity
     const now = Date.now();
+    const HIGH_INTENT = new Set(['proposal', 'negotiation']);
     return deals
       .filter(d => {
         if (['won', 'lost'].includes(d.stage)) return false;
+        if (HIGH_INTENT.has(d.stage)) return false; // handled by urgentDeals
         const last = new Date(d.last_activity || d.created_at).getTime();
         return (now - last) / 86_400_000 >= 3;
       })
@@ -131,7 +157,7 @@ export default function AppLayout() {
       .slice(0, 6);
   }, [deals]);
 
-  const totalNotifs = pendingFollowUps.length + staleDeals.length + closingSoon.length;
+  const totalNotifs = pendingFollowUps.length + urgentDeals.length + staleDeals.length + closingSoon.length;
   const routeMotionProps = shouldReduceMotion ? reduceMotionProps : pageMotion;
   const mobileSidebarMotion = shouldReduceMotion
     ? { initial: false, animate: 'open', exit: undefined }
@@ -328,11 +354,54 @@ export default function AppLayout() {
                       <span className="text-xs text-slate-400">{totalNotifs} รายการ</span>
                     </div>
 
-                    <div className="max-h-[460px] overflow-y-auto">
+                    <div className="max-h-[520px] overflow-y-auto">
                       {totalNotifs === 0 && (
                         <div className="py-12 text-center space-y-2">
                           <CheckCircle2 size={26} className="text-emerald-400 mx-auto" />
                           <p className="text-xs font-medium text-slate-400">ทุกดีลอัพเดทแล้ว 🎉</p>
+                        </div>
+                      )}
+
+                      {/* Stage-Urgency Deals — proposal/negotiation 3/5/7 days */}
+                      {urgentDeals.length > 0 && (
+                        <div>
+                          <div className="px-4 py-2 bg-rose-50/80 border-b border-rose-200 flex items-center gap-2">
+                            <AlertCircle size={12} className="text-rose-600" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-rose-700">ดีลเสนอราคา/ปิด — ต้องตามด่วน</span>
+                            <span className="ml-auto text-[10px] font-bold text-rose-700">{urgentDeals.length}</span>
+                          </div>
+                          <div className="divide-y divide-slate-50">
+                            {urgentDeals.map(d => {
+                              const URGENCY_CONFIG = {
+                                critical: { label: '🔴 จิกด่วน!', badge: 'bg-rose-600 text-white', row: 'bg-rose-50/40' },
+                                high:     { label: '🟠 เสี่ยงหลุด', badge: 'bg-orange-500 text-white', row: 'bg-orange-50/30' },
+                                medium:   { label: '🟡 ต้องตาม', badge: 'bg-amber-400 text-white', row: '' },
+                              };
+                              const cfg = URGENCY_CONFIG[d.urgency];
+                              const stageLabel = d.stage === 'proposal' ? 'เสนอราคา' : 'กำลังปิด';
+                              return (
+                                <button
+                                  key={d.id}
+                                  onClick={() => { navigate('/pipeline'); setIsNotifOpen(false); }}
+                                  className={cn('w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-start gap-3', cfg.row)}
+                                >
+                                  <div className="w-7 h-7 rounded-lg bg-rose-100 text-rose-500 flex items-center justify-center shrink-0 mt-0.5">
+                                    <Clock size={13} />
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-semibold text-slate-800 truncate">{d.company || d.title}</p>
+                                    <div className="flex items-center justify-between text-xs mt-0.5">
+                                      <span className="text-slate-500">{stageLabel} · {d.daysInactive} วัน</span>
+                                      <span className="text-slate-400 tabular-nums">{formatCurrency(d.value)}</span>
+                                    </div>
+                                  </div>
+                                  <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 mt-0.5 whitespace-nowrap', cfg.badge)}>
+                                    {cfg.label}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
 
@@ -401,13 +470,13 @@ export default function AppLayout() {
                         </div>
                       )}
 
-                      {/* Stale */}
+                      {/* Stale — other stages */}
                       {staleDeals.length > 0 && (
                         <div>
-                          <div className="px-4 py-2 bg-rose-50/60 border-b border-rose-100 flex items-center gap-2">
-                            <AlertCircle size={12} className="text-rose-500" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-rose-700">หยุดนิ่ง 3+ วัน</span>
-                            <span className="ml-auto text-[10px] font-bold text-rose-700">{staleDeals.length}</span>
+                          <div className="px-4 py-2 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                            <Clock size={12} className="text-slate-500" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">ดีลอื่น หยุดนิ่ง 3+ วัน</span>
+                            <span className="ml-auto text-[10px] font-bold text-slate-600">{staleDeals.length}</span>
                           </div>
                           <div className="divide-y divide-slate-50">
                             {staleDeals.map(d => {
@@ -419,13 +488,13 @@ export default function AppLayout() {
                                   onClick={() => { navigate('/pipeline'); setIsNotifOpen(false); }}
                                   className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-start gap-3"
                                 >
-                                  <div className="w-7 h-7 rounded-lg bg-rose-100 text-rose-500 flex items-center justify-center shrink-0 mt-0.5">
+                                  <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 mt-0.5">
                                     <Clock size={13} />
                                   </div>
                                   <div className="min-w-0 flex-1">
                                     <p className="text-sm font-semibold text-slate-800 truncate">{d.company || d.title}</p>
                                     <div className="flex items-center justify-between text-xs mt-0.5">
-                                      <span className="text-rose-500 font-bold">{days} วันที่แล้ว</span>
+                                      <span className="text-slate-500 font-medium">{days} วันที่แล้ว</span>
                                       <span className="text-slate-400">{formatCurrency(d.value)}</span>
                                     </div>
                                   </div>

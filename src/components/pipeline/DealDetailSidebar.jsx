@@ -4,7 +4,7 @@ import {
   Trash2, CheckCircle2, XCircle,
   Phone, Mail, FileText, Clock,
   Sparkles, Activity, Target, ShieldCheck, Zap,
-  Loader2, Send, CalendarClock, ListTodo
+  Loader2, Send, CalendarClock, ListTodo, AlertTriangle, Info
 } from 'lucide-react';
 import { SheetContent, SheetHeader, SheetTitle } from '../ui/Sheet';
 import { Button } from '../ui/Button';
@@ -17,6 +17,84 @@ import { formatFullCurrency as formatCurrency } from '../../lib/formatters';
 import { callGeminiAPI } from '../../services/ai';
 import { Card, CardContent } from '../ui/Card';
 import { useDealActivities, useAddActivity } from '../../hooks/useActivities';
+
+const STAGE_WORKFLOW = {
+  lead: {
+    label: 'ลูกค้าใหม่',
+    color: 'bg-slate-50 border-slate-200',
+    headerColor: 'text-slate-700',
+    steps: [
+      { text: 'ติดต่อลูกค้าเพื่อแนะนำตัวและสอบถามความต้องการ', key: 'contact' },
+      { text: 'ประเมิน Pain Point และ Budget เบื้องต้น', key: 'qualify' },
+      { text: 'นัดประชุมหรือ Demo สินค้า', key: 'meeting' },
+      { text: 'อัพเดท Next Step พร้อมวันที่', key: 'nextstep' },
+    ],
+    reminder: null,
+  },
+  contact: {
+    label: 'นัดเจอ',
+    color: 'bg-amber-50/50 border-amber-100',
+    headerColor: 'text-amber-700',
+    steps: [
+      { text: 'นำเสนอโซลูชันที่ตรงกับความต้องการ', key: 'present' },
+      { text: 'ประเมินงบประมาณและผู้มีอำนาจตัดสินใจ', key: 'budget' },
+      { text: 'ส่งข้อมูลผลิตภัณฑ์หรือ Case Study', key: 'info' },
+      { text: 'นัดประชุมติดตามผลเพื่อเสนอราคา', key: 'followup' },
+    ],
+    reminder: null,
+  },
+  proposal: {
+    label: 'เสนอราคา',
+    color: 'bg-sky-50/50 border-sky-200',
+    headerColor: 'text-sky-700',
+    steps: [
+      { text: 'ส่งใบเสนอราคาครบถ้วนพร้อม spec', key: 'send' },
+      { text: '⏰ 3 วัน — โทรติดตาม ถามว่ามีข้อสงสัยไหม', key: 'day3' },
+      { text: '⏰ 5 วัน — เสนอ option เพิ่มเติม / ราคาพิเศษ', key: 'day5' },
+      { text: '⏰ 7 วัน — ขอนัดประชุม ตีกลับ ก่อนหลุด!', key: 'day7' },
+      { text: 'แก้ไขข้อกังวลและส่งใบเสนอราคาฉบับสุดท้าย', key: 'revise' },
+    ],
+    reminder: '⚠️ Proposal เกิน 7 วันไม่มีตอบรับ = เสี่ยงหลุดสูงมาก ต้องโทรจิกทันที',
+  },
+  negotiation: {
+    label: 'กำลังปิด',
+    color: 'bg-violet-50/50 border-violet-200',
+    headerColor: 'text-violet-700',
+    steps: [
+      { text: 'ยืนยันเงื่อนไขและราคาสุดท้ายกับผู้มีอำนาจ', key: 'confirm' },
+      { text: 'ส่ง PO / Contract ให้ลูกค้าเซ็น', key: 'contract' },
+      { text: '⏰ 3 วัน — ติดตามสถานะ PO / อนุมัติ', key: 'day3' },
+      { text: '⏰ 5 วัน — ยกระดับ ติดต่อผู้บริหารโดยตรง', key: 'day5' },
+      { text: 'ยืนยันวันส่งมอบและ milestone การชำระเงิน', key: 'delivery' },
+    ],
+    reminder: '🔥 ดีลในขั้น Negotiation ต้องปิดให้ได้ใน 14 วัน หากยาวกว่านั้นให้ escalate',
+  },
+  won: {
+    label: 'ปิดได้',
+    color: 'bg-emerald-50/50 border-emerald-200',
+    headerColor: 'text-emerald-700',
+    steps: [
+      { text: 'ส่งใบแจ้งหนี้ (Invoice) และยืนยันการสั่งซื้อ', key: 'invoice' },
+      { text: 'ติดตามการชำระเงินตามกำหนด', key: 'payment' },
+      { text: 'ดูแลการส่งมอบสินค้า/บริการให้ครบ', key: 'delivery' },
+      { text: 'ขอ Testimonial / Review จากลูกค้า', key: 'review' },
+      { text: 'วางแผน Upsell / Renewal ครั้งถัดไป', key: 'upsell' },
+    ],
+    reminder: null,
+  },
+  lost: {
+    label: 'ปิดไม่ได้',
+    color: 'bg-rose-50/50 border-rose-100',
+    headerColor: 'text-rose-700',
+    steps: [
+      { text: 'บันทึกเหตุผลการแพ้อย่างละเอียด', key: 'reason' },
+      { text: 'วิเคราะห์จุดอ่อน เช่น ราคา, คู่แข่ง, ความล่าช้า', key: 'analyze' },
+      { text: 'ติดต่อลูกค้าเพื่อขอ feedback', key: 'feedback' },
+      { text: 'ตั้ง Reminder ติดต่อใหม่ใน 3-6 เดือน', key: 'recontact' },
+    ],
+    reminder: null,
+  },
+};
 
 const ACTIVITY_TYPES = [
   { id: 'call',    label: 'โทรหา',    icon: Phone,        color: 'bg-blue-50 text-blue-600 border-blue-100' },
@@ -265,6 +343,53 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
               สร้างนัดติดตาม
             </Button>
           </div>
+
+          {/* Stage Workflow Checklist */}
+          {STAGE_WORKFLOW[deal.stage] && (() => {
+            const wf = STAGE_WORKFLOW[deal.stage];
+            return (
+              <div className={cn('space-y-3 p-5 rounded-2xl border', wf.color)}>
+                <div className="flex items-center gap-2">
+                  <ListTodo size={15} className={wf.headerColor} />
+                  <h3 className={cn('text-[11px] font-black uppercase tracking-widest', wf.headerColor)}>
+                    ขั้นตอน: {wf.label}
+                  </h3>
+                </div>
+                <ul className="space-y-2">
+                  {wf.steps.map((step, i) => (
+                    <li key={step.key} className="flex items-start gap-2 text-xs">
+                      <span className="w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 shrink-0 mt-0.5">
+                        {i + 1}
+                      </span>
+                      <span className="text-slate-700 leading-relaxed font-medium">{step.text}</span>
+                    </li>
+                  ))}
+                </ul>
+                {wf.reminder && (
+                  <div className="flex items-start gap-2 mt-3 p-3 rounded-xl bg-white/70 border border-rose-200">
+                    <AlertTriangle size={13} className="text-rose-500 shrink-0 mt-0.5" />
+                    <p className="text-xs font-semibold text-rose-700 leading-relaxed">{wf.reminder}</p>
+                  </div>
+                )}
+                {/* Inactivity warning for proposal/negotiation */}
+                {['proposal', 'negotiation'].includes(deal.stage) && (() => {
+                  const days = Math.floor((Date.now() - new Date(deal.last_activity || deal.created_at).getTime()) / 86_400_000);
+                  if (days < 3) return null;
+                  const urgencyMap = {
+                    7: { label: '🔴 จิกด่วน! หยุดนิ่งมา ' + days + ' วัน', cls: 'bg-rose-600 text-white' },
+                    5: { label: '🟠 เสี่ยงหลุด! หยุดนิ่งมา ' + days + ' วัน', cls: 'bg-orange-500 text-white' },
+                    3: { label: '🟡 ต้องตาม! หยุดนิ่งมา ' + days + ' วัน', cls: 'bg-amber-500 text-white' },
+                  };
+                  const cfg = days >= 7 ? urgencyMap[7] : days >= 5 ? urgencyMap[5] : urgencyMap[3];
+                  return (
+                    <div className={cn('mt-2 px-3 py-2 rounded-xl text-xs font-bold text-center', cfg.cls)}>
+                      {cfg.label}
+                    </div>
+                  );
+                })()}
+              </div>
+            );
+          })()}
 
           {/* Activity Logger */}
           <div className="space-y-4">
