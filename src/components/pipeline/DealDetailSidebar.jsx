@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { STAGES } from '../../lib/constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trash2, CheckCircle2, XCircle,
@@ -134,6 +135,18 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
   const [closeModal, setCloseModal] = useState({ open: false, targetStage: null });
   const [reasonText, setReasonText] = useState('');
 
+  // Local controlled state for deal edit fields — syncs on deal.id change
+  const [localEdit, setLocalEdit] = useState({
+    title: '', company: '', value: '', probability: '', stage: 'lead',
+    contact: '', contact_email: '', contact_phone: '', expected_close_date: '',
+  });
+
+  const setField = (field, value) => setLocalEdit(p => ({ ...p, [field]: value }));
+  const saveField = (field, raw) => {
+    const value = field === 'value' || field === 'probability' ? Number(raw) : raw;
+    if (deal[field] != value) onUpdate(deal.id, { [field]: value });
+  };
+
   const { data: activities = [], isLoading: activitiesLoading } = useDealActivities(deal?.id);
   const addActivityMutation = useAddActivity();
 
@@ -177,12 +190,27 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
     }
   }, [deal, aiAnalysis, handleAIAnalysis]);
 
-  // Reset inputs when deal changes
+  // Reset inputs and sync local edit state when deal changes
   useEffect(() => {
     setNoteText('');
     setFollowUpDate('');
     setFollowUpNote('');
     setAiAnalysis(null);
+    setCloseModal({ open: false, targetStage: null });
+    setReasonText('');
+    if (deal) {
+      setLocalEdit({
+        title: deal.title || '',
+        company: deal.company || '',
+        value: deal.value ?? '',
+        probability: deal.probability ?? '',
+        stage: deal.stage || 'lead',
+        contact: deal.contact || '',
+        contact_email: deal.contact_email || '',
+        contact_phone: deal.contact_phone || '',
+        expected_close_date: deal.expected_close_date ? deal.expected_close_date.slice(0, 10) : '',
+      });
+    }
   }, [deal?.id]);
 
   const openCloseModal = (targetStage) => {
@@ -537,16 +565,18 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
             <div className="space-y-2">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">ชื่อดีล</label>
               <Input
-                defaultValue={deal.title}
-                onBlur={(e) => onUpdate(deal.id, { title: e.target.value })}
+                value={localEdit.title}
+                onChange={(e) => setField('title', e.target.value)}
+                onBlur={() => saveField('title', localEdit.title)}
                 className="rounded-2xl h-12 bg-slate-50 border-transparent font-bold"
               />
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">บริษัท</label>
               <Input
-                defaultValue={deal.company}
-                onBlur={(e) => onUpdate(deal.id, { company: e.target.value })}
+                value={localEdit.company}
+                onChange={(e) => setField('company', e.target.value)}
+                onBlur={() => saveField('company', localEdit.company)}
                 className="rounded-2xl h-12 bg-slate-50 border-transparent font-bold"
               />
             </div>
@@ -555,8 +585,9 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">มูลค่า (บาท)</label>
                 <Input
                   type="number"
-                  defaultValue={deal.value}
-                  onBlur={(e) => onUpdate(deal.id, { value: Number(e.target.value) })}
+                  value={localEdit.value}
+                  onChange={(e) => setField('value', e.target.value)}
+                  onBlur={() => saveField('value', localEdit.value)}
                   className="rounded-2xl h-12 bg-slate-50 border-transparent font-bold"
                 />
               </div>
@@ -564,9 +595,81 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">ความมั่นใจ (%)</label>
                 <Input
                   type="number"
-                  defaultValue={deal.probability}
-                  onBlur={(e) => onUpdate(deal.id, { probability: Number(e.target.value) })}
+                  min="0"
+                  max="100"
+                  value={localEdit.probability}
+                  onChange={(e) => setField('probability', e.target.value)}
+                  onBlur={() => saveField('probability', localEdit.probability)}
                   className="rounded-2xl h-12 bg-slate-50 border-transparent font-bold"
+                />
+              </div>
+            </div>
+
+            {/* Stage selector — triggers win/loss modal for closed stages */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">ขั้นตอน</label>
+              <select
+                value={localEdit.stage}
+                onChange={(e) => {
+                  const s = e.target.value;
+                  if (s === 'won' || s === 'lost') {
+                    openCloseModal(s);
+                  } else {
+                    setField('stage', s);
+                    onUpdate(deal.id, { stage: s });
+                  }
+                }}
+                disabled={deal.stage === 'won' || deal.stage === 'lost'}
+                className="w-full h-12 rounded-2xl bg-slate-50 border-0 px-4 font-bold outline-none text-sm focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {STAGES.map(s => (
+                  <option key={s.id} value={s.id}>{s.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Expected close date */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">วันคาดว่าจะปิด</label>
+              <input
+                type="date"
+                value={localEdit.expected_close_date}
+                onChange={(e) => setField('expected_close_date', e.target.value)}
+                onBlur={() => saveField('expected_close_date', localEdit.expected_close_date || null)}
+                className="w-full h-12 rounded-2xl bg-slate-50 px-4 font-bold outline-none text-sm focus:ring-2 focus:ring-primary/20 border-0 transition-all"
+              />
+            </div>
+
+            {/* Contact info */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">ผู้ติดต่อ</label>
+              <Input
+                placeholder="ชื่อผู้ติดต่อ"
+                value={localEdit.contact}
+                onChange={(e) => setField('contact', e.target.value)}
+                onBlur={() => saveField('contact', localEdit.contact)}
+                className="rounded-2xl h-12 bg-slate-50 border-transparent"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">เบอร์โทร</label>
+                <Input
+                  placeholder="0XX-XXX-XXXX"
+                  value={localEdit.contact_phone}
+                  onChange={(e) => setField('contact_phone', e.target.value)}
+                  onBlur={() => saveField('contact_phone', localEdit.contact_phone)}
+                  className="rounded-2xl h-12 bg-slate-50 border-transparent"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">อีเมล</label>
+                <Input
+                  placeholder="email@company.com"
+                  value={localEdit.contact_email}
+                  onChange={(e) => setField('contact_email', e.target.value)}
+                  onBlur={() => saveField('contact_email', localEdit.contact_email)}
+                  className="rounded-2xl h-12 bg-slate-50 border-transparent"
                 />
               </div>
             </div>

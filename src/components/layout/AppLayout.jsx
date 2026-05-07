@@ -429,7 +429,7 @@ export default function AppLayout() {
                                   </div>
                                   <div className="min-w-0 flex-1">
                                     <p className="text-sm font-semibold text-slate-800 truncate">{a.title}</p>
-                                    <p className="text-xs text-slate-500 truncate">{a.deal.company || a.deal.title}</p>
+                                    <p className="text-xs text-slate-500 truncate">{a.deal?.company || a.deal?.title}</p>
                                   </div>
                                   {overdue && <span className="text-[9px] font-bold text-rose-600 uppercase">เลย</span>}
                                 </button>
