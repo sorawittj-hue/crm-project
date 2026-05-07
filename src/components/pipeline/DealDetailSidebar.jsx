@@ -4,8 +4,9 @@ import {
   Trash2, CheckCircle2, XCircle,
   Phone, Mail, FileText, Clock,
   Sparkles, Activity, Target, ShieldCheck, Zap,
-  Loader2, Send, CalendarClock, ListTodo, AlertTriangle, Info
+  Loader2, Send, CalendarClock, ListTodo, AlertTriangle
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/Dialog';
 import { SheetContent, SheetHeader, SheetTitle } from '../ui/Sheet';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -120,7 +121,7 @@ const todayLocalISO = () => {
   return d.toISOString().slice(0, 10);
 };
 
-export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
+export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose }) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -128,6 +129,10 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
   const [noteText, setNoteText] = useState('');
   const [followUpDate, setFollowUpDate] = useState('');
   const [followUpNote, setFollowUpNote] = useState('');
+
+  // Win / Loss reason modal
+  const [closeModal, setCloseModal] = useState({ open: false, targetStage: null });
+  const [reasonText, setReasonText] = useState('');
 
   const { data: activities = [], isLoading: activitiesLoading } = useDealActivities(deal?.id);
   const addActivityMutation = useAddActivity();
@@ -177,7 +182,36 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
     setNoteText('');
     setFollowUpDate('');
     setFollowUpNote('');
+    setAiAnalysis(null);
   }, [deal?.id]);
+
+  const openCloseModal = (targetStage) => {
+    setReasonText('');
+    setCloseModal({ open: true, targetStage });
+  };
+
+  const submitClose = () => {
+    const reason = reasonText.trim();
+    if (reason.length < 5) {
+      // inline validation — just shake/warn without toast dependency issue
+      return;
+    }
+    const isWon = closeModal.targetStage === 'won';
+    onUpdate(deal.id, {
+      stage: closeModal.targetStage,
+      last_activity: new Date().toISOString(),
+      actual_close_date: new Date().toISOString(),
+      lost_reason: isWon ? null : reason,
+      metadata: {
+        ...(deal?.metadata || {}),
+        close_reason: reason,
+        ...(isWon ? { win_reason: reason } : {}),
+        closed_at: new Date().toISOString(),
+      },
+    });
+    setCloseModal({ open: false, targetStage: null });
+    onClose?.();
+  };
 
   const handleScheduleFollowUp = async () => {
     if (!deal || !followUpDate) return;
@@ -260,15 +294,17 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
           {/* Actions */}
           <div className="flex items-center gap-3">
             <Button
-              className="flex-1 rounded-full h-12 text-xs font-bold uppercase tracking-widest shadow-lg shadow-primary/20"
-              onClick={() => onUpdate(deal.id, { stage: 'won' })}
+              className="flex-1 rounded-full h-12 text-xs font-bold uppercase tracking-widest shadow-lg shadow-primary/20 bg-emerald-600 hover:bg-emerald-700 border-0"
+              onClick={() => openCloseModal('won')}
+              disabled={deal.stage === 'won'}
             >
               <CheckCircle2 size={16} className="mr-2" /> ปิดได้
             </Button>
             <Button
               variant="outline"
-              className="flex-1 rounded-full h-12 text-xs font-bold uppercase tracking-widest"
-              onClick={() => onUpdate(deal.id, { stage: 'lost' })}
+              className="flex-1 rounded-full h-12 text-xs font-bold uppercase tracking-widest border-rose-200 text-rose-600 hover:bg-rose-50"
+              onClick={() => openCloseModal('lost')}
+              disabled={deal.stage === 'lost'}
             >
               <XCircle size={16} className="mr-2" /> ปิดไม่ได้
             </Button>
@@ -619,8 +655,70 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete }) {
         title="ลบดีล"
         description="การดำเนินการนี้จะลบดีลและ Activity ทั้งหมดที่เชื่อมโยงอย่างถาวร"
         confirmLabel="ลบ"
-        onConfirm={() => onDelete(deal.id)}
+        onConfirm={() => { onDelete(deal.id); setConfirmDeleteOpen(false); }}
       />
+
+      {/* Win / Loss Reason Modal */}
+      <Dialog
+        open={closeModal.open}
+        onOpenChange={(v) => !v && setCloseModal({ open: false, targetStage: null })}
+      >
+        <DialogContent className="max-w-md rounded-3xl p-8">
+          <DialogHeader className="mb-6">
+            <div className={cn(
+              'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 mx-auto',
+              closeModal.targetStage === 'won' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
+            )}>
+              {closeModal.targetStage === 'won' ? <CheckCircle2 size={30} /> : <XCircle size={30} />}
+            </div>
+            <DialogTitle className="text-xl font-bold text-center text-slate-900">
+              {closeModal.targetStage === 'won' ? '🎉 ยินดีด้วย! ปิดดีลสำเร็จ' : 'ดีลไม่สำเร็จ'}
+            </DialogTitle>
+            <p className="text-xs text-center text-slate-500 mt-2">
+              ระบุเหตุผลสั้นๆ เพื่อปรับปรุงกลยุทธ์การขาย (อย่างน้อย 5 ตัวอักษร)
+            </p>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-slate-600 ml-1">เหตุผล</label>
+            <Textarea
+              placeholder={
+                closeModal.targetStage === 'won'
+                  ? 'เช่น ราคาดี, ความสัมพันธ์ที่ดี, ตอบสนองได้เร็ว...'
+                  : 'เช่น งบประมาณไม่พอ, เลือกเจ้าอื่น, ยกเลิกโปรเจกต์...'
+              }
+              value={reasonText}
+              onChange={(e) => setReasonText(e.target.value)}
+              className="min-h-[100px] rounded-2xl bg-slate-50 border-slate-200 resize-none p-4 font-medium"
+            />
+            {reasonText.trim().length > 0 && reasonText.trim().length < 5 && (
+              <p className="text-xs text-rose-500 ml-1">กรุณาระบุให้ชัดเจนขึ้น (อย่างน้อย 5 ตัวอักษร)</p>
+            )}
+          </div>
+
+          <DialogFooter className="mt-6 flex gap-3">
+            <Button
+              variant="ghost"
+              className="flex-1 rounded-xl"
+              onClick={() => setCloseModal({ open: false, targetStage: null })}
+            >
+              ยกเลิก
+            </Button>
+            <Button
+              disabled={reasonText.trim().length < 5}
+              className={cn(
+                'flex-1 rounded-xl disabled:opacity-50',
+                closeModal.targetStage === 'won'
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-0'
+                  : 'bg-rose-600 hover:bg-rose-700 text-white border-0'
+              )}
+              onClick={submitClose}
+            >
+              ยืนยัน
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

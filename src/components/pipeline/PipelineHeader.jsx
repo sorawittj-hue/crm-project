@@ -157,7 +157,7 @@ export default function PipelineHeader({
         {/* Deal count */}
         <div className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-start">
-            <p className="text-xs text-slate-400 font-medium">จำนวนดีล</p>
+            <p className="text-xs text-slate-400 font-medium">ปิดได้เดือนนี้</p>
             <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
               <Activity size={16} />
             </div>
@@ -167,7 +167,7 @@ export default function PipelineHeader({
               {monthlyCount}
               <span className="text-sm text-slate-400 font-medium ml-1">ดีล</span>
             </h3>
-            <p className="text-[11px] text-slate-400 mt-1.5">รวมทั้งระบบ {totalDeals} ดีล</p>
+            <p className="text-[11px] text-slate-400 mt-1.5">ดีลทั้งหมดในระบบ {totalDeals} ดีล</p>
           </div>
         </div>
       </div>

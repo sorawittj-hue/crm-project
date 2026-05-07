@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import DealDetailSidebar from './DealDetailSidebar';
 import { Sheet } from '../ui/Sheet';
 import { useTeam } from '../../hooks/useTeam';
@@ -14,14 +14,15 @@ export default function MonthlyPipeline({
   selectedMonth: parentSelectedMonth,
   selectedYear: parentSelectedYear,
   onMonthChange,
-  onYearChange
+  onYearChange,
+  // Global deal selection from notification clicks or dashboard
+  pendingOpenDeal,
+  onPendingOpenDealHandled,
 }) {
   const { data: teamMembers } = useTeam();
   const { monthlyTarget } = useAppStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Keep the last opened deal in state (not ref) so DealDetailSidebar
-  // doesn't receive null while the Sheet's exit animation is running.
   const peekRef = useRef(null);
   const [peekDeal, setPeekDealState] = useState(null);
   const [lastDeal, setLastDeal] = useState(null);
@@ -40,46 +41,63 @@ export default function MonthlyPipeline({
   const selectedMonth = parentSelectedMonth !== undefined ? parentSelectedMonth : localMonth;
   const selectedYear = parentSelectedYear !== undefined ? parentSelectedYear : localYear;
 
-  // Filter deals by month/year — use snake_case only to match Supabase
-  const filteredDeals = useMemo(() => {
-    const result = deals || [];
-    return result.filter(d => {
-      const raw = d.created_at || d.createdAt;
+  // Open a specific deal when triggered from notification or dashboard
+  useEffect(() => {
+    if (pendingOpenDeal) {
+      setPeekDeal(pendingOpenDeal);
+      setIsSidebarOpen(true);
+      onPendingOpenDealHandled?.();
+    }
+  }, [pendingOpenDeal, setPeekDeal, onPendingOpenDealHandled]);
+
+  // ── KPI stats ──────────────────────────────────────────────────────────────
+  // Use actual_close_date for won deals to measure monthly revenue correctly.
+  // Active deal count is total in-flight deals (regardless of creation month).
+  const { monthlyTotal, monthlyCount, lastMonthTotal } = useMemo(() => {
+    const allDeals = deals || [];
+
+    const isInMonth = (raw, m, y) => {
       if (!raw) return false;
-      const dealDate = new Date(raw);
-      return dealDate.getMonth() === selectedMonth && dealDate.getFullYear() === selectedYear;
-    });
-  }, [deals, selectedMonth, selectedYear]);
+      const dt = new Date(raw);
+      return dt.getMonth() === m && dt.getFullYear() === y;
+    };
 
-  // Stats derived from filtered set
-  const monthlyTotal = useMemo(
-    () => filteredDeals.reduce((sum, d) => sum + (Number(d.value) || 0), 0),
-    [filteredDeals]
-  );
-  const monthlyCount = filteredDeals.length;
-  const totalDeals = deals?.length || 0;
-
-  // Previous month comparison
-  const { lastMonthTotal } = useMemo(() => {
     const lm = selectedMonth === 0 ? 11 : selectedMonth - 1;
     const ly = selectedMonth === 0 ? selectedYear - 1 : selectedYear;
-    const lmDeals = (deals || []).filter(d => {
-      const raw = d.created_at || d.createdAt;
-      if (!raw) return false;
-      const date = new Date(raw);
-      return date.getMonth() === lm && date.getFullYear() === ly;
-    });
-    return { lastMonthTotal: lmDeals.reduce((sum, d) => sum + (Number(d.value) || 0), 0) };
+
+    const wonThisMonth = allDeals.filter(d =>
+      d.stage === 'won' &&
+      isInMonth(d.actual_close_date || d.updated_at || d.created_at, selectedMonth, selectedYear)
+    );
+    const wonPrevMonth = allDeals.filter(d =>
+      d.stage === 'won' &&
+      isInMonth(d.actual_close_date || d.updated_at || d.created_at, lm, ly)
+    );
+
+    return {
+      monthlyTotal: wonThisMonth.reduce((s, d) => s + (Number(d.value) || 0), 0),
+      monthlyCount: wonThisMonth.length,
+      lastMonthTotal: wonPrevMonth.reduce((s, d) => s + (Number(d.value) || 0), 0),
+    };
   }, [deals, selectedMonth, selectedYear]);
 
+  const totalDeals = deals?.length || 0;
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
   const handleDealClick = useCallback((deal) => {
     setPeekDeal(deal);
     setIsSidebarOpen(true);
   }, [setPeekDeal]);
 
+  // Close sidebar automatically after a deal is deleted
+  const handleDelete = useCallback((dealId) => {
+    onDeleteDeal(dealId);
+    setIsSidebarOpen(false);
+  }, [onDeleteDeal]);
+
   return (
     <div className="flex flex-col space-y-5">
-      {/* HEADER WITH KPIs */}
+      {/* HEADER WITH KPIs — stats filtered by selected month (won revenue) */}
       <PipelineHeader
         selectedMonth={selectedMonth}
         selectedYear={selectedYear}
@@ -93,10 +111,10 @@ export default function MonthlyPipeline({
         onAddDeal={onAddDeal}
       />
 
-      {/* PIPELINE BOARD — flex-based height, no viewport calc */}
+      {/* PIPELINE BOARD — shows ALL deals regardless of creation month */}
       <div className="min-h-[560px]">
         <PipelineBoard
-          deals={filteredDeals}
+          deals={deals || []}
           onDealClick={handleDealClick}
           onUpdateDeal={onUpdateDeal}
           onAddDeal={onAddDeal}
@@ -104,12 +122,13 @@ export default function MonthlyPipeline({
         />
       </div>
 
-      {/* SIDEBAR — visibleDeal keeps the content alive during exit animation */}
+      {/* DEAL DETAIL SIDEBAR */}
       <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
         <DealDetailSidebar
           deal={visibleDeal}
           onUpdate={onUpdateDeal}
-          onDelete={onDeleteDeal}
+          onDelete={handleDelete}
+          onClose={() => setIsSidebarOpen(false)}
         />
       </Sheet>
     </div>

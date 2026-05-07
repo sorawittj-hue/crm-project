@@ -1,6 +1,7 @@
 import { useState, useMemo, lazy, Suspense } from 'react';
 import { useDeals, useUpdateDeal, useAddDeal, useAddMultipleDeals, useDeleteDeals } from '../hooks/useDeals';
 import { useCustomers } from '../hooks/useCustomers';
+import { useAppStore } from '../store/useAppStore';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
 import { Plus, Filter, Search, Loader2, Sliders, ScanLine } from 'lucide-react';
 
@@ -23,6 +24,7 @@ export default function PipelinePage() {
   const addDealMutation = useAddDeal();
   const addMultipleDealsMutation = useAddMultipleDeals();
   const deleteDealsMutation = useDeleteDeals();
+  const { pendingOpenDeal, clearPendingOpenDeal } = useAppStore();
 
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -226,6 +228,8 @@ export default function PipelinePage() {
         }}
         onUpdateDeal={(id, updates) => updateDealMutation.mutate({ id, ...updates })}
         onDeleteDeal={(id) => deleteDealsMutation.mutate([id])}
+        pendingOpenDeal={pendingOpenDeal}
+        onPendingOpenDealHandled={clearPendingOpenDeal}
       />
 
       {/* ADD ASSET MODAL */}

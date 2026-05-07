@@ -16,6 +16,11 @@ export const useAppStore = create(
       // Global Search
       globalSearchTerm: '',
       setGlobalSearchTerm: (term) => set({ globalSearchTerm: term }),
+
+      // Pending deal to open when navigating to /pipeline (from notifications, dashboard, etc.)
+      pendingOpenDeal: null,
+      setPendingOpenDeal: (deal) => set({ pendingOpenDeal: deal }),
+      clearPendingOpenDeal: () => set({ pendingOpenDeal: null }),
     }),
     {
       name: 'zenith-crm-store',
