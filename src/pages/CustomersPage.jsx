@@ -89,6 +89,23 @@ export default function CustomersPage() {
     }
   };
 
+  const handleConvertSynthetic = async (customer) => {
+    if (!customer._fromDeals) return;
+    try {
+      await createCustomerMutation.mutateAsync({
+        name: customer.name,
+        company: customer.company,
+        email: customer.email || '',
+        phone: customer.phone || '',
+        industry: customer.industry || '',
+        tier: 'Silver',
+        notes: '',
+      });
+      setIsSidebarOpen(false);
+      setSelectedCustomer(null);
+    } catch {}
+  };
+
   const enrichedCustomers = useMemo(() => {
     if (!customers) return [];
     return buildCustomerHealth(customers, deals || []);
@@ -265,15 +282,22 @@ export default function CustomersPage() {
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1 shrink-0">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                          {customer._fromDeals && (
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold border border-blue-200 bg-blue-50 text-blue-600">
+                              จากดีล
+                            </span>
+                          )}
                           {customer.grade && (
                             <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-black border", GRADE_CONFIG[customer.grade]?.color)}>
                               เกรด {customer.grade}
                             </span>
                           )}
-                          <span className={cn("px-2.5 py-1 rounded-full text-xs font-medium border", tierStyle.color)}>
-                            {tierStyle.icon} {customer.tier}
-                          </span>
+                          {!customer._fromDeals && (
+                            <span className={cn("px-2.5 py-1 rounded-full text-xs font-medium border", tierStyle.color)}>
+                              {tierStyle.icon} {customer.tier}
+                            </span>
+                          )}
                         </div>
                         <span className={cn(
                           "px-2 py-0.5 rounded-full text-[10px] font-bold border",
@@ -529,13 +553,23 @@ export default function CustomersPage() {
 
               {/* Actions */}
               <div className="flex gap-3">
-                <Button 
-                  variant="ghost" 
-                  className="flex-1 h-12 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-black text-[10px] uppercase tracking-widest"
-                  onClick={() => setConfirmDelete({ open: true, customerId: selectedCustomer.id })}
-                >
-                  <Trash2 size={14} className="mr-2" /> ลบลูกค้า
-                </Button>
+                {selectedCustomer._fromDeals ? (
+                  <Button
+                    className="flex-1 h-12 rounded-full bg-violet-600 hover:bg-violet-700 text-white transition-all font-black text-[10px] uppercase tracking-widest border-0"
+                    onClick={() => handleConvertSynthetic(selectedCustomer)}
+                    disabled={createCustomerMutation.isPending}
+                  >
+                    <Plus size={14} className="mr-2" /> บันทึกเป็นลูกค้า
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    className="flex-1 h-12 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-black text-[10px] uppercase tracking-widest"
+                    onClick={() => setConfirmDelete({ open: true, customerId: selectedCustomer.id })}
+                  >
+                    <Trash2 size={14} className="mr-2" /> ลบลูกค้า
+                  </Button>
+                )}
               </div>
             </div>
           )}
