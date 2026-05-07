@@ -67,7 +67,7 @@ export default function PipelinePage() {
     URL.revokeObjectURL(url);
   };
 
-  // We filter the input to MonthlyPipeline based on search and parameters
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const filteredDeals = useMemo(() => {
     let result = deals || [];
     if (searchTerm) {
@@ -96,7 +96,7 @@ export default function PipelinePage() {
       return 0;
     });
     return result;
-  }, [deals, searchTerm, stageFilter, sortBy, valueMin, valueMax, probMin]);
+  }, [deals, searchTerm, stageFilter, sortBy, valueMin, valueMax, probMin, myDealsOnly, user?.id]);
 
   const [formError, setFormError] = useState(null);
 

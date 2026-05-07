@@ -14,7 +14,7 @@ import ConfirmDialog from '../components/ui/ConfirmDialog';
 import {
   Target, Users, ListTree, User, Building2,
   Save, Plus, Trash2, Pencil, X, Check,
-  LogOut, Loader2, ChevronRight, Palette, ShieldCheck, Clock,
+  LogOut, Loader2, ShieldCheck, Clock,
 } from 'lucide-react';
 
 const BASE_SECTIONS = [

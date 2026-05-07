@@ -211,7 +211,8 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
         expected_close_date: deal.expected_close_date ? deal.expected_close_date.slice(0, 10) : '',
       });
     }
-  }, [deal?.id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deal?.id]); // intentionally only on id change to avoid resetting mid-edit
 
   const openCloseModal = (targetStage) => {
     setReasonText('');

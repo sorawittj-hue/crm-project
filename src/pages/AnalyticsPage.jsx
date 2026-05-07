@@ -15,11 +15,11 @@ import {
   ComposedChart, Line, BarChart
 } from 'recharts';
 import {
-  Target, Users,
+  Target,
   ArrowUpRight, ArrowDownRight, Loader2,
   Activity, DollarSign,
   ShieldCheck, ThumbsUp, ThumbsDown, AlertCircle,
-  TrendingUp, Trophy, Zap, Clock
+  Trophy, Zap, Clock
 } from 'lucide-react';
 
 const MetricCard = ({ title, value, subValue, icon: Icon, trend, color = "primary" }) => {

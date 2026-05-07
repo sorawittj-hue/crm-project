@@ -104,7 +104,9 @@ export default function CustomersPage() {
       });
       setIsSidebarOpen(false);
       setSelectedCustomer(null);
-    } catch {}
+    } catch (err) {
+      console.error('Failed to reset form:', err);
+    }
   };
 
   const enrichedCustomers = useMemo(() => {

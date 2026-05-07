@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mail, Calculator, TrendingUp, Plus, Pencil, Trash2,
-  Copy, Check, Loader2, FileText, DollarSign, Target,
-  ChevronDown, ChevronUp, Search, Tag, Battery, HardDrive, Laptop
+  Copy, Check, Loader2, FileText,
+  ChevronDown, ChevronUp, Search, Battery, HardDrive, Laptop
 } from 'lucide-react';
 import { useEmailTemplates, useAddEmailTemplate, useUpdateEmailTemplate, useDeleteEmailTemplate } from '../hooks/useEmailTemplates';
 import UPSCalculator from '../components/tools/UPSCalculator';
@@ -158,7 +158,7 @@ function EmailTemplates() {
         <div className="text-center py-16 space-y-3">
           <FileText size={32} className="text-slate-200 mx-auto" />
           <p className="text-sm font-medium text-slate-400">ยังไม่มี Email Template</p>
-          <p className="text-xs text-slate-300">คลิก "เพิ่ม Template" เพื่อสร้าง template แรก</p>
+          <p className="text-xs text-slate-300">คลิก &quot;เพิ่ม Template&quot; เพื่อสร้าง template แรก</p>
         </div>
       )}
 
