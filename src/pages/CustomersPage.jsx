@@ -69,6 +69,7 @@ export default function CustomersPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState('all');
+  const [industryFilter, setIndustryFilter] = useState('all');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, customerId: null });
@@ -111,6 +112,11 @@ export default function CustomersPage() {
     return buildCustomerHealth(customers, deals || []);
   }, [customers, deals]);
 
+  const industries = useMemo(() => {
+    const set = new Set(enrichedCustomers.map(c => c.industry).filter(Boolean));
+    return Array.from(set).sort();
+  }, [enrichedCustomers]);
+
   const filteredCustomers = useMemo(() => {
     let result = enrichedCustomers;
     if (searchTerm) {
@@ -132,8 +138,9 @@ export default function CustomersPage() {
     } else if (tierFilter !== 'all') {
       result = result.filter(c => c.tier === tierFilter);
     }
+    if (industryFilter !== 'all') result = result.filter(c => c.industry === industryFilter);
     return result;
-  }, [enrichedCustomers, searchTerm, tierFilter]);
+  }, [enrichedCustomers, searchTerm, tierFilter, industryFilter]);
 
   const totalStats = useMemo(() => {
     const total = filteredCustomers.length;
@@ -221,25 +228,37 @@ export default function CustomersPage() {
             className="h-10 pl-11 bg-white border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:ring-violet-500/20"
           />
         </div>
-        <div className="flex items-center gap-1.5 overflow-x-auto bg-slate-100 p-1 rounded-xl border border-slate-200">
-          {[
-            ['all', 'ทั้งหมด'],
-            ['grade-A', 'A — VIP'],
-            ['grade-B', 'B — ดี'],
-            ['grade-C', 'C — ปกติ'],
-            ['grade-D', 'D — เสี่ยง'],
-          ].map(([val, label]) => (
-            <button
-              key={val}
-              onClick={() => setTierFilter(val)}
-              className={cn(
-                "px-4 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap",
-                tierFilter === val ? "bg-white shadow text-violet-700" : "text-slate-500 hover:text-slate-800"
-              )}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 overflow-x-auto bg-slate-100 p-1 rounded-xl border border-slate-200">
+            {[
+              ['all', 'ทั้งหมด'],
+              ['grade-A', 'A — VIP'],
+              ['grade-B', 'B — ดี'],
+              ['grade-C', 'C — ปกติ'],
+              ['grade-D', 'D — เสี่ยง'],
+            ].map(([val, label]) => (
+              <button
+                key={val}
+                onClick={() => setTierFilter(val)}
+                className={cn(
+                  "px-4 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap",
+                  tierFilter === val ? "bg-white shadow text-violet-700" : "text-slate-500 hover:text-slate-800"
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {industries.length > 0 && (
+            <select
+              value={industryFilter}
+              onChange={e => setIndustryFilter(e.target.value)}
+              className="h-9 px-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 outline-none cursor-pointer hover:border-slate-300"
             >
-              {label}
-            </button>
-          ))}
+              <option value="all">อุตสาหกรรม: ทั้งหมด</option>
+              {industries.map(ind => <option key={ind} value={ind}>{ind}</option>)}
+            </select>
+          )}
         </div>
       </div>
 
@@ -343,10 +362,21 @@ export default function CustomersPage() {
                         <p className="text-base font-bold text-emerald-600 tabular-nums">{customer.dealStats.won}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-400 mb-0.5">มูลค่า</p>
+                        <p className="text-xs text-slate-400 mb-0.5">ปิดแล้ว</p>
                         <p className="text-base font-bold text-violet-700 tabular-nums">{formatCurrency(customer.dealStats.wonValue)}</p>
                       </div>
                     </div>
+                    {/* CLV */}
+                    {(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0)) > 0 && (
+                      <div className="pt-2 border-t border-slate-50">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">CLV (Won + Pipeline)</span>
+                          <span className="text-xs font-black text-slate-700 tabular-nums">
+                            {formatCurrency(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0))}
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Hover CTA */}
                     <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">

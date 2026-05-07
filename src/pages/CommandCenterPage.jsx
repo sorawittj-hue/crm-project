@@ -104,8 +104,27 @@ export default function CommandCenterPage() {
     });
     const wonThisWeekValue = wonThisWeek.reduce((s, d) => s + Number(d.value || 0), 0);
 
-    // Team leaderboard — per member actual won this month
-    const memberLeaderboard = intelligence.activeDeals; // placeholder, computed below
+    // Forecast scenarios
+    const activeDealsArr = activePipeline;
+    const commitValue = activeDealsArr
+      .filter(d => Number(d.probability) >= 70)
+      .reduce((s, d) => s + Number(d.value || 0) * (Number(d.probability) / 100), 0);
+    const bestCaseValue = activeDealsArr
+      .reduce((s, d) => s + Number(d.value || 0), 0);
+    const worstCaseValue = activeDealsArr
+      .filter(d => Number(d.probability) >= 90)
+      .reduce((s, d) => s + Number(d.value || 0), 0);
+
+    // Hot deals — high-value × probability, closing soon
+    const now30 = now.getTime() + 30 * 86_400_000;
+    const hotDeals = activeDealsArr
+      .map(d => ({
+        ...d,
+        score: Number(d.value || 0) * (Number(d.probability || 0) / 100),
+        closingSoon: d.expected_close_date && new Date(d.expected_close_date).getTime() <= now30,
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
 
     return {
       totalWonValue,
@@ -119,6 +138,10 @@ export default function CommandCenterPage() {
       newDealsThisWeek,
       wonThisWeek: wonThisWeek.length,
       wonThisWeekValue,
+      commitValue,
+      bestCaseValue,
+      worstCaseValue,
+      hotDeals,
     };
   }, [deals, monthlyGoal]);
 
@@ -400,6 +423,80 @@ export default function CommandCenterPage() {
           ))}
         </div>
       </Card>
+
+      {/* Forecast Scenarios */}
+      <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <Target size={14} className="text-violet-600" />
+          <h3 className="text-sm font-semibold text-slate-800">Forecast Scenarios — เดือนนี้</h3>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { label: 'Worst Case', sub: 'ดีล ≥90% prob', value: (stats?.worstCaseValue || 0) + (stats?.totalWonValue || 0), color: 'text-rose-600', bg: 'bg-rose-50', border: 'border-rose-100' },
+            { label: 'Commit', sub: 'ดีล ≥70% prob (weighted)', value: (stats?.commitValue || 0) + (stats?.totalWonValue || 0), color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-100' },
+            { label: 'Best Case', sub: 'ปิดได้ทุกดีล active', value: (stats?.bestCaseValue || 0) + (stats?.totalWonValue || 0), color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100' },
+          ].map(s => {
+            const pct = monthlyGoal > 0 ? Math.round((s.value / monthlyGoal) * 100) : 0;
+            return (
+              <div key={s.label} className={`p-4 rounded-xl border ${s.bg} ${s.border} text-center space-y-1`}>
+                <p className="text-xs font-semibold text-slate-600">{s.label}</p>
+                <p className="text-[10px] text-slate-400">{s.sub}</p>
+                <p className={`text-xl font-black tabular-nums ${s.color}`}>{formatCurrency(s.value)}</p>
+                <p className="text-xs text-slate-400">{pct}% ของเป้าหมาย</p>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* Hot Deals */}
+      {stats?.hotDeals && stats.hotDeals.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center">
+              <Flame size={14} className="text-rose-500" />
+            </div>
+            <h3 className="font-semibold text-slate-800">Hot Deals</h3>
+            <span className="text-xs text-slate-400">— มูลค่าสูงสุด × โอกาสปิด</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {stats.hotDeals.map((d, i) => (
+              <motion.button
+                key={d.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                onClick={() => openDeal(d)}
+                className="text-left p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-violet-200 transition-all group"
+              >
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-slate-800 truncate group-hover:text-violet-700 transition-colors">{d.title}</p>
+                    <p className="text-xs text-slate-400 truncate">{d.company}</p>
+                  </div>
+                  {d.closingSoon && (
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 shrink-0">ใกล้ปิด</span>
+                  )}
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-xs text-slate-400">มูลค่า</p>
+                    <p className="text-sm font-black text-slate-800 tabular-nums">{formatCurrency(Number(d.value))}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400">โอกาส</p>
+                    <p className={cn("text-sm font-black tabular-nums", Number(d.probability) >= 70 ? "text-emerald-600" : "text-amber-600")}>{d.probability}%</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400">Expected</p>
+                    <p className="text-sm font-black text-violet-600 tabular-nums">{formatCurrency(d.score)}</p>
+                  </div>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Tasks + Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
