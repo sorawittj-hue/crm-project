@@ -17,7 +17,8 @@ import {
   Users, AlertCircle,
   ArrowUpRight, Briefcase,
   Target, Clock, CalendarClock, ChevronRight, CheckCircle2,
-  Phone, Mail, FileText, MessageSquare, Activity
+  Phone, Mail, FileText, MessageSquare, Activity, Trophy,
+  Star, Flame
 } from 'lucide-react';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
@@ -91,6 +92,21 @@ export default function CommandCenterPage() {
       ? ((currentMonthActual - prevMonthActual) / prevMonthActual * 100).toFixed(1)
       : 0;
 
+    // New deals this week
+    const weekAgo = now.getTime() - 7 * 86_400_000;
+    const newDealsThisWeek = deals.filter(d => new Date(d.created_at).getTime() >= weekAgo).length;
+
+    // Won deals this week
+    const wonThisWeek = deals.filter(d => {
+      if (d.stage !== 'won') return false;
+      const dt = new Date(d.actual_close_date || d.updated_at || d.created_at);
+      return dt.getTime() >= weekAgo;
+    });
+    const wonThisWeekValue = wonThisWeek.reduce((s, d) => s + Number(d.value || 0), 0);
+
+    // Team leaderboard — per member actual won this month
+    const memberLeaderboard = intelligence.activeDeals; // placeholder, computed below
+
     return {
       totalWonValue,
       totalPipelineValue,
@@ -100,6 +116,9 @@ export default function CommandCenterPage() {
       revenueStream: months,
       growthPercent,
       intelligence,
+      newDealsThisWeek,
+      wonThisWeek: wonThisWeek.length,
+      wonThisWeekValue,
     };
   }, [deals, monthlyGoal]);
 
@@ -163,6 +182,37 @@ export default function CommandCenterPage() {
         })(),
       }));
   }, [activities, deals]);
+
+  // Team leaderboard — actual won this month per member
+  const teamLeaderboard = useMemo(() => {
+    if (!deals || !teamMembers) return [];
+    const now = new Date();
+    return teamMembers.map(m => {
+      const memberDeals = deals.filter(d => d.assigned_to === m.id);
+      const wonThisMonth = memberDeals.filter(d => {
+        if (d.stage !== 'won') return false;
+        const dt = new Date(d.actual_close_date || d.updated_at || d.created_at);
+        return dt.getMonth() === now.getMonth() && dt.getFullYear() === now.getFullYear();
+      });
+      const wonAllTime = memberDeals.filter(d => d.stage === 'won');
+      const lostAll = memberDeals.filter(d => d.stage === 'lost');
+      const active = memberDeals.filter(d => !['won', 'lost'].includes(d.stage));
+      const wonThisMonthValue = wonThisMonth.reduce((s, d) => s + Number(d.value || 0), 0);
+      const winRate = (wonAllTime.length + lostAll.length) > 0
+        ? Math.round(wonAllTime.length / (wonAllTime.length + lostAll.length) * 100)
+        : 0;
+      const goalAchievement = m.goal > 0 ? Math.min(100, Math.round(wonThisMonthValue / m.goal * 100)) : 0;
+      return {
+        ...m,
+        wonThisMonthValue,
+        wonThisMonthCount: wonThisMonth.length,
+        activeCount: active.length,
+        activePipelineValue: active.reduce((s, d) => s + Number(d.value || 0), 0),
+        winRate,
+        goalAchievement,
+      };
+    }).sort((a, b) => b.wonThisMonthValue - a.wonThisMonthValue);
+  }, [deals, teamMembers]);
 
   const openDeal = (deal) => {
     if (!deal) return;
@@ -269,6 +319,37 @@ export default function CommandCenterPage() {
               <span className="text-base text-slate-300 font-normal ml-1.5">ดีล</span>
             </p>
             <p className="text-xs text-slate-400 mt-1">ไม่มีความเคลื่อนไหว 3+ วัน</p>
+          </div>
+        </Card>
+      </div>
+
+      {/* Weekly Pulse */}
+      <div className="grid grid-cols-3 gap-3">
+        <Card className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+            <Flame size={16} className="text-violet-600" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-400">ดีลใหม่สัปดาห์นี้</p>
+            <p className="text-2xl font-black text-slate-900 tabular-nums leading-none">{stats?.newDealsThisWeek || 0}</p>
+          </div>
+        </Card>
+        <Card className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+            <Trophy size={16} className="text-emerald-600" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-400">ปิดได้สัปดาห์นี้</p>
+            <p className="text-2xl font-black text-emerald-600 tabular-nums leading-none">{stats?.wonThisWeek || 0}</p>
+          </div>
+        </Card>
+        <Card className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <Star size={16} className="text-blue-600" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-400">มูลค่าปิดสัปดาห์นี้</p>
+            <p className="text-xl font-black text-blue-600 tabular-nums leading-none">{formatCurrency(stats?.wonThisWeekValue)}</p>
           </div>
         </Card>
       </div>
@@ -579,98 +660,120 @@ export default function CommandCenterPage() {
         </div>
       )}
 
-      {/* Team Performance */}
-      {teamMembers && teamMembers.length > 0 && (
+      {/* Team Leaderboard */}
+      {teamLeaderboard.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
-              <Users size={14} className="text-slate-600" />
+            <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center">
+              <Trophy size={14} className="text-amber-500" />
             </div>
-            <h3 className="font-semibold text-slate-800">ประสิทธิภาพทีมขาย</h3>
+            <h3 className="font-semibold text-slate-800">Team Leaderboard</h3>
+            <span className="text-xs text-slate-400">— ผลงานเดือนนี้</span>
           </div>
 
+          {/* Team total */}
           {(() => {
-            const nowDate = new Date();
             const totalGoal = teamMembers.reduce((s, m) => s + (m.goal || 2500000), 0);
             const teamWon = stats?.totalWonValue || 0;
             const teamPercent = totalGoal > 0 ? Math.round((teamWon / totalGoal) * 100) : 0;
-            const wonDealsThisMonth = (deals || []).filter(d => {
-              if (d.stage !== 'won') return false;
-              const dt = new Date(d.actual_close_date || d.updated_at || d.created_at);
-              return dt.getMonth() === nowDate.getMonth() && dt.getFullYear() === nowDate.getFullYear();
-            });
-
+            const wonCount = teamLeaderboard.reduce((s, m) => s + m.wonThisMonthCount, 0);
             return (
-              <div className="space-y-4">
-                {/* Team total progress card */}
-                <Card className="p-5 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border-0 shadow-lg text-white">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <p className="text-slate-400 text-xs font-medium">ยอดรวมทีม (เดือนนี้)</p>
-                      <p className="text-2xl font-bold text-white tabular-nums mt-0.5">{formatFullCurrency(teamWon)}</p>
-                      <p className="text-slate-400 text-xs mt-0.5">เป้าหมายรวม {formatCurrency(totalGoal)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-4xl font-black text-white/20 tabular-nums">{teamPercent}%</p>
-                      <p className="text-xs text-slate-400">{wonDealsThisMonth.length} ดีลที่ปิดได้</p>
-                    </div>
+              <Card className="p-5 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border-0 shadow-lg text-white">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="text-slate-400 text-xs font-medium">ยอดรวมทีม (เดือนนี้)</p>
+                    <p className="text-2xl font-bold text-white tabular-nums mt-0.5">{formatFullCurrency(teamWon)}</p>
+                    <p className="text-slate-400 text-xs mt-0.5">เป้าหมายรวม {formatCurrency(totalGoal)} · {wonCount} ดีลปิดแล้ว</p>
                   </div>
-                  <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(100, teamPercent)}%` }}
-                      transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
-                      className="h-full bg-white rounded-full"
-                    />
-                  </div>
-                </Card>
-
-                {/* Individual member cards — goal targets */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {teamMembers.map((m, i) => {
-                    const memberGoal = m.goal || 2500000;
-                    const goalShare = totalGoal > 0 ? Math.round((memberGoal / totalGoal) * 100) : 0;
-                    return (
-                      <motion.div
-                        key={m.id}
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.08 }}
-                        className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all"
-                      >
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-base shadow-sm',
-                            m.color?.split(' ')[0] || 'bg-violet-600')}>
-                            {m.name.charAt(0)}
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-slate-800 text-sm leading-tight">{m.name}</h4>
-                            <p className="text-xs text-slate-400">{m.role}</p>
-                          </div>
-                        </div>
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between items-center">
-                            <p className="text-xs text-slate-400">เป้าส่วนตัว</p>
-                            <p className="text-sm font-bold text-slate-700 tabular-nums">{formatCurrency(memberGoal)}</p>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <p className="text-xs text-slate-400">สัดส่วนทีม</p>
-                            <p className="text-sm font-bold text-slate-500">{goalShare}%</p>
-                          </div>
-                          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mt-2">
-                            <div
-                              className={cn('h-full rounded-full transition-all', m.color?.split(' ')[0] || 'bg-violet-500')}
-                              style={{ width: `${goalShare}%` }}
-                            />
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
+                  <p className="text-5xl font-black text-white/15 tabular-nums">{teamPercent}%</p>
                 </div>
-              </div>
+                <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, teamPercent)}%` }}
+                    transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
+                    className="h-full bg-white rounded-full"
+                  />
+                </div>
+              </Card>
             );
           })()}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {teamLeaderboard.map((m, i) => (
+              <motion.div
+                key={m.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+                className={cn(
+                  "p-5 rounded-2xl border shadow-sm hover:shadow-md transition-all relative overflow-hidden",
+                  i === 0 ? "bg-gradient-to-br from-amber-50 to-white border-amber-200" : "bg-white border-slate-100"
+                )}
+              >
+                {i === 0 && <span className="absolute top-3 right-3 text-lg">🏆</span>}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="relative">
+                    <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm',
+                      m.color?.split(' ')[0] || 'bg-violet-600')}>
+                      {m.name.charAt(0)}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-slate-800 text-white text-[9px] font-black flex items-center justify-center">
+                      {i + 1}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-800 text-sm leading-tight">{m.name}</h4>
+                    <p className="text-xs text-slate-400">{m.role}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 mb-3">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <p className="text-[10px] text-slate-400">ยอดขายเดือนนี้</p>
+                      <p className="text-lg font-black text-slate-900 tabular-nums leading-tight">{formatCurrency(m.wonThisMonthValue)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-slate-400">เป้า {formatCurrency(m.goal || 0)}</p>
+                      <p className={cn("text-sm font-black",
+                        m.goalAchievement >= 100 ? "text-emerald-600" :
+                        m.goalAchievement >= 70 ? "text-amber-500" : "text-rose-500"
+                      )}>{m.goalAchievement}%</p>
+                    </div>
+                  </div>
+                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${m.goalAchievement}%` }}
+                      transition={{ duration: 1, delay: i * 0.1, ease: [0.19, 1, 0.22, 1] }}
+                      className={cn("h-full rounded-full",
+                        m.goalAchievement >= 100 ? "bg-emerald-500" :
+                        m.goalAchievement >= 70 ? "bg-amber-500" : "bg-rose-500"
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-1.5 pt-3 border-t border-slate-100">
+                  <div className="text-center">
+                    <p className="text-sm font-black text-slate-800">{m.wonThisMonthCount}</p>
+                    <p className="text-[9px] text-slate-400">ปิดได้</p>
+                  </div>
+                  <div className="text-center">
+                    <p className={cn("text-sm font-black", m.winRate >= 50 ? "text-emerald-600" : m.winRate >= 30 ? "text-amber-500" : "text-rose-500")}>
+                      {m.winRate}%
+                    </p>
+                    <p className="text-[9px] text-slate-400">Win Rate</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-black text-blue-600">{m.activeCount}</p>
+                    <p className="text-[9px] text-slate-400">Active</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       )}
     </div>
