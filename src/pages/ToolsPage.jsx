@@ -3,9 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mail, Calculator, TrendingUp, Plus, Pencil, Trash2,
   Copy, Check, Loader2, FileText, DollarSign, Target,
-  ChevronDown, ChevronUp, Search, Tag
+  ChevronDown, ChevronUp, Search, Tag, Battery, HardDrive, Laptop
 } from 'lucide-react';
 import { useEmailTemplates, useAddEmailTemplate, useUpdateEmailTemplate, useDeleteEmailTemplate } from '../hooks/useEmailTemplates';
+import UPSCalculator from '../components/tools/UPSCalculator';
+import RaidCalculator from '../components/tools/RaidCalculator';
+import HardwareGuide from '../components/tools/HardwareGuide';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -494,6 +497,46 @@ const TOOLS = [
     ],
     desc: 'คำนวณรายได้จาก commission ตามยอดขายจริง เทียบเป้าหมาย และตรวจสอบว่าถึงเกณฑ์ bonus หรือยัง',
     component: CommissionCalculator,
+  },
+  {
+    key: 'ups',
+    icon: Battery,
+    title: 'คำนวณ UPS',
+    subtitle: 'คำนวณ VA และ Ah ที่ต้องการสำหรับ UPS',
+    gradient: 'from-blue-500 to-cyan-500',
+    badges: [
+      { label: 'VA Calculator', color: 'bg-blue-50 border-blue-100 text-blue-700' },
+      { label: 'Battery Config', color: 'bg-amber-50 border-amber-100 text-amber-700' },
+    ],
+    desc: 'คำนวณขนาด UPS ที่เหมาะสมและ configuration ของ battery สำหรับ load ขององค์กร',
+    component: UPSCalculator,
+  },
+  {
+    key: 'raid',
+    icon: HardDrive,
+    title: 'คำนวณ RAID',
+    subtitle: 'คำนวณพื้นที่ใช้งานได้ vs ความทนทาน',
+    gradient: 'from-amber-500 to-orange-500',
+    badges: [
+      { label: 'RAID 0/1/5/6/10', color: 'bg-emerald-50 border-emerald-100 text-emerald-700' },
+      { label: 'Efficiency %', color: 'bg-purple-50 border-purple-100 text-purple-700' },
+    ],
+    desc: 'เปรียบเทียบ RAID level ต่างๆ — พื้นที่จริงที่ใช้ได้, fault tolerance และ performance tradeoff',
+    component: RaidCalculator,
+  },
+  {
+    key: 'hardware',
+    icon: Laptop,
+    title: 'คู่มือ Hardware 2026',
+    subtitle: 'อ้างอิง spec PC, Server และ Network',
+    gradient: 'from-violet-500 to-purple-500',
+    badges: [
+      { label: 'Laptops', color: 'bg-violet-50 border-violet-100 text-violet-700' },
+      { label: 'Servers', color: 'bg-slate-100 border-slate-200 text-slate-700' },
+      { label: 'Network', color: 'bg-cyan-50 border-cyan-100 text-cyan-700' },
+    ],
+    desc: 'สเปกฮาร์ดแวร์ระดับองค์กร — Laptops, Servers และ Network equipment สำหรับใช้ประกอบการขาย',
+    component: HardwareGuide,
   },
 ];
 
