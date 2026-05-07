@@ -104,6 +104,7 @@ export async function addDeal(newDeal) {
     const dealData = {
       title: newDeal.title.trim(),
       company: newDeal.company?.trim() || null,
+      customer_id: newDeal.customer_id || null,
       value: Number(newDeal.value) || 0,
       stage: newDeal.stage || 'lead',
       probability: newDeal.probability || 0,
@@ -152,6 +153,7 @@ export async function addMultipleDeals(deals) {
     const dealsData = deals.map(newDeal => ({
       title: newDeal.title?.trim() || 'Untitled Deal',
       company: newDeal.company?.trim() || null,
+      customer_id: newDeal.customer_id || null,
       value: Number(newDeal.value) || 0,
       stage: newDeal.stage || 'lead',
       probability: newDeal.probability || 0,
