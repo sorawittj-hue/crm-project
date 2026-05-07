@@ -53,13 +53,10 @@ export function useHorizontalScroll() {
       element.scrollLeft = scrollLeft - walk;
     };
 
-    // Wheel - convert vertical to horizontal with Shift key
+    // Wheel — always scroll horizontally on the kanban board
     const handleWheel = (e) => {
-      // If shift key is pressed, or if we're already at top/bottom of vertical scroll
-      if (e.shiftKey || element.scrollTop === 0 || element.scrollTop === element.scrollHeight - element.clientHeight) {
-        e.preventDefault();
-        element.scrollLeft += e.deltaY;
-      }
+      e.preventDefault();
+      element.scrollLeft += e.deltaY + e.deltaX;
     };
 
     // Touch events for mobile swipe
