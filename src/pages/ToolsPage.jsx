@@ -1,123 +1,533 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Battery, Server, Laptop, HardDrive, Zap, Shield, Cpu
+  Mail, Calculator, TrendingUp, Plus, Pencil, Trash2,
+  Copy, Check, Loader2, FileText, DollarSign, Target,
+  ChevronDown, ChevronUp, Search, Tag
 } from 'lucide-react';
-import UPSCalculator from '../components/tools/UPSCalculator';
-import RaidCalculator from '../components/tools/RaidCalculator';
-import HardwareGuide from '../components/tools/HardwareGuide';
+import { useEmailTemplates, useAddEmailTemplate, useUpdateEmailTemplate, useDeleteEmailTemplate } from '../hooks/useEmailTemplates';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Textarea } from '../components/ui/Textarea';
+import { cn } from '../lib/utils';
+import { formatCurrency } from '../lib/formatters';
 
-const TOOLS_CONFIG = [
+// ─── Email Templates ───────────────────────────────────────────────────────────
+function EmailTemplates() {
+  const { data: templates = [], isLoading } = useEmailTemplates();
+  const addMutation = useAddEmailTemplate();
+  const updateMutation = useUpdateEmailTemplate();
+  const deleteMutation = useDeleteEmailTemplate();
+
+  const [search, setSearch] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
+  const [form, setForm] = useState({ name: '', subject: '', body: '', category: 'follow_up' });
+  const [editForm, setEditForm] = useState({});
+
+  const CATEGORIES = [
+    { id: 'follow_up', label: 'Follow Up', color: 'bg-blue-50 text-blue-700' },
+    { id: 'proposal', label: 'เสนอราคา', color: 'bg-violet-50 text-violet-700' },
+    { id: 'introduction', label: 'แนะนำตัว', color: 'bg-emerald-50 text-emerald-700' },
+    { id: 'closing', label: 'ปิดดีล', color: 'bg-amber-50 text-amber-700' },
+    { id: 'win_back', label: 'Win Back', color: 'bg-rose-50 text-rose-700' },
+    { id: 'other', label: 'อื่นๆ', color: 'bg-slate-100 text-slate-700' },
+  ];
+
+  const getCatConfig = (id) => CATEGORIES.find(c => c.id === id) || CATEGORIES[5];
+
+  const filtered = templates.filter(t =>
+    !search || t.name?.toLowerCase().includes(search.toLowerCase()) ||
+    t.subject?.toLowerCase().includes(search.toLowerCase()) ||
+    t.category?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    if (!form.name || !form.body) return;
+    await addMutation.mutateAsync(form);
+    setForm({ name: '', subject: '', body: '', category: 'follow_up' });
+    setIsAdding(false);
+  };
+
+  const handleUpdate = async (id) => {
+    await updateMutation.mutateAsync({ id, ...editForm });
+    setEditingId(null);
+  };
+
+  const handleCopy = (text, id) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  if (isLoading) return (
+    <div className="flex items-center justify-center py-20">
+      <Loader2 className="animate-spin text-violet-500" size={28} />
+    </div>
+  );
+
+  return (
+    <div className="space-y-5">
+      {/* Toolbar */}
+      <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+          <Input
+            placeholder="ค้นหา template..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-9 h-9 rounded-xl text-sm border-slate-200"
+          />
+        </div>
+        <Button
+          onClick={() => setIsAdding(true)}
+          className="h-9 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold border-0 shadow-md shadow-violet-500/20 shrink-0"
+        >
+          <Plus size={14} className="mr-2" /> เพิ่ม Template
+        </Button>
+      </div>
+
+      {/* Category legend */}
+      <div className="flex flex-wrap gap-2">
+        {CATEGORIES.map(c => (
+          <span key={c.id} className={cn('px-2.5 py-1 rounded-lg text-xs font-semibold', c.color)}>{c.label}</span>
+        ))}
+      </div>
+
+      {/* Add form */}
+      <AnimatePresence>
+        {isAdding && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <Card className="p-5 rounded-2xl border-violet-200 bg-violet-50/30">
+              <h4 className="text-sm font-bold text-violet-700 mb-4">เพิ่ม Template ใหม่</h4>
+              <form onSubmit={handleAdd} className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500">ชื่อ Template *</label>
+                    <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})}
+                      placeholder="เช่น Follow Up หลังเสนอราคา" className="h-9 rounded-xl text-sm" required />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500">หมวดหมู่</label>
+                    <select value={form.category} onChange={e => setForm({...form, category: e.target.value})}
+                      className="w-full h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none">
+                      {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-500">Subject Email</label>
+                  <Input value={form.subject} onChange={e => setForm({...form, subject: e.target.value})}
+                    placeholder="เช่น ติดตามใบเสนอราคา [ชื่อดีล]" className="h-9 rounded-xl text-sm" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-500">เนื้อหา Email *</label>
+                  <p className="text-[10px] text-slate-400">ใช้ {'{{name}}'}, {'{{company}}'}, {'{{value}}'} เพื่อแทรกข้อมูล</p>
+                  <Textarea value={form.body} onChange={e => setForm({...form, body: e.target.value})}
+                    placeholder={'สวัสดีคุณ {{name}},\n\nขอบคุณที่ให้ความสนใจ...'} rows={6}
+                    className="rounded-xl text-sm resize-none" required />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <Button type="button" variant="ghost" onClick={() => setIsAdding(false)}
+                    className="h-9 px-4 rounded-xl text-sm text-slate-500">ยกเลิก</Button>
+                  <Button type="submit" disabled={addMutation.isPending}
+                    className="h-9 px-5 rounded-xl bg-violet-600 text-white text-sm border-0">
+                    {addMutation.isPending ? <Loader2 size={14} className="animate-spin mr-2" /> : null}
+                    บันทึก
+                  </Button>
+                </div>
+              </form>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Template list */}
+      {filtered.length === 0 && !isAdding && (
+        <div className="text-center py-16 space-y-3">
+          <FileText size={32} className="text-slate-200 mx-auto" />
+          <p className="text-sm font-medium text-slate-400">ยังไม่มี Email Template</p>
+          <p className="text-xs text-slate-300">คลิก "เพิ่ม Template" เพื่อสร้าง template แรก</p>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {filtered.map(t => {
+          const cat = getCatConfig(t.category);
+          const isExpanded = expandedId === t.id;
+          const isEditing = editingId === t.id;
+
+          return (
+            <motion.div key={t.id} layout>
+              <Card className="rounded-2xl overflow-hidden border-slate-100">
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <span className={cn('px-2.5 py-0.5 rounded-lg text-[10px] font-bold shrink-0', cat.color)}>{cat.label}</span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-900 truncate">{t.name}</p>
+                        {t.subject && <p className="text-xs text-slate-400 truncate mt-0.5">Subject: {t.subject}</p>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button onClick={() => handleCopy(t.body, t.id)}
+                        className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+                        {copiedId === t.id ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                      </button>
+                      <button onClick={() => { setEditingId(t.id); setEditForm({ name: t.name, subject: t.subject || '', body: t.body, category: t.category || 'other' }); setExpandedId(null); }}
+                        className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+                        <Pencil size={14} />
+                      </button>
+                      <button onClick={() => deleteMutation.mutate(t.id)}
+                        className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors">
+                        <Trash2 size={14} />
+                      </button>
+                      <button onClick={() => setExpandedId(isExpanded ? null : t.id)}
+                        className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+                        {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <AnimatePresence>
+                  {isExpanded && !isEditing && (
+                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
+                      <div className="px-4 pb-4 border-t border-slate-100 pt-3">
+                        <pre className="text-xs text-slate-600 whitespace-pre-wrap font-sans leading-relaxed bg-slate-50 rounded-xl p-3">{t.body}</pre>
+                        <button onClick={() => handleCopy(t.body, t.id + '-body')}
+                          className="mt-2 flex items-center gap-1.5 text-xs text-violet-600 hover:text-violet-800 font-semibold">
+                          {copiedId === t.id + '-body' ? <Check size={12} /> : <Copy size={12} />}
+                          {copiedId === t.id + '-body' ? 'คัดลอกแล้ว!' : 'คัดลอก Body'}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                  {isEditing && (
+                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
+                      <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-500">ชื่อ</label>
+                            <Input value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})}
+                              className="h-9 rounded-xl text-sm" />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-500">หมวดหมู่</label>
+                            <select value={editForm.category} onChange={e => setEditForm({...editForm, category: e.target.value})}
+                              className="w-full h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none">
+                              {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-500">Subject</label>
+                          <Input value={editForm.subject} onChange={e => setEditForm({...editForm, subject: e.target.value})}
+                            className="h-9 rounded-xl text-sm" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-500">Body</label>
+                          <Textarea value={editForm.body} onChange={e => setEditForm({...editForm, body: e.target.value})}
+                            rows={5} className="rounded-xl text-sm resize-none" />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button type="button" variant="ghost" onClick={() => setEditingId(null)}
+                            className="h-9 px-4 rounded-xl text-sm text-slate-500">ยกเลิก</Button>
+                          <Button onClick={() => handleUpdate(t.id)} disabled={updateMutation.isPending}
+                            className="h-9 px-5 rounded-xl bg-violet-600 text-white text-sm border-0">บันทึก</Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Card>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Deal ROI Calculator ───────────────────────────────────────────────────────
+function DealCalculator() {
+  const [dealValue, setDealValue] = useState('');
+  const [cost, setCost] = useState('');
+  const [probability, setProbability] = useState('70');
+  const [months, setMonths] = useState('3');
+
+  const calc = (() => {
+    const v = Number(dealValue) || 0;
+    const c = Number(cost) || 0;
+    const p = Number(probability) / 100;
+    const m = Number(months) || 1;
+    const grossProfit = v - c;
+    const margin = v > 0 ? (grossProfit / v) * 100 : 0;
+    const expectedRevenue = v * p;
+    const expectedProfit = grossProfit * p;
+    const monthlyRevenue = v / m;
+    const roi = c > 0 ? ((grossProfit / c) * 100) : 0;
+    return { grossProfit, margin, expectedRevenue, expectedProfit, monthlyRevenue, roi };
+  })();
+
+  const SCENARIOS = [
+    { label: 'Worst Case (30%)', value: Number(dealValue) * 0.3, color: 'text-rose-600' },
+    { label: 'Commit (70%)', value: Number(dealValue) * 0.7, color: 'text-amber-600' },
+    { label: 'Best Case (100%)', value: Number(dealValue), color: 'text-emerald-600' },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Inputs */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-bold text-slate-700">ข้อมูลดีล</h3>
+          <div className="space-y-3">
+            {[
+              { label: 'มูลค่าดีล (บาท)', value: dealValue, setter: setDealValue, placeholder: '1,000,000' },
+              { label: 'ต้นทุน / ค่าใช้จ่าย (บาท)', value: cost, setter: setCost, placeholder: '600,000' },
+            ].map(f => (
+              <div key={f.label} className="space-y-1">
+                <label className="text-xs font-semibold text-slate-500">{f.label}</label>
+                <Input type="number" value={f.value} onChange={e => f.setter(e.target.value)}
+                  placeholder={f.placeholder} className="h-10 rounded-xl text-sm" />
+              </div>
+            ))}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-500">โอกาสปิด (%)</label>
+                <Input type="number" min="0" max="100" value={probability} onChange={e => setProbability(e.target.value)}
+                  className="h-10 rounded-xl text-sm" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-500">ระยะเวลา (เดือน)</label>
+                <Input type="number" min="1" value={months} onChange={e => setMonths(e.target.value)}
+                  className="h-10 rounded-xl text-sm" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Results */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-bold text-slate-700">ผลลัพธ์</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: 'กำไรขั้นต้น', value: formatCurrency(calc.grossProfit), color: calc.grossProfit >= 0 ? 'text-emerald-600' : 'text-rose-600' },
+              { label: 'Margin', value: `${calc.margin.toFixed(1)}%`, color: calc.margin >= 20 ? 'text-emerald-600' : calc.margin >= 10 ? 'text-amber-600' : 'text-rose-600' },
+              { label: 'Expected Revenue', value: formatCurrency(calc.expectedRevenue), color: 'text-violet-600' },
+              { label: 'Expected Profit', value: formatCurrency(calc.expectedProfit), color: 'text-violet-600' },
+              { label: 'รายได้ต่อเดือน', value: formatCurrency(calc.monthlyRevenue), color: 'text-blue-600' },
+              { label: 'ROI', value: `${calc.roi.toFixed(0)}%`, color: calc.roi >= 100 ? 'text-emerald-600' : calc.roi >= 50 ? 'text-amber-600' : 'text-rose-600' },
+            ].map(m => (
+              <div key={m.label} className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                <p className="text-xs text-slate-400">{m.label}</p>
+                <p className={cn('text-lg font-black tabular-nums', m.color)}>{m.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Forecast scenarios */}
+      <div className="border-t border-slate-100 pt-5">
+        <h3 className="text-sm font-bold text-slate-700 mb-3">Forecast Scenarios</h3>
+        <div className="grid grid-cols-3 gap-3">
+          {SCENARIOS.map(s => (
+            <div key={s.label} className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
+              <p className="text-xs text-slate-400 mb-1">{s.label}</p>
+              <p className={cn('text-xl font-black tabular-nums', s.color)}>{formatCurrency(s.value)}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Commission Calculator ─────────────────────────────────────────────────────
+function CommissionCalculator() {
+  const [wonValue, setWonValue] = useState('');
+  const [target, setTarget] = useState('');
+  const [baseRate, setBaseRate] = useState('3');
+  const [bonusRate, setBonusRate] = useState('5');
+  const [bonusThreshold, setBonusThreshold] = useState('100');
+
+  const calc = (() => {
+    const won = Number(wonValue) || 0;
+    const tgt = Number(target) || 1;
+    const base = Number(baseRate) / 100;
+    const bonus = Number(bonusRate) / 100;
+    const threshold = Number(bonusThreshold) / 100;
+    const achievement = tgt > 0 ? won / tgt : 0;
+    const baseCommission = won * base;
+    const bonusCommission = achievement >= threshold ? won * bonus : 0;
+    const totalCommission = baseCommission + bonusCommission;
+    const gap = Math.max(0, tgt * threshold - won);
+    const projectedAtTarget = tgt * base + tgt * bonus;
+    return { achievement: achievement * 100, baseCommission, bonusCommission, totalCommission, gap, projectedAtTarget };
+  })();
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <h3 className="text-sm font-bold text-slate-700">ตั้งค่า</h3>
+          <div className="space-y-3">
+            {[
+              { label: 'ยอดขายจริง (บาท)', value: wonValue, setter: setWonValue, placeholder: '5,000,000' },
+              { label: 'เป้าหมาย (บาท)', value: target, setter: setTarget, placeholder: '7,000,000' },
+            ].map(f => (
+              <div key={f.label} className="space-y-1">
+                <label className="text-xs font-semibold text-slate-500">{f.label}</label>
+                <Input type="number" value={f.value} onChange={e => f.setter(e.target.value)}
+                  placeholder={f.placeholder} className="h-10 rounded-xl text-sm" />
+              </div>
+            ))}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-500">Commission % ปกติ</label>
+                <Input type="number" step="0.1" value={baseRate} onChange={e => setBaseRate(e.target.value)}
+                  className="h-10 rounded-xl text-sm" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-500">Bonus % (ถ้าถึงเป้า)</label>
+                <Input type="number" step="0.1" value={bonusRate} onChange={e => setBonusRate(e.target.value)}
+                  className="h-10 rounded-xl text-sm" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-500">เกณฑ์ Bonus (%)</label>
+                <Input type="number" value={bonusThreshold} onChange={e => setBonusThreshold(e.target.value)}
+                  className="h-10 rounded-xl text-sm" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-sm font-bold text-slate-700">ผลลัพธ์</h3>
+
+          {/* Achievement progress */}
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-500">ความสำเร็จ</span>
+              <span className={cn('font-bold', calc.achievement >= 100 ? 'text-emerald-600' : calc.achievement >= 70 ? 'text-amber-600' : 'text-rose-600')}>
+                {calc.achievement.toFixed(1)}%
+              </span>
+            </div>
+            <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
+              <div
+                className={cn('h-full rounded-full transition-all', calc.achievement >= 100 ? 'bg-emerald-500' : calc.achievement >= 70 ? 'bg-amber-500' : 'bg-rose-500')}
+                style={{ width: `${Math.min(100, calc.achievement)}%` }}
+              />
+            </div>
+            {calc.gap > 0 && (
+              <p className="text-xs text-rose-500">ขาดอีก {formatCurrency(calc.gap)} ถึงจะได้ Bonus</p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: 'Base Commission', value: formatCurrency(calc.baseCommission), color: 'text-blue-600' },
+              { label: 'Bonus', value: formatCurrency(calc.bonusCommission), color: calc.bonusCommission > 0 ? 'text-emerald-600' : 'text-slate-300' },
+              { label: 'รวมได้รับ', value: formatCurrency(calc.totalCommission), color: 'text-violet-700' },
+              { label: 'ถ้าปิดได้ 100%', value: formatCurrency(calc.projectedAtTarget), color: 'text-slate-500' },
+            ].map(m => (
+              <div key={m.label} className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                <p className="text-xs text-slate-400">{m.label}</p>
+                <p className={cn('text-lg font-black tabular-nums', m.color)}>{m.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
+const TOOLS = [
   {
-    key: 'ups',
-    icon: Battery,
-    title: 'คำนวณ UPS',
-    subtitle: 'คำนวณ VA และ Ah ที่ต้องการสำหรับ UPS',
-    gradient: 'from-blue-500 to-cyan-500',
-    bgGlow: 'rgba(59,130,246,0.12)',
-    accentBg: 'bg-blue-50',
-    accentBorder: 'border-blue-200',
-    accentText: 'text-blue-600',
+    key: 'email',
+    icon: Mail,
+    title: 'Email Templates',
+    subtitle: 'จัดการ template อีเมลสำหรับทุก stage',
+    gradient: 'from-violet-500 to-purple-600',
     badges: [
-      { label: 'VA Calculator', color: 'bg-blue-50 border-blue-100 text-blue-700' },
-      { label: 'Battery Config', color: 'bg-amber-50 border-amber-100 text-amber-700' },
+      { label: 'Follow Up', color: 'bg-blue-50 border-blue-100 text-blue-700' },
+      { label: 'Proposal', color: 'bg-violet-50 border-violet-100 text-violet-700' },
+      { label: 'Closing', color: 'bg-amber-50 border-amber-100 text-amber-700' },
     ],
-    headerDescription: 'Calculate optimal UPS capacity and battery configuration',
-    component: UPSCalculator,
+    desc: 'สร้างและจัดการ email template สำหรับทุกขั้นตอนการขาย พร้อม copy-paste ได้ทันที',
+    component: EmailTemplates,
   },
   {
-    key: 'raid',
-    icon: HardDrive,
-    title: 'คำนวณ RAID',
-    subtitle: 'คำนวณพื้นที่ใช้งานได้ vs ความทนทาน',
+    key: 'roi',
+    icon: Calculator,
+    title: 'Deal Calculator',
+    subtitle: 'คำนวณกำไร, Margin, ROI และ Forecast',
+    gradient: 'from-emerald-500 to-teal-600',
+    badges: [
+      { label: 'ROI Analysis', color: 'bg-emerald-50 border-emerald-100 text-emerald-700' },
+      { label: 'Scenarios', color: 'bg-blue-50 border-blue-100 text-blue-700' },
+    ],
+    desc: 'วิเคราะห์ความคุ้มค่าของดีล — gross profit, margin, expected revenue ตาม probability',
+    component: DealCalculator,
+  },
+  {
+    key: 'commission',
+    icon: TrendingUp,
+    title: 'Commission Calculator',
+    subtitle: 'คำนวณ commission และ bonus ตามเป้า',
     gradient: 'from-amber-500 to-orange-500',
-    bgGlow: 'rgba(245,158,11,0.12)',
-    accentBg: 'bg-amber-50',
-    accentBorder: 'border-amber-200',
-    accentText: 'text-amber-600',
     badges: [
-      { label: 'RAID 0/1/5/6/10', color: 'bg-emerald-50 border-emerald-100 text-emerald-700' },
-      { label: 'Efficiency %', color: 'bg-purple-50 border-purple-100 text-purple-700' },
+      { label: 'Base Commission', color: 'bg-amber-50 border-amber-100 text-amber-700' },
+      { label: 'Bonus Threshold', color: 'bg-rose-50 border-rose-100 text-rose-700' },
     ],
-    headerDescription: 'Optimize storage capacity with fault tolerance analysis',
-    component: RaidCalculator,
+    desc: 'คำนวณรายได้จาก commission ตามยอดขายจริง เทียบเป้าหมาย และตรวจสอบว่าถึงเกณฑ์ bonus หรือยัง',
+    component: CommissionCalculator,
   },
-  {
-    key: 'hardware',
-    icon: Laptop,
-    title: 'คู่มือ Hardware 2026',
-    subtitle: 'อ้างอิง spec PC, Server และ Network',
-    gradient: 'from-violet-500 to-purple-500',
-    bgGlow: 'rgba(139,92,246,0.12)',
-    accentBg: 'bg-violet-50',
-    accentBorder: 'border-violet-200',
-    accentText: 'text-violet-600',
-    badges: [
-      { label: 'Laptops', color: 'bg-violet-50 border-violet-100 text-violet-700' },
-      { label: 'Servers', color: 'bg-slate-100 border-slate-200 text-slate-700' },
-      { label: 'Network', color: 'bg-cyan-50 border-cyan-100 text-cyan-700' },
-    ],
-    headerDescription: 'Enterprise hardware specifications and procurement guidelines',
-    component: HardwareGuide,
-  },
-];
-
-const FOOTER_STATS = [
-  { icon: Cpu, label: 'Hardware Categories', value: '3' },
-  { icon: Shield, label: 'RAID Levels', value: '5' },
-  { icon: Zap, label: 'Power Factors', value: '0.6–0.9' },
-  { icon: Server, label: 'System Voltage', value: '12–96V' },
 ];
 
 export default function ToolsPage() {
-  const [activeTab, setActiveTab] = useState('ups');
-
-  const activeTool = TOOLS_CONFIG.find((t) => t.key === activeTab);
+  const [activeTab, setActiveTab] = useState('email');
+  const activeTool = TOOLS.find(t => t.key === activeTab);
   const ActiveComponent = activeTool?.component;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="max-w-[1400px] mx-auto pb-20 px-4 md:px-8"
+      transition={{ duration: 0.4 }}
+      className="max-w-[1400px] mx-auto pb-20 px-4 md:px-0"
     >
-      {/* ── Header ── */}
       <header className="mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">เครื่องมือคำนวณ</h1>
-            <p className="text-sm text-slate-500 mt-1">คำนวณ UPS, RAID และดูสเปก Hardware สำหรับองค์กร</p>
-          </div>
-          <div className="flex gap-2 shrink-0">
-            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
-              <Zap size={14} className="text-amber-500" />
-              <span className="text-xs font-medium text-slate-600">คำนวณแม่นยำ</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
-              <Shield size={14} className="text-emerald-500" />
-              <span className="text-xs font-medium text-slate-600">ระดับองค์กร</span>
-            </div>
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold text-slate-900">เครื่องมือ</h1>
+        <p className="text-sm text-slate-500 mt-1">Email Templates, Deal Calculator และ Commission Calculator</p>
       </header>
 
-      {/* ── Tab List ── */}
+      {/* Tab List */}
       <div className="mb-8 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 pb-1">
         <div className="inline-flex gap-2 bg-white/80 backdrop-blur-md border border-slate-200 p-1.5 rounded-2xl shadow-sm min-w-max">
-          {TOOLS_CONFIG.map((tool) => {
+          {TOOLS.map(tool => {
             const Icon = tool.icon;
             const isActive = activeTab === tool.key;
             return (
               <button
                 key={tool.key}
                 onClick={() => setActiveTab(tool.key)}
-                className={[
+                className={cn(
                   'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 whitespace-nowrap',
-                  isActive
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800',
-                ].join(' ')}
+                  isActive ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                )}
               >
                 <Icon size={14} strokeWidth={2.5} />
                 {tool.title}
@@ -127,82 +537,40 @@ export default function ToolsPage() {
         </div>
       </div>
 
-      {/* ── Active Tool Panel ── */}
+      {/* Active Tool Panel */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -16 }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
-          className="rounded-3xl border border-slate-100 shadow-2xl bg-white overflow-hidden"
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.25 }}
+          className="rounded-3xl border border-slate-100 shadow-xl bg-white overflow-hidden"
         >
-          {/* Accent top bar */}
           <div className={`h-1.5 bg-gradient-to-r ${activeTool.gradient}`} />
 
-          {/* Tool header */}
           <div className="px-6 py-6 md:px-10 md:py-8 border-b border-slate-100">
             <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-              {/* Icon */}
-              <div
-                className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br ${activeTool.gradient} flex items-center justify-center text-white shadow-lg shrink-0`}
-              >
-                <activeTool.icon size={28} strokeWidth={2} />
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${activeTool.gradient} flex items-center justify-center text-white shadow-lg shrink-0`}>
+                <activeTool.icon size={26} strokeWidth={2} />
               </div>
-
-              {/* Title + description */}
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-bold text-slate-900 mb-1">
-                  {activeTool.title}
-                </h2>
-                <p className="text-xs text-slate-400">
-                  {activeTool.headerDescription}
-                </p>
+                <h2 className="text-lg font-bold text-slate-900 mb-0.5">{activeTool.title}</h2>
+                <p className="text-xs text-slate-400">{activeTool.desc}</p>
               </div>
-
-              {/* Badges */}
               <div className="flex flex-wrap gap-2 shrink-0">
-                {activeTool.badges.map((b) => (
-                  <span
-                    key={b.label}
-                    className={`px-3 py-1.5 rounded-xl border text-xs font-medium ${b.color}`}
-                  >
-                    {b.label}
-                  </span>
+                {activeTool.badges.map(b => (
+                  <span key={b.label} className={cn('px-3 py-1.5 rounded-xl border text-xs font-medium', b.color)}>{b.label}</span>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Tool body */}
           <div className="p-6 md:p-10">
             {ActiveComponent && <ActiveComponent />}
           </div>
         </motion.div>
       </AnimatePresence>
-
-      {/* ── Footer Stats ── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4"
-      >
-        {FOOTER_STATS.map((stat, idx) => (
-          <div
-            key={idx}
-            className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3"
-          >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center shrink-0">
-              <stat.icon size={18} className="text-slate-600" />
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">{stat.label}</p>
-              <p className="text-base font-bold text-slate-900">{stat.value}</p>
-            </div>
-          </div>
-        ))}
-      </motion.div>
     </motion.div>
   );
 }

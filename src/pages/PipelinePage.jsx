@@ -2,9 +2,10 @@ import { useState, useMemo, lazy, Suspense } from 'react';
 import { useDeals, useUpdateDeal, useAddDeal, useAddMultipleDeals, useDeleteDeals } from '../hooks/useDeals';
 import { useCustomers } from '../hooks/useCustomers';
 import { useTeam } from '../hooks/useTeam';
+import { useAuth } from '../hooks/useAuth';
 import { useAppStore } from '../store/useAppStore';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
-import { Plus, Filter, Search, Loader2, Sliders, ScanLine } from 'lucide-react';
+import { Plus, Filter, Search, Loader2, Sliders, ScanLine, Download, User } from 'lucide-react';
 
 // Lazy-load PDFImporter to avoid bundling pdfjs-dist (~5MB) in initial load
 const PDFImporter = lazy(() => import('../components/pipeline/PDFImporter'));
@@ -27,10 +28,12 @@ export default function PipelinePage() {
   const addMultipleDealsMutation = useAddMultipleDeals();
   const deleteDealsMutation = useDeleteDeals();
   const { pendingOpenDeal, clearPendingOpenDeal } = useAppStore();
+  const { user } = useAuth();
 
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isScanOpen, setIsScanOpen] = useState(false);
+  const [myDealsOnly, setMyDealsOnly] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [stageFilter, setStageFilter] = useState([]);
@@ -44,6 +47,22 @@ export default function PipelinePage() {
     contact: '', contact_email: '', contact_phone: '', probability: '50',
     expected_close_date: '', assigned_to: '',
   });
+
+  // CSV export helper
+  const exportToCSV = () => {
+    const headers = ['ชื่อดีล', 'บริษัท', 'มูลค่า', 'ขั้นตอน', 'โอกาสปิด%', 'ผู้ติดต่อ', 'วันสร้าง', 'วันคาดปิด'];
+    const rows = filteredDeals.map(d => [
+      d.title || '', d.company || '', d.value || 0, d.stage || '',
+      d.probability || 0, d.contact || '',
+      d.created_at ? new Date(d.created_at).toLocaleDateString('th-TH') : '',
+      d.expected_close_date ? new Date(d.expected_close_date).toLocaleDateString('th-TH') : '',
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `deals_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // We filter the input to MonthlyPipeline based on search and parameters
   const filteredDeals = useMemo(() => {
@@ -60,6 +79,7 @@ export default function PipelinePage() {
     if (valueMin !== '') result = result.filter(d => Number(d.value) >= Number(valueMin));
     if (valueMax !== '') result = result.filter(d => Number(d.value) <= Number(valueMax));
     if (probMin !== '') result = result.filter(d => Number(d.probability) >= Number(probMin));
+    if (myDealsOnly && user?.id) result = result.filter(d => d.assigned_to === user.id);
 
     result = [...result].sort((a, b) => {
       if (sortBy === 'createdAt') return new Date(b.created_at || 0) - new Date(a.created_at || 0);
@@ -111,7 +131,7 @@ export default function PipelinePage() {
     </div>
   );
 
-  const activeFilterCount = stageFilter.length + (searchTerm ? 1 : 0) + (valueMin ? 1 : 0) + (valueMax ? 1 : 0) + (probMin ? 1 : 0);
+  const activeFilterCount = stageFilter.length + (searchTerm ? 1 : 0) + (valueMin ? 1 : 0) + (valueMax ? 1 : 0) + (probMin ? 1 : 0) + (myDealsOnly ? 1 : 0);
 
   return (
     <motion.div
@@ -127,6 +147,23 @@ export default function PipelinePage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setMyDealsOnly(v => !v)}
+            className={cn(
+              'h-10 px-4 rounded-xl text-sm font-semibold border transition-all flex items-center gap-2',
+              myDealsOnly
+                ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
+                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+            )}
+          >
+            <User size={14} /> ดีลของฉัน
+          </button>
+          <button
+            onClick={exportToCSV}
+            className="h-10 px-4 rounded-xl text-sm font-semibold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2"
+          >
+            <Download size={14} /> Export CSV
+          </button>
           <Button
             variant="ghost"
             onClick={() => setIsScanOpen(true)}
