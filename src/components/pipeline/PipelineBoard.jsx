@@ -4,7 +4,8 @@ import {
   Search, Filter, Star, TrendingUp, AlertTriangle,
   Zap, Users,
   ArrowLeft, ThumbsUp, ThumbsDown,
-  Clock, GripVertical, ChevronRight
+  Clock, GripVertical, ChevronRight,
+  LayoutGrid, List
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { formatFullCurrency as formatCurrency } from '../../lib/formatters';
@@ -88,6 +89,7 @@ export default function PipelineBoard({
   const [reasonText, setReasonText] = useState('');
 
   const scrollRef = useHorizontalScroll();
+  const [viewMode, setViewMode] = useState('kanban');
 
   // eslint-disable-next-line react-hooks/purity
   const nowMsRef = useRef(Date.now());
@@ -220,14 +222,109 @@ export default function PipelineBoard({
           })}
         </div>
 
-        <p className="text-xs text-slate-400 flex items-center gap-1.5">
-          <GripVertical size={12} />
-          ลากการ์ดเพื่อย้ายขั้นตอน หรือใช้ปุ่มลูกศรบนการ์ด
-        </p>
+        <div className="flex items-center gap-2">
+          {viewMode === 'kanban' && (
+            <p className="text-xs text-slate-400 flex items-center gap-1.5 hidden md:flex">
+              <GripVertical size={12} />
+              เลื่อนซ้าย-ขวาเพื่อดูทุกขั้นตอน
+            </p>
+          )}
+          <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 gap-1">
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={cn('p-1.5 rounded-lg transition-all', viewMode === 'kanban' ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-700')}
+              title="Kanban"
+            >
+              <LayoutGrid size={14} />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={cn('p-1.5 rounded-lg transition-all', viewMode === 'list' ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-700')}
+              title="รายการ"
+            >
+              <List size={14} />
+            </button>
+          </div>
+        </div>
       </div>
 
+      {/* LIST VIEW */}
+      {viewMode === 'list' && (
+        <div className="overflow-y-auto rounded-2xl border border-slate-200 bg-white">
+          {processedDeals.length === 0 ? (
+            <div className="py-20 text-center text-slate-300 text-sm">ไม่พบดีล</div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  <th className="text-left px-4 py-3">บริษัท / ดีล</th>
+                  <th className="text-left px-4 py-3">ขั้นตอน</th>
+                  <th className="text-right px-4 py-3">มูลค่า</th>
+                  <th className="text-center px-4 py-3">โอกาส</th>
+                  <th className="text-center px-4 py-3">ไม่มีกิจกรรม</th>
+                  <th className="text-center px-4 py-3">ย้าย</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {processedDeals.map((deal) => {
+                  const stage = STAGE_CONFIG[deal.stage];
+                  const isStagnant = deal.agingDays > 7 && !['won', 'lost'].includes(deal.stage);
+                  return (
+                    <tr
+                      key={deal.id}
+                      onClick={() => onDealClick(deal)}
+                      className={cn('hover:bg-slate-50 cursor-pointer transition-colors group', isStagnant && 'bg-rose-50/30')}
+                    >
+                      <td className="px-4 py-3">
+                        <p className="font-semibold text-slate-900 group-hover:text-violet-700 transition-colors truncate max-w-[200px]">{deal.company || '—'}</p>
+                        <p className="text-xs text-slate-400 truncate max-w-[200px]">{deal.title}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold', `${stage.dot.replace('bg-', 'bg-')}/10`, stage.accent)}>
+                          <span className={cn('w-1.5 h-1.5 rounded-full', stage.dot)} />
+                          {stage.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right font-bold text-slate-900 tabular-nums">{formatCurrency(deal.value)}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={cn('text-xs font-bold tabular-nums',
+                          deal.probability >= 70 ? 'text-emerald-600' : deal.probability >= 40 ? 'text-slate-700' : 'text-slate-400'
+                        )}>{deal.probability ?? '—'}%</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={cn('text-xs font-semibold tabular-nums', isStagnant ? 'text-rose-500' : 'text-slate-400')}>
+                          {deal.agingDays}ว
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            disabled={STAGES.indexOf(deal.stage) === 0}
+                            onClick={() => handleMoveDeal(deal.id, 'left')}
+                            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+                          >
+                            <ArrowLeft size={13} />
+                          </button>
+                          <button
+                            disabled={STAGES.indexOf(deal.stage) === STAGES.length - 1}
+                            onClick={() => handleMoveDeal(deal.id, 'right')}
+                            className="p-1.5 rounded-lg text-slate-400 hover:bg-violet-50 hover:text-violet-600 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+                          >
+                            <ChevronRight size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
       {/* KANBAN BOARD */}
-      <div
+      {viewMode === 'kanban' && <div
         ref={scrollRef}
         className="flex-1 min-h-[560px] relative overflow-x-auto overflow-y-hidden custom-scrollbar-horizontal"
         style={{ scrollBehavior: 'smooth' }}
@@ -309,7 +406,7 @@ export default function PipelineBoard({
             );
           })}
         </div>
-      </div>
+      </div>}
 
       {/* WIN/LOSS REASON MODAL */}
       <Dialog
