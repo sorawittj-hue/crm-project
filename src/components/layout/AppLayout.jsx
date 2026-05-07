@@ -312,16 +312,6 @@ export default function AppLayout() {
                 Dev by <span className="font-semibold text-slate-400">Sorawit Thunthakij</span>
               </p>
             </div>
-
-            {/* Developer credit */}
-            <div className="px-4 pb-4 pt-2 border-t border-slate-100 mt-2">
-              <p className="text-[10px] text-slate-300 font-medium leading-relaxed">
-                Zenith CRM <span className="text-slate-200">v2.1</span>
-              </p>
-              <p className="text-[10px] text-slate-300 mt-0.5">
-                Dev by <span className="font-semibold text-slate-400">Sorawit Thunthakij</span>
-              </p>
-            </div>
           </motion.aside>
         )}
       </AnimatePresence>
