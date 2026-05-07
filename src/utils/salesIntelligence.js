@@ -339,9 +339,53 @@ const getCustomerNextAction = (status) => {
   return 'Maintain relationship cadence';
 };
 
+const buildCustomerStats = (customerDeals, tier, now) => {
+  const wonDeals = customerDeals.filter((d) => d.stage === 'won');
+  const lostDeals = customerDeals.filter((d) => d.stage === 'lost');
+  const activeDeals = customerDeals.filter((d) => d.isActive);
+  const riskCount = activeDeals.filter((d) => d.isAtRisk).length;
+  const totalClosed = wonDeals.length + lostDeals.length;
+  const winRate = totalClosed ? Math.round((wonDeals.length / totalClosed) * 100) : 0;
+  const lastTouchMs = customerDeals.reduce((max, deal) => {
+    const date = parseDateValue(getLastTouchDate(deal));
+    return date ? Math.max(max, date.getTime()) : max;
+  }, 0);
+  const inactiveDays = lastTouchMs ? getDaysBetween(new Date(lastTouchMs), now) : null;
+  const wonValue = sumDealValue(wonDeals);
+  const activeValue = sumDealValue(activeDeals);
+  const weightedActiveValue = sumDealValue(activeDeals, 'weightedValue');
+  const tierBonus = TIER_WEIGHT[tier] || 4;
+  const inactivityPenalty = inactiveDays === null ? 16 : clamp(inactiveDays * 1.5, 0, 35);
+  const riskPenalty = riskCount * 18;
+  const score = clamp(Math.round(62 + tierBonus + winRate * 0.18 - inactivityPenalty - riskPenalty), 0, 100);
+  const status = getCustomerStatus(score, weightedActiveValue, riskCount);
+  const grade = getCustomerGrade({ wonValue, winRate, totalDeals: customerDeals.length, healthScore: score, tier });
+  return {
+    grade,
+    dealStats: {
+      total: customerDeals.length,
+      won: wonDeals.length,
+      lost: lostDeals.length,
+      wonValue,
+      activeValue,
+      weightedActiveValue,
+      deals: customerDeals,
+    },
+    health: {
+      score,
+      status,
+      riskCount,
+      inactiveDays,
+      winRate,
+      nextAction: getCustomerNextAction(status),
+    },
+  };
+};
+
 export const buildCustomerHealth = (customers = [], deals = [], options = {}) => {
   const now = parseDateValue(options.now) || new Date();
   const normalizedDeals = deals.map((deal) => normalizeDealForIntelligence(deal, now));
+
   // Build a company-name → customer_id lookup for deals without customer_id
   const companyToCustomerId = customers.reduce((acc, c) => {
     if (c.company) acc[c.company.trim().toLowerCase()] = c.id;
@@ -349,64 +393,46 @@ export const buildCustomerHealth = (customers = [], deals = [], options = {}) =>
     return acc;
   }, {});
 
-  const dealsByCustomer = normalizedDeals.reduce((acc, deal) => {
+  const dealsByCustomer = {};
+  const orphanDealsByCompany = {};
+
+  normalizedDeals.forEach((deal) => {
     const cid = deal.customer_id ||
       (deal.company && companyToCustomerId[deal.company.trim().toLowerCase()]);
-    if (!cid) return acc;
-    if (!acc[cid]) acc[cid] = [];
-    acc[cid].push(deal);
-    return acc;
-  }, {});
+    if (cid) {
+      if (!dealsByCustomer[cid]) dealsByCustomer[cid] = [];
+      dealsByCustomer[cid].push(deal);
+    } else if (deal.company) {
+      const key = deal.company.trim().toLowerCase();
+      if (!orphanDealsByCompany[key]) orphanDealsByCompany[key] = [];
+      orphanDealsByCompany[key].push(deal);
+    }
+  });
 
-  return customers.map((customer) => {
+  const enrichedCustomers = customers.map((customer) => {
     const customerDeals = dealsByCustomer[customer.id] || [];
-    const wonDeals = customerDeals.filter((deal) => deal.stage === 'won');
-    const lostDeals = customerDeals.filter((deal) => deal.stage === 'lost');
-    const activeDeals = customerDeals.filter((deal) => deal.isActive);
-    const riskCount = activeDeals.filter((deal) => deal.isAtRisk).length;
-    const totalClosed = wonDeals.length + lostDeals.length;
-    const winRate = totalClosed ? Math.round((wonDeals.length / totalClosed) * 100) : 0;
-    const lastTouchMs = customerDeals.reduce((max, deal) => {
-      const date = parseDateValue(getLastTouchDate(deal));
-      return date ? Math.max(max, date.getTime()) : max;
-    }, 0);
-    const inactiveDays = lastTouchMs ? getDaysBetween(new Date(lastTouchMs), now) : null;
-    const wonValue = sumDealValue(wonDeals);
-    const activeValue = sumDealValue(activeDeals);
-    const weightedActiveValue = sumDealValue(activeDeals, 'weightedValue');
-    const tierBonus = TIER_WEIGHT[customer.tier] || 4;
-    const inactivityPenalty = inactiveDays === null ? 16 : clamp(inactiveDays * 1.5, 0, 35);
-    const riskPenalty = riskCount * 18;
-    const score = clamp(Math.round(62 + tierBonus + winRate * 0.18 - inactivityPenalty - riskPenalty), 0, 100);
-    const status = getCustomerStatus(score, weightedActiveValue, riskCount);
-    const grade = getCustomerGrade({
-      wonValue,
-      winRate,
-      totalDeals: customerDeals.length,
-      healthScore: score,
-      tier: customer.tier,
-    });
+    const stats = buildCustomerStats(customerDeals, customer.tier, now);
+    return { ...customer, ...stats };
+  });
 
+  // Generate synthetic customer entries for deals that have a company but no customer record
+  const syntheticCustomers = Object.entries(orphanDealsByCompany).map(([key, orphanDeals]) => {
+    const firstDeal = orphanDeals[0];
+    const company = firstDeal.company.trim();
+    const stats = buildCustomerStats(orphanDeals, 'Silver', now);
     return {
-      ...customer,
-      grade,
-      dealStats: {
-        total: customerDeals.length,
-        won: wonDeals.length,
-        lost: lostDeals.length,
-        wonValue,
-        activeValue,
-        weightedActiveValue,
-        deals: customerDeals,
-      },
-      health: {
-        score,
-        status,
-        riskCount,
-        inactiveDays,
-        winRate,
-        nextAction: getCustomerNextAction(status),
-      },
+      id: `deal_company_${key}`,
+      name: company,
+      company,
+      email: firstDeal.contact_email || null,
+      phone: firstDeal.contact_phone || null,
+      industry: null,
+      tier: 'Silver',
+      notes: null,
+      _fromDeals: true,
+      ...stats,
     };
   });
+
+  return [...enrichedCustomers, ...syntheticCustomers];
 };

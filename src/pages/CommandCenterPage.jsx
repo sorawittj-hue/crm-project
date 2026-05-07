@@ -589,51 +589,88 @@ export default function CommandCenterPage() {
             <h3 className="font-semibold text-slate-800">ประสิทธิภาพทีมขาย</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {teamMembers.map((m, i) => {
-              const nowDate = new Date();
-              const mWon = deals?.filter(d => {
-                if (d.assigned_to !== m.id || d.stage !== 'won') return false;
-                const dt = new Date(d.actual_close_date || d.created_at);
-                return dt.getMonth() === nowDate.getMonth() && dt.getFullYear() === nowDate.getFullYear();
-              }).reduce((s, d) => s + Number(d.value), 0) || 0;
-              const mPercent = Math.round((mWon / (m.goal || 2500000)) * 100);
-              return (
-                <motion.div
-                  key={m.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.08 }}
-                  className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-base shadow-sm',
-                      m.color?.split(' ')[0] || 'bg-violet-600')}>
-                      {m.name.charAt(0)}
-                    </div>
+          {(() => {
+            const nowDate = new Date();
+            const totalGoal = teamMembers.reduce((s, m) => s + (m.goal || 2500000), 0);
+            const teamWon = stats?.totalWonValue || 0;
+            const teamPercent = totalGoal > 0 ? Math.round((teamWon / totalGoal) * 100) : 0;
+            const wonDealsThisMonth = (deals || []).filter(d => {
+              if (d.stage !== 'won') return false;
+              const dt = new Date(d.actual_close_date || d.updated_at || d.created_at);
+              return dt.getMonth() === nowDate.getMonth() && dt.getFullYear() === nowDate.getFullYear();
+            });
+
+            return (
+              <div className="space-y-4">
+                {/* Team total progress card */}
+                <Card className="p-5 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border-0 shadow-lg text-white">
+                  <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h4 className="font-semibold text-slate-800 text-sm leading-tight">{m.name}</h4>
-                      <p className="text-xs text-slate-400">{m.role}</p>
+                      <p className="text-slate-400 text-xs font-medium">ยอดรวมทีม (เดือนนี้)</p>
+                      <p className="text-2xl font-bold text-white tabular-nums mt-0.5">{formatFullCurrency(teamWon)}</p>
+                      <p className="text-slate-400 text-xs mt-0.5">เป้าหมายรวม {formatCurrency(totalGoal)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-4xl font-black text-white/20 tabular-nums">{teamPercent}%</p>
+                      <p className="text-xs text-slate-400">{wonDealsThisMonth.length} ดีลที่ปิดได้</p>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm font-semibold text-slate-700 tabular-nums">{formatCurrency(mWon)}</p>
-                      <p className="text-sm font-bold text-slate-400">{mPercent}%</p>
-                    </div>
-                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, teamPercent)}%` }}
+                      transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
+                      className="h-full bg-white rounded-full"
+                    />
+                  </div>
+                </Card>
+
+                {/* Individual member cards — goal targets */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {teamMembers.map((m, i) => {
+                    const memberGoal = m.goal || 2500000;
+                    const goalShare = totalGoal > 0 ? Math.round((memberGoal / totalGoal) * 100) : 0;
+                    return (
                       <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${Math.min(100, mPercent)}%` }}
-                        transition={{ duration: 1.2, delay: 0.3 + i * 0.1 }}
-                        className={cn('h-full rounded-full', m.color?.split(' ')[0] || 'bg-violet-500')}
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
+                        key={m.id}
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.08 }}
+                        className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all"
+                      >
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-base shadow-sm',
+                            m.color?.split(' ')[0] || 'bg-violet-600')}>
+                            {m.name.charAt(0)}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-slate-800 text-sm leading-tight">{m.name}</h4>
+                            <p className="text-xs text-slate-400">{m.role}</p>
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between items-center">
+                            <p className="text-xs text-slate-400">เป้าส่วนตัว</p>
+                            <p className="text-sm font-bold text-slate-700 tabular-nums">{formatCurrency(memberGoal)}</p>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <p className="text-xs text-slate-400">สัดส่วนทีม</p>
+                            <p className="text-sm font-bold text-slate-500">{goalShare}%</p>
+                          </div>
+                          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mt-2">
+                            <div
+                              className={cn('h-full rounded-full transition-all', m.color?.split(' ')[0] || 'bg-violet-500')}
+                              style={{ width: `${goalShare}%` }}
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>

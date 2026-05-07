@@ -33,6 +33,9 @@ export default function PipelinePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [stageFilter, setStageFilter] = useState([]);
   const [sortBy, setSortBy] = useState('createdAt');
+  const [valueMin, setValueMin] = useState('');
+  const [valueMax, setValueMax] = useState('');
+  const [probMin, setProbMin] = useState('');
 
   const [newDeal, setNewDeal] = useState({
     title: '', company: '', value: '', stage: 'lead', customer_id: '',
@@ -44,21 +47,30 @@ export default function PipelinePage() {
     let result = deals || [];
     if (searchTerm) {
       const s = searchTerm.toLowerCase();
-      result = result.filter(d => 
-        d.title?.toLowerCase().includes(s) || 
+      result = result.filter(d =>
+        d.title?.toLowerCase().includes(s) ||
         d.company?.toLowerCase().includes(s) ||
         d.contact?.toLowerCase().includes(s)
       );
     }
     if (stageFilter.length > 0) result = result.filter(d => stageFilter.includes(d.stage));
+    if (valueMin !== '') result = result.filter(d => Number(d.value) >= Number(valueMin));
+    if (valueMax !== '') result = result.filter(d => Number(d.value) <= Number(valueMax));
+    if (probMin !== '') result = result.filter(d => Number(d.probability) >= Number(probMin));
 
     result = [...result].sort((a, b) => {
       if (sortBy === 'createdAt') return new Date(b.created_at || 0) - new Date(a.created_at || 0);
       if (sortBy === 'value') return Number(b.value) - Number(a.value);
+      if (sortBy === 'probability') return Number(b.probability) - Number(a.probability);
+      if (sortBy === 'stale') {
+        const aDay = a.last_activity || a.created_at || 0;
+        const bDay = b.last_activity || b.created_at || 0;
+        return new Date(aDay) - new Date(bDay);
+      }
       return 0;
     });
     return result;
-  }, [deals, searchTerm, stageFilter, sortBy]);
+  }, [deals, searchTerm, stageFilter, sortBy, valueMin, valueMax, probMin]);
 
   const [formError, setFormError] = useState(null);
 
@@ -95,7 +107,7 @@ export default function PipelinePage() {
     </div>
   );
 
-  const activeFilterCount = stageFilter.length + (searchTerm ? 1 : 0);
+  const activeFilterCount = stageFilter.length + (searchTerm ? 1 : 0) + (valueMin ? 1 : 0) + (valueMax ? 1 : 0) + (probMin ? 1 : 0);
 
   return (
     <motion.div
@@ -147,6 +159,8 @@ export default function PipelinePage() {
           >
             <option value="createdAt">เรียง: วันที่สร้าง</option>
             <option value="value">เรียง: มูลค่า</option>
+            <option value="probability">เรียง: โอกาสสูงสุด</option>
+            <option value="stale">เรียง: นิ่งนานที่สุด</option>
           </select>
 
           <Button
@@ -178,48 +192,103 @@ export default function PipelinePage() {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-wrap gap-5 items-center">
-              <div className="flex-1 min-w-[240px]">
-                <p className="text-xs font-semibold text-slate-500 mb-3">กรองตามขั้นตอน</p>
-                <div className="flex flex-wrap gap-2">
-                  {STAGES.map((s) => {
-                    const active = stageFilter.includes(s.id);
-                    return (
+            <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-5">
+              <div className="flex flex-wrap gap-5 items-start">
+                {/* Stage filter */}
+                <div className="flex-1 min-w-[240px]">
+                  <p className="text-xs font-semibold text-slate-500 mb-3">ขั้นตอน</p>
+                  <div className="flex flex-wrap gap-2">
+                    {STAGES.map((s) => {
+                      const active = stageFilter.includes(s.id);
+                      return (
+                        <button
+                          key={s.id}
+                          onClick={() =>
+                            setStageFilter((prev) =>
+                              prev.includes(s.id)
+                                ? prev.filter((x) => x !== s.id)
+                                : [...prev, s.id]
+                            )
+                          }
+                          className={cn(
+                            'px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all',
+                            active
+                              ? 'bg-slate-900 text-white border-slate-900'
+                              : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                          )}
+                        >
+                          {s.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Probability filter */}
+                <div className="min-w-[180px]">
+                  <p className="text-xs font-semibold text-slate-500 mb-3">โอกาสปิดขั้นต่ำ</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[['', 'ทั้งหมด'], ['50', '≥ 50%'], ['70', '≥ 70%'], ['90', '≥ 90%']].map(([val, label]) => (
                       <button
-                        key={s.id}
-                        onClick={() =>
-                          setStageFilter((prev) =>
-                            prev.includes(s.id)
-                              ? prev.filter((x) => x !== s.id)
-                              : [...prev, s.id]
-                          )
-                        }
+                        key={val}
+                        onClick={() => setProbMin(val)}
                         className={cn(
                           'px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all',
-                          active
-                            ? 'bg-slate-900 text-white border-slate-900'
+                          probMin === val
+                            ? 'bg-violet-600 text-white border-violet-600'
                             : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
                         )}
                       >
-                        {s.label}
+                        {label}
                       </button>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {activeFilterCount > 0 && (
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setStageFilter([]);
-                    setSearchTerm('');
-                  }}
-                  className="h-9 px-4 text-sm text-rose-500 hover:bg-rose-50 rounded-xl"
-                >
-                  ล้างตัวกรอง
-                </Button>
-              )}
+              {/* Value range */}
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-slate-500">มูลค่าขั้นต่ำ (บาท)</p>
+                  <Input
+                    type="number"
+                    placeholder="เช่น 100000"
+                    value={valueMin}
+                    onChange={(e) => setValueMin(e.target.value)}
+                    className="h-9 w-40 rounded-xl border-slate-200 bg-slate-50 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-slate-500">มูลค่าสูงสุด (บาท)</p>
+                  <Input
+                    type="number"
+                    placeholder="เช่น 1000000"
+                    value={valueMax}
+                    onChange={(e) => setValueMax(e.target.value)}
+                    className="h-9 w-40 rounded-xl border-slate-200 bg-slate-50 text-sm"
+                  />
+                </div>
+                <div className="flex items-center gap-3 ml-auto">
+                  <span className="text-xs text-slate-400 font-medium">
+                    พบ <span className="text-slate-700 font-bold">{filteredDeals.length}</span> ดีล
+                  </span>
+                  {activeFilterCount > 0 && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setStageFilter([]);
+                        setSearchTerm('');
+                        setValueMin('');
+                        setValueMax('');
+                        setProbMin('');
+                      }}
+                      className="h-9 px-4 text-sm text-rose-500 hover:bg-rose-50 rounded-xl"
+                    >
+                      ล้างตัวกรอง
+                    </Button>
+                  )}
+                </div>
+              </div>
             </Card>
           </motion.div>
         )}
