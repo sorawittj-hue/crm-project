@@ -1,5 +1,10 @@
 import { supabase } from '../utils/supabase';
 
+async function getCurrentUserId() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user?.id ?? null;
+}
+
 export async function fetchEmailTemplates() {
   const { data, error } = await supabase
     .from('email_templates')
@@ -10,9 +15,10 @@ export async function fetchEmailTemplates() {
 }
 
 export async function addEmailTemplate(template) {
+  const userId = await getCurrentUserId();
   const { data, error } = await supabase
     .from('email_templates')
-    .insert([{ ...template, created_at: new Date().toISOString() }])
+    .insert([{ ...template, created_by: userId, created_at: new Date().toISOString() }])
     .select();
   if (error) throw new Error('Could not add template: ' + error.message);
   return data?.[0];

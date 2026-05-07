@@ -1,5 +1,10 @@
 import { supabase } from '../utils/supabase';
 
+async function getCurrentUserId() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user?.id ?? null;
+}
+
 /**
  * Fetch all customers with their stats
  */
@@ -55,6 +60,7 @@ export async function createCustomer(customerData) {
       throw new Error('Customer name is required');
     }
     
+    const userId = await getCurrentUserId();
     const data = {
       name: customerData.name.trim(),
       company: customerData.company?.trim() || null,
@@ -65,6 +71,7 @@ export async function createCustomer(customerData) {
       industry: customerData.industry || null,
       tier: customerData.tier || 'Silver',
       notes: customerData.notes?.trim() || null,
+      created_by: userId,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
