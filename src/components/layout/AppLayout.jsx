@@ -18,8 +18,6 @@ import { cn } from '../../lib/utils';
 import { formatCurrency } from '../../lib/formatters';
 import { pageMotion, reduceMotionProps, springSmooth } from '../../lib/motion';
 import { Button } from '../ui/Button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/Dialog';
-import { Input } from '../ui/Input';
 import CommandPalette from '../ui/CommandPalette';
 
 const sidebarVariants = {
@@ -46,8 +44,6 @@ export default function AppLayout() {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [localTarget, setLocalTarget] = useState(monthlyTarget);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -75,7 +71,6 @@ export default function AppLayout() {
   useEffect(() => {
     if (settings?.monthly_target && settings.monthly_target !== monthlyTarget) {
       setMonthlyTarget(settings.monthly_target);
-      setLocalTarget(settings.monthly_target);
     }
   }, [settings, monthlyTarget, setMonthlyTarget]);
 
@@ -293,12 +288,6 @@ export default function AppLayout() {
                 </div>
               </div>
 
-              <button
-                onClick={() => { setLocalTarget(monthlyTarget); setIsSettingsOpen(true); }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all text-xs font-medium"
-              >
-                <Settings size={15} /> ตั้งค่าเป้าหมาย
-              </button>
             </div>
           </motion.aside>
         )}
@@ -548,31 +537,6 @@ export default function AppLayout() {
         </main>
       </div>
 
-      {/* Settings Modal */}
-      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <DialogContent className="max-w-sm rounded-3xl p-8 bg-white border-0 shadow-2xl">
-          <DialogHeader className="mb-6 text-center">
-            <DialogTitle className="text-xl font-bold text-slate-900">ตั้งค่าเป้าหมาย</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-5">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-600">เป้าหมายรายเดือน (บาท)</label>
-              <Input
-                type="number"
-                value={localTarget}
-                onChange={(e) => setLocalTarget(Number(e.target.value))}
-                className="h-12 bg-slate-50 border-slate-200 rounded-2xl font-semibold text-lg text-center"
-              />
-            </div>
-            <Button
-              onClick={() => { setMonthlyTarget(localTarget); setIsSettingsOpen(false); }}
-              className="w-full h-12 rounded-2xl font-semibold bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-lg shadow-violet-500/25"
-            >
-              บันทึก
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Command Palette — now with real customers data */}
       <CommandPalette
