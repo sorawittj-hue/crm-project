@@ -34,7 +34,10 @@ export default function PipelinePage() {
   const [stageFilter, setStageFilter] = useState([]);
   const [sortBy, setSortBy] = useState('createdAt');
 
-  const [newDeal, setNewDeal] = useState({ title: '', company: '', value: '', stage: 'lead', customer_id: '' });
+  const [newDeal, setNewDeal] = useState({
+    title: '', company: '', value: '', stage: 'lead', customer_id: '',
+    contact: '', contact_email: '', contact_phone: '', probability: '50', expected_close_date: '',
+  });
 
   // We filter the input to MonthlyPipeline based on search and parameters
   const filteredDeals = useMemo(() => {
@@ -67,9 +70,11 @@ export default function PipelinePage() {
       await addDealMutation.mutateAsync({
         ...newDeal,
         value: Number(newDeal.value) || 0,
+        probability: Number(newDeal.probability) || 50,
+        expected_close_date: newDeal.expected_close_date || null,
       });
       setIsAddModalOpen(false);
-      setNewDeal({ title: '', company: '', value: '', stage: 'lead', customer_id: '' });
+      setNewDeal({ title: '', company: '', value: '', stage: 'lead', customer_id: '', contact: '', contact_email: '', contact_phone: '', probability: '50', expected_close_date: '' });
     } catch (err) {
       setFormError(err?.message || 'ไม่สามารถบันทึกดีลได้ กรุณาลองใหม่');
     }
@@ -282,7 +287,7 @@ export default function PipelinePage() {
              <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-600">มูลค่า (บาท)</label>
-                    <Input 
+                    <Input
                        required
                        type="number"
                        placeholder="0"
@@ -293,13 +298,66 @@ export default function PipelinePage() {
                 </div>
                 <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-600">ขั้นตอน</label>
-                    <select 
+                    <select
                        value={newDeal.stage}
                        onChange={(e) => setNewDeal({...newDeal, stage: e.target.value})}
                        className="w-full h-14 rounded-2xl border-0 ring-1 ring-slate-100 bg-slate-50/50 px-4 font-bold outline-none focus:ring-primary transition-all"
                     >
                         {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                     </select>
+                </div>
+             </div>
+             <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-600">โอกาสปิด (%)</label>
+                    <Input
+                       type="number"
+                       min="0"
+                       max="100"
+                       placeholder="50"
+                       value={newDeal.probability}
+                       onChange={(e) => setNewDeal({...newDeal, probability: e.target.value})}
+                       className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold focus:bg-white transition-all"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-600">วันคาดว่าจะปิด</label>
+                    <input
+                       type="date"
+                       value={newDeal.expected_close_date}
+                       onChange={(e) => setNewDeal({...newDeal, expected_close_date: e.target.value})}
+                       className="w-full h-14 rounded-2xl border-0 ring-1 ring-slate-100 bg-slate-50/50 px-4 font-bold outline-none focus:ring-primary transition-all text-sm"
+                    />
+                </div>
+             </div>
+             <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-600">ผู้ติดต่อ</label>
+                <Input
+                   placeholder="ชื่อผู้ติดต่อ"
+                   value={newDeal.contact}
+                   onChange={(e) => setNewDeal({...newDeal, contact: e.target.value})}
+                   className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white transition-all"
+                />
+             </div>
+             <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-600">เบอร์โทร</label>
+                    <Input
+                       placeholder="0XX-XXX-XXXX"
+                       value={newDeal.contact_phone}
+                       onChange={(e) => setNewDeal({...newDeal, contact_phone: e.target.value})}
+                       className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white transition-all"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-600">อีเมล</label>
+                    <Input
+                       type="email"
+                       placeholder="email@company.com"
+                       value={newDeal.contact_email}
+                       onChange={(e) => setNewDeal({...newDeal, contact_email: e.target.value})}
+                       className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white transition-all"
+                    />
                 </div>
              </div>
 
