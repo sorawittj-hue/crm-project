@@ -15,6 +15,7 @@ import { useCustomers } from '../../hooks/useCustomers';
 import { useSettings } from '../../hooks/useSettings';
 import { useActivities } from '../../hooks/useActivities';
 import { useAuth } from '../../hooks/useAuth';
+import { useMyProfile } from '../../hooks/useUserProfiles';
 import {
   useNotifications,
   useProactiveEngine,
@@ -96,14 +97,18 @@ export default function AppLayout() {
 
   const userId = user?.id;
 
+  const { data: myProfile } = useMyProfile(userId);
+  // Use personal target if set; fall back to company team target
+  const effectiveTarget = myProfile?.personal_target > 0 ? myProfile.personal_target : monthlyTarget;
+
   // DB-backed notifications
   const { data: notifications = [] } = useNotifications(userId);
   const markAllRead = useMarkAllNotificationsRead();
   const dismiss = useDismissNotification();
   const dismissAll = useDismissAllNotifications();
 
-  // Proactive engine — runs on load and every 5 min
-  useProactiveEngine({ userId, deals, activities, monthlyTarget });
+  // Proactive engine — runs on load and every 5 min; uses personal target
+  useProactiveEngine({ userId, deals, activities, monthlyTarget: effectiveTarget });
 
   const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications]);
   const totalCount = notifications.length;
@@ -171,7 +176,7 @@ export default function AppLayout() {
   }, [isNotifOpen]);
 
   const goalProgress = useMemo(() => {
-    if (!deals || !monthlyTarget) return 0;
+    if (!deals || !effectiveTarget) return 0;
     const now = new Date();
     const wonThisMonth = deals
       .filter(d => {
@@ -180,8 +185,8 @@ export default function AppLayout() {
         return closeDate.getMonth() === now.getMonth() && closeDate.getFullYear() === now.getFullYear();
       })
       .reduce((s, d) => s + Number(d.value || 0), 0);
-    return Math.min(100, Math.round((wonThisMonth / monthlyTarget) * 100));
-  }, [deals, monthlyTarget]);
+    return Math.min(100, Math.round((wonThisMonth / effectiveTarget) * 100));
+  }, [deals, effectiveTarget]);
 
   const routeMotionProps = shouldReduceMotion ? reduceMotionProps : pageMotion;
   const mobileSidebarMotion = shouldReduceMotion
@@ -280,11 +285,11 @@ export default function AppLayout() {
             <div className="pb-4 space-y-3 border-t border-slate-100 pt-4">
               <div className="bg-violet-50 rounded-2xl p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold text-slate-500">เป้าหมายเดือนนี้</p>
+                  <p className="text-xs font-semibold text-slate-500">เป้าหมายส่วนตัว</p>
                   <span className="text-xs font-bold text-violet-600">{goalProgress}%</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <p className="text-base font-bold text-slate-800">{formatCurrency(monthlyTarget)}</p>
+                  <p className="text-base font-bold text-slate-800">{formatCurrency(effectiveTarget)}</p>
                   <TrendingUp size={15} className={goalProgress >= 75 ? 'text-emerald-500' : 'text-slate-300'} />
                 </div>
                 <div className="h-1.5 w-full bg-violet-100 rounded-full overflow-hidden">

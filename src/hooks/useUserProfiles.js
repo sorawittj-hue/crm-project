@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchMyProfile, fetchAllProfiles, updateProfileRole } from '../services/apiUserProfiles';
+import { fetchMyProfile, fetchAllProfiles, updateProfileRole, updateMyPersonalTarget } from '../services/apiUserProfiles';
+
 import { useToast } from '../components/ui/Toast';
 
 export function useMyProfile(userId) {
@@ -29,5 +30,18 @@ export function useUpdateProfileRole() {
       toast.success('อัพเดทสิทธิ์แล้ว');
     },
     onError: () => toast.error('ไม่สามารถอัพเดทสิทธิ์ได้'),
+  });
+}
+
+export function useUpdateMyPersonalTarget() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  return useMutation({
+    mutationFn: ({ userId, target }) => updateMyPersonalTarget(userId, target),
+    onSuccess: (_, { userId }) => {
+      queryClient.invalidateQueries({ queryKey: ['my_profile', userId] });
+      toast.success('บันทึกเป้าหมายส่วนตัวแล้ว');
+    },
+    onError: () => toast.error('ไม่สามารถบันทึกเป้าหมายได้'),
   });
 }

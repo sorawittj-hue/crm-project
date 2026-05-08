@@ -5,6 +5,8 @@ import { useTeam } from '../hooks/useTeam';
 import { useSettings } from '../hooks/useSettings';
 import { useActivities } from '../hooks/useActivities';
 import { useAppStore } from '../store/useAppStore';
+import { useAuth } from '../hooks/useAuth';
+import { useMyProfile } from '../hooks/useUserProfiles';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { motion } from 'framer-motion';
@@ -36,13 +38,17 @@ const ACTIVITY_ICON = {
 
 export default function CommandCenterPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: myProfile } = useMyProfile(user?.id);
   const { data: deals, isLoading: dealsLoading } = useDeals();
   const { data: teamMembers, isLoading: teamLoading } = useTeam();
   const { data: settings, isLoading: settingsLoading } = useSettings();
   const { data: activities = [] } = useActivities();
   const { setPendingOpenDeal } = useAppStore();
 
-  const monthlyGoal = settings?.monthly_target || 10000000;
+  const teamGoal = settings?.monthly_target || 10000000;
+  // Personal target: use user's own if set, else fall back to team target
+  const monthlyGoal = myProfile?.personal_target > 0 ? myProfile.personal_target : teamGoal;
 
   const stats = useMemo(() => {
     if (!deals) return null;
@@ -285,8 +291,11 @@ export default function CommandCenterPage() {
           <div className="relative z-10 space-y-4">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-violet-200 text-xs font-medium">เป้าหมายเดือนนี้</p>
+                <p className="text-violet-200 text-xs font-medium">เป้าหมายส่วนตัว</p>
                 <p className="text-3xl font-bold text-white mt-1 tabular-nums">{formatFullCurrency(monthlyGoal)}</p>
+                {myProfile?.personal_target > 0 && teamGoal !== monthlyGoal && (
+                  <p className="text-violet-300 text-[11px] mt-1">ยอดทีม {formatCurrency(teamGoal)}</p>
+                )}
               </div>
               <div className={cn('flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold',
                 Number(stats?.growthPercent) >= 0

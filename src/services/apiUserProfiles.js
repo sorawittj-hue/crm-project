@@ -31,6 +31,16 @@ export async function updateProfileRole(id, role) {
   return data?.[0];
 }
 
+export async function updateMyPersonalTarget(userId, personalTarget) {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .update({ personal_target: Number(personalTarget) || 0 })
+    .eq('id', userId)
+    .select();
+  if (error) throw new Error('Could not update personal target');
+  return data?.[0];
+}
+
 export async function touchLastSeen(userId) {
   await supabase
     .from('user_profiles')

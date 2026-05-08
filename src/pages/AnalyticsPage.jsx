@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { useDeals } from '../hooks/useDeals';
 import { useSettings } from '../hooks/useSettings';
 import { useTeam } from '../hooks/useTeam';
+import { useAuth } from '../hooks/useAuth';
+import { useMyProfile } from '../hooks/useUserProfiles';
 import { Card } from '../components/ui/Card';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
@@ -61,13 +63,17 @@ const MetricCard = ({ title, value, subValue, icon: Icon, trend, color = "primar
 const FUNNEL_STAGES = ['lead', 'contact', 'proposal', 'negotiation', 'won'];
 
 export default function AnalyticsPage() {
+  const { user } = useAuth();
+  const { data: myProfile } = useMyProfile(user?.id);
   const { data: deals, isLoading: dealsLoading } = useDeals();
   const { data: settings, isLoading: settingsLoading } = useSettings();
   const { data: teamMembers, isLoading: teamLoading } = useTeam();
 
   const [timeRange, setTimeRange] = useState('6m');
 
-  const monthlyTarget = settings?.monthly_target || 10000000;
+  const teamTarget = settings?.monthly_target || 10000000;
+  // Personal target: use user's own if set, else fall back to team target
+  const monthlyTarget = myProfile?.personal_target > 0 ? myProfile.personal_target : teamTarget;
 
   const analytics = useMemo(() => {
     if (!deals) return null;

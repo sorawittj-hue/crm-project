@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSettings, useUpdateSettings } from '../hooks/useSettings';
 import { useTeam, useAddTeamMember, useUpdateTeamMember, useDeleteTeamMember } from '../hooks/useTeam';
 import { useAuth } from '../hooks/useAuth';
-import { useMyProfile, useAllProfiles, useUpdateProfileRole } from '../hooks/useUserProfiles';
+import { useMyProfile, useAllProfiles, useUpdateProfileRole, useUpdateMyPersonalTarget } from '../hooks/useUserProfiles';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -57,6 +57,22 @@ export default function SettingsPage() {
   const isAdmin = myProfile?.role === 'admin';
   const { data: allProfiles = [] } = useAllProfiles();
   const updateRole = useUpdateProfileRole();
+  const updatePersonalTarget = useUpdateMyPersonalTarget();
+
+  const [personalTargetForm, setPersonalTargetForm] = useState(null);
+  const [savingPersonalTarget, setSavingPersonalTarget] = useState(false);
+
+  const handleSavePersonalTarget = async (e) => {
+    e.preventDefault();
+    if (!user?.id) return;
+    setSavingPersonalTarget(true);
+    try {
+      await updatePersonalTarget.mutateAsync({ userId: user.id, target: personalTargetForm });
+      setPersonalTargetForm(null);
+    } finally {
+      setSavingPersonalTarget(false);
+    }
+  };
 
   const SECTIONS = isAdmin
     ? [...BASE_SECTIONS, { id: 'users', label: 'ผู้ใช้งาน', icon: ShieldCheck }]
@@ -73,8 +89,6 @@ export default function SettingsPage() {
 
   const initTargetForm = () => setTargetForm({
     monthly_target: settings?.monthly_target ?? 10000000,
-    leader_target: settings?.leader_target ?? 7000000,
-    member_target: settings?.member_target ?? 3000000,
   });
 
   const handleSaveTargets = async (e) => {
@@ -83,8 +97,6 @@ export default function SettingsPage() {
     try {
       await updateSettings.mutateAsync({
         monthly_target: Number(targetForm.monthly_target),
-        leader_target: Number(targetForm.leader_target),
-        member_target: Number(targetForm.member_target),
       });
       setTargetForm(null);
     } finally {
@@ -205,17 +217,12 @@ export default function SettingsPage() {
                   </div>
 
                   {!targetForm ? (
-                    <div className="space-y-4">
-                      {[
-                        { label: 'เป้าหมายรวมทีม (เดือน)', value: settings?.monthly_target, color: 'text-violet-600' },
-                        { label: 'เป้าหมายหัวหน้าทีม', value: settings?.leader_target, color: 'text-indigo-600' },
-                        { label: 'เป้าหมายสมาชิกทีม', value: settings?.member_target, color: 'text-blue-600' },
-                      ].map((item) => (
-                        <div key={item.label} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50">
-                          <p className="text-sm font-medium text-slate-600">{item.label}</p>
-                          <p className={cn('text-lg font-black tabular-nums', item.color)}>{formatFullCurrency(item.value)}</p>
-                        </div>
-                      ))}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50">
+                        <p className="text-sm font-medium text-slate-600">เป้าหมายรวมทีม (เดือน)</p>
+                        <p className="text-lg font-black tabular-nums text-violet-600">{formatFullCurrency(settings?.monthly_target)}</p>
+                      </div>
+                      <p className="text-xs text-slate-400 px-1">เป้าหมายยอดขายส่วนตัวของแต่ละคน ตั้งได้ที่หน้า <span className="font-semibold text-violet-500">บัญชีผู้ใช้</span></p>
                     </div>
                   ) : (
                     <form onSubmit={handleSaveTargets} className="space-y-4">
@@ -225,24 +232,6 @@ export default function SettingsPage() {
                           type="number"
                           value={targetForm.monthly_target}
                           onChange={(e) => setTargetForm({ ...targetForm, monthly_target: e.target.value })}
-                          className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-semibold text-slate-500">เป้าหมายหัวหน้าทีม (บาท/เดือน)</label>
-                        <Input
-                          type="number"
-                          value={targetForm.leader_target}
-                          onChange={(e) => setTargetForm({ ...targetForm, leader_target: e.target.value })}
-                          className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-semibold text-slate-500">เป้าหมายสมาชิกทีม (บาท/เดือน)</label>
-                        <Input
-                          type="number"
-                          value={targetForm.member_target}
-                          onChange={(e) => setTargetForm({ ...targetForm, member_target: e.target.value })}
                           className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold"
                         />
                       </div>
@@ -579,38 +568,90 @@ export default function SettingsPage() {
 
               {/* ── ACCOUNT ── */}
               {activeSection === 'account' && (
-                <Card className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-6">
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-900">บัญชีผู้ใช้</h2>
-                    <p className="text-xs text-slate-400 mt-0.5">ข้อมูลบัญชีที่ใช้เข้าสู่ระบบ</p>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50">
-                      <div className="w-12 h-12 rounded-2xl bg-violet-600 flex items-center justify-center text-white text-xl font-black">
-                        {user?.email?.charAt(0).toUpperCase() || 'U'}
+                <div className="space-y-4">
+                  <Card className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-6">
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-900">บัญชีผู้ใช้</h2>
+                      <p className="text-xs text-slate-400 mt-0.5">ข้อมูลบัญชีที่ใช้เข้าสู่ระบบ</p>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50">
+                        <div className="w-12 h-12 rounded-2xl bg-violet-600 flex items-center justify-center text-white text-xl font-black">
+                          {user?.email?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">
+                            {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'ผู้ใช้'}
+                          </p>
+                          <p className="text-xs text-slate-400">{user?.email}</p>
+                          <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 inline-block',
+                            isAdmin ? 'bg-violet-100 text-violet-700' : 'bg-slate-200 text-slate-600'
+                          )}>
+                            {isAdmin ? 'Admin' : 'Member'}
+                          </span>
+                        </div>
                       </div>
+                    </div>
+                    <Button
+                      onClick={signOut}
+                      variant="ghost"
+                      className="w-full h-11 rounded-2xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-semibold text-sm"
+                    >
+                      <LogOut size={15} className="mr-2" /> ออกจากระบบ
+                    </Button>
+                  </Card>
+
+                  {/* Personal Target Card */}
+                  <Card className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm">
+                    <div className="flex items-center justify-between mb-5">
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">
-                          {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'ผู้ใช้'}
+                        <h3 className="text-base font-bold text-slate-900">เป้าหมายยอดขายส่วนตัว</h3>
+                        <p className="text-xs text-slate-400 mt-0.5">ใช้ติดตามยอดขายของคุณเป็นการส่วนตัว</p>
+                      </div>
+                      {personalTargetForm === null && (
+                        <Button
+                          onClick={() => setPersonalTargetForm(myProfile?.personal_target ?? 0)}
+                          className="h-9 px-4 rounded-xl text-sm bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20"
+                        >
+                          <Pencil size={13} className="mr-1.5" /> แก้ไข
+                        </Button>
+                      )}
+                    </div>
+
+                    {personalTargetForm === null ? (
+                      <div className="flex items-center justify-between p-4 rounded-2xl bg-violet-50">
+                        <p className="text-sm font-medium text-slate-600">เป้าหมายรายเดือน</p>
+                        <p className="text-xl font-black tabular-nums text-violet-600">
+                          {myProfile?.personal_target > 0 ? formatFullCurrency(myProfile.personal_target) : '—'}
                         </p>
-                        <p className="text-xs text-slate-400">{user?.email}</p>
                       </div>
-                    </div>
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50">
-                      <div>
-                        <p className="text-sm font-medium text-slate-600">ID ผู้ใช้</p>
-                        <p className="text-xs text-slate-400 font-mono mt-0.5 break-all">{user?.id}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={signOut}
-                    variant="ghost"
-                    className="w-full h-11 rounded-2xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-semibold text-sm"
-                  >
-                    <LogOut size={15} className="mr-2" /> ออกจากระบบ
-                  </Button>
-                </Card>
+                    ) : (
+                      <form onSubmit={handleSavePersonalTarget} className="space-y-4">
+                        <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-500">เป้าหมายส่วนตัว (บาท/เดือน)</label>
+                          <Input
+                            type="number"
+                            value={personalTargetForm}
+                            onChange={(e) => setPersonalTargetForm(e.target.value)}
+                            placeholder="เช่น 5000000"
+                            className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold"
+                          />
+                        </div>
+                        <div className="flex gap-3">
+                          <Button type="button" variant="ghost" onClick={() => setPersonalTargetForm(null)}
+                            className="flex-1 h-10 rounded-xl text-slate-500 text-sm">
+                            ยกเลิก
+                          </Button>
+                          <Button type="submit" disabled={savingPersonalTarget}
+                            className="flex-[2] h-10 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold border-0 shadow-md shadow-violet-500/20 flex items-center justify-center gap-2">
+                            {savingPersonalTarget && <Loader2 size={13} className="animate-spin" />}
+                            <Save size={13} /> บันทึก
+                          </Button>
+                        </div>
+                      </form>
+                    )}
+                  </Card>
+                </div>
               )}
 
               {/* ── Users (admin only) ── */}
