@@ -167,10 +167,13 @@ CREATE TABLE IF NOT EXISTS notifications (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   user_id TEXT REFERENCES team_members(id),
+  notification_key TEXT UNIQUE,
   type TEXT NOT NULL, -- deal_update, activity_reminder, mention, system
+  priority TEXT DEFAULT 'info',
   title TEXT NOT NULL,
   message TEXT NOT NULL,
   is_read BOOLEAN DEFAULT false,
+  dismissed_at TIMESTAMPTZ,
   related_deal_id UUID REFERENCES deals(id),
   related_activity_id UUID REFERENCES activities(id),
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -180,6 +183,7 @@ CREATE INDEX IF NOT EXISTS idx_team_members_owner_id ON team_members(owner_id);
 CREATE INDEX IF NOT EXISTS idx_app_settings_owner_id ON app_settings(owner_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_owner_id ON notifications(owner_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_notification_key ON notifications(notification_key);
 CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
 
 -- ===========================================

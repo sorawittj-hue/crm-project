@@ -38,7 +38,10 @@ export function useProactiveEngine({ userId, deals, activities, monthlyTarget })
       lastRunRef.current = now;
 
       const notifs = generateNotifications({ deals, activities: activities || [], userId, monthlyTarget });
-      await Promise.allSettled(notifs.map(n => upsertNotification(n)));
+      for (const notification of notifs) {
+        const result = await upsertNotification(notification);
+        if (result === null) break;
+      }
       queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
     };
 
