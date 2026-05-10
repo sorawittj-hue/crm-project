@@ -1,5 +1,11 @@
 import { supabase } from '../utils/supabase';
-import { getRequiredUserId, isMissingColumnError, removeMissingColumn } from './sessionScope';
+import {
+  addOwnerIdIfSupported,
+  filterRowsByOwner,
+  getRequiredUserId,
+  isMissingColumnError,
+  removeMissingColumn,
+} from './sessionScope';
 
 /**
  * Fetch activities for a specific deal
@@ -11,11 +17,10 @@ export async function fetchActivitiesByDeal(dealId) {
       .from('activities')
       .select('*')
       .eq('deal_id', dealId)
-      .eq('owner_id', userId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return filterRowsByOwner('activities', data, userId);
   } catch (error) {
     if (isMissingColumnError(error)) {
       const { data, error: legacyError } = await supabase
@@ -41,12 +46,11 @@ export async function fetchActivities() {
     const { data, error } = await supabase
       .from('activities')
       .select('*')
-      .eq('owner_id', userId)
       .order('created_at', { ascending: false })
       .limit(100);
 
     if (error) throw error;
-    return data || [];
+    return filterRowsByOwner('activities', data, userId);
   } catch (error) {
     if (isMissingColumnError(error)) {
       const { data, error: legacyError } = await supabase
@@ -74,7 +78,7 @@ export async function addActivity(activityData) {
 
     const userId = await getRequiredUserId();
 
-    let payload = {
+    let payload = addOwnerIdIfSupported('activities', {
       deal_id: activityData.deal_id || null,
       customer_id: activityData.customer_id || null,
       type: activityData.type,
@@ -83,11 +87,10 @@ export async function addActivity(activityData) {
       scheduled_at: activityData.scheduled_at || null,
       completed_at: activityData.completed_at || null,
       result: activityData.result || null,
-      owner_id: userId,
       created_by: activityData.created_by ?? userId,
       metadata: activityData.metadata || {},
       created_at: new Date().toISOString(),
-    };
+    }, userId);
 
     for (let attempt = 0; attempt < 6; attempt += 1) {
       const { data: result, error } = await supabase
@@ -115,11 +118,10 @@ export async function addActivity(activityData) {
  */
 export async function deleteActivity(id) {
   try {
-    const userId = await getRequiredUserId();
+    await getRequiredUserId();
     const { error } = await supabase
       .from('activities')
       .delete()
-      .eq('owner_id', userId)
       .eq('id', id);
 
     if (error) throw error;

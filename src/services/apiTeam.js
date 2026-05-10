@@ -1,7 +1,9 @@
 import { supabase } from '../utils/supabase';
 import {
+  addOwnerIdIfSupported,
   DEFAULT_MEMBER_TARGET,
   ensureOwnerTeamMember,
+  filterRowsByOwner,
   getRequiredUserId,
   isMissingColumnError,
   removeMissingColumn,
@@ -26,7 +28,6 @@ export async function fetchTeamMembers() {
   const { data, error } = await supabase
     .from('team_members')
     .select('*')
-    .eq('owner_id', userId)
     .order('created_at', { ascending: true });
 
   if (error) {
@@ -37,7 +38,6 @@ export async function fetchTeamMembers() {
         .order('created_at', { ascending: true });
 
       if (legacyError) {
-        console.warn('Team members legacy fallback is empty:', legacyError);
         return [];
       }
 
@@ -48,11 +48,11 @@ export async function fetchTeamMembers() {
     throw new Error('Team members could not be loaded');
   }
 
-  return data || [];
+  return filterRowsByOwner('team_members', data, userId);
 }
 
 export async function updateTeamMember({ id, ...updates }) {
-  const userId = await getRequiredUserId();
+  await getRequiredUserId();
 
   if (!id) {
     throw new Error('Team member ID is required');
@@ -74,12 +74,10 @@ export async function updateTeamMember({ id, ...updates }) {
     if (payload[key] === undefined) delete payload[key];
   });
 
-  let updateBuilder = supabase
+  const updateBuilder = supabase
     .from('team_members')
     .update(payload)
     .eq('id', id);
-
-  updateBuilder = updateBuilder.eq('owner_id', userId);
 
   const { data, error } = await updateBuilder
     .select()
@@ -120,8 +118,7 @@ export async function addTeamMember(member) {
 
   const { data: existingMembers, error: countError } = await supabase
     .from('team_members')
-    .select('id')
-    .eq('owner_id', userId);
+    .select('*');
 
   if (countError) {
     if (!isMissingColumnError(countError)) {
@@ -130,10 +127,10 @@ export async function addTeamMember(member) {
     }
   }
 
-  const colorIndex = existingMembers?.length ? existingMembers.length % MEMBER_COLORS.length : 0;
-  let payload = {
+  const ownedMembers = filterRowsByOwner('team_members', existingMembers, userId);
+  const colorIndex = ownedMembers?.length ? ownedMembers.length % MEMBER_COLORS.length : 0;
+  let payload = addOwnerIdIfSupported('team_members', {
     id: crypto.randomUUID(),
-    owner_id: userId,
     name,
     role: member.role?.trim() || 'Member',
     email: member.email?.trim() || null,
@@ -144,7 +141,7 @@ export async function addTeamMember(member) {
     is_active: member.is_active ?? true,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-  };
+  }, userId);
 
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const { data, error } = await supabase
@@ -162,7 +159,6 @@ export async function addTeamMember(member) {
 
     const nextPayload = removeMissingColumn(payload, error);
     if (nextPayload === payload) {
-      console.warn('Team member create is using legacy schema fallback:', error);
       return payload;
     }
 
@@ -183,12 +179,10 @@ export async function deleteTeamMember(id) {
     throw new Error('The account owner cannot be deleted');
   }
 
-  let deleteBuilder = supabase
+  const deleteBuilder = supabase
     .from('team_members')
     .delete()
     .eq('id', id);
-
-  deleteBuilder = deleteBuilder.eq('owner_id', userId);
 
   const { error } = await deleteBuilder;
 

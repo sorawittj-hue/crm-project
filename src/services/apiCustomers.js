@@ -1,5 +1,12 @@
 import { supabase } from '../utils/supabase';
-import { getRequiredUserId, isMissingColumnError, removeMissingColumn } from './sessionScope';
+import {
+  addOwnerIdIfSupported,
+  filterRowByOwner,
+  filterRowsByOwner,
+  getRequiredUserId,
+  isMissingColumnError,
+  removeMissingColumn,
+} from './sessionScope';
 
 /**
  * Fetch all customers with their stats
@@ -10,11 +17,10 @@ export async function fetchCustomers() {
     const { data, error } = await supabase
       .from('customers')
       .select('*')
-      .eq('owner_id', userId)
       .order('name', { ascending: true });
     
     if (error) throw error;
-    return data || [];
+    return filterRowsByOwner('customers', data, userId);
   } catch (error) {
     if (isMissingColumnError(error)) {
       const { data, error: legacyError } = await supabase
@@ -40,20 +46,20 @@ export async function getCustomerById(id) {
       .from('customers')
       .select('*')
       .eq('id', id)
-      .eq('owner_id', userId)
       .single();
     
     if (error) throw error;
+    const ownedCustomer = filterRowByOwner('customers', customer, userId);
+    if (!ownedCustomer) throw new Error('Customer not found');
     
     // Fetch related deals
     const { data: deals } = await supabase
       .from('deals')
       .select('*')
       .eq('customer_id', id)
-      .eq('owner_id', userId)
       .order('created_at', { ascending: false });
     
-    return { ...customer, deals: deals || [] };
+    return { ...ownedCustomer, deals: filterRowsByOwner('deals', deals, userId) };
   } catch (error) {
     if (isMissingColumnError(error)) {
       const { data: customer, error: legacyCustomerError } = await supabase
@@ -92,7 +98,7 @@ export async function createCustomer(customerData) {
     }
     
     const userId = await getRequiredUserId();
-    let payload = {
+    let payload = addOwnerIdIfSupported('customers', {
       name: customerData.name.trim(),
       company: customerData.company?.trim() || null,
       email: customerData.email?.trim() || null,
@@ -102,10 +108,9 @@ export async function createCustomer(customerData) {
       industry: customerData.industry || null,
       tier: customerData.tier || 'Silver',
       notes: customerData.notes?.trim() || null,
-      owner_id: userId,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
-    };
+    }, userId);
 
     for (let attempt = 0; attempt < 6; attempt += 1) {
       const { data: result, error } = await supabase
@@ -135,7 +140,7 @@ export async function createCustomer(customerData) {
 export async function updateCustomer({ id, ...updates }) {
   try {
     if (!id) throw new Error('Customer ID is required');
-    const userId = await getRequiredUserId();
+    await getRequiredUserId();
     
     const { data, error } = await supabase
       .from('customers')
@@ -144,7 +149,6 @@ export async function updateCustomer({ id, ...updates }) {
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
-      .eq('owner_id', userId)
       .select();
     
     if (error) throw error;
@@ -174,12 +178,11 @@ export async function updateCustomer({ id, ...updates }) {
 export async function deleteCustomer(id) {
   try {
     if (!id) throw new Error('Customer ID is required');
-    const userId = await getRequiredUserId();
+    await getRequiredUserId();
     
     const { error } = await supabase
       .from('customers')
       .delete()
-      .eq('owner_id', userId)
       .eq('id', id);
     
     if (error) throw error;
@@ -212,7 +215,6 @@ export async function searchCustomers(query) {
       const { data: fallbackData, error: fallbackError } = await supabase
         .from('customers')
         .select('*')
-        .eq('owner_id', userId)
         .or(`name.ilike.%${query}%,company.ilike.%${query}%`);
 
       if (isMissingColumnError(fallbackError)) {
@@ -223,10 +225,10 @@ export async function searchCustomers(query) {
         return legacyData || [];
       }
 
-      return fallbackData || [];
+      return filterRowsByOwner('customers', fallbackData, userId);
     }
     
-    return (data || []).filter((customer) => !customer.owner_id || customer.owner_id === userId);
+    return filterRowsByOwner('customers', data, userId);
   } catch (error) {
     console.error('Error searching customers:', error);
     return [];
@@ -238,7 +240,7 @@ export async function searchCustomers(query) {
  */
 export async function getCustomerStats(customerId) {
   try {
-    const userId = await getRequiredUserId();
+    await getRequiredUserId();
     const { data, error } = await supabase.rpc('get_customer_stats', { customer_id: customerId });
     
     if (error) {
@@ -246,7 +248,6 @@ export async function getCustomerStats(customerId) {
       const { data: deals } = await supabase
         .from('deals')
         .select('value, stage')
-        .eq('owner_id', userId)
         .eq('customer_id', customerId);
       
       const wonValue = deals?.filter(d => d.stage === 'won').reduce((sum, d) => sum + (d.value || 0), 0) || 0;

@@ -693,8 +693,8 @@ export default function CommandCenterPage() {
             </div>
           </div>
 
-          <div className="h-[280px] w-full">
-            <ResponsiveContainer width="100%" height="100%" debounce={50}>
+          <div className="h-[280px] w-full min-w-0 min-h-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} debounce={50}>
               <AreaChart data={stats?.revenueStream}>
                 <defs>
                   <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">

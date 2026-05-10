@@ -3,6 +3,54 @@ import { supabase } from '../utils/supabase';
 export const DEFAULT_MONTHLY_TARGET = 10000000;
 export const DEFAULT_MEMBER_TARGET = 3000000;
 
+const OWNER_COLUMN_STORAGE_KEY = 'crm.ownerScopedTables.v1';
+
+function readOwnerScopedTables() {
+  if (typeof window === 'undefined') return new Set();
+
+  try {
+    return new Set(JSON.parse(window.localStorage.getItem(OWNER_COLUMN_STORAGE_KEY) || '[]'));
+  } catch {
+    return new Set();
+  }
+}
+
+function writeOwnerScopedTables(tables) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(OWNER_COLUMN_STORAGE_KEY, JSON.stringify([...tables]));
+}
+
+const ownerScopedTables = readOwnerScopedTables();
+
+function rememberOwnerColumnSupport(tableName, rows) {
+  const items = Array.isArray(rows) ? rows : [rows];
+  if (!items.some((row) => row && Object.prototype.hasOwnProperty.call(row, 'owner_id'))) return;
+
+  ownerScopedTables.add(tableName);
+  writeOwnerScopedTables(ownerScopedTables);
+}
+
+export function forgetOwnerColumnSupport(tableName) {
+  ownerScopedTables.delete(tableName);
+  writeOwnerScopedTables(ownerScopedTables);
+}
+
+export function addOwnerIdIfSupported(tableName, payload, userId) {
+  if (!ownerScopedTables.has(tableName)) return payload;
+  return { ...payload, owner_id: userId };
+}
+
+export function filterRowsByOwner(tableName, rows, userId) {
+  rememberOwnerColumnSupport(tableName, rows);
+  return (rows || []).filter((row) => !row?.owner_id || row.owner_id === userId);
+}
+
+export function filterRowByOwner(tableName, row, userId) {
+  rememberOwnerColumnSupport(tableName, row);
+  if (row?.owner_id && row.owner_id !== userId) return null;
+  return row;
+}
+
 export function isMissingColumnError(error) {
   const message = String(error?.message || '');
   return (
@@ -62,9 +110,8 @@ export function createOwnerMember(user) {
     throw new Error('User ID is required to create a team owner profile');
   }
 
-  return {
+  const ownerMember = {
     id: userId,
-    owner_id: userId,
     name: displayName,
     role: 'Admin',
     email: user?.email || null,
@@ -73,6 +120,8 @@ export function createOwnerMember(user) {
     icon_type: 'ShieldCheck',
     is_active: true,
   };
+
+  return addOwnerIdIfSupported('team_members', ownerMember, userId);
 }
 
 export async function ensureOwnerTeamMember() {
@@ -110,13 +159,12 @@ export async function ensureOwnerTeamMember() {
 
     const nextOwnerMember = removeMissingColumn(ownerMember, upsertError);
     if (nextOwnerMember === ownerMember) {
-      console.warn('Team owner profile is using legacy schema fallback:', upsertError);
+      forgetOwnerColumnSupport('team_members');
       return null;
     }
 
     ownerMember = nextOwnerMember;
   }
 
-  console.warn('Team owner profile fallback exhausted before schema was ready');
   return null;
 }

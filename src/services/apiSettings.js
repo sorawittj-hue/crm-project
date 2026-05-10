@@ -18,8 +18,20 @@ const DEFAULTS = {
   timezone: 'Asia/Bangkok',
 };
 
+function toLegacySafeSettingsPayload(payload) {
+  return {
+    id: payload.id,
+    monthly_target: payload.monthly_target,
+    leader_target: payload.leader_target,
+    member_target: payload.member_target,
+    currency: payload.currency,
+    timezone: payload.timezone,
+    updated_at: payload.updated_at,
+  };
+}
+
 async function safeUpsertSettings(initialPayload) {
-  let payload = { ...initialPayload };
+  let payload = toLegacySafeSettingsPayload(initialPayload);
 
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const { data, error } = await supabase
@@ -37,7 +49,6 @@ async function safeUpsertSettings(initialPayload) {
 
     const nextPayload = removeMissingColumn(payload, error);
     if (nextPayload === payload) {
-      console.warn('App settings are using legacy schema fallback:', error);
       return { ...DEFAULTS, ...payload };
     }
 
@@ -64,7 +75,6 @@ export async function fetchAppSettings() {
         .maybeSingle();
 
       if (legacyError) {
-        console.warn('App settings legacy fallback is using defaults:', legacyError);
         return { id: 'global', ...DEFAULTS };
       }
 
@@ -76,7 +86,7 @@ export async function fetchAppSettings() {
   }
 
   if (!data) {
-    const created = await safeUpsertSettings({ id: userId, owner_id: userId, ...DEFAULTS });
+    const created = await safeUpsertSettings({ id: userId, ...DEFAULTS });
     return { ...DEFAULTS, ...created };
   }
 
@@ -87,7 +97,6 @@ export async function updateAppSettings(updates) {
   const userId = await getRequiredUserId();
   const payload = {
     id: userId,
-    owner_id: userId,
     monthly_target: Number(updates.monthly_target) || DEFAULT_MONTHLY_TARGET,
     leader_target: Number(updates.leader_target) || 0,
     member_target: Number(updates.member_target) || DEFAULT_MEMBER_TARGET,

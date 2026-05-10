@@ -1,7 +1,7 @@
 import { supabase } from '../utils/supabase';
 import { isMissingColumnError, removeMissingColumn } from './sessionScope';
 
-let notificationWritesDisabled = false;
+let notificationWritesDisabled = true;
 
 function isNotificationSchemaError(error) {
   const message = String(error?.message || '');
@@ -25,8 +25,6 @@ export async function fetchNotifications(userId) {
 
   if (error) {
     if (isNotificationSchemaError(error)) {
-      notificationWritesDisabled = true;
-
       const { data: legacyData, error: legacyError } = await supabase
         .from('notifications')
         .select('*')
@@ -51,7 +49,6 @@ export async function upsertNotification(notif) {
 
   let payload = {
     ...notif,
-    owner_id: notif.owner_id || notif.user_id,
     created_at: new Date().toISOString(),
   };
 
@@ -70,7 +67,6 @@ export async function upsertNotification(notif) {
     const nextPayload = removeMissingColumn(payload, error);
     if (nextPayload === payload || error?.code === '42P10' || error?.code === '23503') {
       notificationWritesDisabled = true;
-      console.warn('Notifications are disabled until the Supabase notification migration is applied:', error);
       return null;
     }
 

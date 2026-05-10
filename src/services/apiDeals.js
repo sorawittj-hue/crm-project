@@ -1,5 +1,13 @@
 import { supabase } from '../utils/supabase';
-import { ensureOwnerTeamMember, getRequiredUserId, isMissingColumnError, removeMissingColumn } from './sessionScope';
+import {
+  addOwnerIdIfSupported,
+  ensureOwnerTeamMember,
+  filterRowByOwner,
+  filterRowsByOwner,
+  getRequiredUserId,
+  isMissingColumnError,
+  removeMissingColumn,
+} from './sessionScope';
 
 /**
  * Fetch all deals with error handling
@@ -11,11 +19,10 @@ export async function fetchDeals() {
     const { data, error } = await supabase
       .from('deals')
       .select('*')
-      .eq('owner_id', userId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return filterRowsByOwner('deals', data, userId);
   } catch (error) {
     if (isMissingColumnError(error)) {
       const { data, error: legacyError } = await supabase
@@ -42,11 +49,12 @@ export async function getDealById(id) {
       .from('deals')
       .select('*')
       .eq('id', id)
-      .eq('owner_id', userId)
       .single();
 
     if (error) throw error;
-    return data;
+    const ownedDeal = filterRowByOwner('deals', data, userId);
+    if (!ownedDeal) throw new Error('Deal not found');
+    return ownedDeal;
   } catch (error) {
     if (isMissingColumnError(error)) {
       const { data, error: legacyError } = await supabase
@@ -69,7 +77,7 @@ export async function getDealById(id) {
 export async function updateDeal({ id, ...updates }) {
   try {
     if (!id) throw new Error('Deal ID is required');
-    const userId = await getRequiredUserId();
+    await getRequiredUserId();
 
     // Validate stage transitions
     const validStages = ['lead', 'contact', 'proposal', 'negotiation', 'won', 'lost'];
@@ -96,7 +104,6 @@ export async function updateDeal({ id, ...updates }) {
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
-      .eq('owner_id', userId)
       .select();
 
     if (error) throw error;
@@ -137,7 +144,7 @@ export async function addDeal(newDeal) {
     await ensureOwnerTeamMember();
 
     // Set defaults - use authenticated user ID or null (not hardcoded 'leader')
-    let dealData = {
+    let dealData = addOwnerIdIfSupported('deals', {
       title: newDeal.title.trim(),
       company: newDeal.company?.trim() || null,
       customer_id: newDeal.customer_id || null,
@@ -145,7 +152,6 @@ export async function addDeal(newDeal) {
       stage: newDeal.stage || 'lead',
       probability: newDeal.probability || 0,
       // Use provided assigned_to, or authenticated user ID, or null
-      owner_id: userId,
       assigned_to: newDeal.assigned_to ?? userId,
       contact: newDeal.contact?.trim() || null,
       contact_email: newDeal.contact_email?.trim() || null,
@@ -160,7 +166,7 @@ export async function addDeal(newDeal) {
       metadata: newDeal.metadata || {},
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
-    };
+    }, userId);
 
     for (let attempt = 0; attempt < 6; attempt += 1) {
       const { data, error } = await supabase
@@ -195,7 +201,7 @@ export async function addMultipleDeals(deals) {
     const userId = await getRequiredUserId();
     await ensureOwnerTeamMember();
 
-    let dealsData = deals.map(newDeal => ({
+    let dealsData = deals.map(newDeal => addOwnerIdIfSupported('deals', {
       title: newDeal.title?.trim() || 'Untitled Deal',
       company: newDeal.company?.trim() || null,
       customer_id: newDeal.customer_id || null,
@@ -203,7 +209,6 @@ export async function addMultipleDeals(deals) {
       stage: newDeal.stage || 'lead',
       probability: newDeal.probability || 0,
       // Use provided assigned_to, or authenticated user ID, or null
-      owner_id: userId,
       assigned_to: newDeal.assigned_to ?? userId,
       contact: newDeal.contact?.trim() || null,
       contact_email: newDeal.contact_email?.trim() || null,
@@ -218,7 +223,7 @@ export async function addMultipleDeals(deals) {
       metadata: newDeal.metadata || {},
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
-    }));
+    }, userId));
 
     for (let attempt = 0; attempt < 6; attempt += 1) {
       const { data, error } = await supabase
@@ -249,12 +254,11 @@ export async function deleteDeals(ids) {
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new Error('At least one deal ID is required');
     }
-    const userId = await getRequiredUserId();
+    await getRequiredUserId();
 
     const { error } = await supabase
       .from('deals')
       .delete()
-      .eq('owner_id', userId)
       .in('id', ids);
 
     if (error) throw error;
@@ -282,7 +286,7 @@ export async function bulkUpdateDeals(ids, updates) {
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new Error('At least one deal ID is required');
     }
-    const userId = await getRequiredUserId();
+    await getRequiredUserId();
 
     const { data, error } = await supabase
       .from('deals')
@@ -290,7 +294,6 @@ export async function bulkUpdateDeals(ids, updates) {
         ...updates,
         updated_at: new Date().toISOString()
       })
-      .eq('owner_id', userId)
       .in('id', ids)
       .select();
 
@@ -321,7 +324,7 @@ export async function bulkUpdateDeals(ids, updates) {
 export async function searchDeals(query, filters = {}) {
   try {
     const userId = await getRequiredUserId();
-    let builder = supabase.from('deals').select('*').eq('owner_id', userId);
+    let builder = supabase.from('deals').select('*');
 
     // Text search
     if (query) {
@@ -350,7 +353,7 @@ export async function searchDeals(query, filters = {}) {
 
     // Throw error instead of returning empty array
     if (error) throw error;
-    return data || [];
+    return filterRowsByOwner('deals', data, userId);
   } catch (error) {
     if (isMissingColumnError(error)) {
       let builder = supabase.from('deals').select('*');

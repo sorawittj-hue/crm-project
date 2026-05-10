@@ -678,8 +678,8 @@ export default function AnalyticsPage() {
                   </div>
                 ))}
               </div>
-              <div className="h-[220px]">
-                <ResponsiveContainer width="100%" height="100%" debounce={50}>
+              <div className="h-[220px] min-w-0 min-h-0">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} debounce={50}>
                   <BarChart data={analytics?.revenueByMember} barGap={2}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} />
