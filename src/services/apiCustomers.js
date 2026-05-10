@@ -1,18 +1,16 @@
 import { supabase } from '../utils/supabase';
-
-async function getCurrentUserId() {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.user?.id ?? null;
-}
+import { getRequiredUserId } from './sessionScope';
 
 /**
  * Fetch all customers with their stats
  */
 export async function fetchCustomers() {
   try {
+    const userId = await getRequiredUserId();
     const { data, error } = await supabase
       .from('customers')
       .select('*')
+      .eq('owner_id', userId)
       .order('name', { ascending: true });
     
     if (error) throw error;
@@ -28,10 +26,12 @@ export async function fetchCustomers() {
  */
 export async function getCustomerById(id) {
   try {
+    const userId = await getRequiredUserId();
     const { data: customer, error } = await supabase
       .from('customers')
       .select('*')
       .eq('id', id)
+      .eq('owner_id', userId)
       .single();
     
     if (error) throw error;
@@ -41,6 +41,7 @@ export async function getCustomerById(id) {
       .from('deals')
       .select('*')
       .eq('customer_id', id)
+      .eq('owner_id', userId)
       .order('created_at', { ascending: false });
     
     return { ...customer, deals: deals || [] };
@@ -60,7 +61,7 @@ export async function createCustomer(customerData) {
       throw new Error('Customer name is required');
     }
     
-    const userId = await getCurrentUserId();
+    const userId = await getRequiredUserId();
     const data = {
       name: customerData.name.trim(),
       company: customerData.company?.trim() || null,
@@ -71,7 +72,7 @@ export async function createCustomer(customerData) {
       industry: customerData.industry || null,
       tier: customerData.tier || 'Silver',
       notes: customerData.notes?.trim() || null,
-      created_by: userId,
+      owner_id: userId,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -95,6 +96,7 @@ export async function createCustomer(customerData) {
 export async function updateCustomer({ id, ...updates }) {
   try {
     if (!id) throw new Error('Customer ID is required');
+    const userId = await getRequiredUserId();
     
     const { data, error } = await supabase
       .from('customers')
@@ -103,6 +105,7 @@ export async function updateCustomer({ id, ...updates }) {
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
+      .eq('owner_id', userId)
       .select();
     
     if (error) throw error;
@@ -119,10 +122,12 @@ export async function updateCustomer({ id, ...updates }) {
 export async function deleteCustomer(id) {
   try {
     if (!id) throw new Error('Customer ID is required');
+    const userId = await getRequiredUserId();
     
     const { error } = await supabase
       .from('customers')
       .delete()
+      .eq('owner_id', userId)
       .eq('id', id);
     
     if (error) throw error;
@@ -138,6 +143,7 @@ export async function deleteCustomer(id) {
  */
 export async function searchCustomers(query) {
   try {
+    const userId = await getRequiredUserId();
     const { data, error } = await supabase.rpc('search_customers', { search_query: query });
     
     if (error) {
@@ -145,11 +151,12 @@ export async function searchCustomers(query) {
       const { data: fallbackData } = await supabase
         .from('customers')
         .select('*')
+        .eq('owner_id', userId)
         .or(`name.ilike.%${query}%,company.ilike.%${query}%`);
       return fallbackData || [];
     }
     
-    return data || [];
+    return (data || []).filter((customer) => customer.owner_id === userId);
   } catch (error) {
     console.error('Error searching customers:', error);
     return [];
@@ -161,6 +168,7 @@ export async function searchCustomers(query) {
  */
 export async function getCustomerStats(customerId) {
   try {
+    const userId = await getRequiredUserId();
     const { data, error } = await supabase.rpc('get_customer_stats', { customer_id: customerId });
     
     if (error) {
@@ -168,6 +176,7 @@ export async function getCustomerStats(customerId) {
       const { data: deals } = await supabase
         .from('deals')
         .select('value, stage')
+        .eq('owner_id', userId)
         .eq('customer_id', customerId);
       
       const wonValue = deals?.filter(d => d.stage === 'won').reduce((sum, d) => sum + (d.value || 0), 0) || 0;

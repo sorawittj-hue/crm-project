@@ -1,27 +1,74 @@
 import { supabase } from '../utils/supabase';
+import { DEFAULT_MONTHLY_TARGET, DEFAULT_MEMBER_TARGET, getRequiredUserId } from './sessionScope';
 
 const DEFAULTS = {
-  id: 'global',
-  monthly_target: 10000000,
+  monthly_target: DEFAULT_MONTHLY_TARGET,
   leader_target: 7000000,
-  member_target: 3000000,
+  member_target: DEFAULT_MEMBER_TARGET,
   company_name: '',
   company_industry: '',
   currency: 'THB',
   fiscal_month_start: 1,
+  timezone: 'Asia/Bangkok',
 };
 
 export async function fetchAppSettings() {
-  const { data, error } = await supabase.from('app_settings').select('*').eq('id', 'global').single();
-  if (error) return { ...DEFAULTS };
+  const userId = await getRequiredUserId();
+  const { data, error } = await supabase
+    .from('app_settings')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Unable to load app settings:', error);
+    throw new Error('Settings could not be loaded');
+  }
+
+  if (!data) {
+    const { data: created, error: createError } = await supabase
+      .from('app_settings')
+      .insert([{ id: userId, owner_id: userId, ...DEFAULTS }])
+      .select()
+      .single();
+
+    if (createError) {
+      console.error('Unable to initialize app settings:', createError);
+      throw new Error('Settings could not be initialized');
+    }
+
+    return { ...DEFAULTS, ...created };
+  }
+
   return { ...DEFAULTS, ...data };
 }
 
 export async function updateAppSettings(updates) {
+  const userId = await getRequiredUserId();
+  const payload = {
+    id: userId,
+    owner_id: userId,
+    monthly_target: Number(updates.monthly_target) || DEFAULT_MONTHLY_TARGET,
+    leader_target: Number(updates.leader_target) || 0,
+    member_target: Number(updates.member_target) || DEFAULT_MEMBER_TARGET,
+    company_name: updates.company_name ?? '',
+    company_industry: updates.company_industry ?? '',
+    currency: updates.currency || 'THB',
+    fiscal_month_start: Number(updates.fiscal_month_start) || 1,
+    timezone: updates.timezone || 'Asia/Bangkok',
+    updated_at: new Date().toISOString(),
+  };
+
   const { data, error } = await supabase
     .from('app_settings')
-    .upsert({ id: 'global', ...updates })
-    .select();
-  if (error) throw new Error('Settings could not be updated: ' + error.message);
-  return data?.[0];
+    .upsert(payload, { onConflict: 'id' })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Unable to update app settings:', error);
+    throw new Error('Settings could not be updated: ' + error.message);
+  }
+
+  return { ...DEFAULTS, ...data };
 }

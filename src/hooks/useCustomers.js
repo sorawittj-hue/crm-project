@@ -7,21 +7,27 @@ import {
   deleteCustomer 
 } from '../services/apiCustomers';
 import { useToast } from '../components/ui/Toast';
+import { useAuth } from './useAuth';
 
 export function useCustomers() {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['customers'],
+    queryKey: ['customers', user?.id],
     queryFn: fetchCustomers,
+    enabled: !!user?.id,
     retry: 2,
     staleTime: 5 * 60 * 1000,
   });
 }
 
 export function useCustomer(id) {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['customer', id],
+    queryKey: ['customer', user?.id, id],
     queryFn: () => getCustomerById(id),
-    enabled: !!id,
+    enabled: !!user?.id && !!id,
     retry: 2,
   });
 }

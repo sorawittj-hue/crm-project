@@ -1,53 +1,37 @@
 -- CRM Application Database Schema
--- Run this in your Supabase SQL Editor.
+-- Run this in your Supabase SQL Editor for the basic settings/team tables.
 
--- ===========================================
--- TABLE: team_members
--- ===========================================
 CREATE TABLE IF NOT EXISTS team_members (
   id TEXT PRIMARY KEY,
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   role TEXT NOT NULL,
+  email TEXT,
+  phone TEXT,
   goal NUMERIC DEFAULT 0,
   color TEXT,
   icon_type TEXT DEFAULT 'UserCheck',
+  is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Insert default team members
-INSERT INTO team_members (id, name, role, goal, color, icon_type)
-VALUES
-  ('leader', 'Sorawit (Leader)', 'หัวหน้าทีม', 7000000, 'bg-indigo-600 shadow-indigo-500/20', 'ShieldCheck'),
-  ('off', 'น้องออฟ', 'ทีมงาน', 3000000, 'bg-orange-600 shadow-orange-500/20', 'UserCheck')
-ON CONFLICT (id) DO NOTHING;
-
--- ===========================================
--- TABLE: app_settings (for app configuration)
--- ===========================================
 CREATE TABLE IF NOT EXISTS app_settings (
   id TEXT PRIMARY KEY,
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   monthly_target NUMERIC DEFAULT 10000000,
   leader_target NUMERIC DEFAULT 7000000,
   member_target NUMERIC DEFAULT 3000000,
+  currency TEXT DEFAULT 'THB',
+  timezone TEXT DEFAULT 'Asia/Bangkok',
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Insert default settings
-INSERT INTO app_settings (id, monthly_target, leader_target, member_target)
-VALUES ('global', 10000000, 7000000, 3000000)
-ON CONFLICT (id) DO NOTHING;
+CREATE INDEX IF NOT EXISTS idx_team_members_owner_id ON team_members(owner_id);
+CREATE INDEX IF NOT EXISTS idx_app_settings_owner_id ON app_settings(owner_id);
 
--- ===========================================
--- Enable Row Level Security (RLS)
--- ===========================================
 ALTER TABLE team_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
-
--- ===========================================
--- RLS Policies
--- Match the app's Supabase Auth boundary: anonymous clients cannot read or write CRM data.
--- ===========================================
 
 DROP POLICY IF EXISTS "Allow all operations on team_members" ON team_members;
 DROP POLICY IF EXISTS "Allow all operations on app_settings" ON app_settings;
@@ -57,15 +41,11 @@ DROP POLICY IF EXISTS "Authenticated users can manage app_settings" ON app_setti
 CREATE POLICY "Authenticated users can manage team_members"
   ON team_members
   FOR ALL TO authenticated
-  USING (true)
-  WITH CHECK (true);
+  USING (owner_id = auth.uid())
+  WITH CHECK (owner_id = auth.uid());
 
 CREATE POLICY "Authenticated users can manage app_settings"
   ON app_settings
   FOR ALL TO authenticated
-  USING (true)
-  WITH CHECK (true);
-
--- ===========================================
--- Done! ✅
--- ===========================================
+  USING (owner_id = auth.uid() AND id = auth.uid()::TEXT)
+  WITH CHECK (owner_id = auth.uid() AND id = auth.uid()::TEXT);

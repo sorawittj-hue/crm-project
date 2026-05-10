@@ -11,6 +11,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ===========================================
 CREATE TABLE IF NOT EXISTS team_members (
   id TEXT PRIMARY KEY,
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   role TEXT NOT NULL,
   email TEXT,
@@ -24,18 +25,14 @@ CREATE TABLE IF NOT EXISTS team_members (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Insert default team members
-INSERT INTO team_members (id, name, role, goal, color, icon_type)
-VALUES
-  ('leader', 'Sorawit (Leader)', 'หัวหน้าทีม', 7000000, 'bg-indigo-600 shadow-indigo-500/20', 'ShieldCheck'),
-  ('off', 'น้องออฟ', 'ทีมงาน', 3000000, 'bg-orange-600 shadow-orange-500/20', 'UserCheck')
-ON CONFLICT (id) DO NOTHING;
+-- Team members are created per authenticated owner by the app.
 
 -- ===========================================
 -- TABLE: app_settings
 -- ===========================================
 CREATE TABLE IF NOT EXISTS app_settings (
   id TEXT PRIMARY KEY,
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   monthly_target NUMERIC DEFAULT 10000000,
   leader_target NUMERIC DEFAULT 7000000,
   member_target NUMERIC DEFAULT 3000000,
@@ -44,15 +41,14 @@ CREATE TABLE IF NOT EXISTS app_settings (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-INSERT INTO app_settings (id, monthly_target, leader_target, member_target)
-VALUES ('global', 10000000, 7000000, 3000000)
-ON CONFLICT (id) DO NOTHING;
+-- App settings are created per authenticated owner by the app.
 
 -- ===========================================
 -- TABLE: customers
 -- ===========================================
 CREATE TABLE IF NOT EXISTS customers (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   company TEXT,
   email TEXT,
@@ -67,6 +63,7 @@ CREATE TABLE IF NOT EXISTS customers (
 );
 
 -- Index for faster searches
+CREATE INDEX IF NOT EXISTS idx_customers_owner_id ON customers(owner_id);
 CREATE INDEX IF NOT EXISTS idx_customers_name ON customers(name);
 CREATE INDEX IF NOT EXISTS idx_customers_company ON customers(company);
 CREATE INDEX IF NOT EXISTS idx_customers_tier ON customers(tier);
@@ -76,6 +73,7 @@ CREATE INDEX IF NOT EXISTS idx_customers_tier ON customers(tier);
 -- ===========================================
 CREATE TABLE IF NOT EXISTS deals (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   company TEXT,
   customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
@@ -101,6 +99,7 @@ CREATE TABLE IF NOT EXISTS deals (
 );
 
 -- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_deals_owner_id ON deals(owner_id);
 CREATE INDEX IF NOT EXISTS idx_deals_stage ON deals(stage);
 CREATE INDEX IF NOT EXISTS idx_deals_assigned_to ON deals(assigned_to);
 CREATE INDEX IF NOT EXISTS idx_deals_company ON deals(company);
@@ -114,6 +113,7 @@ CREATE INDEX IF NOT EXISTS idx_deals_last_activity ON deals(last_activity DESC);
 -- ===========================================
 CREATE TABLE IF NOT EXISTS activities (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   deal_id UUID REFERENCES deals(id) ON DELETE CASCADE,
   customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
   type TEXT NOT NULL, -- call, email, meeting, note, task, whatsapp
@@ -128,6 +128,7 @@ CREATE TABLE IF NOT EXISTS activities (
 );
 
 -- Indexes
+CREATE INDEX IF NOT EXISTS idx_activities_owner_id ON activities(owner_id);
 CREATE INDEX IF NOT EXISTS idx_activities_deal_id ON activities(deal_id);
 CREATE INDEX IF NOT EXISTS idx_activities_type ON activities(type);
 CREATE INDEX IF NOT EXISTS idx_activities_scheduled_at ON activities(scheduled_at);
@@ -138,6 +139,7 @@ CREATE INDEX IF NOT EXISTS idx_activities_created_at ON activities(created_at DE
 -- ===========================================
 CREATE TABLE IF NOT EXISTS email_templates (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   subject TEXT NOT NULL,
   body TEXT NOT NULL,
@@ -160,6 +162,7 @@ ON CONFLICT DO NOTHING;
 -- ===========================================
 CREATE TABLE IF NOT EXISTS notifications (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   user_id TEXT REFERENCES team_members(id),
   type TEXT NOT NULL, -- deal_update, activity_reminder, mention, system
   title TEXT NOT NULL,
@@ -170,6 +173,9 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE INDEX IF NOT EXISTS idx_team_members_owner_id ON team_members(owner_id);
+CREATE INDEX IF NOT EXISTS idx_app_settings_owner_id ON app_settings(owner_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_owner_id ON notifications(owner_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
 
@@ -226,28 +232,28 @@ DROP POLICY IF EXISTS "Authenticated users can manage notifications" ON notifica
 DROP POLICY IF EXISTS "Authenticated users can read audit_log" ON audit_log;
 
 CREATE POLICY "Authenticated users can manage team_members"
-  ON team_members FOR ALL TO authenticated USING (true) WITH CHECK (true);
+  ON team_members FOR ALL TO authenticated USING (owner_id = auth.uid()) WITH CHECK (owner_id = auth.uid());
 
 CREATE POLICY "Authenticated users can manage app_settings"
-  ON app_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
+  ON app_settings FOR ALL TO authenticated USING (owner_id = auth.uid() AND id = auth.uid()::TEXT) WITH CHECK (owner_id = auth.uid() AND id = auth.uid()::TEXT);
 
 CREATE POLICY "Authenticated users can manage customers"
-  ON customers FOR ALL TO authenticated USING (true) WITH CHECK (true);
+  ON customers FOR ALL TO authenticated USING (owner_id = auth.uid()) WITH CHECK (owner_id = auth.uid());
 
 CREATE POLICY "Authenticated users can manage deals"
-  ON deals FOR ALL TO authenticated USING (true) WITH CHECK (true);
+  ON deals FOR ALL TO authenticated USING (owner_id = auth.uid()) WITH CHECK (owner_id = auth.uid());
 
 CREATE POLICY "Authenticated users can manage activities"
-  ON activities FOR ALL TO authenticated USING (true) WITH CHECK (true);
+  ON activities FOR ALL TO authenticated USING (owner_id = auth.uid()) WITH CHECK (owner_id = auth.uid());
 
 CREATE POLICY "Authenticated users can manage email_templates"
-  ON email_templates FOR ALL TO authenticated USING (true) WITH CHECK (true);
+  ON email_templates FOR ALL TO authenticated USING (owner_id = auth.uid()) WITH CHECK (owner_id = auth.uid());
 
 CREATE POLICY "Authenticated users can manage notifications"
-  ON notifications FOR ALL TO authenticated USING (true) WITH CHECK (true);
+  ON notifications FOR ALL TO authenticated USING (owner_id = auth.uid()) WITH CHECK (owner_id = auth.uid());
 
 CREATE POLICY "Authenticated users can read audit_log"
-  ON audit_log FOR SELECT TO authenticated USING (true);
+  ON audit_log FOR SELECT TO authenticated USING (changed_by = auth.uid());
 
 -- ===========================================
 -- FUNCTIONS & TRIGGERS
@@ -353,19 +359,23 @@ CREATE TRIGGER audit_activities_changes
 -- ===========================================
 
 -- Pipeline Summary View
-CREATE OR REPLACE VIEW pipeline_summary AS
-SELECT 
+CREATE OR REPLACE VIEW pipeline_summary
+WITH (security_invoker = true) AS
+SELECT
+  owner_id,
   stage,
   COUNT(*) as deal_count,
   SUM(value) as total_value,
   AVG(probability) as avg_probability
 FROM deals
 WHERE stage NOT IN ('won', 'lost')
-GROUP BY stage;
+GROUP BY owner_id, stage;
 
 -- Team Performance View
-CREATE OR REPLACE VIEW team_performance AS
-SELECT 
+CREATE OR REPLACE VIEW team_performance
+WITH (security_invoker = true) AS
+SELECT
+  t.owner_id,
   t.id,
   t.name,
   t.role,
@@ -375,12 +385,14 @@ SELECT
   SUM(CASE WHEN d.stage = 'won' THEN d.value ELSE 0 END) as won_value,
   SUM(CASE WHEN d.stage NOT IN ('won', 'lost') THEN d.value ELSE 0 END) as pipeline_value
 FROM team_members t
-LEFT JOIN deals d ON d.assigned_to = t.id
-GROUP BY t.id, t.name, t.role, t.goal;
+LEFT JOIN deals d ON d.assigned_to = t.id AND d.owner_id = t.owner_id
+GROUP BY t.owner_id, t.id, t.name, t.role, t.goal;
 
 -- Customer Lifetime Value View
-CREATE OR REPLACE VIEW customer_lifetime_value AS
-SELECT 
+CREATE OR REPLACE VIEW customer_lifetime_value
+WITH (security_invoker = true) AS
+SELECT
+  c.owner_id,
   c.id,
   c.name,
   c.company,
@@ -390,19 +402,21 @@ SELECT
   SUM(CASE WHEN d.stage = 'won' THEN d.value ELSE 0 END) as lifetime_value,
   MAX(d.created_at) as last_activity
 FROM customers c
-LEFT JOIN deals d ON d.customer_id = c.id
-GROUP BY c.id, c.name, c.company, c.tier;
+LEFT JOIN deals d ON d.customer_id = c.id AND d.owner_id = c.owner_id
+GROUP BY c.owner_id, c.id, c.name, c.company, c.tier;
 
 -- Monthly Revenue View
-CREATE OR REPLACE VIEW monthly_revenue AS
-SELECT 
+CREATE OR REPLACE VIEW monthly_revenue
+WITH (security_invoker = true) AS
+SELECT
+  owner_id,
   DATE_TRUNC('month', actual_close_date) as month,
   COUNT(*) as deal_count,
   SUM(value) as total_revenue,
   AVG(value) as avg_deal_value
 FROM deals
 WHERE stage = 'won' AND actual_close_date IS NOT NULL
-GROUP BY DATE_TRUNC('month', actual_close_date)
+GROUP BY owner_id, DATE_TRUNC('month', actual_close_date)
 ORDER BY month DESC;
 
 -- ===========================================

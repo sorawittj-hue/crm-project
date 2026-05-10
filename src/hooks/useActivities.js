@@ -1,21 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchActivitiesByDeal, fetchActivities, addActivity, deleteActivity } from '../services/apiActivities';
 import { useToast } from '../components/ui/Toast';
+import { useAuth } from './useAuth';
 
 export function useActivities() {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['activities'],
+    queryKey: ['activities', user?.id],
     queryFn: fetchActivities,
+    enabled: !!user?.id,
     retry: 2,
     staleTime: 5 * 60 * 1000,
   });
 }
 
 export function useDealActivities(dealId) {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['activities', 'deal', dealId],
+    queryKey: ['activities', user?.id, 'deal', dealId],
     queryFn: () => fetchActivitiesByDeal(dealId),
-    enabled: !!dealId,
+    enabled: !!user?.id && !!dealId,
     retry: 2,
     staleTime: 2 * 60 * 1000,
   });

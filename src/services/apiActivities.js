@@ -1,22 +1,17 @@
 import { supabase } from '../utils/supabase';
-
-/**
- * Get current authenticated user ID from Supabase session
- */
-async function getCurrentUserId() {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.user?.id ?? null;
-}
+import { getRequiredUserId } from './sessionScope';
 
 /**
  * Fetch activities for a specific deal
  */
 export async function fetchActivitiesByDeal(dealId) {
   try {
+    const userId = await getRequiredUserId();
     const { data, error } = await supabase
       .from('activities')
       .select('*')
       .eq('deal_id', dealId)
+      .eq('owner_id', userId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -32,9 +27,11 @@ export async function fetchActivitiesByDeal(dealId) {
  */
 export async function fetchActivities() {
   try {
+    const userId = await getRequiredUserId();
     const { data, error } = await supabase
       .from('activities')
       .select('*')
+      .eq('owner_id', userId)
       .order('created_at', { ascending: false })
       .limit(100);
 
@@ -55,8 +52,7 @@ export async function addActivity(activityData) {
       throw new Error('Activity type and title are required');
     }
 
-    // Get current user ID for created_by
-    const userId = await getCurrentUserId();
+    const userId = await getRequiredUserId();
 
     const data = {
       deal_id: activityData.deal_id || null,
@@ -67,7 +63,8 @@ export async function addActivity(activityData) {
       scheduled_at: activityData.scheduled_at || null,
       completed_at: activityData.completed_at || null,
       result: activityData.result || null,
-      created_by: activityData.created_by ?? userId ?? null,
+      owner_id: userId,
+      created_by: activityData.created_by ?? userId,
       metadata: activityData.metadata || {},
       created_at: new Date().toISOString(),
     };
@@ -90,9 +87,11 @@ export async function addActivity(activityData) {
  */
 export async function deleteActivity(id) {
   try {
+    const userId = await getRequiredUserId();
     const { error } = await supabase
       .from('activities')
       .delete()
+      .eq('owner_id', userId)
       .eq('id', id);
 
     if (error) throw error;

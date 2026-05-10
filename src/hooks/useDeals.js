@@ -1,11 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchDeals, updateDeal, addDeal, addMultipleDeals, deleteDeals } from '../services/apiDeals';
 import { useToast } from '../components/ui/Toast';
+import { useAuth } from './useAuth';
 
 export function useDeals() {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['deals'],
+    queryKey: ['deals', user?.id],
     queryFn: fetchDeals,
+    enabled: !!user?.id,
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

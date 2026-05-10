@@ -1,13 +1,17 @@
 import { supabase } from '../utils/supabase';
+import { ensureOwnerTeamMember, getRequiredUserId } from './sessionScope';
 
 /**
  * Fetch all deals with error handling
  */
 export async function fetchDeals() {
   try {
+    const userId = await getRequiredUserId();
+    await ensureOwnerTeamMember();
     const { data, error } = await supabase
       .from('deals')
       .select('*')
+      .eq('owner_id', userId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -23,10 +27,13 @@ export async function fetchDeals() {
  */
 export async function getDealById(id) {
   try {
+    const userId = await getRequiredUserId();
+    await ensureOwnerTeamMember();
     const { data, error } = await supabase
       .from('deals')
       .select('*')
       .eq('id', id)
+      .eq('owner_id', userId)
       .single();
 
     if (error) throw error;
@@ -43,6 +50,7 @@ export async function getDealById(id) {
 export async function updateDeal({ id, ...updates }) {
   try {
     if (!id) throw new Error('Deal ID is required');
+    const userId = await getRequiredUserId();
 
     // Validate stage transitions
     const validStages = ['lead', 'contact', 'proposal', 'negotiation', 'won', 'lost'];
@@ -69,6 +77,7 @@ export async function updateDeal({ id, ...updates }) {
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
+      .eq('owner_id', userId)
       .select();
 
     if (error) throw error;
@@ -82,11 +91,6 @@ export async function updateDeal({ id, ...updates }) {
 /**
  * Get current authenticated user ID from Supabase session
  */
-async function getCurrentUserId() {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.user?.id ?? null;
-}
-
 /**
  * Create a new deal with validation
  */
@@ -97,8 +101,8 @@ export async function addDeal(newDeal) {
       throw new Error('Deal title is required');
     }
 
-    // Get current user ID for assigned_to
-    const userId = await getCurrentUserId();
+    const userId = await getRequiredUserId();
+    await ensureOwnerTeamMember();
 
     // Set defaults - use authenticated user ID or null (not hardcoded 'leader')
     const dealData = {
@@ -109,7 +113,8 @@ export async function addDeal(newDeal) {
       stage: newDeal.stage || 'lead',
       probability: newDeal.probability || 0,
       // Use provided assigned_to, or authenticated user ID, or null
-      assigned_to: newDeal.assigned_to ?? userId ?? null,
+      owner_id: userId,
+      assigned_to: newDeal.assigned_to ?? userId,
       contact: newDeal.contact?.trim() || null,
       contact_email: newDeal.contact_email?.trim() || null,
       contact_phone: newDeal.contact_phone?.trim() || null,
@@ -147,8 +152,8 @@ export async function addMultipleDeals(deals) {
       throw new Error('At least one deal is required');
     }
 
-    // Get current user ID for assigned_to
-    const userId = await getCurrentUserId();
+    const userId = await getRequiredUserId();
+    await ensureOwnerTeamMember();
 
     const dealsData = deals.map(newDeal => ({
       title: newDeal.title?.trim() || 'Untitled Deal',
@@ -158,7 +163,8 @@ export async function addMultipleDeals(deals) {
       stage: newDeal.stage || 'lead',
       probability: newDeal.probability || 0,
       // Use provided assigned_to, or authenticated user ID, or null
-      assigned_to: newDeal.assigned_to ?? userId ?? null,
+      owner_id: userId,
+      assigned_to: newDeal.assigned_to ?? userId,
       contact: newDeal.contact?.trim() || null,
       contact_email: newDeal.contact_email?.trim() || null,
       contact_phone: newDeal.contact_phone?.trim() || null,
@@ -195,10 +201,12 @@ export async function deleteDeals(ids) {
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new Error('At least one deal ID is required');
     }
+    const userId = await getRequiredUserId();
 
     const { error } = await supabase
       .from('deals')
       .delete()
+      .eq('owner_id', userId)
       .in('id', ids);
 
     if (error) throw error;
@@ -217,6 +225,7 @@ export async function bulkUpdateDeals(ids, updates) {
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new Error('At least one deal ID is required');
     }
+    const userId = await getRequiredUserId();
 
     const { data, error } = await supabase
       .from('deals')
@@ -224,6 +233,7 @@ export async function bulkUpdateDeals(ids, updates) {
         ...updates,
         updated_at: new Date().toISOString()
       })
+      .eq('owner_id', userId)
       .in('id', ids)
       .select();
 
@@ -240,7 +250,8 @@ export async function bulkUpdateDeals(ids, updates) {
  */
 export async function searchDeals(query, filters = {}) {
   try {
-    let builder = supabase.from('deals').select('*');
+    const userId = await getRequiredUserId();
+    let builder = supabase.from('deals').select('*').eq('owner_id', userId);
 
     // Text search
     if (query) {
