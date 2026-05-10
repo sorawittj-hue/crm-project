@@ -1,5 +1,5 @@
 import { supabase } from '../utils/supabase';
-import { getRequiredUserId } from './sessionScope';
+import { getRequiredUserId, isMissingColumnError, removeMissingColumn } from './sessionScope';
 
 /**
  * Fetch activities for a specific deal
@@ -17,6 +17,16 @@ export async function fetchActivitiesByDeal(dealId) {
     if (error) throw error;
     return data || [];
   } catch (error) {
+    if (isMissingColumnError(error)) {
+      const { data, error: legacyError } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('deal_id', dealId)
+        .order('created_at', { ascending: false });
+
+      if (!legacyError) return data || [];
+    }
+
     console.error('Error fetching activities:', error);
     return [];
   }
@@ -38,6 +48,16 @@ export async function fetchActivities() {
     if (error) throw error;
     return data || [];
   } catch (error) {
+    if (isMissingColumnError(error)) {
+      const { data, error: legacyError } = await supabase
+        .from('activities')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (!legacyError) return data || [];
+    }
+
     console.error('Error fetching activities:', error);
     return [];
   }
@@ -54,7 +74,7 @@ export async function addActivity(activityData) {
 
     const userId = await getRequiredUserId();
 
-    const data = {
+    let payload = {
       deal_id: activityData.deal_id || null,
       customer_id: activityData.customer_id || null,
       type: activityData.type,
@@ -69,13 +89,21 @@ export async function addActivity(activityData) {
       created_at: new Date().toISOString(),
     };
 
-    const { data: result, error } = await supabase
-      .from('activities')
-      .insert([data])
-      .select();
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const { data: result, error } = await supabase
+        .from('activities')
+        .insert([payload])
+        .select();
 
-    if (error) throw error;
-    return result?.[0];
+      if (!error) return result?.[0];
+      if (!isMissingColumnError(error)) throw error;
+
+      const nextPayload = removeMissingColumn(payload, error);
+      if (nextPayload === payload) throw error;
+      payload = nextPayload;
+    }
+
+    return payload;
   } catch (error) {
     console.error('Error creating activity:', error);
     throw new Error('Failed to create activity: ' + error.message);
@@ -97,6 +125,15 @@ export async function deleteActivity(id) {
     if (error) throw error;
     return true;
   } catch (error) {
+    if (isMissingColumnError(error)) {
+      const { error: legacyError } = await supabase
+        .from('activities')
+        .delete()
+        .eq('id', id);
+
+      if (!legacyError) return true;
+    }
+
     console.error('Error deleting activity:', error);
     throw new Error('Failed to delete activity: ' + error.message);
   }

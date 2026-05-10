@@ -3,6 +3,38 @@ import { supabase } from '../utils/supabase';
 export const DEFAULT_MONTHLY_TARGET = 10000000;
 export const DEFAULT_MEMBER_TARGET = 3000000;
 
+export function isMissingColumnError(error) {
+  const message = String(error?.message || '');
+  return (
+    error?.code === 'PGRST204' ||
+    error?.code === '42703' ||
+    message.includes('schema cache') ||
+    message.includes('does not exist')
+  );
+}
+
+export function getMissingColumnName(error) {
+  const message = String(error?.message || '');
+  const schemaMatch = message.match(/'([^']+)' column/);
+  if (schemaMatch?.[1]) return schemaMatch[1];
+
+  const pgMatch = message.match(/column [^.]+\."?([^"\s]+)"? does not exist/i);
+  if (pgMatch?.[1]) return pgMatch[1];
+
+  return null;
+}
+
+export function removeMissingColumn(payload, error) {
+  const columnName = getMissingColumnName(error);
+  if (!columnName || !Object.prototype.hasOwnProperty.call(payload, columnName)) {
+    return payload;
+  }
+
+  const nextPayload = { ...payload };
+  delete nextPayload[columnName];
+  return nextPayload;
+}
+
 export async function getRequiredUserId() {
   const {
     data: { session },
@@ -58,17 +90,33 @@ export async function ensureOwnerTeamMember() {
     throw new Error('You must be signed in to access team data');
   }
 
-  const ownerMember = createOwnerMember(user);
-  const { data, error: upsertError } = await supabase
-    .from('team_members')
-    .upsert(ownerMember, { onConflict: 'id' })
-    .select()
-    .single();
+  let ownerMember = createOwnerMember(user);
 
-  if (upsertError) {
-    console.error('Unable to ensure owner team member:', upsertError);
-    throw new Error('Team owner profile could not be prepared');
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const { data, error: upsertError } = await supabase
+      .from('team_members')
+      .upsert(ownerMember, { onConflict: 'id' })
+      .select()
+      .single();
+
+    if (!upsertError) {
+      return data;
+    }
+
+    if (!isMissingColumnError(upsertError)) {
+      console.error('Unable to ensure owner team member:', upsertError);
+      throw new Error('Team owner profile could not be prepared');
+    }
+
+    const nextOwnerMember = removeMissingColumn(ownerMember, upsertError);
+    if (nextOwnerMember === ownerMember) {
+      console.warn('Team owner profile is using legacy schema fallback:', upsertError);
+      return null;
+    }
+
+    ownerMember = nextOwnerMember;
   }
 
-  return data;
+  console.warn('Team owner profile fallback exhausted before schema was ready');
+  return null;
 }

@@ -13,6 +13,10 @@ ALTER TABLE activities ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES auth.us
 ALTER TABLE email_templates ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
+ALTER TABLE app_settings ADD COLUMN IF NOT EXISTS company_name TEXT DEFAULT '';
+ALTER TABLE app_settings ADD COLUMN IF NOT EXISTS company_industry TEXT DEFAULT '';
+ALTER TABLE app_settings ADD COLUMN IF NOT EXISTS fiscal_month_start INTEGER DEFAULT 1;
+
 CREATE INDEX IF NOT EXISTS idx_team_members_owner_id ON team_members(owner_id);
 CREATE INDEX IF NOT EXISTS idx_app_settings_owner_id ON app_settings(owner_id);
 CREATE INDEX IF NOT EXISTS idx_customers_owner_id ON customers(owner_id);

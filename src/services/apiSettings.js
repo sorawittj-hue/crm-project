@@ -1,5 +1,11 @@
 import { supabase } from '../utils/supabase';
-import { DEFAULT_MONTHLY_TARGET, DEFAULT_MEMBER_TARGET, getRequiredUserId } from './sessionScope';
+import {
+  DEFAULT_MONTHLY_TARGET,
+  DEFAULT_MEMBER_TARGET,
+  getRequiredUserId,
+  isMissingColumnError,
+  removeMissingColumn,
+} from './sessionScope';
 
 const DEFAULTS = {
   monthly_target: DEFAULT_MONTHLY_TARGET,
@@ -12,6 +18,35 @@ const DEFAULTS = {
   timezone: 'Asia/Bangkok',
 };
 
+async function safeUpsertSettings(initialPayload) {
+  let payload = { ...initialPayload };
+
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const { data, error } = await supabase
+      .from('app_settings')
+      .upsert(payload, { onConflict: 'id' })
+      .select()
+      .single();
+
+    if (!error) return data;
+
+    if (!isMissingColumnError(error)) {
+      console.error('Unable to update app settings:', error);
+      throw new Error('Settings could not be updated: ' + error.message);
+    }
+
+    const nextPayload = removeMissingColumn(payload, error);
+    if (nextPayload === payload) {
+      console.warn('App settings are using legacy schema fallback:', error);
+      return { ...DEFAULTS, ...payload };
+    }
+
+    payload = nextPayload;
+  }
+
+  return { ...DEFAULTS, ...payload };
+}
+
 export async function fetchAppSettings() {
   const userId = await getRequiredUserId();
   const { data, error } = await supabase
@@ -21,22 +56,27 @@ export async function fetchAppSettings() {
     .maybeSingle();
 
   if (error) {
+    if (isMissingColumnError(error)) {
+      const { data: legacyData, error: legacyError } = await supabase
+        .from('app_settings')
+        .select('*')
+        .eq('id', 'global')
+        .maybeSingle();
+
+      if (legacyError) {
+        console.warn('App settings legacy fallback is using defaults:', legacyError);
+        return { id: 'global', ...DEFAULTS };
+      }
+
+      return { id: 'global', ...DEFAULTS, ...legacyData };
+    }
+
     console.error('Unable to load app settings:', error);
     throw new Error('Settings could not be loaded');
   }
 
   if (!data) {
-    const { data: created, error: createError } = await supabase
-      .from('app_settings')
-      .insert([{ id: userId, owner_id: userId, ...DEFAULTS }])
-      .select()
-      .single();
-
-    if (createError) {
-      console.error('Unable to initialize app settings:', createError);
-      throw new Error('Settings could not be initialized');
-    }
-
+    const created = await safeUpsertSettings({ id: userId, owner_id: userId, ...DEFAULTS });
     return { ...DEFAULTS, ...created };
   }
 
@@ -59,16 +99,6 @@ export async function updateAppSettings(updates) {
     updated_at: new Date().toISOString(),
   };
 
-  const { data, error } = await supabase
-    .from('app_settings')
-    .upsert(payload, { onConflict: 'id' })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Unable to update app settings:', error);
-    throw new Error('Settings could not be updated: ' + error.message);
-  }
-
+  const data = await safeUpsertSettings(payload);
   return { ...DEFAULTS, ...data };
 }

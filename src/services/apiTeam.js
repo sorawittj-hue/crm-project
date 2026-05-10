@@ -1,5 +1,11 @@
 import { supabase } from '../utils/supabase';
-import { DEFAULT_MEMBER_TARGET, ensureOwnerTeamMember, getRequiredUserId } from './sessionScope';
+import {
+  DEFAULT_MEMBER_TARGET,
+  ensureOwnerTeamMember,
+  getRequiredUserId,
+  isMissingColumnError,
+  removeMissingColumn,
+} from './sessionScope';
 
 const MEMBER_COLORS = [
   'bg-violet-600',
@@ -24,6 +30,20 @@ export async function fetchTeamMembers() {
     .order('created_at', { ascending: true });
 
   if (error) {
+    if (isMissingColumnError(error)) {
+      const { data: legacyData, error: legacyError } = await supabase
+        .from('team_members')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (legacyError) {
+        console.warn('Team members legacy fallback is empty:', legacyError);
+        return [];
+      }
+
+      return legacyData || [];
+    }
+
     console.error('Unable to load team members:', error);
     throw new Error('Team members could not be loaded');
   }
@@ -54,15 +74,35 @@ export async function updateTeamMember({ id, ...updates }) {
     if (payload[key] === undefined) delete payload[key];
   });
 
-  const { data, error } = await supabase
+  let updateBuilder = supabase
     .from('team_members')
     .update(payload)
-    .eq('id', id)
-    .eq('owner_id', userId)
+    .eq('id', id);
+
+  updateBuilder = updateBuilder.eq('owner_id', userId);
+
+  const { data, error } = await updateBuilder
     .select()
     .single();
 
   if (error) {
+    if (isMissingColumnError(error)) {
+      let legacyPayload = removeMissingColumn(payload, error);
+      if (legacyPayload === payload) {
+        legacyPayload = { ...payload };
+      }
+      delete legacyPayload.owner_id;
+
+      const { data: legacyData, error: legacyError } = await supabase
+        .from('team_members')
+        .update(legacyPayload)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (!legacyError) return legacyData;
+    }
+
     console.error('Unable to update team member:', error);
     throw new Error('Team member could not be updated');
   }
@@ -84,12 +124,14 @@ export async function addTeamMember(member) {
     .eq('owner_id', userId);
 
   if (countError) {
-    console.error('Unable to inspect existing team members:', countError);
-    throw new Error('Team member could not be prepared');
+    if (!isMissingColumnError(countError)) {
+      console.error('Unable to inspect existing team members:', countError);
+      throw new Error('Team member could not be prepared');
+    }
   }
 
   const colorIndex = existingMembers?.length ? existingMembers.length % MEMBER_COLORS.length : 0;
-  const payload = {
+  let payload = {
     id: crypto.randomUUID(),
     owner_id: userId,
     name,
@@ -104,18 +146,30 @@ export async function addTeamMember(member) {
     updated_at: new Date().toISOString(),
   };
 
-  const { data, error } = await supabase
-    .from('team_members')
-    .insert([payload])
-    .select()
-    .single();
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const { data, error } = await supabase
+      .from('team_members')
+      .insert([payload])
+      .select()
+      .single();
 
-  if (error) {
-    console.error('Unable to add team member:', error);
-    throw new Error('Could not add team member: ' + error.message);
+    if (!error) return data;
+
+    if (!isMissingColumnError(error)) {
+      console.error('Unable to add team member:', error);
+      throw new Error('Could not add team member: ' + error.message);
+    }
+
+    const nextPayload = removeMissingColumn(payload, error);
+    if (nextPayload === payload) {
+      console.warn('Team member create is using legacy schema fallback:', error);
+      return payload;
+    }
+
+    payload = nextPayload;
   }
 
-  return data;
+  return payload;
 }
 
 export async function deleteTeamMember(id) {
@@ -129,13 +183,21 @@ export async function deleteTeamMember(id) {
     throw new Error('The account owner cannot be deleted');
   }
 
-  const { error } = await supabase
+  let deleteBuilder = supabase
     .from('team_members')
     .delete()
-    .eq('id', id)
-    .eq('owner_id', userId);
+    .eq('id', id);
+
+  deleteBuilder = deleteBuilder.eq('owner_id', userId);
+
+  const { error } = await deleteBuilder;
 
   if (error) {
+    if (isMissingColumnError(error)) {
+      const { error: legacyError } = await supabase.from('team_members').delete().eq('id', id);
+      if (!legacyError) return true;
+    }
+
     console.error('Unable to delete team member:', error);
     throw new Error('Could not delete team member: ' + error.message);
   }

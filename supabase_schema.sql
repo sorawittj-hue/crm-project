@@ -22,7 +22,10 @@ CREATE TABLE IF NOT EXISTS app_settings (
   monthly_target NUMERIC DEFAULT 10000000,
   leader_target NUMERIC DEFAULT 7000000,
   member_target NUMERIC DEFAULT 3000000,
+  company_name TEXT DEFAULT '',
+  company_industry TEXT DEFAULT '',
   currency TEXT DEFAULT 'THB',
+  fiscal_month_start INTEGER DEFAULT 1,
   timezone TEXT DEFAULT 'Asia/Bangkok',
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

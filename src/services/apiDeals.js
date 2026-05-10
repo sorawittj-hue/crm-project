@@ -1,5 +1,5 @@
 import { supabase } from '../utils/supabase';
-import { ensureOwnerTeamMember, getRequiredUserId } from './sessionScope';
+import { ensureOwnerTeamMember, getRequiredUserId, isMissingColumnError, removeMissingColumn } from './sessionScope';
 
 /**
  * Fetch all deals with error handling
@@ -17,6 +17,15 @@ export async function fetchDeals() {
     if (error) throw error;
     return data || [];
   } catch (error) {
+    if (isMissingColumnError(error)) {
+      const { data, error: legacyError } = await supabase
+        .from('deals')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!legacyError) return data || [];
+    }
+
     console.error('Error fetching deals:', error);
     throw new Error('Failed to load deals: ' + error.message);
   }
@@ -39,6 +48,16 @@ export async function getDealById(id) {
     if (error) throw error;
     return data;
   } catch (error) {
+    if (isMissingColumnError(error)) {
+      const { data, error: legacyError } = await supabase
+        .from('deals')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (!legacyError) return data;
+    }
+
     console.error('Error fetching deal:', error);
     throw new Error('Failed to load deal: ' + error.message);
   }
@@ -83,6 +102,19 @@ export async function updateDeal({ id, ...updates }) {
     if (error) throw error;
     return data?.[0];
   } catch (error) {
+    if (isMissingColumnError(error)) {
+      const { data, error: legacyError } = await supabase
+        .from('deals')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select();
+
+      if (!legacyError) return data?.[0];
+    }
+
     console.error('Error updating deal:', error);
     throw new Error('Failed to update deal: ' + error.message);
   }
@@ -105,7 +137,7 @@ export async function addDeal(newDeal) {
     await ensureOwnerTeamMember();
 
     // Set defaults - use authenticated user ID or null (not hardcoded 'leader')
-    const dealData = {
+    let dealData = {
       title: newDeal.title.trim(),
       company: newDeal.company?.trim() || null,
       customer_id: newDeal.customer_id || null,
@@ -130,13 +162,21 @@ export async function addDeal(newDeal) {
       updated_at: new Date().toISOString()
     };
 
-    const { data, error } = await supabase
-      .from('deals')
-      .insert([dealData])
-      .select();
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const { data, error } = await supabase
+        .from('deals')
+        .insert([dealData])
+        .select();
 
-    if (error) throw error;
-    return data?.[0];
+      if (!error) return data?.[0];
+      if (!isMissingColumnError(error)) throw error;
+
+      const nextDealData = removeMissingColumn(dealData, error);
+      if (nextDealData === dealData) throw error;
+      dealData = nextDealData;
+    }
+
+    return dealData;
   } catch (error) {
     console.error('Error creating deal:', error);
     throw new Error('Failed to create deal: ' + error.message);
@@ -155,7 +195,7 @@ export async function addMultipleDeals(deals) {
     const userId = await getRequiredUserId();
     await ensureOwnerTeamMember();
 
-    const dealsData = deals.map(newDeal => ({
+    let dealsData = deals.map(newDeal => ({
       title: newDeal.title?.trim() || 'Untitled Deal',
       company: newDeal.company?.trim() || null,
       customer_id: newDeal.customer_id || null,
@@ -180,13 +220,21 @@ export async function addMultipleDeals(deals) {
       updated_at: new Date().toISOString()
     }));
 
-    const { data, error } = await supabase
-      .from('deals')
-      .insert(dealsData)
-      .select();
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const { data, error } = await supabase
+        .from('deals')
+        .insert(dealsData)
+        .select();
 
-    if (error) throw error;
-    return data;
+      if (!error) return data;
+      if (!isMissingColumnError(error)) throw error;
+
+      const nextDealsData = dealsData.map((deal) => removeMissingColumn(deal, error));
+      if (nextDealsData.every((deal, index) => deal === dealsData[index])) throw error;
+      dealsData = nextDealsData;
+    }
+
+    return dealsData;
   } catch (error) {
     console.error('Error creating multiple deals:', error);
     throw new Error('Failed to create multiple deals: ' + error.message);
@@ -212,6 +260,15 @@ export async function deleteDeals(ids) {
     if (error) throw error;
     return true;
   } catch (error) {
+    if (isMissingColumnError(error)) {
+      const { error: legacyError } = await supabase
+        .from('deals')
+        .delete()
+        .in('id', ids);
+
+      if (!legacyError) return true;
+    }
+
     console.error('Error deleting deals:', error);
     throw new Error('Failed to delete deals: ' + error.message);
   }
@@ -240,6 +297,19 @@ export async function bulkUpdateDeals(ids, updates) {
     if (error) throw error;
     return data;
   } catch (error) {
+    if (isMissingColumnError(error)) {
+      const { data, error: legacyError } = await supabase
+        .from('deals')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .in('id', ids)
+        .select();
+
+      if (!legacyError) return data;
+    }
+
     console.error('Error bulk updating deals:', error);
     throw new Error('Failed to update deals: ' + error.message);
   }
@@ -282,6 +352,29 @@ export async function searchDeals(query, filters = {}) {
     if (error) throw error;
     return data || [];
   } catch (error) {
+    if (isMissingColumnError(error)) {
+      let builder = supabase.from('deals').select('*');
+
+      if (query) {
+        builder = builder.or(`title.ilike.%${query}%,company.ilike.%${query}%`);
+      }
+      if (filters.stage) {
+        builder = builder.eq('stage', filters.stage);
+      }
+      if (filters.assigned_to) {
+        builder = builder.eq('assigned_to', filters.assigned_to);
+      }
+      if (filters.minValue) {
+        builder = builder.gte('value', filters.minValue);
+      }
+      if (filters.maxValue) {
+        builder = builder.lte('value', filters.maxValue);
+      }
+
+      const { data, error: legacyError } = await builder.order('created_at', { ascending: false });
+      if (!legacyError) return data || [];
+    }
+
     console.error('Error searching deals:', error);
     // Throw error so react-query can catch it and display error message
     throw new Error('Failed to search deals: ' + error.message);
