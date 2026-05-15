@@ -80,6 +80,88 @@ function relativeTime(isoStr) {
   return `${days} วันที่แล้ว`;
 }
 
+function hasRowsWithoutOwnerColumn(rows) {
+  return (rows || []).length > 0 && rows.some((row) => !Object.prototype.hasOwnProperty.call(row, 'owner_id'));
+}
+
+function SystemStatusBanner({ deals, customers, activities, effectiveTarget, navigate }) {
+  const legacyDataMode = hasRowsWithoutOwnerColumn(deals) || hasRowsWithoutOwnerColumn(customers) || hasRowsWithoutOwnerColumn(activities);
+  const setupItems = [
+    { label: 'เป้าหมาย', done: Number(effectiveTarget || 0) > 0 },
+    { label: 'ลูกค้า', done: (customers || []).length > 0 },
+    { label: 'ดีล', done: (deals || []).length > 0 },
+    { label: 'กิจกรรม', done: (activities || []).length > 0 },
+  ];
+  const completed = setupItems.filter((item) => item.done).length;
+  const isSetupComplete = completed === setupItems.length;
+
+  if (!legacyDataMode && isSetupComplete) return null;
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={cn(
+        'mb-6 rounded-2xl border p-4 shadow-sm',
+        legacyDataMode
+          ? 'border-amber-200 bg-amber-50 text-amber-950'
+          : 'border-violet-100 bg-white text-slate-900'
+      )}
+    >
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-start gap-3">
+          <div className={cn(
+            'mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
+            legacyDataMode ? 'bg-amber-100 text-amber-700' : 'bg-violet-50 text-violet-600'
+          )}>
+            {legacyDataMode ? <AlertCircle size={17} /> : <Target size={17} />}
+          </div>
+          <div>
+            <p className="text-sm font-bold">
+              {legacyDataMode ? 'ฐานข้อมูลยังอยู่โหมด Legacy' : 'ตั้งค่า flow เริ่มต้นให้ครบ'}
+            </p>
+            <p className={cn('mt-1 text-xs leading-5', legacyDataMode ? 'text-amber-800' : 'text-slate-500')}>
+              {legacyDataMode
+                ? 'แอปใช้งานได้ แต่การแยกข้อมูลรายผู้ใช้จะสมบูรณ์หลังรัน migration ใน Supabase'
+                : `พร้อมใช้งานแล้ว ${completed}/${setupItems.length} ส่วน`}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {setupItems.map((item) => (
+            <span
+              key={item.label}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold',
+                item.done
+                  ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
+                  : 'border-slate-200 bg-white text-slate-500'
+              )}
+            >
+              {item.done ? <CheckCircle2 size={11} /> : <Clock size={11} />}
+              {item.label}
+            </span>
+          ))}
+          <button
+            type="button"
+            onClick={() => navigate(legacyDataMode ? '/settings' : '/pipeline')}
+            className={cn(
+              'ml-1 inline-flex h-8 items-center gap-1.5 rounded-xl px-3 text-xs font-bold shadow-sm transition-all',
+              legacyDataMode
+                ? 'bg-amber-600 text-white hover:bg-amber-700'
+                : 'bg-violet-600 text-white hover:bg-violet-700'
+            )}
+          >
+            {legacyDataMode ? 'เปิดตั้งค่า' : 'เริ่มเพิ่มดีล'}
+            <ChevronRight size={13} />
+          </button>
+        </div>
+      </div>
+    </motion.section>
+  );
+}
+
 export default function AppLayout() {
   const shouldReduceMotion = useReducedMotion();
   const { isSidebarOpen, closeSidebar, toggleSidebar, monthlyTarget, setMonthlyTarget, setPendingOpenDeal } = useAppStore();
@@ -517,6 +599,13 @@ export default function AppLayout() {
               {...routeMotionProps}
               className="p-6 min-h-full"
             >
+              <SystemStatusBanner
+                deals={deals}
+                customers={customers}
+                activities={activities}
+                effectiveTarget={effectiveTarget}
+                navigate={navigate}
+              />
               <Outlet />
             </motion.div>
           </AnimatePresence>

@@ -250,6 +250,7 @@ export default function CommandCenterPage() {
   };
 
   const isLoading = dealsLoading || teamLoading || settingsLoading;
+  const hasNoDeals = (deals || []).length === 0;
 
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center h-[70vh] gap-4">
@@ -281,6 +282,62 @@ export default function CommandCenterPage() {
           </Button>
         </div>
       </div>
+
+      {hasNoDeals && (
+        <motion.section
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="grid grid-cols-1 gap-3 md:grid-cols-3"
+        >
+          {[
+            {
+              title: 'เพิ่มดีลแรก',
+              detail: 'สร้าง pipeline ให้ dashboard เริ่มวิเคราะห์ทันที',
+              icon: Briefcase,
+              action: () => navigate('/pipeline'),
+              tone: 'bg-violet-600 text-white shadow-violet-500/20',
+            },
+            {
+              title: 'เพิ่มลูกค้า',
+              detail: 'ผูกดีลกับบัญชีลูกค้าเพื่อเห็นมูลค่ารวม',
+              icon: Users,
+              action: () => navigate('/customers'),
+              tone: 'bg-white text-slate-800 border-slate-100',
+            },
+            {
+              title: 'ตั้งเป้าหมาย',
+              detail: 'กำหนด target เพื่อให้ forecast มีบริบท',
+              icon: Target,
+              action: () => navigate('/settings'),
+              tone: 'bg-white text-slate-800 border-slate-100',
+            },
+          ].map((item) => (
+            <button
+              key={item.title}
+              type="button"
+              onClick={item.action}
+              className={cn(
+                'group rounded-2xl border p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md',
+                item.tone
+              )}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <div className={cn(
+                  'flex h-10 w-10 items-center justify-center rounded-xl',
+                  item.tone.includes('violet') ? 'bg-white/15 text-white' : 'bg-violet-50 text-violet-600'
+                )}>
+                  <item.icon size={18} />
+                </div>
+                <ChevronRight size={16} className={cn('transition-transform group-hover:translate-x-0.5', item.tone.includes('violet') ? 'text-white/70' : 'text-slate-300')} />
+              </div>
+              <p className="text-sm font-bold">{item.title}</p>
+              <p className={cn('mt-1 text-xs leading-5', item.tone.includes('violet') ? 'text-violet-100' : 'text-slate-500')}>
+                {item.detail}
+              </p>
+            </button>
+          ))}
+        </motion.section>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
