@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Mail, Calculator, TrendingUp, Plus, Pencil, Trash2,
+  Mail, Calculator, Plus, Pencil, Trash2,
   Copy, Check, Loader2, FileText,
   ChevronDown, ChevronUp, Search, Battery, HardDrive, Laptop
 } from 'lucide-react';
@@ -356,106 +356,6 @@ function DealCalculator() {
   );
 }
 
-// ─── Commission Calculator ─────────────────────────────────────────────────────
-function CommissionCalculator() {
-  const [wonValue, setWonValue] = useState('');
-  const [target, setTarget] = useState('');
-  const [baseRate, setBaseRate] = useState('3');
-  const [bonusRate, setBonusRate] = useState('5');
-  const [bonusThreshold, setBonusThreshold] = useState('100');
-
-  const calc = (() => {
-    const won = Number(wonValue) || 0;
-    const tgt = Number(target) || 1;
-    const base = Number(baseRate) / 100;
-    const bonus = Number(bonusRate) / 100;
-    const threshold = Number(bonusThreshold) / 100;
-    const achievement = tgt > 0 ? won / tgt : 0;
-    const baseCommission = won * base;
-    const bonusCommission = achievement >= threshold ? won * bonus : 0;
-    const totalCommission = baseCommission + bonusCommission;
-    const gap = Math.max(0, tgt * threshold - won);
-    const projectedAtTarget = tgt * base + tgt * bonus;
-    return { achievement: achievement * 100, baseCommission, bonusCommission, totalCommission, gap, projectedAtTarget };
-  })();
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h3 className="text-sm font-bold text-slate-700">ตั้งค่า</h3>
-          <div className="space-y-3">
-            {[
-              { label: 'ยอดขายจริง (บาท)', value: wonValue, setter: setWonValue, placeholder: '5,000,000' },
-              { label: 'เป้าหมาย (บาท)', value: target, setter: setTarget, placeholder: '7,000,000' },
-            ].map(f => (
-              <div key={f.label} className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500">{f.label}</label>
-                <Input type="number" value={f.value} onChange={e => f.setter(e.target.value)}
-                  placeholder={f.placeholder} className="h-10 rounded-xl text-sm" />
-              </div>
-            ))}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500">Commission % ปกติ</label>
-                <Input type="number" step="0.1" value={baseRate} onChange={e => setBaseRate(e.target.value)}
-                  className="h-10 rounded-xl text-sm" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500">Bonus % (ถ้าถึงเป้า)</label>
-                <Input type="number" step="0.1" value={bonusRate} onChange={e => setBonusRate(e.target.value)}
-                  className="h-10 rounded-xl text-sm" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500">เกณฑ์ Bonus (%)</label>
-                <Input type="number" value={bonusThreshold} onChange={e => setBonusThreshold(e.target.value)}
-                  className="h-10 rounded-xl text-sm" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-sm font-bold text-slate-700">ผลลัพธ์</h3>
-
-          {/* Achievement progress */}
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-500">ความสำเร็จ</span>
-              <span className={cn('font-bold', calc.achievement >= 100 ? 'text-emerald-600' : calc.achievement >= 70 ? 'text-amber-600' : 'text-rose-600')}>
-                {calc.achievement.toFixed(1)}%
-              </span>
-            </div>
-            <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
-              <div
-                className={cn('h-full rounded-full transition-all', calc.achievement >= 100 ? 'bg-emerald-500' : calc.achievement >= 70 ? 'bg-amber-500' : 'bg-rose-500')}
-                style={{ width: `${Math.min(100, calc.achievement)}%` }}
-              />
-            </div>
-            {calc.gap > 0 && (
-              <p className="text-xs text-rose-500">ขาดอีก {formatCurrency(calc.gap)} ถึงจะได้ Bonus</p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { label: 'Base Commission', value: formatCurrency(calc.baseCommission), color: 'text-blue-600' },
-              { label: 'Bonus', value: formatCurrency(calc.bonusCommission), color: calc.bonusCommission > 0 ? 'text-emerald-600' : 'text-slate-300' },
-              { label: 'รวมได้รับ', value: formatCurrency(calc.totalCommission), color: 'text-violet-700' },
-              { label: 'ถ้าปิดได้ 100%', value: formatCurrency(calc.projectedAtTarget), color: 'text-slate-500' },
-            ].map(m => (
-              <div key={m.label} className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <p className="text-xs text-slate-400">{m.label}</p>
-                <p className={cn('text-lg font-black tabular-nums', m.color)}>{m.value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Page ──────────────────────────────────────────────────────────────────────
 const TOOLS = [
   {
@@ -484,19 +384,6 @@ const TOOLS = [
     ],
     desc: 'วิเคราะห์ความคุ้มค่าของดีล — gross profit, margin, expected revenue ตาม probability',
     component: DealCalculator,
-  },
-  {
-    key: 'commission',
-    icon: TrendingUp,
-    title: 'Commission Calculator',
-    subtitle: 'คำนวณ commission และ bonus ตามเป้า',
-    gradient: 'from-amber-500 to-orange-500',
-    badges: [
-      { label: 'Base Commission', color: 'bg-amber-50 border-amber-100 text-amber-700' },
-      { label: 'Bonus Threshold', color: 'bg-rose-50 border-rose-100 text-rose-700' },
-    ],
-    desc: 'คำนวณรายได้จาก commission ตามยอดขายจริง เทียบเป้าหมาย และตรวจสอบว่าถึงเกณฑ์ bonus หรือยัง',
-    component: CommissionCalculator,
   },
   {
     key: 'ups',
@@ -554,7 +441,7 @@ export default function ToolsPage() {
     >
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-slate-900">เครื่องมือ</h1>
-        <p className="text-sm text-slate-500 mt-1">Email Templates, Deal Calculator และ Commission Calculator</p>
+        <p className="text-sm text-slate-500 mt-1">Email Templates, Deal Calculator, UPS และ RAID Calculator</p>
       </header>
 
       {/* Tab List */}
