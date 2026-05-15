@@ -1,51 +1,55 @@
-import { useLayoutEffect, useRef, useState } from 'react';
-import { ResponsiveContainer } from 'recharts';
+import { Children, cloneElement, isValidElement, useLayoutEffect, useRef, useState } from 'react';
 
 export default function SafeResponsiveContainer({
   children,
-  debounce = 50,
-  minWidth = 0,
-  minHeight = 0,
-  ...props
 }) {
   const containerRef = useRef(null);
-  const [isReady, setIsReady] = useState(false);
+  const [size, setSize] = useState({ width: 0, height: 0 });
 
   useLayoutEffect(() => {
     const element = containerRef.current;
     if (!element) return undefined;
 
-    const updateReadiness = () => {
+    const updateSize = () => {
       const rect = element.getBoundingClientRect();
-      setIsReady(rect.width > 0 && rect.height > 0);
+      const nextSize = {
+        width: Math.floor(rect.width),
+        height: Math.floor(rect.height),
+      };
+
+      setSize((currentSize) => {
+        if (currentSize.width === nextSize.width && currentSize.height === nextSize.height) {
+          return currentSize;
+        }
+
+        return nextSize;
+      });
     };
 
-    updateReadiness();
+    updateSize();
 
     if (typeof ResizeObserver === 'undefined') {
-      window.addEventListener('resize', updateReadiness);
-      return () => window.removeEventListener('resize', updateReadiness);
+      window.addEventListener('resize', updateSize);
+      return () => window.removeEventListener('resize', updateSize);
     }
 
-    const observer = new ResizeObserver(updateReadiness);
+    const observer = new ResizeObserver(updateSize);
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
 
+  const canRenderChart = size.width > 0 && size.height > 0;
+  const sizedChildren = Children.map(children, (child) => {
+    if (!isValidElement(child)) return child;
+    return cloneElement(child, {
+      width: size.width,
+      height: size.height,
+    });
+  });
+
   return (
     <div ref={containerRef} className="h-full w-full min-w-0 min-h-0">
-      {isReady ? (
-        <ResponsiveContainer
-          width="100%"
-          height="100%"
-          minWidth={minWidth}
-          minHeight={minHeight}
-          debounce={debounce}
-          {...props}
-        >
-          {children}
-        </ResponsiveContainer>
-      ) : null}
+      {canRenderChart ? sizedChildren : null}
     </div>
   );
 }
