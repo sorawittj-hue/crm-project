@@ -11,8 +11,9 @@ import { formatCurrency } from '../lib/formatters';
 import { STAGE_COLORS, STAGE_LABELS } from '../lib/constants';
 import { buildPipelineIntelligence, DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
 import CustomTooltip from '../components/ui/CustomTooltip';
+import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
 import {
-  ResponsiveContainer, Area, Bar, XAxis, YAxis,
+  Area, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, PieChart, Pie, Cell,
   ComposedChart, Line, BarChart
 } from 'recharts';
@@ -376,7 +377,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
           <div className="h-[320px] w-full min-w-0 min-h-0">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} debounce={50}>
+            <SafeResponsiveContainer>
               <ComposedChart data={analytics?.revenueStream}>
                 <defs>
                   <linearGradient id="colorActualAnalytics" x1="0" y1="0" x2="0" y2="1">
@@ -393,7 +394,7 @@ export default function AnalyticsPage() {
                 <Line type="monotone" dataKey="weighted" name="Weighted Forecast" stroke="#7c3aed" strokeWidth={3} dot={{ r: 3, fill: '#7c3aed', strokeWidth: 0 }} />
                 <Line type="monotone" dataKey="target" name="Goal" stroke="#e2e8f0" strokeWidth={2} strokeDasharray="10 10" dot={false} />
               </ComposedChart>
-            </ResponsiveContainer>
+            </SafeResponsiveContainer>
           </div>
         </Card>
 
@@ -403,7 +404,7 @@ export default function AnalyticsPage() {
             <p className="text-xs text-slate-400 mt-0.5">จำนวนดีลในแต่ละขั้นตอน</p>
           </div>
           <div className="relative w-full aspect-square max-w-[240px] min-w-0 min-h-0">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} debounce={50}>
+            <SafeResponsiveContainer>
               <PieChart>
                 <Pie data={analytics?.stageData} innerRadius={70} outerRadius={100} paddingAngle={8} dataKey="value" stroke="none">
                   {analytics?.stageData.map((entry, index) => (
@@ -412,7 +413,7 @@ export default function AnalyticsPage() {
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
               </PieChart>
-            </ResponsiveContainer>
+            </SafeResponsiveContainer>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
                 <p className="text-3xl font-black text-slate-900">{analytics?.totalDeals || 0}</p>
@@ -679,7 +680,7 @@ export default function AnalyticsPage() {
                 ))}
               </div>
               <div className="h-[220px] min-w-0 min-h-0">
-                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} debounce={50}>
+                <SafeResponsiveContainer>
                   <BarChart data={analytics?.revenueByMember} barGap={2}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} />
@@ -689,7 +690,7 @@ export default function AnalyticsPage() {
                       <Bar key={m.id} dataKey={m.name} stackId="team" fill={memberColors[i % memberColors.length]} radius={i === (teamMembers.length - 1) ? [4, 4, 0, 0] : [0, 0, 0, 0]} />
                     ))}
                   </BarChart>
-                </ResponsiveContainer>
+                </SafeResponsiveContainer>
               </div>
             </Card>
           )}

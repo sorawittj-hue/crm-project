@@ -14,6 +14,7 @@ import { cn } from '../lib/utils';
 import { formatCurrency, formatFullCurrency, daysSince } from '../lib/formatters';
 import { buildPipelineIntelligence } from '../utils/salesIntelligence';
 import CustomTooltip from '../components/ui/CustomTooltip';
+import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
 import {
   TrendingUp,
   Users, AlertCircle,
@@ -23,7 +24,7 @@ import {
   Star, Flame
 } from 'lucide-react';
 import {
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
+  AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip as RechartsTooltip
 } from 'recharts';
 
@@ -751,7 +752,7 @@ export default function CommandCenterPage() {
           </div>
 
           <div className="h-[280px] w-full min-w-0 min-h-0">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} debounce={50}>
+            <SafeResponsiveContainer>
               <AreaChart data={stats?.revenueStream}>
                 <defs>
                   <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
@@ -777,7 +778,7 @@ export default function CommandCenterPage() {
                   stroke="#cbd5e1" strokeWidth={2} strokeDasharray="5 5"
                   fill="url(#colorForecast)" />
               </AreaChart>
-            </ResponsiveContainer>
+            </SafeResponsiveContainer>
           </div>
         </Card>
       </div>
