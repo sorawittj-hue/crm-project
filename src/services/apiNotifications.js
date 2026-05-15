@@ -1,7 +1,7 @@
 import { supabase } from '../utils/supabase';
 import { isMissingColumnError, removeMissingColumn } from './sessionScope';
 
-let notificationWritesDisabled = true;
+let notificationWritesDisabled = false;
 
 function isNotificationSchemaError(error) {
   const message = String(error?.message || '');
@@ -47,8 +47,13 @@ export async function fetchNotifications(userId) {
 export async function upsertNotification(notif) {
   if (notificationWritesDisabled) return null;
 
+  const ownerId = notif.owner_id || notif.user_id;
   let payload = {
     ...notif,
+    owner_id: ownerId,
+    notification_key: ownerId && notif.notification_key
+      ? `${ownerId}:${notif.notification_key}`
+      : notif.notification_key,
     created_at: new Date().toISOString(),
   };
 

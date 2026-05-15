@@ -2,6 +2,7 @@ import { supabase } from '../utils/supabase';
 import {
   DEFAULT_MONTHLY_TARGET,
   DEFAULT_MEMBER_TARGET,
+  addOwnerIdIfSupported,
   getRequiredUserId,
   isMissingColumnError,
   removeMissingColumn,
@@ -18,20 +19,14 @@ const DEFAULTS = {
   timezone: 'Asia/Bangkok',
 };
 
-function toLegacySafeSettingsPayload(payload) {
-  return {
-    id: payload.id,
-    monthly_target: payload.monthly_target,
-    leader_target: payload.leader_target,
-    member_target: payload.member_target,
-    currency: payload.currency,
-    timezone: payload.timezone,
-    updated_at: payload.updated_at,
-  };
+function toSettingsPayload(payload) {
+  return Object.fromEntries(
+    Object.entries(payload).filter(([, value]) => value !== undefined)
+  );
 }
 
 async function safeUpsertSettings(initialPayload) {
-  let payload = toLegacySafeSettingsPayload(initialPayload);
+  let payload = toSettingsPayload(initialPayload);
 
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const { data, error } = await supabase
@@ -86,7 +81,9 @@ export async function fetchAppSettings() {
   }
 
   if (!data) {
-    const created = await safeUpsertSettings({ id: userId, ...DEFAULTS });
+    const created = await safeUpsertSettings(
+      addOwnerIdIfSupported('app_settings', { id: userId, ...DEFAULTS, owner_id: userId }, userId)
+    );
     return { ...DEFAULTS, ...created };
   }
 
@@ -97,6 +94,7 @@ export async function updateAppSettings(updates) {
   const userId = await getRequiredUserId();
   const payload = {
     id: userId,
+    owner_id: userId,
     monthly_target: Number(updates.monthly_target) || DEFAULT_MONTHLY_TARGET,
     leader_target: Number(updates.leader_target) || 0,
     member_target: Number(updates.member_target) || DEFAULT_MEMBER_TARGET,
@@ -108,6 +106,6 @@ export async function updateAppSettings(updates) {
     updated_at: new Date().toISOString(),
   };
 
-  const data = await safeUpsertSettings(payload);
+  const data = await safeUpsertSettings(addOwnerIdIfSupported('app_settings', payload, userId));
   return { ...DEFAULTS, ...data };
 }

@@ -36,7 +36,8 @@ export function forgetOwnerColumnSupport(tableName) {
 }
 
 export function addOwnerIdIfSupported(tableName, payload, userId) {
-  if (!ownerScopedTables.has(tableName)) return payload;
+  ownerScopedTables.add(tableName);
+  writeOwnerScopedTables(ownerScopedTables);
   return { ...payload, owner_id: userId };
 }
 
