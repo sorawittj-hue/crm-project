@@ -1,12 +1,32 @@
+import { useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
 import { cn } from "../../lib/utils"
 
 const Sheet = ({ open, onOpenChange, children }) => {
+  useEffect(() => {
+    if (!open || typeof document === "undefined") return undefined
+
+    const { body, documentElement } = document
+    const previousBodyOverflow = body.style.overflow
+    const previousBodyPaddingRight = body.style.paddingRight
+    const scrollbarWidth = window.innerWidth - documentElement.clientWidth
+
+    body.style.overflow = "hidden"
+    if (scrollbarWidth > 0) {
+      body.style.paddingRight = `${scrollbarWidth}px`
+    }
+
+    return () => {
+      body.style.overflow = previousBodyOverflow
+      body.style.paddingRight = previousBodyPaddingRight
+    }
+  }, [open])
+
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[100] flex justify-end">
+        <div className="fixed inset-0 z-[100] flex justify-end overflow-hidden overscroll-none">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -46,9 +66,11 @@ const SheetContent = ({ children, className }) => {
       exit={{ x: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 200 }}
       className={cn(
-        "relative w-full max-w-xl h-full border-l border-white/5 bg-card/40 backdrop-blur-3xl shadow-2xl rounded-l-[3rem] flex flex-col overflow-hidden",
+        "relative w-full max-w-xl h-dvh border-l border-white/5 bg-card/40 backdrop-blur-3xl shadow-2xl rounded-l-[3rem] flex flex-col overflow-hidden overscroll-contain",
         className
       )}
+      onWheelCapture={(event) => event.stopPropagation()}
+      onTouchMoveCapture={(event) => event.stopPropagation()}
     >
       {children}
     </motion.div>
