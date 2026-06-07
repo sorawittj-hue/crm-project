@@ -82,7 +82,7 @@ const PDFImporter = ({ onDataExtracted }) => {
                     contact: result.contact || "Direct Inquiry",
                     company: result.company || "Unknown Enterprise",
                     value: result.value || 0,
-                    title: result.title || \`Procurement: \${result.company || "Unknown"}\`,
+                    title: result.title || `Procurement: ${result.company || "Unknown"}`,
                     probability: 50,
                     sourceFilename: file.name,
                     stage: 'proposal'
