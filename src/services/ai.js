@@ -1,24 +1,3 @@
-import { GoogleGenAI } from '@google/genai';
-
-let aiClient = null;
-
-/**
- * ⚠️ SECURITY NOTE: This API key is exposed in the client bundle.
- * For production, move AI calls to a serverless function (e.g. Vercel API Route
- * or Supabase Edge Function) and restrict the key in Google Cloud Console.
- */
-function getClient() {
-  if (!aiClient) {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      console.error("Gemini API Key Missing — set VITE_GEMINI_API_KEY in .env");
-      return null;
-    }
-    aiClient = new GoogleGenAI({ apiKey });
-  }
-  return aiClient;
-}
-
 /**
  * Simple rate limiter to prevent excessive API calls.
  * Allows maxCalls within windowMs milliseconds.
@@ -38,29 +17,49 @@ const rateLimiter = {
 };
 
 /**
- * Call Gemini API using the official SDK with rate limiting
+ * Call Gemini API using the secure Vercel Edge Function proxy.
  * @param {string} prompt - The prompt to send
+ * @param {object} [schema] - Optional GoogleGenAI Type schema for structured output
  * @returns {object|string|null} Parsed JSON or text response
  */
-export async function callGeminiAPI(prompt) {
-  const client = getClient();
-  if (!client) return null;
-
+export async function callGeminiAPI(prompt, schema = null) {
   if (!rateLimiter.canCall()) {
     console.warn('AI rate limit reached — please wait before making more requests.');
     return { text: 'คำขอ AI มากเกินไป กรุณารอสักครู่แล้วลองใหม่' };
   }
 
   try {
-    const response = await client.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
+    const response = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        prompt,
+        schema,
+        model: 'gemini-2.5-flash'
+      }),
     });
 
-    const text = response.text;
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || 'Failed to fetch from AI proxy');
+    }
+
+    const data = await response.json();
+    const text = data.text;
     if (!text) return null;
 
-    // Try parsing as JSON
+    // If schema was provided, the response should already be valid JSON string
+    if (schema) {
+      try {
+        return JSON.parse(text);
+      } catch {
+        return { text };
+      }
+    }
+
+    // Try parsing as JSON for legacy unstructured calls
     const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
     try {
       return JSON.parse(jsonStr);
@@ -68,7 +67,7 @@ export async function callGeminiAPI(prompt) {
       return { text }; // Fallback if not JSON
     }
   } catch (error) {
-    console.error("AI Error:", error.message);
+    console.error("AI Proxy Error:", error.message);
     return null;
   }
 }

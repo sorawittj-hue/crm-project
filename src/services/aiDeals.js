@@ -1,4 +1,5 @@
 import { callGeminiAPI } from './ai';
+import { Type } from '@google/genai';
 
 /**
  * AI-powered deal analysis and suggestions
@@ -18,28 +19,26 @@ Deal Details:
 
 Recent Activities:
 ${activities.slice(-5).map(a => `- ${a.type}: ${a.description} (${a.date})`).join('\n')}
-
-Provide analysis in JSON format:
-{
-  "winProbability": number (0-100),
-  "riskLevel": "low" | "medium" | "high",
-  "riskFactors": string[],
-  "nextBestAction": string,
-  "suggestedEmail": string,
-  "daysSinceActivity": number,
-  "isStalled": boolean,
-  "priority": "low" | "medium" | "high" | "critical"
-}
 `;
 
+  const schema = {
+    type: Type.OBJECT,
+    properties: {
+      winProbability: { type: Type.NUMBER, description: "0-100" },
+      riskLevel: { type: Type.STRING, enum: ["low", "medium", "high"] },
+      riskFactors: { type: Type.ARRAY, items: { type: Type.STRING } },
+      nextBestAction: { type: Type.STRING },
+      suggestedEmail: { type: Type.STRING },
+      daysSinceActivity: { type: Type.NUMBER },
+      isStalled: { type: Type.BOOLEAN },
+      priority: { type: Type.STRING, enum: ["low", "medium", "high", "critical"] }
+    },
+    required: ["winProbability", "riskLevel", "riskFactors", "nextBestAction", "daysSinceActivity", "isStalled", "priority"]
+  };
+
   try {
-    const response = await callGeminiAPI(prompt);
-    // Extract JSON from response
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    return null;
+    const result = await callGeminiAPI(prompt, schema);
+    return result;
   } catch (error) {
     console.error('AI analysis failed:', error);
     return null;
@@ -55,6 +54,7 @@ Prioritize these sales deals by likelihood to close and strategic value:
 
 ${deals.map((d, i) => `
 Deal ${i + 1}:
+- ID: ${d.id}
 - Title: ${d.title}
 - Company: ${d.company}
 - Value: ${d.value} THB
@@ -62,17 +62,17 @@ Deal ${i + 1}:
 - Probability: ${d.probability || 0}%
 - Last Activity: ${d.lastActivity || 'Never'}
 `).join('\n')}
-
-Return a JSON array of deal IDs sorted by priority (highest first):
-["deal_id_1", "deal_id_2", ...]
 `;
 
+  const schema = {
+    type: Type.ARRAY,
+    description: "Array of deal IDs sorted by priority (highest first)",
+    items: { type: Type.STRING }
+  };
+
   try {
-    const response = await callGeminiAPI(prompt);
-    const jsonMatch = response.match(/\[[\s\S]*\]/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
+    const result = await callGeminiAPI(prompt, schema);
+    if (Array.isArray(result)) return result;
     return deals.map(d => d.id);
   } catch (error) {
     console.error('AI prioritization failed:', error);
@@ -104,13 +104,12 @@ Include:
 3. Value proposition reminder
 4. Clear call-to-action
 5. Professional closing
-
-Format as plain text.
 `;
 
   try {
-    const response = await callGeminiAPI(prompt);
-    return response.trim();
+    const result = await callGeminiAPI(prompt);
+    // Since we don't use schema for plain text, result could be an object { text: ... } or just string
+    return result?.text || typeof result === 'string' ? result : null;
   } catch (error) {
     console.error('Email generation failed:', error);
     return null;
@@ -132,28 +131,23 @@ Current Stage: ${deal.stage}
 Activities:
 ${activities.map(a => `- ${a.date}: ${a.type} - ${a.description}`).join('\n')}
 
-Provide a concise summary (3-5 bullet points) highlighting:
-- Key milestones achieved
-- Important conversations/decisions
-- Current blockers or next steps
-- Overall deal health
-
-Format as JSON:
-{
-  "summary": string[],
-  "milestones": string[],
-  "blockers": string[],
-  "overallHealth": "positive" | "neutral" | "concerning"
-}
+Provide a concise summary highlighting key milestones, blockers, and overall health.
 `;
 
+  const schema = {
+    type: Type.OBJECT,
+    properties: {
+      summary: { type: Type.ARRAY, items: { type: Type.STRING } },
+      milestones: { type: Type.ARRAY, items: { type: Type.STRING } },
+      blockers: { type: Type.ARRAY, items: { type: Type.STRING } },
+      overallHealth: { type: Type.STRING, enum: ["positive", "neutral", "concerning"] }
+    },
+    required: ["summary", "milestones", "blockers", "overallHealth"]
+  };
+
   try {
-    const response = await callGeminiAPI(prompt);
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    return null;
+    const result = await callGeminiAPI(prompt, schema);
+    return result;
   } catch (error) {
     console.error('Timeline summary failed:', error);
     return null;

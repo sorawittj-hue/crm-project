@@ -27,6 +27,7 @@ import { cn, parseYearMonth } from '../../lib/utils';
 import { formatCurrency } from '../../lib/formatters';
 import { pageMotion, reduceMotionProps, springSmooth } from '../../lib/motion';
 import CommandPalette from '../ui/CommandPalette';
+import MandateAIOrbs from './MandateAIOrbs';
 
 const sidebarVariants = {
   open: { x: 0, opacity: 1, transition: springSmooth },
@@ -621,6 +622,8 @@ export default function AppLayout() {
         deals={deals}
         customers={customers}
       />
+
+      <MandateAIOrbs deals={deals} activities={activities} />
     </div>
   );
 }

@@ -2,9 +2,10 @@ import { useState, useRef } from 'react';
 import { Upload, AlertCircle, CheckCircle2, FileText, Sliders } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GoogleGenAI, Type } from '@google/genai';
+import { Type } from '@google/genai';
 import { Button } from '../ui/Button';
 import { cn } from '../../lib/utils';
+import { callGeminiAPI } from '../../services/ai';
 
 // Configure the worker explicitly for Vite
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -47,7 +48,6 @@ const PDFImporter = ({ onDataExtracted }) => {
         setSuccess(false);
 
         try {
-            const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
             const extractedDeals = [];
 
             for (const file of validFiles) {
@@ -62,31 +62,27 @@ const PDFImporter = ({ onDataExtracted }) => {
                 PDF Text:
                 ${text}`;
 
-                const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash',
-                    contents: prompt,
-                    config: {
-                        responseMimeType: 'application/json',
-                        responseSchema: {
-                            type: Type.OBJECT,
-                            properties: {
-                                company: { type: Type.STRING },
-                                contact: { type: Type.STRING },
-                                value: { type: Type.NUMBER },
-                                title: { type: Type.STRING }
-                            },
-                            required: ["company", "contact", "value", "title"]
-                        }
-                    }
-                });
+                const schema = {
+                    type: Type.OBJECT,
+                    properties: {
+                        company: { type: Type.STRING },
+                        contact: { type: Type.STRING },
+                        value: { type: Type.NUMBER },
+                        title: { type: Type.STRING }
+                    },
+                    required: ["company", "contact", "value", "title"]
+                };
 
-                const result = JSON.parse(response.text);
+                const result = await callGeminiAPI(prompt, schema);
+                if (!result) {
+                    throw new Error("Failed to analyze PDF with AI.");
+                }
 
                 extractedDeals.push({
                     contact: result.contact || "Direct Inquiry",
                     company: result.company || "Unknown Enterprise",
                     value: result.value || 0,
-                    title: result.title || `Procurement: ${result.company || "Unknown"}`,
+                    title: result.title || \`Procurement: \${result.company || "Unknown"}\`,
                     probability: 50,
                     sourceFilename: file.name,
                     stage: 'proposal'
@@ -158,7 +154,7 @@ const PDFImporter = ({ onDataExtracted }) => {
             
             <div className="mt-6 flex items-center justify-center gap-2">
                <Sliders size={12} className="text-slate-400" />
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gemini Engine Status: NOMINAL</p>
+               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gemini Proxy Endpoint: ACTIVE</p>
             </div>
         </div>
     );
