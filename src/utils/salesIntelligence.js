@@ -1,3 +1,5 @@
+import { parseYearMonth } from '../lib/utils';
+
 const DAY_MS = 86_400_000;
 const TERMINAL_STAGES = new Set(['won', 'lost']);
 const HIGH_INTENT_STAGES = new Set(['proposal', 'negotiation']);
@@ -82,9 +84,11 @@ const getDaysUntil = (targetDate, now) => {
 };
 
 const isCurrentMonth = (value, now) => {
-  const date = parseDateValue(value);
-  if (!date) return false;
-  return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+  const parsedVal = parseYearMonth(value);
+  if (!parsedVal) return false;
+  const parsedNow = parseYearMonth(now);
+  if (!parsedNow) return false;
+  return parsedVal.month === parsedNow.month && parsedVal.year === parsedNow.year;
 };
 
 const sortByWeightedValueDesc = (a, b) => b.weightedValue - a.weightedValue;

@@ -138,6 +138,7 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
   const [localEdit, setLocalEdit] = useState({
     title: '', company: '', value: '', probability: '', stage: 'lead',
     contact: '', contact_email: '', contact_phone: '', expected_close_date: '',
+    actual_close_date: '',
   });
 
   const setField = (field, value) => setLocalEdit(p => ({ ...p, [field]: value }));
@@ -207,6 +208,7 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
         contact_email: deal.contact_email || '',
         contact_phone: deal.contact_phone || '',
         expected_close_date: deal.expected_close_date ? deal.expected_close_date.slice(0, 10) : '',
+        actual_close_date: deal.actual_close_date ? deal.actual_close_date.slice(0, 10) : '',
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -216,18 +218,19 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
     setCloseModal({ open: true, targetStage });
   };
 
-  const submitClose = (reason) => {
+  const submitClose = (reason, closeDate) => {
     const isWon = closeModal.targetStage === 'won';
+    const closeIsoString = closeDate ? new Date(closeDate + 'T12:00:00').toISOString() : new Date().toISOString();
     onUpdate(deal.id, {
       stage: closeModal.targetStage,
       last_activity: new Date().toISOString(),
-      actual_close_date: new Date().toISOString(),
+      actual_close_date: closeIsoString,
       lost_reason: isWon ? null : reason,
       metadata: {
         ...(deal?.metadata || {}),
         close_reason: reason,
         ...(isWon ? { win_reason: reason } : {}),
-        closed_at: new Date().toISOString(),
+        closed_at: closeIsoString,
       },
     });
     setCloseModal({ open: false, targetStage: null });
@@ -632,6 +635,20 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
                 className="w-full h-12 rounded-2xl bg-slate-50 px-4 font-bold outline-none text-sm focus:ring-2 focus:ring-primary/20 border-0 transition-all"
               />
             </div>
+
+            {/* Actual close date (Only if closed) */}
+            {['won', 'lost'].includes(deal.stage) && (
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">วันปิดดีลจริง</label>
+                <input
+                  type="date"
+                  value={localEdit.actual_close_date || ''}
+                  onChange={(e) => setField('actual_close_date', e.target.value)}
+                  onBlur={() => saveField('actual_close_date', localEdit.actual_close_date ? new Date(localEdit.actual_close_date + 'T12:00:00').toISOString() : null)}
+                  className="w-full h-12 rounded-2xl bg-slate-50 px-4 font-bold outline-none text-sm focus:ring-2 focus:ring-primary/20 border-0 transition-all"
+                />
+              </div>
+            )}
 
             {/* Contact info */}
             <div className="space-y-2">

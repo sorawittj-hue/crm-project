@@ -23,7 +23,7 @@ import {
   useDismissNotification,
   useDismissAllNotifications,
 } from '../../hooks/useNotifications';
-import { cn } from '../../lib/utils';
+import { cn, parseYearMonth } from '../../lib/utils';
 import { formatCurrency } from '../../lib/formatters';
 import { pageMotion, reduceMotionProps, springSmooth } from '../../lib/motion';
 import CommandPalette from '../ui/CommandPalette';
@@ -260,11 +260,13 @@ export default function AppLayout() {
   const goalProgress = useMemo(() => {
     if (!deals || !effectiveTarget) return 0;
     const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
     const wonThisMonth = deals
       .filter(d => {
         if (d.stage !== 'won') return false;
-        const closeDate = new Date(d.actual_close_date || d.created_at);
-        return closeDate.getMonth() === now.getMonth() && closeDate.getFullYear() === now.getFullYear();
+        const parsed = parseYearMonth(d.actual_close_date || d.created_at);
+        return parsed ? parsed.month === currentMonth && parsed.year === currentYear : false;
       })
       .reduce((s, d) => s + Number(d.value || 0), 0);
     return Math.min(100, Math.round((wonThisMonth / effectiveTarget) * 100));

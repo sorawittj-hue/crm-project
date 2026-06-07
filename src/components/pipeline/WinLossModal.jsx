@@ -16,7 +16,14 @@ import { cn } from '../../lib/utils';
  *   onConfirm   — (reason: string) => void
  */
 export default function WinLossModal({ open, targetStage, onClose, onConfirm }) {
+  const getTodayLocalDate = () => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 10);
+  };
+
   const [reason, setReason] = useState('');
+  const [closeDate, setCloseDate] = useState(getTodayLocalDate());
   const [touched, setTouched] = useState(false);
 
   const isWon = targetStage === 'won';
@@ -26,6 +33,7 @@ export default function WinLossModal({ open, targetStage, onClose, onConfirm }) 
     if (!val) {
       setReason('');
       setTouched(false);
+      setCloseDate(getTodayLocalDate());
       onClose?.();
     }
   };
@@ -33,9 +41,10 @@ export default function WinLossModal({ open, targetStage, onClose, onConfirm }) 
   const handleConfirm = () => {
     setTouched(true);
     if (tooShort) return;
-    onConfirm?.(reason.trim());
+    onConfirm?.(reason.trim(), closeDate);
     setReason('');
     setTouched(false);
+    setCloseDate(getTodayLocalDate());
   };
 
   return (
@@ -92,6 +101,21 @@ export default function WinLossModal({ open, targetStage, onClose, onConfirm }) 
               กรุณาระบุให้ชัดเจนขึ้น (อย่างน้อย 5 ตัวอักษร)
             </p>
           )}
+        </div>
+
+        {/* Close Date picker */}
+        <div className="space-y-2 mt-4">
+          <label className="text-xs font-semibold text-slate-600 ml-1">
+            วันที่ปิดดีล
+            <span className="text-rose-400 ml-1">*</span>
+          </label>
+          <input
+            type="date"
+            value={closeDate}
+            onChange={(e) => setCloseDate(e.target.value)}
+            className="w-full h-11 px-3 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:border-slate-400 outline-none"
+            required
+          />
         </div>
 
         <DialogFooter className="mt-6 flex gap-3">

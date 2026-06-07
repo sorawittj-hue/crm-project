@@ -7,7 +7,7 @@ import {
   Clock, GripVertical, ChevronRight,
   LayoutGrid, List, ThumbsUp, ThumbsDown
 } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn, parseYearMonth } from '../../lib/utils';
 import { formatFullCurrency as formatCurrency } from '../../lib/formatters';
 import { useHorizontalScroll, usePipelineKeyboard } from '../../hooks/useHorizontalScroll';
 import { calculateRiskScore } from '../../services/aiDeals';
@@ -121,26 +121,22 @@ export default function PipelineBoard({
       
       if (isClosed) {
         // Closed deals: show only if closed in the target month & year
-        const closeDateRaw = deal.actual_close_date || deal.updated_at || deal.created_at;
-        if (!closeDateRaw) return false;
-        const closeDate = new Date(closeDateRaw);
-        return closeDate.getMonth() === targetMonth && closeDate.getFullYear() === targetYear;
+        const parsedClose = parseYearMonth(deal.actual_close_date || deal.updated_at || deal.created_at);
+        if (!parsedClose) return false;
+        return parsedClose.month === targetMonth && parsedClose.year === targetYear;
       } else {
         // Active deals:
-        const expectedDateRaw = deal.expected_close_date || deal.created_at;
-        if (!expectedDateRaw) return true; // fallback
-        const expectedDate = new Date(expectedDateRaw);
-        const expMonth = expectedDate.getMonth();
-        const expYear = expectedDate.getFullYear();
+        const parsedExpected = parseYearMonth(deal.expected_close_date || deal.created_at);
+        if (!parsedExpected) return true; // fallback
 
         // 1. If it's expected to close in the target month & year, show it.
-        if (expMonth === targetMonth && expYear === targetYear) {
+        if (parsedExpected.month === targetMonth && parsedExpected.year === targetYear) {
           return true;
         }
 
         // 2. If it's expected to close in the past (overdue), and the target month is the CURRENT active month,
         // carry it over so it's visible on the current active board.
-        const expectedTime = new Date(expYear, expMonth, 1).getTime();
+        const expectedTime = new Date(parsedExpected.year, parsedExpected.month, 1).getTime();
         const targetTime = new Date(targetYear, targetMonth, 1).getTime();
         if (expectedTime < targetTime && isCurrentMonth) {
           return true;
@@ -199,19 +195,20 @@ export default function PipelineBoard({
     }
   };
 
-  const submitReason = (reason) => {
+  const submitReason = (reason, closeDate) => {
     const isWon = reasonModal.targetStage === 'won';
     const deal = deals.find(d => d.id === reasonModal.dealId);
+    const closeIsoString = closeDate ? new Date(closeDate + 'T12:00:00').toISOString() : new Date().toISOString();
     const updates = {
       stage: reasonModal.targetStage,
       last_activity: new Date().toISOString(),
-      actual_close_date: new Date().toISOString(),
+      actual_close_date: closeIsoString,
       lost_reason: isWon ? null : reason,
       metadata: {
         ...(deal?.metadata || {}),
         ...(isWon ? { win_reason: reason } : {}),
         close_reason: reason,
-        closed_at: new Date().toISOString(),
+        closed_at: closeIsoString,
       },
     };
     onUpdateDeal(reasonModal.dealId, updates);

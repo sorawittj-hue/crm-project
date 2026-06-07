@@ -5,6 +5,7 @@ import { useTeam } from '../../hooks/useTeam';
 import PipelineHeader from './PipelineHeader';
 import PipelineBoard from './PipelineBoard';
 import { useAppStore } from '../../store/useAppStore';
+import { parseYearMonth } from '../../lib/utils';
 
 export default function MonthlyPipeline({
   deals,
@@ -57,9 +58,8 @@ export default function MonthlyPipeline({
     const allDeals = deals || [];
 
     const isInMonth = (raw, m, y) => {
-      if (!raw) return false;
-      const dt = new Date(raw);
-      return dt.getMonth() === m && dt.getFullYear() === y;
+      const parsed = parseYearMonth(raw);
+      return parsed ? parsed.month === m && parsed.year === y : false;
     };
 
     const lm = selectedMonth === 0 ? 11 : selectedMonth - 1;
