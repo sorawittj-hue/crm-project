@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from "framer-motion"
  * - Escape key to close
  * - Portal rendered to document.body
  */
-const Dialog = ({ open, onOpenChange, children }) => {
+const Dialog = ({ open, onOpenChange, children, className }) => {
   // Scroll lock
   useEffect(() => {
     if (!open || typeof document === "undefined") return undefined
@@ -65,7 +65,7 @@ const Dialog = ({ open, onOpenChange, children }) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.93, y: 16 }}
             transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
-            className="relative z-[101] w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            className={cn("relative z-[101] w-full max-w-lg max-h-[90vh] overflow-y-auto", className)}
           >
             {children}
             <button

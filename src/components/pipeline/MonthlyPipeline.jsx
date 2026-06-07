@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import DealDetailSidebar from './DealDetailSidebar';
-import { Sheet } from '../ui/Sheet';
+import { Dialog } from '../ui/Dialog';
 import { useTeam } from '../../hooks/useTeam';
 import PipelineHeader from './PipelineHeader';
 import PipelineBoard from './PipelineBoard';
@@ -124,15 +124,15 @@ export default function MonthlyPipeline({
         />
       </div>
 
-      {/* DEAL DETAIL SIDEBAR */}
-      <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+      {/* DEAL DETAIL DIALOG */}
+      <Dialog open={isSidebarOpen} onOpenChange={setIsSidebarOpen} className="max-w-2xl">
         <DealDetailSidebar
           deal={visibleDeal}
           onUpdate={onUpdateDeal}
           onDelete={handleDelete}
           onClose={() => setIsSidebarOpen(false)}
         />
-      </Sheet>
+      </Dialog>
     </div>
   );
 }

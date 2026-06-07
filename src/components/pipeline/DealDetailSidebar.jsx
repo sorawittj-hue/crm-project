@@ -7,7 +7,7 @@ import {
   Sparkles, Activity, Target, ShieldCheck, Zap,
   Loader2, Send, CalendarClock, ListTodo, AlertTriangle
 } from 'lucide-react';
-import { SheetContent, SheetHeader, SheetTitle } from '../ui/Sheet';
+import { DialogContent, DialogHeader, DialogTitle } from '../ui/Dialog';
 import WinLossModal from './WinLossModal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -275,20 +275,20 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
 
   return (
     <>
-      <SheetContent className="bg-white border-l border-slate-200 w-full sm:max-w-xl p-0 overflow-y-auto custom-scrollbar">
-        <div className="p-8 space-y-8 pb-24">
-          <SheetHeader className="space-y-2">
+      <DialogContent className="p-0 border-0 bg-white">
+        <div className="p-8 space-y-8 pb-8">
+          <DialogHeader className="space-y-2">
             <div className="flex items-center gap-3">
               <div className="w-1.5 h-8 bg-primary rounded-full" />
-              <SheetTitle className="text-2xl font-black text-slate-900 tracking-tight">
+              <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
                 รายละเอียดดีล
-              </SheetTitle>
+              </DialogTitle>
             </div>
             <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               <ShieldCheck size={12} className="text-primary" />
               <span>ID: {deal.id.slice(0, 8)} • System Verified</span>
             </div>
-          </SheetHeader>
+          </DialogHeader>
 
           {/* Value / Confidence */}
           <div className="grid grid-cols-2 gap-4">
@@ -759,7 +759,7 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
             </CardContent>
           </Card>
         </div>
-      </SheetContent>
+      </DialogContent>
 
       {/* Confirm Delete */}
       <ConfirmDialog

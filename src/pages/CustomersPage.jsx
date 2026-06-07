@@ -17,7 +17,7 @@ import {
   Star, ChevronRight, Loader2,
   TrendingUp, DollarSign, BarChart3, Trash2, AlertTriangle, HeartPulse
 } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../components/ui/Sheet';
+
 
 const TIER_CONFIG = {
   Silver: { color: 'bg-slate-100 text-slate-700 border-slate-200', icon: '🥈' },
@@ -404,18 +404,18 @@ export default function CustomersPage() {
         )}
       </div>
 
-      {/* CUSTOMER DETAIL SIDEBAR */}
-      <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-        <SheetContent className="bg-white border-l border-slate-200 w-full sm:max-w-xl p-0 overflow-y-auto custom-scrollbar">
+      {/* CUSTOMER DETAIL DIALOG */}
+      <Dialog open={isSidebarOpen} onOpenChange={setIsSidebarOpen} className="max-w-2xl">
+        <DialogContent className="p-0 border-0 bg-white">
           {selectedCustomer && (
-            <div className="p-8 space-y-8 pb-24">
-              <SheetHeader className="space-y-4">
+            <div className="p-8 space-y-8 pb-8">
+              <DialogHeader className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-[2rem] bg-slate-900 flex items-center justify-center text-white text-2xl font-black shadow-xl">
                     {selectedCustomer.name?.charAt(0)}
                   </div>
                   <div>
-                    <SheetTitle className="text-2xl font-black text-slate-900 tracking-tight">{selectedCustomer.name}</SheetTitle>
+                    <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">{selectedCustomer.name}</DialogTitle>
                     {selectedCustomer.company && <p className="text-xs font-bold text-slate-400 flex items-center gap-1 mt-1"><Building2 size={12} /> {selectedCustomer.company}</p>}
                   </div>
                 </div>
@@ -441,7 +441,7 @@ export default function CustomersPage() {
                     <p className="text-slate-500 mt-0.5">{GRADE_CONFIG[selectedCustomer.grade]?.priority}</p>
                   </div>
                 )}
-              </SheetHeader>
+              </DialogHeader>
 
               {/* Contact Info */}
               <Card className="rounded-[2rem] bg-slate-50 border-none">
@@ -586,8 +586,8 @@ export default function CustomersPage() {
               </div>
             </div>
           )}
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
       {/* ADD CUSTOMER MODAL */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
