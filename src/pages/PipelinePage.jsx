@@ -5,7 +5,7 @@ import { useTeam } from '../hooks/useTeam';
 import { useAuth } from '../hooks/useAuth';
 import { useAppStore } from '../store/useAppStore';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
-import { Plus, Filter, Search, Loader2, Sliders, ScanLine, Download, User, Zap, X } from 'lucide-react';
+import { Plus, Sliders, ScanLine, Download, User, Zap, Loader2, ChevronDown, Search } from 'lucide-react';
 
 // Lazy-load PDFImporter to avoid bundling pdfjs-dist (~5MB) in initial load
 const PDFImporter = lazy(() => import('../components/pipeline/PDFImporter'));
@@ -15,7 +15,6 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
-import { Card } from '../components/ui/Card';
 
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../components/ui/Dialog';
 
@@ -30,20 +29,15 @@ export default function PipelinePage() {
   const { pendingOpenDeal, clearPendingOpenDeal } = useAppStore();
   const { user } = useAuth();
 
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [myDealsOnly, setMyDealsOnly] = useState(false);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [quickDeal, setQuickDeal] = useState({ company: '', title: '', value: '', expected_close_date: '' });
   const [quickError, setQuickError] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [stageFilter, setStageFilter] = useState([]);
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [valueMin, setValueMin] = useState('');
-  const [valueMax, setValueMax] = useState('');
-  const [probMin, setProbMin] = useState('');
 
   const [newDeal, setNewDeal] = useState({
     title: '', company: '', value: '', stage: 'lead', customer_id: '',
@@ -78,25 +72,9 @@ export default function PipelinePage() {
         d.contact?.toLowerCase().includes(s)
       );
     }
-    if (stageFilter.length > 0) result = result.filter(d => stageFilter.includes(d.stage));
-    if (valueMin !== '') result = result.filter(d => Number(d.value) >= Number(valueMin));
-    if (valueMax !== '') result = result.filter(d => Number(d.value) <= Number(valueMax));
-    if (probMin !== '') result = result.filter(d => Number(d.probability) >= Number(probMin));
     if (myDealsOnly && user?.id) result = result.filter(d => d.assigned_to === user.id);
-
-    result = [...result].sort((a, b) => {
-      if (sortBy === 'createdAt') return new Date(b.created_at || 0) - new Date(a.created_at || 0);
-      if (sortBy === 'value') return Number(b.value) - Number(a.value);
-      if (sortBy === 'probability') return Number(b.probability) - Number(a.probability);
-      if (sortBy === 'stale') {
-        const aDay = a.last_activity || a.created_at || 0;
-        const bDay = b.last_activity || b.created_at || 0;
-        return new Date(aDay) - new Date(bDay);
-      }
-      return 0;
-    });
     return result;
-  }, [deals, searchTerm, stageFilter, sortBy, valueMin, valueMax, probMin, myDealsOnly, user?.id]);
+  }, [deals, searchTerm, myDealsOnly, user?.id]);
 
   const [formError, setFormError] = useState(null);
 
@@ -154,8 +132,6 @@ export default function PipelinePage() {
     </div>
   );
 
-  const activeFilterCount = stageFilter.length + (searchTerm ? 1 : 0) + (valueMin ? 1 : 0) + (valueMax ? 1 : 0) + (probMin ? 1 : 0) + (myDealsOnly ? 1 : 0);
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -164,293 +140,166 @@ export default function PipelinePage() {
     >
       {/* HEADER */}
       <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">ดีลทั้งหมด</h1>
-          <p className="text-sm text-slate-500 mt-1">จัดการและติดตามดีลในทุกขั้นตอน</p>
+        <div className="flex flex-col md:flex-row md:items-center gap-4 w-full md:w-auto">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">ดีลทั้งหมด</h1>
+            <p className="text-sm text-slate-500 mt-1">จัดการและติดตามดีลในทุกขั้นตอน</p>
+          </div>
+          {/* Search bar */}
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+            <Input
+              placeholder="ค้นหาดีล บริษัท หรือผู้ติดต่อ..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 h-10 w-full rounded-xl border-slate-200 bg-white shadow-sm text-sm"
+            />
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
+          {/* Ghost actions */}
           <button
             onClick={() => setMyDealsOnly(v => !v)}
             className={cn(
-              'h-10 px-4 rounded-xl text-sm font-semibold border transition-all flex items-center gap-2',
+              'h-9 px-3 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5',
               myDealsOnly
                 ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
             )}
           >
-            <User size={14} /> ดีลของฉัน
+            <User size={13} /> ดีลของฉัน
           </button>
           <button
             onClick={exportToCSV}
-            className="h-10 px-4 rounded-xl text-sm font-semibold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2"
+            className="h-9 px-3 rounded-xl text-xs font-semibold border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all flex items-center gap-1.5"
           >
-            <Download size={14} /> Export CSV
+            <Download size={13} /> CSV
           </button>
-          <Button
-            variant="ghost"
-            onClick={() => setIsScanOpen(true)}
-            className="h-10 px-4 rounded-xl text-sm border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-          >
-            <Sliders size={14} className="mr-2" /> สแกน PDF
-          </Button>
-          <Button
-            onClick={() => { setIsQuickAddOpen(v => !v); setQuickError(null); }}
-            className={cn(
-              'h-10 px-4 rounded-xl text-sm border-0 shadow-md flex items-center gap-2 transition-all',
-              isQuickAddOpen
-                ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-400/20'
-                : 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-400/20'
-            )}
-          >
-            <Zap size={14} /> Quick Add
-          </Button>
+
+          {/* Divider */}
+          <div className="w-px h-6 bg-slate-200 hidden md:block" />
+
+          {/* Dropdown Menu for secondary tools (Quick Add & Scan PDF) */}
+          <div className="relative">
+            <button
+              onClick={() => setIsToolsOpen(!isToolsOpen)}
+              className={cn(
+                'h-9 px-3 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 bg-white text-slate-600 border-slate-200 hover:bg-slate-50',
+                isToolsOpen && 'border-slate-350 bg-slate-50 text-slate-900 shadow-sm'
+              )}
+            >
+              <Zap size={13} className="text-amber-500 fill-amber-500 animate-pulse" />
+              <span>เครื่องมือ AI</span>
+              <ChevronDown size={12} className={cn('transition-transform', isToolsOpen && 'rotate-180')} />
+            </button>
+
+            <AnimatePresence>
+              {isToolsOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsToolsOpen(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-1.5 w-56 bg-white border border-slate-150 rounded-xl shadow-lg py-1.5 z-50 origin-top-right"
+                  >
+                    <button
+                      onClick={() => {
+                        setIsToolsOpen(false);
+                        setIsQuickAddOpen(true);
+                        setQuickError(null);
+                      }}
+                      className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-2"
+                    >
+                      <Zap size={12} className="text-amber-500 fill-amber-500" />
+                      <span>Quick Add (บันทึกด่วน)</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsToolsOpen(false);
+                        setIsScanOpen(true);
+                      }}
+                      className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-2"
+                    >
+                      <Sliders size={12} className="text-violet-500" />
+                      <span>สแกนใบเสนอราคา (PDF)</span>
+                    </button>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+
           <Button
             onClick={() => setIsAddModalOpen(true)}
-            className="h-10 px-4 rounded-xl text-sm bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20"
+            className="h-9 px-4 rounded-xl text-xs bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20 flex items-center gap-1.5 font-bold"
           >
-            <Plus size={14} className="mr-2" /> เพิ่มดีลใหม่
+            <Plus size={13} /> เพิ่มดีลใหม่
           </Button>
         </div>
       </header>
 
-      {/* QUICK ADD PANEL */}
-      <AnimatePresence>
-        {isQuickAddOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -8, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: 'auto' }}
-            exit={{ opacity: 0, y: -8, height: 0 }}
-            transition={{ duration: 0.2, ease: [0.19, 1, 0.22, 1] }}
-            className="overflow-hidden"
-          >
-            <form
-              onSubmit={handleQuickAdd}
-              className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 flex flex-col md:flex-row items-start md:items-end gap-3"
-            >
-              <div className="flex items-center gap-2 shrink-0 self-start md:self-auto md:pb-0.5">
-                <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center">
-                  <Zap size={13} className="text-white" />
-                </div>
-                <span className="text-sm font-bold text-amber-700">Quick Add</span>
+      {/* QUICK ADD DIALOG */}
+      <Dialog open={isQuickAddOpen} onOpenChange={(v) => { setIsQuickAddOpen(v); if (!v) { setQuickDeal({ company: '', title: '', value: '', expected_close_date: '' }); setQuickError(null); } }}>
+        <DialogContent className="max-w-sm rounded-2xl p-6">
+          <DialogHeader>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-8 h-8 rounded-xl bg-amber-500 flex items-center justify-center">
+                <Zap size={15} className="text-white" />
               </div>
+              <DialogTitle className="text-lg font-bold text-slate-900">Quick Add Deal</DialogTitle>
+            </div>
+            <p className="text-xs text-slate-400">เพิ่มดีลด่วน — กรอกแค่สิ่งสำคัญ</p>
+          </DialogHeader>
 
-              <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-3 w-full">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">ชื่อบริษัท</label>
-                  <Input
-                    placeholder="เช่น บริษัท ABC"
-                    value={quickDeal.company}
-                    onChange={e => setQuickDeal(q => ({ ...q, company: e.target.value }))}
-                    className="h-9 rounded-xl text-sm border-amber-200 bg-white focus:ring-amber-400/30"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">ชื่อดีล</label>
-                  <Input
-                    placeholder="เช่น Server 2026"
-                    value={quickDeal.title}
-                    onChange={e => setQuickDeal(q => ({ ...q, title: e.target.value }))}
-                    className="h-9 rounded-xl text-sm border-amber-200 bg-white focus:ring-amber-400/30"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">ราคา (บาท)</label>
-                  <Input
-                    type="number"
-                    placeholder="500,000"
-                    value={quickDeal.value}
-                    onChange={e => setQuickDeal(q => ({ ...q, value: e.target.value }))}
-                    className="h-9 rounded-xl text-sm border-amber-200 bg-white focus:ring-amber-400/30"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">วันที่คาดปิด</label>
-                  <Input
-                    type="date"
-                    value={quickDeal.expected_close_date}
-                    onChange={e => setQuickDeal(q => ({ ...q, expected_close_date: e.target.value }))}
-                    className="h-9 rounded-xl text-sm border-amber-200 bg-white focus:ring-amber-400/30"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                {quickError && <span className="text-xs text-rose-600 font-medium">{quickError}</span>}
-                <Button
-                  type="submit"
-                  disabled={addDealMutation.isPending}
-                  className="h-9 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold border-0 shadow-sm"
-                >
-                  {addDealMutation.isPending ? <Loader2 size={13} className="animate-spin" /> : 'บันทึก'}
-                </Button>
-                <button
-                  type="button"
-                  onClick={() => setIsQuickAddOpen(false)}
-                  className="p-2 rounded-xl text-amber-500 hover:bg-amber-100 transition-colors"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* TOOLBAR: search + filter toggle + sort */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-          <Input
-            placeholder="ค้นหาดีล, บริษัท, ผู้ติดต่อ..."
-            className="h-10 pl-11 bg-white border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-violet-500/20 placeholder:text-slate-400"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="h-10 px-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 font-medium outline-none cursor-pointer hover:border-slate-300"
-          >
-            <option value="createdAt">เรียง: วันที่สร้าง</option>
-            <option value="value">เรียง: มูลค่า</option>
-            <option value="probability">เรียง: โอกาสสูงสุด</option>
-            <option value="stale">เรียง: นิ่งนานที่สุด</option>
-          </select>
-
-          <Button
-            variant="ghost"
-            onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-            className={cn(
-              'h-10 px-4 rounded-xl text-sm border relative',
-              isFiltersOpen || activeFilterCount > 0
-                ? 'border-violet-300 text-violet-700 bg-violet-50'
-                : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50'
+          <form onSubmit={handleQuickAdd} className="space-y-3 mt-2">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-500">ชื่อบริษัท</label>
+              <Input
+                placeholder="เช่น บริษัท ABC จำกัด"
+                value={quickDeal.company}
+                onChange={e => setQuickDeal(q => ({ ...q, company: e.target.value }))}
+                className="h-10 rounded-xl text-sm"
+                autoFocus
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-500">มูลค่า (บาท)</label>
+              <Input
+                type="number"
+                placeholder="500000"
+                value={quickDeal.value}
+                onChange={e => setQuickDeal(q => ({ ...q, value: e.target.value }))}
+                className="h-10 rounded-xl text-sm"
+              />
+            </div>
+            {quickError && (
+              <p className="text-xs text-rose-500 font-medium">{quickError}</p>
             )}
-          >
-            <Filter size={14} className="mr-2" /> กรอง
-            {activeFilterCount > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-violet-600 text-white text-[10px] font-bold">
-                {activeFilterCount}
-              </span>
-            )}
-          </Button>
-        </div>
-      </div>
+            <div className="flex gap-2 pt-1">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsQuickAddOpen(false)}
+                className="flex-1 h-10 rounded-xl text-sm text-slate-500"
+              >
+                ยกเลิก
+              </Button>
+              <Button
+                type="submit"
+                disabled={addDealMutation.isPending}
+                className="flex-[2] h-10 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold border-0 shadow-sm disabled:opacity-60"
+              >
+                {addDealMutation.isPending ? <Loader2 size={13} className="animate-spin" /> : 'บันทึกด่วน ⚡'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-      {/* COLLAPSIBLE FILTER PANEL */}
-      <AnimatePresence>
-        {isFiltersOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-5">
-              <div className="flex flex-wrap gap-5 items-start">
-                {/* Stage filter */}
-                <div className="flex-1 min-w-[240px]">
-                  <p className="text-xs font-semibold text-slate-500 mb-3">ขั้นตอน</p>
-                  <div className="flex flex-wrap gap-2">
-                    {STAGES.map((s) => {
-                      const active = stageFilter.includes(s.id);
-                      return (
-                        <button
-                          key={s.id}
-                          onClick={() =>
-                            setStageFilter((prev) =>
-                              prev.includes(s.id)
-                                ? prev.filter((x) => x !== s.id)
-                                : [...prev, s.id]
-                            )
-                          }
-                          className={cn(
-                            'px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all',
-                            active
-                              ? 'bg-slate-900 text-white border-slate-900'
-                              : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
-                          )}
-                        >
-                          {s.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
 
-                {/* Probability filter */}
-                <div className="min-w-[180px]">
-                  <p className="text-xs font-semibold text-slate-500 mb-3">โอกาสปิดขั้นต่ำ</p>
-                  <div className="flex flex-wrap gap-2">
-                    {[['', 'ทั้งหมด'], ['50', '≥ 50%'], ['70', '≥ 70%'], ['90', '≥ 90%']].map(([val, label]) => (
-                      <button
-                        key={val}
-                        onClick={() => setProbMin(val)}
-                        className={cn(
-                          'px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all',
-                          probMin === val
-                            ? 'bg-violet-600 text-white border-violet-600'
-                            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
-                        )}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Value range */}
-              <div className="flex flex-wrap items-end gap-3">
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold text-slate-500">มูลค่าขั้นต่ำ (บาท)</p>
-                  <Input
-                    type="number"
-                    placeholder="เช่น 100000"
-                    value={valueMin}
-                    onChange={(e) => setValueMin(e.target.value)}
-                    className="h-9 w-40 rounded-xl border-slate-200 bg-slate-50 text-sm"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold text-slate-500">มูลค่าสูงสุด (บาท)</p>
-                  <Input
-                    type="number"
-                    placeholder="เช่น 1000000"
-                    value={valueMax}
-                    onChange={(e) => setValueMax(e.target.value)}
-                    className="h-9 w-40 rounded-xl border-slate-200 bg-slate-50 text-sm"
-                  />
-                </div>
-                <div className="flex items-center gap-3 ml-auto">
-                  <span className="text-xs text-slate-400 font-medium">
-                    พบ <span className="text-slate-700 font-bold">{filteredDeals.length}</span> ดีล
-                  </span>
-                  {activeFilterCount > 0 && (
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        setStageFilter([]);
-                        setSearchTerm('');
-                        setValueMin('');
-                        setValueMax('');
-                        setProbMin('');
-                      }}
-                      className="h-9 px-4 text-sm text-rose-500 hover:bg-rose-50 rounded-xl"
-                    >
-                      ล้างตัวกรอง
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <MonthlyPipeline
         deals={filteredDeals}

@@ -1,62 +1,112 @@
 
+import { useEffect, useCallback } from "react"
 import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 import { cn } from "../../lib/utils"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 
+/**
+ * Dialog — fully-animated modal with:
+ * - AnimatePresence for smooth open/close transitions
+ * - Scroll lock on body when open
+ * - Escape key to close
+ * - Portal rendered to document.body
+ */
 const Dialog = ({ open, onOpenChange, children }) => {
-  if (!open) return null
+  // Scroll lock
+  useEffect(() => {
+    if (!open || typeof document === "undefined") return undefined
+    const { body, documentElement } = document
+    const prev = body.style.overflow
+    const prevPad = body.style.paddingRight
+    const scrollbarWidth = window.innerWidth - documentElement.clientWidth
+    body.style.overflow = "hidden"
+    if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`
+    return () => {
+      body.style.overflow = prev
+      body.style.paddingRight = prevPad
+    }
+  }, [open])
 
-  const content = (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="fixed inset-0 bg-background/60 backdrop-blur-md"
-        onClick={() => onOpenChange(false)}
-      />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-        className="relative z-[100] w-full max-w-lg border border-border bg-background p-6 shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto"
-      >
-        {children}
-        <button
-          onClick={() => onOpenChange(false)}
-          className="absolute right-4 top-4 rounded-full p-2 opacity-60 ring-offset-background transition-all duration-200 hover:opacity-100 hover:bg-pink-50 hover:text-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2"
+  // Escape key
+  const handleKeyDown = useCallback(
+    (e) => { if (e.key === "Escape") onOpenChange?.(false) },
+    [onOpenChange]
+  )
+  useEffect(() => {
+    if (!open) return undefined
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [open, handleKeyDown])
+
+  if (typeof document === "undefined") return null
+
+  return createPortal(
+    <AnimatePresence>
+        {open && (
+        <motion.div
+          key="dialog-wrapper"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
         >
-          <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
-        </button>
-      </motion.div>
-    </div>
-  );
-
-  return typeof document !== "undefined" ? createPortal(content, document.body) : null;
+          {/* Backdrop */}
+          <motion.div
+            key="dialog-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => onOpenChange?.(false)}
+          />
+          {/* Panel */}
+          <motion.div
+            key="dialog-panel"
+            initial={{ opacity: 0, scale: 0.93, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.93, y: 16 }}
+            transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
+            className="relative z-[101] w-full max-w-lg max-h-[90vh] overflow-y-auto"
+          >
+            {children}
+            <button
+              onClick={() => onOpenChange?.(false)}
+              className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all focus:outline-none focus:ring-2 focus:ring-slate-300"
+              aria-label="ปิด"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body
+  )
 }
 
 const DialogHeader = ({ className, ...props }) => (
-  <div className={cn("flex flex-col space-y-3 text-center sm:text-left mb-4", className)} {...props} />
+  <div className={cn("flex flex-col space-y-2 mb-5", className)} {...props} />
 )
 
 const DialogTitle = ({ className, ...props }) => (
-  <h2 className={cn("text-xl font-bold tracking-tight bg-gradient-to-r from-pink-500 to-pink-600 bg-clip-text text-transparent", className)} {...props} />
+  <h2 className={cn("text-xl font-bold tracking-tight text-slate-900", className)} {...props} />
 )
 
 const DialogDescription = ({ className, ...props }) => (
-  <p className={cn("text-sm text-muted-foreground", className)} {...props} />
+  <p className={cn("text-sm text-slate-500", className)} {...props} />
 )
 
 const DialogFooter = ({ className, ...props }) => (
-  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-6", className)} {...props} />
+  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6", className)} {...props} />
 )
 
 const DialogContent = ({ className, children, ...props }) => (
-  <div className={cn("relative w-full max-w-lg", className)} {...props}>
+  <div
+    className={cn(
+      "relative w-full bg-white rounded-2xl border border-slate-100 shadow-2xl p-6",
+      className
+    )}
+    {...props}
+  >
     {children}
   </div>
 )

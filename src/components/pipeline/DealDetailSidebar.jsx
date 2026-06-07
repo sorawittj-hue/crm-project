@@ -7,8 +7,8 @@ import {
   Sparkles, Activity, Target, ShieldCheck, Zap,
   Loader2, Send, CalendarClock, ListTodo, AlertTriangle
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/Dialog';
 import { SheetContent, SheetHeader, SheetTitle } from '../ui/Sheet';
+import WinLossModal from './WinLossModal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
@@ -133,7 +133,6 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
 
   // Win / Loss reason modal
   const [closeModal, setCloseModal] = useState({ open: false, targetStage: null });
-  const [reasonText, setReasonText] = useState('');
 
   // Local controlled state for deal edit fields — syncs on deal.id change
   const [localEdit, setLocalEdit] = useState({
@@ -197,7 +196,6 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
     setFollowUpNote('');
     setAiAnalysis(null);
     setCloseModal({ open: false, targetStage: null });
-    setReasonText('');
     if (deal) {
       setLocalEdit({
         title: deal.title || '',
@@ -215,16 +213,10 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
   }, [deal?.id]); // intentionally only on id change to avoid resetting mid-edit
 
   const openCloseModal = (targetStage) => {
-    setReasonText('');
     setCloseModal({ open: true, targetStage });
   };
 
-  const submitClose = () => {
-    const reason = reasonText.trim();
-    if (reason.length < 5) {
-      // inline validation — just shake/warn without toast dependency issue
-      return;
-    }
+  const submitClose = (reason) => {
     const isWon = closeModal.targetStage === 'won';
     onUpdate(deal.id, {
       stage: closeModal.targetStage,
@@ -762,67 +754,13 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
         onConfirm={() => { onDelete(deal.id); setConfirmDeleteOpen(false); }}
       />
 
-      {/* Win / Loss Reason Modal */}
-      <Dialog
+      {/* Win / Loss Reason Modal — shared component */}
+      <WinLossModal
         open={closeModal.open}
-        onOpenChange={(v) => !v && setCloseModal({ open: false, targetStage: null })}
-      >
-        <DialogContent className="max-w-md rounded-3xl p-8">
-          <DialogHeader className="mb-6">
-            <div className={cn(
-              'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 mx-auto',
-              closeModal.targetStage === 'won' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
-            )}>
-              {closeModal.targetStage === 'won' ? <CheckCircle2 size={30} /> : <XCircle size={30} />}
-            </div>
-            <DialogTitle className="text-xl font-bold text-center text-slate-900">
-              {closeModal.targetStage === 'won' ? '🎉 ยินดีด้วย! ปิดดีลสำเร็จ' : 'ดีลไม่สำเร็จ'}
-            </DialogTitle>
-            <p className="text-xs text-center text-slate-500 mt-2">
-              ระบุเหตุผลสั้นๆ เพื่อปรับปรุงกลยุทธ์การขาย (อย่างน้อย 5 ตัวอักษร)
-            </p>
-          </DialogHeader>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-600 ml-1">เหตุผล</label>
-            <Textarea
-              placeholder={
-                closeModal.targetStage === 'won'
-                  ? 'เช่น ราคาดี, ความสัมพันธ์ที่ดี, ตอบสนองได้เร็ว...'
-                  : 'เช่น งบประมาณไม่พอ, เลือกเจ้าอื่น, ยกเลิกโปรเจกต์...'
-              }
-              value={reasonText}
-              onChange={(e) => setReasonText(e.target.value)}
-              className="min-h-[100px] rounded-2xl bg-slate-50 border-slate-200 resize-none p-4 font-medium"
-            />
-            {reasonText.trim().length > 0 && reasonText.trim().length < 5 && (
-              <p className="text-xs text-rose-500 ml-1">กรุณาระบุให้ชัดเจนขึ้น (อย่างน้อย 5 ตัวอักษร)</p>
-            )}
-          </div>
-
-          <DialogFooter className="mt-6 flex gap-3">
-            <Button
-              variant="ghost"
-              className="flex-1 rounded-xl"
-              onClick={() => setCloseModal({ open: false, targetStage: null })}
-            >
-              ยกเลิก
-            </Button>
-            <Button
-              disabled={reasonText.trim().length < 5}
-              className={cn(
-                'flex-1 rounded-xl disabled:opacity-50',
-                closeModal.targetStage === 'won'
-                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-0'
-                  : 'bg-rose-600 hover:bg-rose-700 text-white border-0'
-              )}
-              onClick={submitClose}
-            >
-              ยืนยัน
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        targetStage={closeModal.targetStage}
+        onClose={() => setCloseModal({ open: false, targetStage: null })}
+        onConfirm={submitClose}
+      />
     </>
   );
 }

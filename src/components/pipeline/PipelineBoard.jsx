@@ -3,19 +3,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Filter, Star, TrendingUp, AlertTriangle,
   Zap, Users,
-  ArrowLeft, ThumbsUp, ThumbsDown,
+  ArrowLeft,
   Clock, GripVertical, ChevronRight,
-  LayoutGrid, List
+  LayoutGrid, List, ThumbsUp, ThumbsDown
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { formatFullCurrency as formatCurrency } from '../../lib/formatters';
 import { useHorizontalScroll, usePipelineKeyboard } from '../../hooks/useHorizontalScroll';
 import { calculateRiskScore } from '../../services/aiDeals';
 import { STAGE_IDS } from '../../lib/constants';
-import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter } from '../ui/Dialog';
-import { Button } from '../ui/Button';
-import { Textarea } from '../ui/Textarea';
-import { useToast } from '../ui/Toast';
+import WinLossModal from './WinLossModal';
 
 const STAGE_CONFIG = {
   lead: {
@@ -77,8 +74,9 @@ export default function PipelineBoard({
   deals = [],
   onDealClick,
   onUpdateDeal,
+  selectedMonth,
+  selectedYear,
 }) {
-  const toast = useToast();
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedDealId, setSelectedDealId] = useState(null);
   const [pinnedDealIds, setPinnedDealIds] = useState([]);
@@ -86,7 +84,6 @@ export default function PipelineBoard({
 
   // Win/Loss Reason State
   const [reasonModal, setReasonModal] = useState({ open: false, dealId: null, targetStage: null });
-  const [reasonText, setReasonText] = useState('');
 
   const scrollRef = useHorizontalScroll();
   const [viewMode, setViewMode] = useState('kanban');
@@ -99,6 +96,14 @@ export default function PipelineBoard({
     // eslint-disable-next-line react-hooks/purity
     nowMsRef.current = Date.now();
     const nowMs = nowMsRef.current;
+
+    const targetMonth = selectedMonth !== undefined ? selectedMonth : new Date().getMonth();
+    const targetYear = selectedYear !== undefined ? selectedYear : new Date().getFullYear();
+    const today = new Date(nowMs);
+    const curMonth = today.getMonth();
+    const curYear = today.getFullYear();
+    const isCurrentMonth = targetMonth === curMonth && targetYear === curYear;
+
     let result = deals.map((deal) => {
       const createdRaw = deal.createdAt || deal.created_at;
       const createdMs = createdRaw ? new Date(createdRaw).getTime() : nowMs;
@@ -108,6 +113,41 @@ export default function PipelineBoard({
         risk: calculateRiskScore(deal, [], nowMs),
         agingDays,
       };
+    });
+
+    // Apply monthly filtering and carry-over logic
+    result = result.filter((deal) => {
+      const isClosed = ['won', 'lost'].includes(deal.stage);
+      
+      if (isClosed) {
+        // Closed deals: show only if closed in the target month & year
+        const closeDateRaw = deal.actual_close_date || deal.updated_at || deal.created_at;
+        if (!closeDateRaw) return false;
+        const closeDate = new Date(closeDateRaw);
+        return closeDate.getMonth() === targetMonth && closeDate.getFullYear() === targetYear;
+      } else {
+        // Active deals:
+        const expectedDateRaw = deal.expected_close_date || deal.created_at;
+        if (!expectedDateRaw) return true; // fallback
+        const expectedDate = new Date(expectedDateRaw);
+        const expMonth = expectedDate.getMonth();
+        const expYear = expectedDate.getFullYear();
+
+        // 1. If it's expected to close in the target month & year, show it.
+        if (expMonth === targetMonth && expYear === targetYear) {
+          return true;
+        }
+
+        // 2. If it's expected to close in the past (overdue), and the target month is the CURRENT active month,
+        // carry it over so it's visible on the current active board.
+        const expectedTime = new Date(expYear, expMonth, 1).getTime();
+        const targetTime = new Date(targetYear, targetMonth, 1).getTime();
+        if (expectedTime < targetTime && isCurrentMonth) {
+          return true;
+        }
+
+        return false;
+      }
     });
 
     switch (activeFilter) {
@@ -126,7 +166,7 @@ export default function PipelineBoard({
         break;
     }
     return result;
-  }, [deals, activeFilter]);
+  }, [deals, activeFilter, selectedMonth, selectedYear]);
 
   const dealsByStage = useMemo(() => {
     return STAGES.reduce((acc, stageId) => {
@@ -151,7 +191,6 @@ export default function PipelineBoard({
   const initiateMove = (dealId, targetStage) => {
     if (targetStage === 'won' || targetStage === 'lost') {
       setReasonModal({ open: true, dealId, targetStage });
-      setReasonText('');
     } else {
       onUpdateDeal(dealId, {
         stage: targetStage,
@@ -160,19 +199,13 @@ export default function PipelineBoard({
     }
   };
 
-  const submitReason = () => {
-    const reason = reasonText.trim();
-    if (reason.length < 5) {
-      toast.warning('กรุณาระบุเหตุผลให้ชัดเจนขึ้น (อย่างน้อย 5 ตัวอักษร)');
-      return;
-    }
+  const submitReason = (reason) => {
     const isWon = reasonModal.targetStage === 'won';
     const deal = deals.find(d => d.id === reasonModal.dealId);
     const updates = {
       stage: reasonModal.targetStage,
       last_activity: new Date().toISOString(),
       actual_close_date: new Date().toISOString(),
-      // Save lost_reason for losses; for wins, store in metadata.win_reason
       lost_reason: isWon ? null : reason,
       metadata: {
         ...(deal?.metadata || {}),
@@ -343,7 +376,7 @@ export default function PipelineBoard({
               <div
                 key={stageId}
                 className={cn(
-                  'flex-shrink-0 flex flex-col w-[300px] h-full rounded-2xl transition-all duration-200 border',
+                  'flex-shrink-0 flex flex-col w-[260px] h-full rounded-2xl transition-all duration-200 border',
                   isDropTarget
                     ? 'bg-violet-50/60 border-violet-300 ring-4 ring-violet-500/10'
                     : 'bg-slate-50 border-slate-200/70'
@@ -408,73 +441,13 @@ export default function PipelineBoard({
         </div>
       </div>}
 
-      {/* WIN/LOSS REASON MODAL */}
-      <Dialog
+      {/* WIN/LOSS REASON MODAL — shared component */}
+      <WinLossModal
         open={reasonModal.open}
-        onOpenChange={(val) => !val && setReasonModal({ ...reasonModal, open: false })}
-      >
-        <DialogContent className="max-w-md rounded-3xl p-8">
-          <DialogHeader className="mb-6">
-            <div
-              className={cn(
-                'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 mx-auto',
-                reasonModal.targetStage === 'won'
-                  ? 'bg-emerald-50 text-emerald-600'
-                  : 'bg-rose-50 text-rose-500'
-              )}
-            >
-              {reasonModal.targetStage === 'won' ? (
-                <ThumbsUp size={30} />
-              ) : (
-                <ThumbsDown size={30} />
-              )}
-            </div>
-            <DialogTitle className="text-xl font-bold text-center text-slate-900">
-              {reasonModal.targetStage === 'won' ? 'ยินดีด้วย! ปิดดีลสำเร็จ' : 'ดีลไม่สำเร็จ'}
-            </DialogTitle>
-            <p className="text-xs text-center text-slate-500 mt-2">
-              กรุณาระบุเหตุผลสั้น ๆ สำหรับการปิดดีลครั้งนี้ เพื่อใช้ปรับปรุงกลยุทธ์การขาย
-            </p>
-          </DialogHeader>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-600 ml-1">
-              เหตุผลการปิดดีล
-            </label>
-            <Textarea
-              placeholder={
-                reasonModal.targetStage === 'won'
-                  ? 'เช่น ราคาดีกว่าคู่แข่ง, ความสัมพันธ์ที่แข็งแกร่ง...'
-                  : 'เช่น งบประมาณไม่พอ, เลือกเจ้าอื่น...'
-              }
-              value={reasonText}
-              onChange={(e) => setReasonText(e.target.value)}
-              className="min-h-[120px] rounded-2xl bg-slate-50 border-slate-200 resize-none p-4 font-medium"
-            />
-          </div>
-
-          <DialogFooter className="mt-6 flex gap-3">
-            <Button
-              variant="ghost"
-              className="flex-1 rounded-xl"
-              onClick={() => setReasonModal({ open: false, dealId: null, targetStage: null })}
-            >
-              ยกเลิก
-            </Button>
-            <Button
-              className={cn(
-                'flex-1 rounded-xl',
-                reasonModal.targetStage === 'won'
-                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                  : 'bg-rose-600 hover:bg-rose-700 text-white'
-              )}
-              onClick={submitReason}
-            >
-              ยืนยัน
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        targetStage={reasonModal.targetStage}
+        onClose={() => setReasonModal({ open: false, dealId: null, targetStage: null })}
+        onConfirm={submitReason}
+      />
     </div>
   );
 }
@@ -596,8 +569,8 @@ const DealCard = forwardRef(
           </div>
         </div>
 
-        {/* Action row (always visible, subtle) */}
-        <div className="flex items-center border-t border-slate-100">
+        {/* Action row — visible on hover only to keep cards compact */}
+        <div className="flex items-center border-t border-slate-100 overflow-hidden max-h-0 group-hover:max-h-10 transition-all duration-200">
           <button
             onClick={(e) => {
               e.stopPropagation();

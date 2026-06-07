@@ -111,7 +111,7 @@ export default function MonthlyPipeline({
         onAddDeal={onAddDeal}
       />
 
-      {/* PIPELINE BOARD — shows ALL deals regardless of creation month */}
+      {/* PIPELINE BOARD — shows filtered deals with carry-over logic */}
       <div className="min-h-[560px]">
         <PipelineBoard
           deals={deals || []}
@@ -119,6 +119,8 @@ export default function MonthlyPipeline({
           onUpdateDeal={onUpdateDeal}
           onAddDeal={onAddDeal}
           teamMembers={teamMembers}
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
         />
       </div>
 
