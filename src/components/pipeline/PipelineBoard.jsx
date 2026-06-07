@@ -129,20 +129,8 @@ export default function PipelineBoard({
         const parsedExpected = parseYearMonth(deal.expected_close_date || deal.created_at);
         if (!parsedExpected) return true; // fallback
 
-        // 1. If it's expected to close in the target month & year, show it.
-        if (parsedExpected.month === targetMonth && parsedExpected.year === targetYear) {
-          return true;
-        }
-
-        // 2. If it's expected to close in the past (overdue), and the target month is the CURRENT active month,
-        // carry it over so it's visible on the current active board.
-        const expectedTime = new Date(parsedExpected.year, parsedExpected.month, 1).getTime();
-        const targetTime = new Date(targetYear, targetMonth, 1).getTime();
-        if (expectedTime < targetTime && isCurrentMonth) {
-          return true;
-        }
-
-        return false;
+        // Show strictly if it matches the target month & year
+        return parsedExpected.month === targetMonth && parsedExpected.year === targetYear;
       }
     });
 
