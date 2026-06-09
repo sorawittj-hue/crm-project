@@ -6,6 +6,8 @@ import PipelineHeader from './PipelineHeader';
 import PipelineBoard from './PipelineBoard';
 import { useAppStore } from '../../store/useAppStore';
 import { parseYearMonth } from '../../lib/utils';
+import ConfirmDialog from '../ui/ConfirmDialog';
+import WinLossModal from './WinLossModal';
 
 export default function MonthlyPipeline({
   deals,
@@ -23,6 +25,10 @@ export default function MonthlyPipeline({
   const { data: teamMembers } = useTeam();
   const { monthlyTarget } = useAppStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // States for sub-dialogs lifted from DealDetailSidebar
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [winLossState, setWinLossState] = useState({ open: false, targetStage: null, deal: null });
 
   const peekRef = useRef(null);
   const [peekDeal, setPeekDealState] = useState(null);
@@ -95,6 +101,35 @@ export default function MonthlyPipeline({
     setIsSidebarOpen(false);
   }, [onDeleteDeal]);
 
+  const handleConfirmDelete = useCallback(() => {
+    if (confirmDeleteId) {
+      onDeleteDeal(confirmDeleteId);
+      setConfirmDeleteId(null);
+      setIsSidebarOpen(false);
+    }
+  }, [confirmDeleteId, onDeleteDeal]);
+
+  const handleConfirmWinLoss = useCallback((reason, closeDate) => {
+    if (winLossState.deal) {
+      const isWon = winLossState.targetStage === 'won';
+      const closeIsoString = closeDate ? new Date(closeDate + 'T12:00:00').toISOString() : new Date().toISOString();
+      onUpdateDeal(winLossState.deal.id, {
+        stage: winLossState.targetStage,
+        last_activity: new Date().toISOString(),
+        actual_close_date: closeIsoString,
+        lost_reason: isWon ? null : reason,
+        metadata: {
+          ...(winLossState.deal?.metadata || {}),
+          close_reason: reason,
+          ...(isWon ? { win_reason: reason } : {}),
+          closed_at: closeIsoString,
+        },
+      });
+      setWinLossState({ open: false, targetStage: null, deal: null });
+      setIsSidebarOpen(false);
+    }
+  }, [winLossState, onUpdateDeal]);
+
   return (
     <div className="flex flex-col space-y-5">
       {/* HEADER WITH KPIs — stats filtered by selected month (won revenue) */}
@@ -131,8 +166,28 @@ export default function MonthlyPipeline({
           onUpdate={onUpdateDeal}
           onDelete={handleDelete}
           onClose={() => setIsSidebarOpen(false)}
+          onRequestDelete={(dealId) => setConfirmDeleteId(dealId)}
+          onRequestCloseStage={(targetStage) => setWinLossState({ open: true, targetStage, deal: visibleDeal })}
         />
       </Dialog>
+
+      {/* CONFIRM DELETE DIALOG (Lifted) */}
+      <ConfirmDialog
+        open={!!confirmDeleteId}
+        onOpenChange={(v) => !v && setConfirmDeleteId(null)}
+        title="ลบดีล"
+        description="การดำเนินการนี้จะลบดีลและ Activity ทั้งหมดที่เชื่อมโยงอย่างถาวร"
+        confirmLabel="ลบ"
+        onConfirm={handleConfirmDelete}
+      />
+
+      {/* WIN / LOSS REASON MODAL (Lifted) */}
+      <WinLossModal
+        open={winLossState.open}
+        targetStage={winLossState.targetStage}
+        onClose={() => setWinLossState({ open: false, targetStage: null, deal: null })}
+        onConfirm={handleConfirmWinLoss}
+      />
     </div>
   );
 }

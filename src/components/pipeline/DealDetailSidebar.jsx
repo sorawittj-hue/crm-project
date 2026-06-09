@@ -122,17 +122,13 @@ const todayLocalISO = () => {
   return d.toISOString().slice(0, 10);
 };
 
-export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose }) {
+export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose, onRequestDelete, onRequestCloseStage }) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState(null);
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [activeType, setActiveType] = useState('call');
   const [noteText, setNoteText] = useState('');
   const [followUpDate, setFollowUpDate] = useState('');
   const [followUpNote, setFollowUpNote] = useState('');
-
-  // Win / Loss reason modal
-  const [closeModal, setCloseModal] = useState({ open: false, targetStage: null });
 
   // Local controlled state for deal edit fields — syncs on deal.id change
   const [localEdit, setLocalEdit] = useState({
@@ -214,28 +210,7 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deal?.id]); // intentionally only on id change to avoid resetting mid-edit
 
-  const openCloseModal = (targetStage) => {
-    setCloseModal({ open: true, targetStage });
-  };
-
-  const submitClose = (reason, closeDate) => {
-    const isWon = closeModal.targetStage === 'won';
-    const closeIsoString = closeDate ? new Date(closeDate + 'T12:00:00').toISOString() : new Date().toISOString();
-    onUpdate(deal.id, {
-      stage: closeModal.targetStage,
-      last_activity: new Date().toISOString(),
-      actual_close_date: closeIsoString,
-      lost_reason: isWon ? null : reason,
-      metadata: {
-        ...(deal?.metadata || {}),
-        close_reason: reason,
-        ...(isWon ? { win_reason: reason } : {}),
-        closed_at: closeIsoString,
-      },
-    });
-    setCloseModal({ open: false, targetStage: null });
-    onClose?.();
-  };
+  // Modal triggers are now delegated to parent callbacks to prevent unmounting portal race conditions
 
   const handleScheduleFollowUp = async () => {
     if (!deal || !followUpDate) return;
@@ -319,7 +294,7 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
           <div className="flex items-center gap-3">
             <Button
               className="flex-1 rounded-full h-12 text-xs font-bold uppercase tracking-widest shadow-lg shadow-primary/20 bg-emerald-600 hover:bg-emerald-700 border-0"
-              onClick={() => openCloseModal('won')}
+              onClick={() => onRequestCloseStage?.('won')}
               disabled={deal.stage === 'won'}
             >
               <CheckCircle2 size={16} className="mr-2" /> ปิดได้
@@ -327,7 +302,7 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
             <Button
               variant="outline"
               className="flex-1 rounded-full h-12 text-xs font-bold uppercase tracking-widest border-rose-200 text-rose-600 hover:bg-rose-50"
-              onClick={() => openCloseModal('lost')}
+              onClick={() => onRequestCloseStage?.('lost')}
               disabled={deal.stage === 'lost'}
             >
               <XCircle size={16} className="mr-2" /> ปิดไม่ได้
@@ -335,7 +310,7 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
             <Button
               variant="ghost"
               className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm shrink-0"
-              onClick={() => setConfirmDeleteOpen(true)}
+              onClick={() => onRequestDelete?.(deal.id)}
             >
               <Trash2 size={18} />
             </Button>
@@ -761,23 +736,6 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose })
         </div>
       </DialogContent>
 
-      {/* Confirm Delete */}
-      <ConfirmDialog
-        open={confirmDeleteOpen}
-        onOpenChange={setConfirmDeleteOpen}
-        title="ลบดีล"
-        description="การดำเนินการนี้จะลบดีลและ Activity ทั้งหมดที่เชื่อมโยงอย่างถาวร"
-        confirmLabel="ลบ"
-        onConfirm={() => { onDelete(deal.id); setConfirmDeleteOpen(false); }}
-      />
-
-      {/* Win / Loss Reason Modal — shared component */}
-      <WinLossModal
-        open={closeModal.open}
-        targetStage={closeModal.targetStage}
-        onClose={() => setCloseModal({ open: false, targetStage: null })}
-        onConfirm={submitClose}
-      />
     </>
   );
 }

@@ -58,23 +58,73 @@ export async function upsertNotification(notif) {
   };
 
   for (let attempt = 0; attempt < 6; attempt += 1) {
-    const { data, error } = await supabase
-      .from('notifications')
-      .upsert(payload, { onConflict: 'notification_key', ignoreDuplicates: false })
-      .select();
+    const key = payload.notification_key;
+    if (key) {
+      // 1. Try to find the existing notification by notification_key
+      const { data: existing, error: selectError } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('notification_key', key)
+        .maybeSingle();
 
-    if (!error) return data?.[0] || null;
+      if (selectError) {
+        if (!isNotificationSchemaError(selectError)) {
+          throw new Error('Could not select notification: ' + selectError.message);
+        }
+        const nextPayload = removeMissingColumn(payload, selectError);
+        if (nextPayload === payload || selectError?.code === '42P10' || selectError?.code === '23503') {
+          notificationWritesDisabled = true;
+          return null;
+        }
+        payload = nextPayload;
+        continue;
+      }
 
-    if (!isNotificationSchemaError(error)) {
-      throw new Error('Could not upsert notification: ' + error.message);
+      if (existing) {
+        // 2. If it exists, update it by ID
+        const updatePayload = { ...payload };
+        delete updatePayload.created_at;
+        delete updatePayload.id;
+
+        const { data, error: updateError } = await supabase
+          .from('notifications')
+          .update(updatePayload)
+          .eq('id', existing.id)
+          .select();
+
+        if (!updateError) return data?.[0] || null;
+
+        if (!isNotificationSchemaError(updateError)) {
+          throw new Error('Could not update notification: ' + updateError.message);
+        }
+
+        const nextPayload = removeMissingColumn(payload, updateError);
+        if (nextPayload === payload || updateError?.code === '42P10' || updateError?.code === '23503') {
+          notificationWritesDisabled = true;
+          return null;
+        }
+        payload = nextPayload;
+        continue;
+      }
     }
 
-    const nextPayload = removeMissingColumn(payload, error);
-    if (nextPayload === payload || error?.code === '42P10' || error?.code === '23503') {
+    // 3. If it doesn't exist, or has no notification_key, insert it
+    const { data, error: insertError } = await supabase
+      .from('notifications')
+      .insert([payload])
+      .select();
+
+    if (!insertError) return data?.[0] || null;
+
+    if (!isNotificationSchemaError(insertError)) {
+      throw new Error('Could not insert notification: ' + insertError.message);
+    }
+
+    const nextPayload = removeMissingColumn(payload, insertError);
+    if (nextPayload === payload || insertError?.code === '42P10' || insertError?.code === '23503') {
       notificationWritesDisabled = true;
       return null;
     }
-
     payload = nextPayload;
   }
 
