@@ -5,7 +5,7 @@ import {
   Trash2, CheckCircle2, XCircle,
   Phone, Mail, FileText, Clock,
   Sparkles, Activity, Target, ShieldCheck, Zap,
-  Loader2, Send, CalendarClock, ListTodo, AlertTriangle
+  Loader2, Send, CalendarClock, ListTodo, AlertTriangle, Settings
 } from 'lucide-react';
 import { DialogContent, DialogHeader, DialogTitle } from '../ui/Dialog';
 import WinLossModal from './WinLossModal';
@@ -123,6 +123,7 @@ const todayLocalISO = () => {
 };
 
 export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose, onRequestDelete, onRequestCloseStage }) {
+  const [activeTab, setActiveTab] = useState('overview'); // overview, activities, playbook, ai, edit
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [activeType, setActiveType] = useState('call');
@@ -188,6 +189,7 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose, o
 
   // Reset inputs and sync local edit state when deal changes
   useEffect(() => {
+    setActiveTab('overview');
     setNoteText('');
     setFollowUpDate('');
     setFollowUpNote('');
@@ -208,8 +210,6 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose, o
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deal?.id]); // intentionally only on id change to avoid resetting mid-edit
-
-  // Modal triggers are now delegated to parent callbacks to prevent unmounting portal race conditions
 
   const handleScheduleFollowUp = async () => {
     if (!deal || !followUpDate) return;
@@ -249,492 +249,577 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose, o
 
   return (
     <>
-      <DialogContent className="p-0 border-0 bg-white">
-        <div className="p-8 space-y-8 pb-8">
-          <DialogHeader className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="w-1.5 h-8 bg-primary rounded-full" />
-              <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
-                รายละเอียดดีล
-              </DialogTitle>
+      <DialogContent className="p-0 border-0 bg-white max-w-2xl overflow-y-auto max-h-[90vh]">
+        <div className="p-8 space-y-6 pb-8">
+          <DialogHeader className="space-y-2 border-b border-slate-100 pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-8 bg-violet-600 rounded-full" />
+                <DialogTitle className="text-2xl font-bold text-slate-900 tracking-tight">
+                  รายละเอียดดีล
+                </DialogTitle>
+              </div>
             </div>
             <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              <ShieldCheck size={12} className="text-primary" />
+              <ShieldCheck size={12} className="text-violet-600" />
               <span>ID: {deal.id.slice(0, 8)} • System Verified</span>
             </div>
           </DialogHeader>
 
-          {/* Value / Confidence */}
-          <div className="grid grid-cols-2 gap-4">
-            <Card className="rounded-[2rem] bg-slate-50 border-none">
-              <CardContent className="p-5">
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">มูลค่าดีล</p>
-                <p className="text-2xl font-black text-slate-900 tabular-nums">{formatCurrency(deal.value)}</p>
-              </CardContent>
-            </Card>
-            <Card className="rounded-[2rem] bg-slate-50 border-none">
-              <CardContent className="p-5">
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">ความมั่นใจ</p>
-                <div className="flex items-center gap-3">
-                  <p className="text-2xl font-black text-slate-900 tabular-nums">{deal.probability}%</p>
-                  <div className="h-1.5 flex-1 bg-slate-200 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${deal.probability}%` }}
-                      className="h-full bg-primary"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-3">
-            <Button
-              className="flex-1 rounded-full h-12 text-xs font-bold uppercase tracking-widest shadow-lg shadow-primary/20 bg-emerald-600 hover:bg-emerald-700 border-0"
-              onClick={() => onRequestCloseStage?.('won')}
-              disabled={deal.stage === 'won'}
-            >
-              <CheckCircle2 size={16} className="mr-2" /> ปิดได้
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-1 rounded-full h-12 text-xs font-bold uppercase tracking-widest border-rose-200 text-rose-600 hover:bg-rose-50"
-              onClick={() => onRequestCloseStage?.('lost')}
-              disabled={deal.stage === 'lost'}
-            >
-              <XCircle size={16} className="mr-2" /> ปิดไม่ได้
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm shrink-0"
-              onClick={() => onRequestDelete?.(deal.id)}
-            >
-              <Trash2 size={18} />
-            </Button>
-          </div>
-
-          {/* Quick Contact */}
-          {(deal.contact_email || deal.contact_phone) && (
-            <div className="grid grid-cols-2 gap-3">
-              {deal.contact_phone && (
-                <a
-                  href={`tel:${deal.contact_phone}`}
-                  onClick={() => addActivityMutation.mutate({
-                    deal_id: deal.id, type: 'call',
-                    title: `โทรหา ${deal.contact || deal.contact_phone}`,
-                    completed_at: new Date().toISOString(),
-                  })}
-                  className="flex items-center justify-center gap-2 h-11 rounded-2xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold transition-colors border border-blue-100"
+          {/* Tab Navigation */}
+          <div className="flex gap-1.5 p-1 bg-slate-100 rounded-xl overflow-x-auto no-scrollbar">
+            {[
+              { id: 'overview', label: 'ภาพรวมดีล', icon: Target },
+              { id: 'activities', label: 'ประวัติ & บันทึก', icon: Activity },
+              { id: 'playbook', label: 'คู่มือเช็คลิสต์', icon: ListTodo },
+              { id: 'ai', label: 'วิเคราะห์ AI', icon: Sparkles },
+              { id: 'edit', label: 'แก้ไขดีล', icon: Settings },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all duration-200",
+                    isActive
+                      ? "bg-white text-violet-700 shadow-sm font-bold border border-slate-200/50"
+                      : "text-slate-500 hover:text-slate-800"
+                  )}
                 >
-                  <Phone size={14} /> โทร
-                </a>
-              )}
-              {deal.contact_email && (
-                <a
-                  href={`mailto:${deal.contact_email}?subject=${encodeURIComponent(deal.title)}`}
-                  onClick={() => addActivityMutation.mutate({
-                    deal_id: deal.id, type: 'email',
-                    title: `ส่งอีเมลถึง ${deal.contact_email}`,
-                    completed_at: new Date().toISOString(),
-                  })}
-                  className="flex items-center justify-center gap-2 h-11 rounded-2xl bg-violet-50 hover:bg-violet-100 text-violet-700 text-sm font-semibold transition-colors border border-violet-100"
+                  <Icon size={13} className={isActive ? "text-violet-600" : ""} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-4">
+            <AnimatePresence mode="wait">
+              {activeTab === 'overview' && (
+                <motion.div
+                  key="tab-overview"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.15 }}
+                  className="space-y-6"
                 >
-                  <Mail size={14} /> อีเมล
-                </a>
-              )}
-            </div>
-          )}
-
-          {/* Schedule Follow-up */}
-          <div className="space-y-3 p-5 rounded-2xl bg-amber-50/40 border border-amber-100">
-            <div className="flex items-center gap-2">
-              <CalendarClock size={15} className="text-amber-600" />
-              <h3 className="text-[11px] font-black uppercase tracking-widest text-amber-700">นัดติดตามครั้งถัดไป</h3>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="date"
-                min={todayLocalISO()}
-                value={followUpDate}
-                onChange={(e) => setFollowUpDate(e.target.value)}
-                className="h-11 px-3 rounded-xl bg-white border border-amber-200 text-sm font-semibold focus:border-amber-400 outline-none"
-              />
-              <Input
-                placeholder="เช่น โทรเช็คงบ"
-                value={followUpNote}
-                onChange={(e) => setFollowUpNote(e.target.value)}
-                className="h-11 rounded-xl bg-white border-amber-200 text-sm"
-              />
-            </div>
-            <Button
-              onClick={handleScheduleFollowUp}
-              disabled={!followUpDate || addActivityMutation.isPending}
-              className="w-full h-10 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              <ListTodo size={13} />
-              สร้างนัดติดตาม
-            </Button>
-          </div>
-
-          {/* Stage Workflow Checklist */}
-          {STAGE_WORKFLOW[deal.stage] && (() => {
-            const wf = STAGE_WORKFLOW[deal.stage];
-            return (
-              <div className={cn('space-y-3 p-5 rounded-2xl border', wf.color)}>
-                <div className="flex items-center gap-2">
-                  <ListTodo size={15} className={wf.headerColor} />
-                  <h3 className={cn('text-[11px] font-black uppercase tracking-widest', wf.headerColor)}>
-                    ขั้นตอน: {wf.label}
-                  </h3>
-                </div>
-                <ul className="space-y-2">
-                  {wf.steps.map((step, i) => (
-                    <li key={step.key} className="flex items-start gap-2 text-xs">
-                      <span className="w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 shrink-0 mt-0.5">
-                        {i + 1}
-                      </span>
-                      <span className="text-slate-700 leading-relaxed font-medium">{step.text}</span>
-                    </li>
-                  ))}
-                </ul>
-                {wf.reminder && (
-                  <div className="flex items-start gap-2 mt-3 p-3 rounded-xl bg-white/70 border border-rose-200">
-                    <AlertTriangle size={13} className="text-rose-500 shrink-0 mt-0.5" />
-                    <p className="text-xs font-semibold text-rose-700 leading-relaxed">{wf.reminder}</p>
-                  </div>
-                )}
-                {/* Inactivity warning for proposal/negotiation */}
-                {['proposal', 'negotiation'].includes(deal.stage) && (() => {
-                  const days = Math.floor((Date.now() - new Date(deal.last_activity || deal.created_at).getTime()) / 86_400_000);
-                  if (days < 3) return null;
-                  const urgencyMap = {
-                    7: { label: '🔴 จิกด่วน! หยุดนิ่งมา ' + days + ' วัน', cls: 'bg-rose-600 text-white' },
-                    5: { label: '🟠 เสี่ยงหลุด! หยุดนิ่งมา ' + days + ' วัน', cls: 'bg-orange-500 text-white' },
-                    3: { label: '🟡 ต้องตาม! หยุดนิ่งมา ' + days + ' วัน', cls: 'bg-amber-500 text-white' },
-                  };
-                  const cfg = days >= 7 ? urgencyMap[7] : days >= 5 ? urgencyMap[5] : urgencyMap[3];
-                  return (
-                    <div className={cn('mt-2 px-3 py-2 rounded-xl text-xs font-bold text-center', cfg.cls)}>
-                      {cfg.label}
-                    </div>
-                  );
-                })()}
-              </div>
-            );
-          })()}
-
-          {/* Activity Logger */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-              <Activity size={15} className="text-primary" />
-              <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-900">บันทึก Activity</h3>
-            </div>
-
-            {/* Type selector */}
-            <div className="flex gap-2 flex-wrap">
-              {ACTIVITY_TYPES.filter(t => t.id !== 'task').map((t) => {
-                const Icon = t.icon;
-                return (
-                  <button
-                    key={t.id}
-                    onClick={() => setActiveType(t.id)}
-                    className={cn(
-                      'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all',
-                      activeType === t.id ? t.color : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
-                    )}
-                  >
-                    <Icon size={12} /> {t.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Note textarea */}
-            <Textarea
-              placeholder="บันทึกรายละเอียด (ไม่บังคับ)..."
-              value={noteText}
-              onChange={(e) => setNoteText(e.target.value)}
-              className="rounded-2xl bg-slate-50 border-slate-200 resize-none min-h-[80px] text-sm"
-            />
-
-            <Button
-              onClick={handleLogActivity}
-              disabled={addActivityMutation.isPending}
-              className="w-full h-11 rounded-xl bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold flex items-center justify-center gap-2"
-            >
-              {addActivityMutation.isPending
-                ? <Loader2 size={14} className="animate-spin" />
-                : <Send size={14} />}
-              บันทึก Activity
-            </Button>
-          </div>
-
-          {/* Activity Timeline */}
-          <div className="space-y-4">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              ประวัติ Activity ({activities.length})
-            </h3>
-
-            {activitiesLoading ? (
-              <div className="flex justify-center py-6">
-                <Loader2 size={20} className="animate-spin text-slate-300" />
-              </div>
-            ) : activities.length === 0 ? (
-              <p className="text-xs text-slate-300 text-center py-6 font-medium">ยังไม่มี Activity</p>
-            ) : (
-              <div className="relative space-y-3">
-                <div className="absolute left-3.5 top-0 bottom-0 w-px bg-slate-100" />
-                <AnimatePresence>
-                  {activities.map((act, i) => {
-                    const typeConfig = ACTIVITY_TYPES.find(t => t.id === act.type) || ACTIVITY_TYPES[3];
-                    const Icon = typeConfig.icon;
-                    return (
-                      <motion.div
-                        key={act.id}
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.04 }}
-                        className="flex gap-4 relative"
-                      >
-                        <div className={cn('w-7 h-7 rounded-full border flex items-center justify-center shrink-0 z-10', typeConfig.color)}>
-                          <Icon size={12} />
-                        </div>
-                        <div className="flex-1 min-w-0 pb-3">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-sm font-semibold text-slate-800 leading-tight">{act.title}</p>
-                            {act.scheduled_at && !act.completed_at && (
-                              <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">รอดำเนินการ</span>
-                            )}
+                  {/* Value / Confidence */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <Card className="rounded-[2rem] bg-slate-50 border-none shadow-sm">
+                      <CardContent className="p-5">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">มูลค่าดีล</p>
+                        <p className="text-2xl font-black text-slate-900 tabular-nums">{formatCurrency(deal.value)}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-[2rem] bg-slate-50 border-none shadow-sm">
+                      <CardContent className="p-5">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">ความมั่นใจ</p>
+                        <div className="flex items-center gap-3">
+                          <p className="text-2xl font-black text-slate-900 tabular-nums">{deal.probability}%</p>
+                          <div className="h-1.5 flex-1 bg-slate-200 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${deal.probability}%` }}
+                              className="h-full bg-violet-600"
+                            />
                           </div>
-                          {act.description && (
-                            <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{act.description}</p>
-                          )}
-                          <p className="text-[10px] text-slate-400 mt-1">
-                            {act.scheduled_at && !act.completed_at
-                              ? `นัด ${new Date(act.scheduled_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })}`
-                              : timeAgo(act.created_at)}
-                          </p>
                         </div>
-                      </motion.div>
-                    );
-                  })}
-                </AnimatePresence>
-              </div>
-            )}
-          </div>
-
-          {/* Deal Configuration */}
-          <div className="space-y-5">
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-              <Target size={15} className="text-primary" />
-              <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-900">แก้ไขข้อมูลดีล</h3>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">ชื่อดีล</label>
-              <Input
-                value={localEdit.title}
-                onChange={(e) => setField('title', e.target.value)}
-                onBlur={() => saveField('title', localEdit.title)}
-                className="rounded-2xl h-12 bg-slate-50 border-transparent font-bold"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">บริษัท</label>
-              <Input
-                value={localEdit.company}
-                onChange={(e) => setField('company', e.target.value)}
-                onBlur={() => saveField('company', localEdit.company)}
-                className="rounded-2xl h-12 bg-slate-50 border-transparent font-bold"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">มูลค่า (บาท)</label>
-                <Input
-                  type="number"
-                  value={localEdit.value}
-                  onChange={(e) => setField('value', e.target.value)}
-                  onBlur={() => saveField('value', localEdit.value)}
-                  className="rounded-2xl h-12 bg-slate-50 border-transparent font-bold"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">ความมั่นใจ (%)</label>
-                <Input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={localEdit.probability}
-                  onChange={(e) => setField('probability', e.target.value)}
-                  onBlur={() => saveField('probability', localEdit.probability)}
-                  className="rounded-2xl h-12 bg-slate-50 border-transparent font-bold"
-                />
-              </div>
-            </div>
-
-            {/* Stage selector — triggers win/loss modal for closed stages */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">ขั้นตอน</label>
-              <select
-                value={localEdit.stage}
-                onChange={(e) => {
-                  const s = e.target.value;
-                  if (s === 'won' || s === 'lost') {
-                    onRequestCloseStage?.(s);
-                  } else {
-                    setField('stage', s);
-                    onUpdate(deal.id, { stage: s });
-                  }
-                }}
-                disabled={deal.stage === 'won' || deal.stage === 'lost'}
-                className="w-full h-12 rounded-2xl bg-slate-50 border-0 px-4 font-bold outline-none text-sm focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {STAGES.map(s => (
-                  <option key={s.id} value={s.id}>{s.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Expected close date */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">วันคาดว่าจะปิด</label>
-              <input
-                type="date"
-                value={localEdit.expected_close_date}
-                onChange={(e) => setField('expected_close_date', e.target.value)}
-                onBlur={() => saveField('expected_close_date', localEdit.expected_close_date || null)}
-                className="w-full h-12 rounded-2xl bg-slate-50 px-4 font-bold outline-none text-sm focus:ring-2 focus:ring-primary/20 border-0 transition-all"
-              />
-            </div>
-
-            {/* Actual close date (Only if closed) */}
-            {['won', 'lost'].includes(deal.stage) && (
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">วันปิดดีลจริง</label>
-                <input
-                  type="date"
-                  value={localEdit.actual_close_date || ''}
-                  onChange={(e) => setField('actual_close_date', e.target.value)}
-                  onBlur={() => saveField('actual_close_date', localEdit.actual_close_date ? new Date(localEdit.actual_close_date + 'T12:00:00').toISOString() : null)}
-                  className="w-full h-12 rounded-2xl bg-slate-50 px-4 font-bold outline-none text-sm focus:ring-2 focus:ring-primary/20 border-0 transition-all"
-                />
-              </div>
-            )}
-
-            {/* Contact info */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">ผู้ติดต่อ</label>
-              <Input
-                placeholder="ชื่อผู้ติดต่อ"
-                value={localEdit.contact}
-                onChange={(e) => setField('contact', e.target.value)}
-                onBlur={() => saveField('contact', localEdit.contact)}
-                className="rounded-2xl h-12 bg-slate-50 border-transparent"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">เบอร์โทร</label>
-                <Input
-                  placeholder="0XX-XXX-XXXX"
-                  value={localEdit.contact_phone}
-                  onChange={(e) => setField('contact_phone', e.target.value)}
-                  onBlur={() => saveField('contact_phone', localEdit.contact_phone)}
-                  className="rounded-2xl h-12 bg-slate-50 border-transparent"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">อีเมล</label>
-                <Input
-                  placeholder="email@company.com"
-                  value={localEdit.contact_email}
-                  onChange={(e) => setField('contact_email', e.target.value)}
-                  onBlur={() => saveField('contact_email', localEdit.contact_email)}
-                  className="rounded-2xl h-12 bg-slate-50 border-transparent"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* AI Strategy */}
-          <Card className="rounded-[2.5rem] border-primary/20 bg-primary/5 border">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-primary shadow-sm">
-                    <Sparkles size={18} />
+                      </CardContent>
+                    </Card>
                   </div>
-                  <div>
-                    <h3 className="text-xs font-black uppercase tracking-widest text-primary">AI Sales Strategy</h3>
-                    <p className="text-[9px] font-bold text-primary/60 uppercase tracking-widest">Intelligent Analysis</p>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-3">
+                    <Button
+                      className="flex-1 rounded-xl h-12 text-xs font-bold uppercase tracking-widest shadow-lg shadow-emerald-500/10 bg-emerald-600 hover:bg-emerald-700 border-0 text-white flex items-center justify-center gap-2"
+                      onClick={() => onRequestCloseStage?.('won')}
+                      disabled={deal.stage === 'won'}
+                    >
+                      <CheckCircle2 size={16} /> ปิดได้
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1 rounded-xl h-12 text-xs font-bold uppercase tracking-widest border-rose-200 text-rose-600 hover:bg-rose-50 flex items-center justify-center gap-2"
+                      onClick={() => onRequestCloseStage?.('lost')}
+                      disabled={deal.stage === 'lost'}
+                    >
+                      <XCircle size={16} /> ปิดไม่ได้
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm shrink-0 flex items-center justify-center"
+                      onClick={() => onRequestDelete?.(deal.id)}
+                    >
+                      <Trash2 size={18} />
+                    </Button>
                   </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleAIAnalysis}
-                  disabled={isAnalyzing}
-                  className="text-[9px] font-bold uppercase tracking-widest text-primary hover:bg-primary/10 rounded-full px-4"
+
+                  {/* Quick Contact */}
+                  {(deal.contact_email || deal.contact_phone) && (
+                    <div className="grid grid-cols-2 gap-3">
+                      {deal.contact_phone && (
+                        <a
+                          href={`tel:${deal.contact_phone}`}
+                          onClick={() => addActivityMutation.mutate({
+                            deal_id: deal.id, type: 'call',
+                            title: `โทรหา ${deal.contact || deal.contact_phone}`,
+                            completed_at: new Date().toISOString(),
+                          })}
+                          className="flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold transition-colors border border-blue-100"
+                        >
+                          <Phone size={14} /> โทรศัพท์หาลูกค้า
+                        </a>
+                      )}
+                      {deal.contact_email && (
+                        <a
+                          href={`mailto:${deal.contact_email}?subject=${encodeURIComponent(deal.title)}`}
+                          onClick={() => addActivityMutation.mutate({
+                            deal_id: deal.id, type: 'email',
+                            title: `ส่งอีเมลถึง ${deal.contact_email}`,
+                            completed_at: new Date().toISOString(),
+                          })}
+                          className="flex items-center justify-center gap-2 h-11 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 text-sm font-semibold transition-colors border border-violet-100"
+                        >
+                          <Mail size={14} /> ส่งอีเมลหาลูกค้า
+                        </a>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Schedule Follow-up */}
+                  <div className="space-y-3 p-5 rounded-2xl bg-amber-50/40 border border-amber-100">
+                    <div className="flex items-center gap-2">
+                      <CalendarClock size={15} className="text-amber-600" />
+                      <h3 className="text-[11px] font-black uppercase tracking-widest text-amber-700">นัดติดตามครั้งถัดไป (Schedule Task)</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="date"
+                        min={todayLocalISO()}
+                        value={followUpDate}
+                        onChange={(e) => setFollowUpDate(e.target.value)}
+                        className="h-11 px-3 rounded-xl bg-white border border-slate-200 text-sm font-semibold focus:border-amber-400 outline-none"
+                      />
+                      <Input
+                        placeholder="เช่น โทรเช็คงบ, สรุปสเปก"
+                        value={followUpNote}
+                        onChange={(e) => setFollowUpNote(e.target.value)}
+                        className="h-11 rounded-xl bg-white border-slate-200 text-sm"
+                      />
+                    </div>
+                    <Button
+                      onClick={handleScheduleFollowUp}
+                      disabled={!followUpDate || addActivityMutation.isPending}
+                      className="w-full h-10 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-2 border-0"
+                    >
+                      <ListTodo size={13} />
+                      สร้างนัดติดตาม
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+
+              {activeTab === 'activities' && (
+                <motion.div
+                  key="tab-activities"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.15 }}
+                  className="space-y-6"
                 >
-                  {isAnalyzing ? 'Analyzing...' : 'Refresh'}
-                </Button>
-              </div>
+                  {/* Activity Logger */}
+                  <div className="space-y-4 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                    <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+                      <Activity size={15} className="text-violet-600" />
+                      <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-800">บันทึกกิจกรรม (Log Activity)</h3>
+                    </div>
 
-              <AnimatePresence mode="wait">
-                {isAnalyzing ? (
-                  <motion.div
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="py-10 flex flex-col items-center justify-center gap-4"
-                  >
-                    <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">กำลังวิเคราะห์...</p>
-                  </motion.div>
-                ) : aiAnalysis ? (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                    <div className="flex items-center justify-between p-4 rounded-3xl bg-white border border-primary/10">
-                      <div>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Win Likelihood</p>
-                        <span className="text-4xl font-black text-slate-900 tracking-tighter">{aiAnalysis.win_likelihood}%</span>
-                      </div>
-                      <Badge className={cn('font-bold text-[9px] px-3 py-1 rounded-full',
-                        aiAnalysis.risk_level === 'high' ? 'bg-rose-50 text-rose-500 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                      )}>
-                        {aiAnalysis.risk_level?.toUpperCase()} RISK
-                      </Badge>
+                    {/* Type selector */}
+                    <div className="flex gap-2 flex-wrap">
+                      {ACTIVITY_TYPES.filter(t => t.id !== 'task').map((t) => {
+                        const Icon = t.icon;
+                        return (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => setActiveType(t.id)}
+                            className={cn(
+                              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all',
+                              activeType === t.id ? t.color : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
+                            )}
+                          >
+                            <Icon size={12} /> {t.label}
+                          </button>
+                        );
+                      })}
                     </div>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Target size={14} className="text-primary" />
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Strategic Directives</p>
-                      </div>
-                      <div className="text-xs leading-relaxed font-bold text-slate-700 bg-white p-5 rounded-3xl border border-slate-100 italic">
-                        &quot;{aiAnalysis.strategy}&quot;
-                      </div>
-                    </div>
-                    <div className="pt-4 border-t border-primary/10">
-                      <div className="p-4 rounded-3xl bg-primary text-white shadow-xl shadow-primary/20">
-                        <p className="text-[9px] font-bold uppercase tracking-widest opacity-70 mb-1">Next Step</p>
-                        <p className="text-sm font-black italic">&quot;{aiAnalysis.next_step}&quot;</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <div className="py-10 text-center">
-                    <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mx-auto mb-4 shadow-sm">
-                      <Zap size={24} className="text-slate-200" />
-                    </div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">AI Insights Available</p>
+
+                    {/* Note textarea */}
+                    <Textarea
+                      placeholder="บันทึกรายละเอียดกิจกรรม..."
+                      value={noteText}
+                      onChange={(e) => setNoteText(e.target.value)}
+                      className="rounded-xl bg-white border-slate-200 resize-none min-h-[80px] text-sm focus:border-violet-400"
+                    />
+
+                    <Button
+                      onClick={handleLogActivity}
+                      disabled={addActivityMutation.isPending}
+                      className="w-full h-11 rounded-xl bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold flex items-center justify-center gap-2 border-0"
+                    >
+                      {addActivityMutation.isPending
+                        ? <Loader2 size={14} className="animate-spin" />
+                        : <Send size={14} />}
+                      บันทึก Activity
+                    </Button>
                   </div>
-                )}
-              </AnimatePresence>
-            </CardContent>
-          </Card>
+
+                  {/* Activity Timeline */}
+                  <div className="space-y-4">
+                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      ประวัติ Activity ({activities.length})
+                    </h3>
+
+                    {activitiesLoading ? (
+                      <div className="flex justify-center py-6">
+                        <Loader2 size={20} className="animate-spin text-slate-300" />
+                      </div>
+                    ) : activities.length === 0 ? (
+                      <p className="text-xs text-slate-350 text-center py-6 font-medium">ยังไม่มีประวัติกิจกรรมในดีลนี้</p>
+                    ) : (
+                      <div className="relative space-y-3">
+                        <div className="absolute left-3.5 top-0 bottom-0 w-px bg-slate-100" />
+                        <AnimatePresence>
+                          {activities.map((act, i) => {
+                            const typeConfig = ACTIVITY_TYPES.find(t => t.id === act.type) || ACTIVITY_TYPES[3];
+                            const Icon = typeConfig.icon;
+                            return (
+                              <motion.div
+                                key={act.id}
+                                initial={{ opacity: 0, x: -8 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: Math.min(i * 0.04, 0.2) }}
+                                className="flex gap-4 relative"
+                              >
+                                <div className={cn('w-7 h-7 rounded-full border flex items-center justify-center shrink-0 z-10', typeConfig.color)}>
+                                  <Icon size={12} />
+                                </div>
+                                <div className="flex-1 min-w-0 pb-3 border-b border-slate-50 last:border-b-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <p className="text-sm font-semibold text-slate-800 leading-tight">{act.title}</p>
+                                    {act.scheduled_at && !act.completed_at && (
+                                      <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">รอดำเนินการ</span>
+                                    )}
+                                  </div>
+                                  {act.description && (
+                                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">{act.description}</p>
+                                  )}
+                                  <p className="text-[10px] text-slate-400 mt-1">
+                                    {act.scheduled_at && !act.completed_at
+                                      ? `นัด ${new Date(act.scheduled_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })}`
+                                      : timeAgo(act.created_at)}
+                                  </p>
+                                </div>
+                              </motion.div>
+                            );
+                          })}
+                        </AnimatePresence>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+
+              {activeTab === 'playbook' && (
+                <motion.div
+                  key="tab-playbook"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.15 }}
+                  className="space-y-6"
+                >
+                  {/* Stage Workflow Checklist */}
+                  {STAGE_WORKFLOW[deal.stage] && (() => {
+                    const wf = STAGE_WORKFLOW[deal.stage];
+                    return (
+                      <div className={cn('space-y-4 p-5 rounded-2xl border', wf.color)}>
+                        <div className="flex items-center gap-2">
+                          <ListTodo size={15} className={wf.headerColor} />
+                          <h3 className={cn('text-[11px] font-black uppercase tracking-widest', wf.headerColor)}>
+                            สิ่งที่ต้องทำในขั้นตอน: {wf.label}
+                          </h3>
+                        </div>
+                        <ul className="space-y-3">
+                          {wf.steps.map((step, i) => (
+                            <li key={step.key} className="flex items-start gap-2.5 text-xs">
+                              <span className="w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 shrink-0 mt-0.5 shadow-sm">
+                                {i + 1}
+                              </span>
+                              <span className="text-slate-700 leading-relaxed font-medium mt-0.5">{step.text}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        {wf.reminder && (
+                          <div className="flex items-start gap-2 mt-3 p-3.5 rounded-xl bg-white/80 border border-rose-200">
+                            <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
+                            <p className="text-xs font-semibold text-rose-700 leading-relaxed">{wf.reminder}</p>
+                          </div>
+                        )}
+                        {/* Inactivity warning for proposal/negotiation */}
+                        {['proposal', 'negotiation'].includes(deal.stage) && (() => {
+                          const days = Math.floor((Date.now() - new Date(deal.last_activity || deal.created_at).getTime()) / 86_400_000);
+                          if (days < 3) return null;
+                          const urgencyMap = {
+                            7: { label: '🔴 ดีลหยุดนิ่งมา ' + days + ' วันแล้ว! ต้องรีบตามด่วน', cls: 'bg-rose-600 text-white' },
+                            5: { label: '🟠 ดีลหยุดนิ่งมา ' + days + ' วันแล้ว! ควรติดต่อด่วน', cls: 'bg-orange-500 text-white' },
+                            3: { label: '🟡 ดีลหยุดนิ่งมา ' + days + ' วัน', cls: 'bg-amber-500 text-white' },
+                          };
+                          const cfg = days >= 7 ? urgencyMap[7] : days >= 5 ? urgencyMap[5] : urgencyMap[3];
+                          return (
+                            <div className={cn('mt-3 px-3 py-2.5 rounded-xl text-xs font-bold text-center shadow-sm', cfg.cls)}>
+                              {cfg.label}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    );
+                  })()}
+                </motion.div>
+              )}
+
+              {activeTab === 'ai' && (
+                <motion.div
+                  key="tab-ai"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.15 }}
+                  className="space-y-6"
+                >
+                  {/* AI Strategy */}
+                  <Card className="rounded-[2rem] border-violet-200/65 bg-violet-50/30 border shadow-sm">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-2xl bg-white border border-violet-100/60 flex items-center justify-center text-violet-600 shadow-sm">
+                            <Sparkles size={18} />
+                          </div>
+                          <div>
+                            <h3 className="text-xs font-black uppercase tracking-widest text-violet-750">AI Sales Strategy</h3>
+                            <p className="text-[9px] font-bold text-violet-400 uppercase tracking-widest">Intelligent Analysis</p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleAIAnalysis}
+                          disabled={isAnalyzing}
+                          className="text-[9px] font-bold uppercase tracking-widest text-violet-600 hover:bg-violet-50 rounded-full px-4"
+                        >
+                          {isAnalyzing ? 'Analyzing...' : 'Refresh'}
+                        </Button>
+                      </div>
+
+                      <AnimatePresence mode="wait">
+                        {isAnalyzing ? (
+                          <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            className="py-10 flex flex-col items-center justify-center gap-4"
+                          >
+                            <div className="w-10 h-10 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
+                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-600">กำลังวิเคราะห์ข้อมูลดีล...</p>
+                          </motion.div>
+                        ) : aiAnalysis ? (
+                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+                            <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-violet-100/50 shadow-sm">
+                              <div>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Win Likelihood</p>
+                                <span className="text-3xl font-black text-slate-900 tracking-tighter">{aiAnalysis.win_likelihood}%</span>
+                              </div>
+                              <Badge className={cn('font-bold text-[9px] px-3 py-1 rounded-full border',
+                                aiAnalysis.risk_level === 'high' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                              )}>
+                                {aiAnalysis.risk_level?.toUpperCase()} RISK
+                              </Badge>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Target size={14} className="text-violet-600" />
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">คำแนะนำกลยุทธ์จาก AI</p>
+                              </div>
+                              <div className="text-xs leading-relaxed font-semibold text-slate-700 bg-white p-4 rounded-2xl border border-slate-150 shadow-sm whitespace-pre-line">
+                                {aiAnalysis.strategy}
+                              </div>
+                            </div>
+                            <div className="pt-2">
+                              <div className="p-4 rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-500/20">
+                                <p className="text-[9px] font-bold uppercase tracking-widest opacity-80 mb-1">Next Step (ก้าวสำคัญถัดไป)</p>
+                                <p className="text-xs font-bold">{aiAnalysis.next_step}</p>
+                              </div>
+                            </div>
+                          </motion.div>
+                        ) : (
+                          <div className="py-10 text-center">
+                            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100">
+                              <Zap size={24} className="text-slate-355" />
+                            </div>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">AI Analysis Pending</p>
+                            <p className="text-[9px] text-slate-400">กดปุ่ม Refresh เพื่อให้ AI ประเมินโอกาสปิดดีล</p>
+                          </div>
+                        )}
+                      </AnimatePresence>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+
+              {activeTab === 'edit' && (
+                <motion.div
+                  key="tab-edit"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.15 }}
+                  className="space-y-4"
+                >
+                  <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ชื่อดีล</label>
+                      <Input
+                        value={localEdit.title}
+                        onChange={(e) => setField('title', e.target.value)}
+                        onBlur={() => saveField('title', localEdit.title)}
+                        className="rounded-xl h-11 bg-white border-slate-200 font-bold focus:border-violet-400"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ชื่อบริษัท</label>
+                      <Input
+                        value={localEdit.company}
+                        onChange={(e) => setField('company', e.target.value)}
+                        onBlur={() => saveField('company', localEdit.company)}
+                        className="rounded-xl h-11 bg-white border-slate-200 font-bold focus:border-violet-400"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">มูลค่า (บาท)</label>
+                        <Input
+                          type="number"
+                          value={localEdit.value}
+                          onChange={(e) => setField('value', e.target.value)}
+                          onBlur={() => saveField('value', localEdit.value)}
+                          className="rounded-xl h-11 bg-white border-slate-200 font-bold focus:border-violet-400 text-violet-750"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ความมั่นใจ (%)</label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={localEdit.probability}
+                          onChange={(e) => setField('probability', e.target.value)}
+                          onBlur={() => saveField('probability', localEdit.probability)}
+                          className="rounded-xl h-11 bg-white border-slate-200 font-bold focus:border-violet-400"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">วันคาดว่าจะปิด</label>
+                        <input
+                          type="date"
+                          value={localEdit.expected_close_date}
+                          onChange={(e) => setField('expected_close_date', e.target.value)}
+                          onBlur={() => saveField('expected_close_date', localEdit.expected_close_date || null)}
+                          className="w-full h-11 rounded-xl bg-white border border-slate-200 px-3 outline-none text-sm font-bold text-slate-800 focus:border-violet-400 transition-all"
+                        />
+                      </div>
+                      {['won', 'lost'].includes(deal.stage) && (
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">วันปิดดีลจริง</label>
+                          <input
+                            type="date"
+                            value={localEdit.actual_close_date || ''}
+                            onChange={(e) => setField('actual_close_date', e.target.value)}
+                            onBlur={() => saveField('actual_close_date', localEdit.actual_close_date ? new Date(localEdit.actual_close_date + 'T12:00:00').toISOString() : null)}
+                            className="w-full h-11 rounded-xl bg-white border border-slate-200 px-3 outline-none text-sm font-bold text-slate-800 focus:border-violet-400 transition-all"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ขั้นตอนการขาย</label>
+                      <select
+                        value={localEdit.stage}
+                        onChange={(e) => {
+                          const s = e.target.value;
+                          if (s === 'won' || s === 'lost') {
+                            onRequestCloseStage?.(s);
+                          } else {
+                            setField('stage', s);
+                            onUpdate(deal.id, { stage: s });
+                          }
+                        }}
+                        disabled={deal.stage === 'won' || deal.stage === 'lost'}
+                        className="w-full h-11 rounded-xl bg-white border border-slate-200 px-3 font-semibold outline-none text-sm focus:border-violet-400 transition-all disabled:opacity-55"
+                      >
+                        {STAGES.map(s => (
+                          <option key={s.id} value={s.id}>{s.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ชื่อผู้ติดต่อ</label>
+                      <Input
+                        placeholder="ชื่อผู้ติดต่อ"
+                        value={localEdit.contact}
+                        onChange={(e) => setField('contact', e.target.value)}
+                        onBlur={() => saveField('contact', localEdit.contact)}
+                        className="rounded-xl h-11 bg-white border-slate-200 focus:border-violet-400"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">เบอร์โทร</label>
+                        <Input
+                          placeholder="0XX-XXX-XXXX"
+                          value={localEdit.contact_phone}
+                          onChange={(e) => setField('contact_phone', e.target.value)}
+                          onBlur={() => saveField('contact_phone', localEdit.contact_phone)}
+                          className="rounded-xl h-11 bg-white border-slate-200 focus:border-violet-400"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">อีเมล</label>
+                        <Input
+                          placeholder="email@company.com"
+                          value={localEdit.contact_email}
+                          onChange={(e) => setField('contact_email', e.target.value)}
+                          onBlur={() => saveField('contact_email', localEdit.contact_email)}
+                          className="rounded-xl h-11 bg-white border-slate-200 focus:border-violet-400"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </DialogContent>
-
     </>
   );
 }

@@ -26,7 +26,7 @@ export default function PipelinePage() {
   const addDealMutation = useAddDeal();
   const addMultipleDealsMutation = useAddMultipleDeals();
   const deleteDealsMutation = useDeleteDeals();
-  const { pendingOpenDeal, clearPendingOpenDeal } = useAppStore();
+  const { pendingOpenDeal, clearPendingOpenDeal, pendingNewDealCustomer, clearPendingNewDealCustomer } = useAppStore();
   const { user } = useAuth();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -60,6 +60,28 @@ export default function PipelinePage() {
       }
     }
   }, [isAddModalOpen, newDeal.customer_id, customers]);
+
+  // Handle redirect from CustomersPage creating a new deal
+  useEffect(() => {
+    if (pendingNewDealCustomer) {
+      setNewDeal({
+        title: `ดีลสำหรับ ${pendingNewDealCustomer.company || pendingNewDealCustomer.name}`,
+        company: pendingNewDealCustomer.company || pendingNewDealCustomer.name || '',
+        value: '',
+        stage: 'lead',
+        customer_id: pendingNewDealCustomer.id,
+        contact: pendingNewDealCustomer.name || '',
+        contact_email: pendingNewDealCustomer.email || '',
+        contact_phone: pendingNewDealCustomer.phone || '',
+        probability: '10', // 10% for new lead stage
+        expected_close_date: '',
+        assigned_to: '',
+      });
+      setCustomerSearch(pendingNewDealCustomer.name + (pendingNewDealCustomer.company ? ` (${pendingNewDealCustomer.company})` : ''));
+      setIsAddModalOpen(true);
+      clearPendingNewDealCustomer();
+    }
+  }, [pendingNewDealCustomer, clearPendingNewDealCustomer]);
 
   const filteredCustomers = useMemo(() => {
     if (!customerSearch) return customers;

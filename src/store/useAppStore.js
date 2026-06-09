@@ -21,6 +21,11 @@ export const useAppStore = create(
       pendingOpenDeal: null,
       setPendingOpenDeal: (deal) => set({ pendingOpenDeal: deal }),
       clearPendingOpenDeal: () => set({ pendingOpenDeal: null }),
+
+      // Pending customer for new deal creation (when redirecting from Customers to Pipeline)
+      pendingNewDealCustomer: null,
+      setPendingNewDealCustomer: (customer) => set({ pendingNewDealCustomer: customer }),
+      clearPendingNewDealCustomer: () => set({ pendingNewDealCustomer: null }),
     }),
     {
       name: 'zenith-crm-store',

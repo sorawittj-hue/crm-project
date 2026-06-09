@@ -1,6 +1,8 @@
-import { useState, useMemo } from 'react';
-import { useCustomers, useDeleteCustomer, useCreateCustomer } from '../hooks/useCustomers';
+import { useState, useMemo, useEffect } from 'react';
+import { useCustomers, useDeleteCustomer, useCreateCustomer, useUpdateCustomer } from '../hooks/useCustomers';
 import { useDeals } from '../hooks/useDeals';
+import { useNavigate } from 'react-router-dom';
+import { useAppStore } from '../store/useAppStore';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -15,7 +17,8 @@ import ConfirmDialog from '../components/ui/ConfirmDialog';
 import {
   Search, Plus, Users, Building2, Mail, Phone,
   Star, ChevronRight, Loader2,
-  TrendingUp, DollarSign, BarChart3, Trash2, AlertTriangle, HeartPulse
+  TrendingUp, DollarSign, BarChart3, Trash2, AlertTriangle, HeartPulse,
+  Settings, ListTodo, Sparkles, Target
 } from 'lucide-react';
 
 
@@ -66,6 +69,9 @@ export default function CustomersPage() {
   const { data: deals, isLoading: dealsLoading } = useDeals();
   const deleteCustomerMutation = useDeleteCustomer();
   const createCustomerMutation = useCreateCustomer();
+  const updateCustomerMutation = useUpdateCustomer();
+  const navigate = useNavigate();
+  const { setPendingNewDealCustomer } = useAppStore();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState('all');
@@ -76,6 +82,47 @@ export default function CustomersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newCustomer, setNewCustomer] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState(null);
+
+  const [activeDetailTab, setActiveDetailTab] = useState('profile'); // profile, playbook, deals
+  const [localCustomer, setLocalCustomer] = useState(null);
+
+  useEffect(() => {
+    if (selectedCustomer) {
+      setLocalCustomer({
+        id: selectedCustomer.id,
+        name: selectedCustomer.name || '',
+        company: selectedCustomer.company || '',
+        email: selectedCustomer.email || '',
+        phone: selectedCustomer.phone || '',
+        address: selectedCustomer.address || '',
+        tax_id: selectedCustomer.tax_id || '',
+        tier: selectedCustomer.tier || 'Silver',
+        industry: selectedCustomer.industry || '',
+        notes: selectedCustomer.notes || '',
+      });
+      setActiveDetailTab('profile');
+    } else {
+      setLocalCustomer(null);
+    }
+  }, [selectedCustomer]);
+
+  const handleSaveCustomer = async (e) => {
+    e.preventDefault();
+    if (updateCustomerMutation.isPending) return;
+    try {
+      await updateCustomerMutation.mutateAsync(localCustomer);
+      // We will also update the local selectedCustomer state to reflect the edited attributes.
+      setSelectedCustomer(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          ...localCustomer,
+        };
+      });
+    } catch (err) {
+      console.error('Failed to update customer:', err);
+    }
+  };
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
@@ -113,6 +160,16 @@ export default function CustomersPage() {
     if (!customers) return [];
     return buildCustomerHealth(customers, deals || []);
   }, [customers, deals]);
+
+  const gradeCounts = useMemo(() => {
+    const counts = { all: enrichedCustomers.length, A: 0, B: 0, C: 0, D: 0 };
+    enrichedCustomers.forEach(c => {
+      if (c.grade && counts[c.grade] !== undefined) {
+        counts[c.grade]++;
+      }
+    });
+    return counts;
+  }, [enrichedCustomers]);
 
   const industries = useMemo(() => {
     const set = new Set(enrichedCustomers.map(c => c.industry).filter(Boolean));
@@ -233,18 +290,18 @@ export default function CustomersPage() {
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1.5 overflow-x-auto bg-slate-100 p-1 rounded-xl border border-slate-200">
             {[
-              ['all', 'ทั้งหมด'],
-              ['grade-A', 'A — VIP'],
-              ['grade-B', 'B — ดี'],
-              ['grade-C', 'C — ปกติ'],
-              ['grade-D', 'D — เสี่ยง'],
+              ['all', `ทั้งหมด (${gradeCounts.all})`],
+              ['grade-A', `เกรด A — VIP (${gradeCounts.A})`],
+              ['grade-B', `เกรด B — ดี (${gradeCounts.B})`],
+              ['grade-C', `เกรด C — ปกติ (${gradeCounts.C})`],
+              ['grade-D', `เกรด D — เสี่ยง (${gradeCounts.D})`],
             ].map(([val, label]) => (
               <button
                 key={val}
                 onClick={() => setTierFilter(val)}
                 className={cn(
                   "px-4 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap",
-                  tierFilter === val ? "bg-white shadow text-violet-700" : "text-slate-500 hover:text-slate-800"
+                  tierFilter === val ? "bg-white shadow text-violet-750 font-bold border border-slate-200/50" : "text-slate-500 hover:text-slate-800"
                 )}
               >
                 {label}
@@ -405,28 +462,36 @@ export default function CustomersPage() {
       </div>
 
       {/* CUSTOMER DETAIL DIALOG */}
-      <Dialog open={isSidebarOpen} onOpenChange={setIsSidebarOpen} className="max-w-2xl">
-        <DialogContent className="p-0 border-0 bg-white">
+      <Dialog open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+        <DialogContent className="p-0 border-0 bg-white max-w-2xl overflow-y-auto max-h-[90vh]">
           {selectedCustomer && (
-            <div className="p-8 space-y-8 pb-8">
-              <DialogHeader className="space-y-4">
+            <div className="p-8 space-y-6 pb-8">
+              <DialogHeader className="space-y-4 border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-[2rem] bg-slate-900 flex items-center justify-center text-white text-2xl font-black shadow-xl">
                     {selectedCustomer.name?.charAt(0)}
                   </div>
                   <div>
                     <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">{selectedCustomer.name}</DialogTitle>
-                    {selectedCustomer.company && <p className="text-xs font-bold text-slate-400 flex items-center gap-1 mt-1"><Building2 size={12} /> {selectedCustomer.company}</p>}
+                    {selectedCustomer.company && (
+                      <p className="text-xs font-bold text-slate-400 flex items-center gap-1 mt-1">
+                        <Building2 size={12} /> {selectedCustomer.company}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  {selectedCustomer.grade && (
+                  {selectedCustomer.grade ? (
                     <span className={cn("px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border", GRADE_CONFIG[selectedCustomer.grade]?.color)}>
                       เกรด {selectedCustomer.grade} — {GRADE_CONFIG[selectedCustomer.grade]?.label?.split('—')[1]?.trim()}
                     </span>
+                  ) : (
+                    <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-slate-100 text-slate-400 border border-slate-200">
+                      ไม่มีเกรดดีล
+                    </span>
                   )}
-                  <span className={cn("px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border", TIER_CONFIG[selectedCustomer.tier]?.color || '')}>
-                    {TIER_CONFIG[selectedCustomer.tier]?.icon} {selectedCustomer.tier}
+                  <span className={cn("px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border", TIER_CONFIG[selectedCustomer.tier]?.color || 'bg-slate-100 text-slate-500 border-slate-200')}>
+                    {TIER_CONFIG[selectedCustomer.tier]?.icon || '🥈'} {selectedCustomer.tier || 'Silver'}
                   </span>
                   {selectedCustomer.industry && (
                     <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-slate-50 text-slate-500 border border-slate-100">
@@ -434,155 +499,417 @@ export default function CustomersPage() {
                     </span>
                   )}
                 </div>
-                {/* Grade description */}
-                {selectedCustomer.grade && (
-                  <div className={cn('mt-2 p-3 rounded-xl border text-xs', GRADE_CONFIG[selectedCustomer.grade]?.color.replace('text-white', 'text-slate-700').replace(/bg-\w+-\d+/, 'bg-slate-50'))}>
-                    <p className="font-bold">{GRADE_CONFIG[selectedCustomer.grade]?.desc}</p>
-                    <p className="text-slate-500 mt-0.5">{GRADE_CONFIG[selectedCustomer.grade]?.priority}</p>
-                  </div>
-                )}
               </DialogHeader>
 
-              {/* Contact Info */}
-              <Card className="rounded-[2rem] bg-slate-50 border-none">
-                <div className="p-6 space-y-4">
-                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ข้อมูลติดต่อ</h3>
-                  <div className="space-y-3">
-                    {selectedCustomer.email && (
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm"><Mail size={14} className="text-slate-400" /></div>
-                        <span className="text-sm font-bold text-slate-700">{selectedCustomer.email}</span>
-                      </div>
-                    )}
-                    {selectedCustomer.phone && (
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm"><Phone size={14} className="text-slate-400" /></div>
-                        <span className="text-sm font-bold text-slate-700">{selectedCustomer.phone}</span>
-                      </div>
-                    )}
-                    {selectedCustomer.address && (
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm"><Building2 size={14} className="text-slate-400" /></div>
-                        <span className="text-sm font-bold text-slate-700">{selectedCustomer.address}</span>
-                      </div>
-                    )}
-                    {selectedCustomer.tax_id && (
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm"><Star size={14} className="text-slate-400" /></div>
-                        <span className="text-sm font-bold text-slate-700">Tax ID: {selectedCustomer.tax_id}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="rounded-[2rem] bg-white border border-slate-100 shadow-sm">
-                <div className="p-6 space-y-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-                        <HeartPulse size={16} />
-                      </div>
-                      <div>
-                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Account health</h3>
-                        <p className="text-sm font-bold text-slate-800">
-                          {HEALTH_CONFIG[selectedCustomer.health?.status]?.label || 'Healthy'}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-2xl font-black text-slate-900 tabular-nums">{selectedCustomer.health?.score ?? 0}%</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="rounded-2xl bg-slate-50 p-3">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Win rate</p>
-                      <p className="text-lg font-black text-slate-900 tabular-nums">{selectedCustomer.health?.winRate || 0}%</p>
-                    </div>
-                    <div className="rounded-2xl bg-slate-50 p-3">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Risks</p>
-                      <p className="text-lg font-black text-rose-500 tabular-nums">{selectedCustomer.health?.riskCount || 0}</p>
-                    </div>
-                    <div className="rounded-2xl bg-slate-50 p-3">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Idle</p>
-                      <p className="text-lg font-black text-slate-900 tabular-nums">
-                        {selectedCustomer.health?.inactiveDays ?? 0}d
-                      </p>
-                    </div>
-                  </div>
-                  <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4">
-                    <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1">Next best action</p>
-                    <p className="text-sm font-bold text-slate-700">{selectedCustomer.health?.nextAction}</p>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Deal Stats */}
-              <div className="grid grid-cols-2 gap-4">
-                <Card className="rounded-[2rem] bg-slate-50 border-none p-6">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">มูลค่ารวมที่ปิดได้</p>
-                  <p className="text-2xl font-black text-emerald-600 tabular-nums">{formatFullCurrency(selectedCustomer.dealStats.wonValue)}</p>
-                </Card>
-                <Card className="rounded-[2rem] bg-slate-50 border-none p-6">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">ดีลที่กำลังดำเนินการ</p>
-                  <p className="text-2xl font-black text-primary tabular-nums">{formatFullCurrency(selectedCustomer.dealStats.activeValue)}</p>
-                </Card>
+              {/* Tab Navigation */}
+              <div className="flex gap-1.5 p-1 bg-slate-100 rounded-xl overflow-x-auto no-scrollbar">
+                {[
+                  { id: 'profile', label: 'ข้อมูล & แก้ไข', icon: Users },
+                  { id: 'playbook', label: 'คู่มือ AI & สุขภาพ', icon: Sparkles },
+                  { id: 'deals', label: 'ประวัติดีลการขาย', icon: Target },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeDetailTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveDetailTab(tab.id)}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all duration-200",
+                        isActive
+                          ? "bg-white text-violet-750 shadow-sm font-bold border border-slate-200/50"
+                          : "text-slate-500 hover:text-slate-800"
+                      )}
+                    >
+                      <Icon size={13} className={isActive ? "text-violet-600" : ""} />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Deal History */}
-              <div className="space-y-4">
-                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">ประวัติดีล ({selectedCustomer.dealStats.total})</h3>
-                <div className="space-y-2.5">
-                  {selectedCustomer.dealStats.deals.map(deal => (
-                    <Card key={deal.id} className="rounded-2xl bg-slate-50 border-none p-4">
-                      <div className="flex justify-between items-center gap-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-slate-900 truncate">{deal.title}</p>
-                          <p className="text-xs text-slate-400 mt-0.5">
-                            {formatFullCurrency(deal.value)}
+              <div className="mt-4">
+                <AnimatePresence mode="wait">
+                  {activeDetailTab === 'profile' && localCustomer && (
+                    <motion.div
+                      key="detail-profile"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.15 }}
+                      className="space-y-4"
+                    >
+                      {selectedCustomer._fromDeals && (
+                        <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-100 text-xs font-semibold text-blue-800 flex items-start gap-2">
+                          <AlertTriangle size={15} className="shrink-0 text-blue-500 mt-0.5" />
+                          <p>
+                            ระบบสร้างข้อมูลลูกค้ารายนี้จากดีลการขายชั่วคราว กรุณากดปุ่ม <strong>&quot;บันทึกเป็นลูกค้าทางการ&quot;</strong> เพื่อยืนยันลงทะเบียนอย่างเป็นทางการ
                           </p>
                         </div>
-                        <div className={cn("px-2.5 py-1 rounded-full text-xs font-medium shrink-0",
-                          deal.stage === 'won' ? 'bg-emerald-50 text-emerald-600' :
-                          deal.stage === 'lost' ? 'bg-rose-50 text-rose-500' :
-                          'bg-slate-100 text-slate-600'
-                        )}>
-                          {STAGE_LABELS[deal.stage] || deal.stage}
+                      )}
+
+                      <form onSubmit={handleSaveCustomer} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                          <div className="col-span-2 space-y-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ชื่อลูกค้า *</label>
+                            <Input
+                              required
+                              value={localCustomer.name}
+                              onChange={e => setLocalCustomer(p => ({ ...p, name: e.target.value }))}
+                              className="h-11 rounded-xl bg-white border-slate-200 text-sm font-bold focus:border-violet-400"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">บริษัท</label>
+                            <Input
+                              value={localCustomer.company}
+                              onChange={e => setLocalCustomer(p => ({ ...p, company: e.target.value }))}
+                              className="h-11 rounded-xl bg-white border-slate-200 text-sm focus:border-violet-400"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">อุตสาหกรรม</label>
+                            <Input
+                              value={localCustomer.industry}
+                              onChange={e => setLocalCustomer(p => ({ ...p, industry: e.target.value }))}
+                              className="h-11 rounded-xl bg-white border-slate-200 text-sm focus:border-violet-400"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ระดับลูกค้า (Tier)</label>
+                            <select
+                              value={localCustomer.tier}
+                              onChange={e => setLocalCustomer(p => ({ ...p, tier: e.target.value }))}
+                              className="w-full h-11 rounded-xl bg-white border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-violet-400"
+                            >
+                              <option value="Silver">🥈 Silver</option>
+                              <option value="Gold">🥇 Gold</option>
+                              <option value="Platinum">💎 Platinum</option>
+                            </select>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">เลขประจำตัวผู้เสียภาษี</label>
+                            <Input
+                              placeholder="ระบุ Tax ID"
+                              value={localCustomer.tax_id || ''}
+                              onChange={e => setLocalCustomer(p => ({ ...p, tax_id: e.target.value }))}
+                              className="h-11 rounded-xl bg-white border-slate-200 text-sm focus:border-violet-400"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                          <div className="space-y-1 col-span-2 md:col-span-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">อีเมล</label>
+                            <Input
+                              type="email"
+                              value={localCustomer.email}
+                              onChange={e => setLocalCustomer(p => ({ ...p, email: e.target.value }))}
+                              className="h-11 rounded-xl bg-white border-slate-200 text-sm focus:border-violet-400"
+                            />
+                          </div>
+                          <div className="space-y-1 col-span-2 md:col-span-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">เบอร์โทร</label>
+                            <Input
+                              value={localCustomer.phone}
+                              onChange={e => setLocalCustomer(p => ({ ...p, phone: e.target.value }))}
+                              className="h-11 rounded-xl bg-white border-slate-200 text-sm focus:border-violet-400"
+                            />
+                          </div>
+                          <div className="col-span-2 space-y-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ที่อยู่</label>
+                            <Input
+                              value={localCustomer.address || ''}
+                              onChange={e => setLocalCustomer(p => ({ ...p, address: e.target.value }))}
+                              className="h-11 rounded-xl bg-white border-slate-200 text-sm focus:border-violet-400"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">บันทึกเพิ่มเติม</label>
+                          <Textarea
+                            value={localCustomer.notes}
+                            onChange={e => setLocalCustomer(p => ({ ...p, notes: e.target.value }))}
+                            className="rounded-xl bg-white border-slate-200 resize-none min-h-[80px] text-sm focus:border-violet-400"
+                          />
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                          {selectedCustomer._fromDeals ? (
+                            <Button
+                              type="button"
+                              onClick={async () => {
+                                await handleConvertSynthetic(selectedCustomer);
+                              }}
+                              className="w-full h-12 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs uppercase tracking-widest border-0 flex items-center justify-center gap-2"
+                              disabled={createCustomerMutation.isPending}
+                            >
+                              <Plus size={15} /> บันทึกเป็นลูกค้าทางการ
+                            </Button>
+                          ) : (
+                            <>
+                              <Button
+                                type="submit"
+                                className="flex-[2] h-12 rounded-xl bg-slate-900 hover:bg-slate-700 border-0 text-white font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+                                disabled={updateCustomerMutation.isPending}
+                              >
+                                {updateCustomerMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Settings size={14} />}
+                                อัปเดตข้อมูลลูกค้า
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                className="flex-1 h-12 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+                                onClick={() => setConfirmDelete({ open: true, customerId: selectedCustomer.id })}
+                              >
+                                <Trash2 size={14} /> ลบลูกค้า
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </form>
+                    </motion.div>
+                  )}
+
+                  {activeDetailTab === 'playbook' && (
+                    <motion.div
+                      key="detail-playbook"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.15 }}
+                      className="space-y-6"
+                    >
+                      {/* Account Health Meter */}
+                      <Card className="rounded-[2rem] bg-white border border-slate-100 shadow-sm">
+                        <div className="p-6 space-y-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                                <HeartPulse size={16} />
+                              </div>
+                              <div>
+                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Account Health Score</h3>
+                                <p className="text-sm font-bold text-slate-800">
+                                  {HEALTH_CONFIG[selectedCustomer.health?.status]?.label || 'Healthy'}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="text-2xl font-black text-slate-900 tabular-nums">{selectedCustomer.health?.score ?? 0}%</span>
+                          </div>
+                          <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${selectedCustomer.health?.score ?? 0}%` }}
+                              className={cn(
+                                'h-full rounded-full transition-all',
+                                selectedCustomer.health?.status === 'at_risk' ? 'bg-rose-500'
+                                  : selectedCustomer.health?.status === 'watch' ? 'bg-amber-500'
+                                  : selectedCustomer.health?.status === 'growth' ? 'bg-blue-500'
+                                  : 'bg-emerald-500'
+                              )}
+                            />
+                          </div>
+                          <div className="grid grid-cols-3 gap-3 pt-2">
+                            <div className="rounded-2xl bg-slate-50 p-3">
+                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Win rate</p>
+                              <p className="text-base font-black text-slate-900 tabular-nums">{selectedCustomer.health?.winRate || 0}%</p>
+                            </div>
+                            <div className="rounded-2xl bg-slate-50 p-3">
+                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Risks</p>
+                              <p className="text-base font-black text-rose-500 tabular-nums">{selectedCustomer.health?.riskCount || 0}</p>
+                            </div>
+                            <div className="rounded-2xl bg-slate-50 p-3">
+                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Idle Days</p>
+                              <p className="text-base font-black text-slate-900 tabular-nums">
+                                {selectedCustomer.health?.inactiveDays ?? 0} วัน
+                              </p>
+                            </div>
+                          </div>
+                          <div className="rounded-2xl bg-blue-50/50 border border-blue-100 p-4">
+                            <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1">ก้าวสำคัญถัดไป (Next Best Action)</p>
+                            <p className="text-xs font-semibold text-slate-700 leading-relaxed">{selectedCustomer.health?.nextAction}</p>
+                          </div>
+                        </div>
+                      </Card>
+
+                      {/* AI Care Playbook Guidance based on Grade */}
+                      <Card className="rounded-[2.5rem] border-violet-200/50 bg-violet-50/20 border shadow-sm">
+                        <div className="p-6 space-y-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-white border border-violet-100 flex items-center justify-center text-violet-600 shadow-sm">
+                              <Sparkles size={18} />
+                            </div>
+                            <div>
+                              <h3 className="text-xs font-black uppercase tracking-widest text-violet-750">AI Customer Care Playbook</h3>
+                              <p className="text-[9px] font-bold text-violet-400 uppercase tracking-widest">การดูแลแบบแบ่งเกรดอัจฉริยะ</p>
+                            </div>
+                          </div>
+
+                          {/* Render custom playbook based on grade */}
+                          {(() => {
+                            const grade = selectedCustomer.grade || 'C'; // default to C if no grade
+                            const playbookData = {
+                              A: {
+                                strategy: 'VIP Strategy: High-touch Engagement',
+                                detail: 'ลูกค้ากลุ่มทองคำที่มีมูลค่าสูงสุดและมีประวัติปิดดีลสำเร็จเป็นอย่างดี',
+                                actionList: [
+                                  'จัดตั้งทีมงานผู้จัดการดูแลลูกค้าคนสำคัญ (Key Account Manager) โดยเฉพาะ',
+                                  'นัดคุยความต้องการแบบ High-touch ทุก 3 เดือน (เช่น เลี้ยงรับประทานอาหารกลางวันหรือตีกอล์ฟกระชับมิตร)',
+                                  'ส่งของขวัญวันสำคัญ หรือสิทธิพิเศษ VIP ให้ก่อนใคร',
+                                  'จัดเตรียมพรีวิวบริการ หรือความช่วยเหลือทางเทคนิกระดับพิเศษด่วนตลอด 24 ชม.'
+                                ],
+                                cardColor: 'bg-emerald-50 text-emerald-800 border-emerald-100',
+                                iconColor: 'text-emerald-500'
+                              },
+                              B: {
+                                strategy: 'Growth Strategy: Upsell & Expansion',
+                                detail: 'ลูกค้าที่มีประวัติที่ดีและมีศักยภาพการจัดงบประมาณเพิ่มในอนาคต',
+                                actionList: [
+                                  'ติดต่อสม่ำเสมอ แนะนำเทคโนโลยี/โซลูชันบริการที่เพิ่งเปิดตัวใหม่',
+                                  'เสนอโอกาสทำเวิร์กชอปร่วมกันเพื่อหาโอกาสจัดจ้างเพิ่มเติม (Cross-sell/Upsell)',
+                                  'วิเคราะห์ข้อมูลการใช้งานระบบเดิมเพื่อเสนอแผนต่ออายุสัญญาระยะยาว',
+                                  'ตอบรับคำขอและคอยประเมินข้อเสนอใหม่ภายใน 24 ชั่วโมง'
+                                ],
+                                cardColor: 'bg-blue-50 text-blue-800 border-blue-100',
+                                iconColor: 'text-blue-500'
+                              },
+                              C: {
+                                strategy: 'Retention Strategy: Relationship Maintenance',
+                                detail: 'ลูกค้าทั่วไปที่ไม่มีความเคลื่อนไหวใหญ่แต่มีความสม่ำเสมอในการใช้งาน',
+                                actionList: [
+                                  'ดูแลตามมาตรฐานอย่างทั่วถึง ป้องกันไม่ให้อัญเชิญเปลี่ยนใจไปหาคู่แข่ง',
+                                  'จัดส่งจดหมายข่าวความรู้ข่าวสารระบบ (Newsletters) รายสัปดาห์',
+                                  'ส่งแบบประเมินความพึงพอใจการใช้งานทุก 6 เดือนเพื่อเช็คความเสี่ยง',
+                                  'ช่วยเหลือให้ข้อมูลในช่องทางซัพพอร์ตตามปกติ'
+                                ],
+                                cardColor: 'bg-amber-50 text-amber-800 border-amber-100',
+                                iconColor: 'text-amber-500'
+                              },
+                              D: {
+                                strategy: 'Recovery Strategy: Customer Rescue Plan',
+                                detail: 'ลูกค้าที่เสี่ยงหลุดหรือมีดีลหยุดนิ่งนาน ต้องรีบเข้าทำเพื่อดึงความมั่นใจกลับคืน',
+                                actionList: [
+                                  'จัดทำแผนฟื้นฟูด่วน (Recovery Plan) นัดประชุมเปิดอกพูดคุยกับผู้บริหารลูกค้าโดยตรง',
+                                  'วิเคราะห์ปัญหาและอุปสรรคสำคัญ (Blockers) ที่มีต่อการปิดดีล',
+                                  'เสนอแพ็คเกจส่วนลดพิเศษ หรือตัวเลือกทดลองใช้งานฟรีก่อนตัดสินใจใหม่',
+                                  'หากประเมินแล้วไม่พร้อมฟื้นฟู ให้จัดสรรความพยายามไปกลุ่มอื่นชั่วคราว'
+                                ],
+                                cardColor: 'bg-rose-50 text-rose-800 border-rose-100',
+                                iconColor: 'text-rose-500'
+                              }
+                            }[grade] || {
+                              strategy: 'Standard Strategy: Standard Care',
+                              detail: 'ลูกค้าที่ไม่มีประวัติการขาย ให้ดูแลตามแผนเริ่มต้นมาตรฐาน',
+                              actionList: [
+                                'ทำความคุ้นเคยสอบถามธุรกิจเบื้องต้น',
+                                'แนะนำความเชี่ยวชาญของทีมงานและบริการหลัก'
+                              ],
+                              cardColor: 'bg-slate-50 text-slate-800 border-slate-100',
+                              iconColor: 'text-slate-400'
+                            };
+
+                            return (
+                              <div className="space-y-4">
+                                <div className={cn("p-4 rounded-xl border", playbookData.cardColor)}>
+                                  <h4 className="text-xs font-bold uppercase tracking-wider">{playbookData.strategy}</h4>
+                                  <p className="text-xs opacity-90 mt-1 leading-relaxed">{playbookData.detail}</p>
+                                </div>
+                                <div className="space-y-2.5">
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">เช็คลิสต์แนะนำ (AI Directives Checklist)</p>
+                                  <ul className="space-y-2">
+                                    {playbookData.actionList.map((action, idx) => (
+                                      <li key={idx} className="flex items-start gap-2.5 text-xs">
+                                        <span className={cn("w-5 h-5 rounded-full bg-white border flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 shadow-sm", playbookData.iconColor)}>
+                                          {idx + 1}
+                                        </span>
+                                        <span className="text-slate-700 leading-relaxed font-semibold mt-0.5">{action}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </Card>
+                    </motion.div>
+                  )}
+
+                  {activeDetailTab === 'deals' && (
+                    <motion.div
+                      key="detail-deals"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.15 }}
+                      className="space-y-6"
+                    >
+                      {/* Create Deal Direct Connection */}
+                      <Button
+                        onClick={() => {
+                          setPendingNewDealCustomer({
+                            id: selectedCustomer.id,
+                            name: selectedCustomer.name,
+                            company: selectedCustomer.company || '',
+                            email: selectedCustomer.email || '',
+                            phone: selectedCustomer.phone || '',
+                          });
+                          setIsSidebarOpen(false);
+                          navigate('/pipeline');
+                        }}
+                        className="w-full h-12 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs uppercase tracking-widest border-0 flex items-center justify-center gap-2 shadow-lg shadow-violet-500/10"
+                      >
+                        ➕ สร้างดีลการขายใหม่สำหรับลูกค้ารายนี้
+                      </Button>
+
+                      {/* Deal Values Summary */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <Card className="rounded-[2rem] bg-slate-50 border-none p-6">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">มูลค่ารวมที่ปิดได้</p>
+                          <p className="text-xl font-black text-emerald-600 tabular-nums">{formatFullCurrency(selectedCustomer.dealStats.wonValue)}</p>
+                        </Card>
+                        <Card className="rounded-[2rem] bg-slate-50 border-none p-6">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">ดีลที่กำลังดำเนินการ</p>
+                          <p className="text-xl font-black text-violet-750 tabular-nums">{formatFullCurrency(selectedCustomer.dealStats.activeValue)}</p>
+                        </Card>
+                      </div>
+
+                      {/* Deal List */}
+                      <div className="space-y-3">
+                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                          ประวัติรายการดีล ({selectedCustomer.dealStats.deals.length})
+                        </h3>
+                        <div className="space-y-2.5 max-h-[40vh] overflow-y-auto no-scrollbar pr-1">
+                          {selectedCustomer.dealStats.deals.map(deal => (
+                            <Card key={deal.id} className="rounded-2xl bg-slate-50 border-slate-100 p-4 border hover:border-slate-200 transition-colors">
+                              <div className="flex justify-between items-center gap-3">
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold text-slate-900 truncate leading-snug">{deal.title}</p>
+                                  <p className="text-xs text-slate-500 mt-1 font-semibold">
+                                    {formatCurrency(deal.value)} • โอกาสสำเร็จ {deal.probability}%
+                                  </p>
+                                </div>
+                                <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold uppercase shrink-0",
+                                  deal.stage === 'won' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+                                  deal.stage === 'lost' ? 'bg-rose-50 text-rose-500 border border-rose-100' :
+                                  'bg-slate-100 text-slate-600 border border-slate-200'
+                                )}>
+                                  {STAGE_LABELS[deal.stage] || deal.stage}
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                          {selectedCustomer.dealStats.deals.length === 0 && (
+                            <p className="text-xs text-slate-350 text-center py-10 font-semibold">ยังไม่มีดีลที่เชื่อมโยงกับลูกค้ารายนี้</p>
+                          )}
                         </div>
                       </div>
-                    </Card>
-                  ))}
-                  {selectedCustomer.dealStats.deals.length === 0 && (
-                    <p className="text-sm font-bold text-slate-300 text-center py-8">ยังไม่มีดีลที่เชื่อมกับลูกค้าคนนี้</p>
+                    </motion.div>
                   )}
-                </div>
-              </div>
-
-              {/* Notes */}
-              {selectedCustomer.notes && (
-                <Card className="rounded-[2rem] bg-amber-50/50 border-amber-100 p-6">
-                  <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-2">บันทึก</h3>
-                  <p className="text-sm font-medium text-slate-700 leading-relaxed">{selectedCustomer.notes}</p>
-                </Card>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-3">
-                {selectedCustomer._fromDeals ? (
-                  <Button
-                    className="flex-1 h-12 rounded-full bg-violet-600 hover:bg-violet-700 text-white transition-all font-black text-[10px] uppercase tracking-widest border-0"
-                    onClick={() => handleConvertSynthetic(selectedCustomer)}
-                    disabled={createCustomerMutation.isPending}
-                  >
-                    <Plus size={14} className="mr-2" /> บันทึกเป็นลูกค้า
-                  </Button>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    className="flex-1 h-12 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-black text-[10px] uppercase tracking-widest"
-                    onClick={() => setConfirmDelete({ open: true, customerId: selectedCustomer.id })}
-                  >
-                    <Trash2 size={14} className="mr-2" /> ลบลูกค้า
-                  </Button>
-                )}
+                </AnimatePresence>
               </div>
             </div>
           )}
