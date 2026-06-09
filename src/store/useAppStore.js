@@ -28,7 +28,7 @@ export const useAppStore = create(
       clearPendingNewDealCustomer: () => set({ pendingNewDealCustomer: null }),
     }),
     {
-      name: 'zenith-crm-store',
+      name: 'nova-pipeline-store',
       partialize: (state) => ({
         monthlyTarget: state.monthlyTarget,
       }),

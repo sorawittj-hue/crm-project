@@ -64,7 +64,7 @@ export default function LoginPage() {
               <Target size={22} className="text-white" />
             </div>
             <div>
-              <span className="text-white font-bold text-xl tracking-tight">Zenith CRM</span>
+              <span className="text-white font-bold text-xl tracking-tight">Nova Pipeline</span>
               <p className="text-violet-200 text-xs font-medium">Sales Intelligence Platform</p>
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function LoginPage() {
         </div>
 
         <div className="relative z-10 text-violet-300 text-xs">
-          © 2026 Zenith CRM. All rights reserved.
+          © 2026 Nova Pipeline. All rights reserved.
         </div>
       </div>
 
@@ -112,7 +112,7 @@ export default function LoginPage() {
             <div className="w-10 h-10 rounded-2xl bg-violet-600 flex items-center justify-center">
               <Target size={20} className="text-white" />
             </div>
-            <span className="font-bold text-xl text-slate-900">Zenith CRM</span>
+            <span className="font-bold text-xl text-slate-900">Nova Pipeline</span>
           </div>
 
           {/* Mode toggle */}
@@ -140,7 +140,7 @@ export default function LoginPage() {
               {isLogin ? 'ยินดีต้อนรับกลับมา' : 'สร้างบัญชีใหม่'}
             </h2>
             <p className="text-slate-500 text-sm">
-              {isLogin ? 'เข้าสู่ระบบเพื่อจัดการยอดขายของคุณ' : 'กรอกข้อมูลเพื่อเริ่มใช้งาน Zenith CRM'}
+              {isLogin ? 'เข้าสู่ระบบเพื่อจัดการยอดขายของคุณ' : 'กรอกข้อมูลเพื่อเริ่มใช้งาน Nova Pipeline'}
             </p>
           </div>
 

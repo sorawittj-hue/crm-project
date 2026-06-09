@@ -311,8 +311,8 @@ export default function AppLayout() {
                   <Target size={16} className="text-white" />
                 </div>
                 <div>
-                  <span className="font-bold text-slate-900 text-base leading-none">Zenith</span>
-                  <p className="text-[10px] text-slate-400 leading-none mt-0.5">Sales CRM</p>
+                  <span className="font-bold text-slate-900 text-base leading-none">Nova</span>
+                  <p className="text-[10px] text-violet-605 font-bold leading-none mt-0.5 uppercase tracking-wider">Pipeline</p>
                 </div>
               </div>
               <button onClick={closeSidebar} aria-label="ปิดเมนู" className="lg:hidden p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all">
@@ -395,8 +395,8 @@ export default function AppLayout() {
 
             {/* Developer credit */}
             <div className="px-4 pb-4 pt-2 border-t border-slate-100 mt-2">
-              <p className="text-[10px] text-slate-300 font-medium leading-relaxed">
-                Zenith CRM <span className="text-slate-200">v2.1</span>
+              <p className="text-[10px] text-slate-300 font-semibold leading-relaxed">
+                Nova Pipeline <span className="text-slate-200">v2.1</span>
               </p>
               <p className="text-[10px] text-slate-300 mt-0.5">
                 Dev by <span className="font-semibold text-slate-400">Sorawit Thunthakij</span>
