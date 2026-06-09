@@ -584,7 +584,7 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose, o
                 onChange={(e) => {
                   const s = e.target.value;
                   if (s === 'won' || s === 'lost') {
-                    openCloseModal(s);
+                    onRequestCloseStage?.(s);
                   } else {
                     setField('stage', s);
                     onUpdate(deal.id, { stage: s });

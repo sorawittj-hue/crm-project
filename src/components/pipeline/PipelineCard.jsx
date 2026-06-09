@@ -55,10 +55,10 @@ export const PipelineCard = React.memo(React.forwardRef(({
         onDragStart={(e) => onDragStart(e, deal)}
         onClick={() => onClick(deal)}
         className={cn(
-          "group relative cursor-grab active:cursor-grabbing border border-white/5 bg-white/5 backdrop-blur-lg transition-all overflow-hidden hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10",
-          isSelected && "ring-2 ring-primary bg-primary/10",
-          isCritical && "border-red-500/30 shadow-lg shadow-red-500/10",
-          isStale && !isCritical && "border-amber-500/30"
+          "group relative cursor-grab active:cursor-grabbing border border-slate-200/65 bg-white transition-all overflow-hidden hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5",
+          isSelected && "ring-2 ring-primary bg-primary/5 border-primary/25",
+          isCritical && "border-rose-200 bg-rose-50/10 shadow-sm shadow-rose-500/5",
+          isStale && !isCritical && "border-amber-200 bg-amber-50/10"
         )}
       >
         <CardContent className="p-4 space-y-3">
@@ -96,7 +96,7 @@ export const PipelineCard = React.memo(React.forwardRef(({
           </h4>
 
           {/* FOOTER: Value + Probability + Days */}
-          <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
+          <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
             <div className="flex flex-col">
               <span className="text-[11px] font-black tabular-nums tracking-tighter text-foreground">
                 {formatCurrency(deal.value)}
@@ -125,7 +125,7 @@ export const PipelineCard = React.memo(React.forwardRef(({
 
           {/* PROBABILITY BAR */}
           {probability > 0 && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/5">
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-100">
               <div
                 className={cn(
                   "h-full transition-all duration-500",
@@ -139,26 +139,26 @@ export const PipelineCard = React.memo(React.forwardRef(({
           )}
 
           {/* HOVER ACTIONS */}
-          <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-sm">
+          <div className="absolute inset-0 bg-white/95 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm">
             <Button
               size="xs"
-              className="h-8 w-8 rounded-full bg-primary hover:bg-primary/80"
+              className="h-8 w-8 rounded-full bg-violet-600 hover:bg-violet-750 text-white flex items-center justify-center shadow-sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onUpdateDeal(deal.id, { last_activity: new Date().toISOString() });
               }}
-              title="Log Activity"
+              title="บันทึกกิจกรรม"
             >
               <PhoneCall size={12} />
             </Button>
             <Button
               size="xs"
-              className="h-8 w-8 rounded-full bg-emerald-600 hover:bg-emerald-700"
+              className="h-8 w-8 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center shadow-sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onUpdateDeal(deal.id, { stage: 'won' });
               }}
-              title="Mark as Won"
+              title="ทำเครื่องหมายว่าชนะ"
             >
               <CheckCircle2 size={12} />
             </Button>
