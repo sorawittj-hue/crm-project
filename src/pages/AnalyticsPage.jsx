@@ -4,12 +4,13 @@ import { useSettings } from '../hooks/useSettings';
 import { useTeam } from '../hooks/useTeam';
 import { useAuth } from '../hooks/useAuth';
 import { useMyProfile } from '../hooks/useUserProfiles';
+import { useCustomers } from '../hooks/useCustomers';
 import { Card } from '../components/ui/Card';
-import { motion, animate } from 'framer-motion';
+import { motion, animate, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/formatters';
 import { STAGE_COLORS, STAGE_LABELS } from '../lib/constants';
-import { buildPipelineIntelligence, DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
+import { buildPipelineIntelligence, buildCustomerHealth, DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
 import {
@@ -20,7 +21,7 @@ import {
 import {
   Target, ArrowUpRight, ArrowDownRight, Loader2,
   Activity, DollarSign, ShieldCheck, ThumbsUp, ThumbsDown, AlertCircle,
-  Trophy, Zap, Clock, Sparkles, TrendingUp
+  Trophy, Zap, Clock, Sparkles, TrendingUp, Sliders, Info, Briefcase
 } from 'lucide-react';
 
 // --- Premium Animated Number Component ---
@@ -47,7 +48,7 @@ function AnimatedNumber({ value, formatter, duration = 1.2 }) {
 }
 
 // --- Premium Metric Card ---
-const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Icon, trend, color = "primary", delay = 0 }) => {
+const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Icon, trend, color = "primary", sparklineData, delay = 0 }) => {
   const colorStyles = {
     primary: "text-violet-600 bg-violet-50/80 border-violet-100",
     emerald: "text-emerald-600 bg-emerald-50/80 border-emerald-100",
@@ -92,9 +93,45 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
           </div>
           <div className="space-y-1">
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{title}</p>
-            <h3 className="text-2xl font-black text-slate-900 tabular-nums leading-none tracking-tight">
-              {numericValue !== undefined ? <AnimatedNumber value={numericValue} formatter={formatter} /> : value}
-            </h3>
+            <div className="flex items-baseline justify-between gap-2">
+              <h3 className="text-2xl font-black text-slate-900 tabular-nums leading-none tracking-tight">
+                {numericValue !== undefined ? <AnimatedNumber value={numericValue} formatter={formatter} /> : value}
+              </h3>
+              
+              {/* Premium Sparkline */}
+              {sparklineData && sparklineData.length > 1 && (
+                <div className="w-16 h-8 shrink-0">
+                  <svg className="w-full h-full overflow-visible" viewBox="0 0 60 20">
+                    <defs>
+                      <filter id={`sparkline-glow-${title.replace(/\s+/g, '-')}`} x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor={color === 'emerald' ? '#10b981' : color === 'rose' ? '#ef4444' : color === 'amber' ? '#f59e0b' : '#8b5cf6'} floodOpacity="0.3"/>
+                      </filter>
+                    </defs>
+                    <motion.path
+                      d={(() => {
+                        const min = Math.min(...sparklineData);
+                        const max = Math.max(...sparklineData);
+                        const range = max - min || 1;
+                        return sparklineData.map((val, idx) => {
+                          const x = (idx / (sparklineData.length - 1)) * 60;
+                          const y = 20 - ((val - min) / range) * 16 - 2;
+                          return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
+                        }).join(' ');
+                      })()}
+                      fill="none"
+                      stroke={color === 'emerald' ? '#10b981' : color === 'rose' ? '#ef4444' : color === 'amber' ? '#f59e0b' : color === 'slate' ? '#64748b' : '#8b5cf6'}
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      filter={`url(#sparkline-glow-${title.replace(/\s+/g, '-')})`}
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 1.2, ease: "easeInOut", delay: delay + 0.3 }}
+                    />
+                  </svg>
+                </div>
+              )}
+            </div>
             {subValue && <p className="text-xs text-slate-500 font-medium mt-1.5">{subValue}</p>}
           </div>
         </div>
@@ -111,8 +148,16 @@ export default function AnalyticsPage() {
   const { data: deals, isLoading: dealsLoading } = useDeals();
   const { data: settings, isLoading: settingsLoading } = useSettings();
   const { data: teamMembers, isLoading: teamLoading } = useTeam();
+  const { data: customers = [] } = useCustomers();
 
   const [timeRange, setTimeRange] = useState('6m');
+  const [activeTab, setActiveTab] = useState('overview'); // overview, funnel, performance, segments
+  const [selectedPrompt, setSelectedPrompt] = useState(null); // high-risk, quota, bottleneck
+
+  // Simulator States
+  const [simWinRate, setSimWinRate] = useState(40);
+  const [simAvgValue, setSimAvgValue] = useState(200000);
+  const [simLeads, setSimLeads] = useState(20);
 
   const teamTarget = settings?.monthly_target || 10000000;
   const monthlyTarget = myProfile?.personal_target > 0 ? myProfile.personal_target : teamTarget;
@@ -125,6 +170,45 @@ export default function AnalyticsPage() {
     const currentYear = today.getFullYear();
     const monthsBack = timeRange === '3m' ? 2 : timeRange === '6m' ? 5 : 11;
     const intelligence = buildPipelineIntelligence(deals, { monthlyGoal: monthlyTarget, now: today });
+
+    // Customer Segment Enriched Stats
+    const customerHealth = buildCustomerHealth(customers, deals, { now: today });
+
+    // Grouping by Industry
+    const industryMap = {};
+    customerHealth.forEach(c => {
+      const ind = c.industry || 'ไม่ระบุ';
+      if (!industryMap[ind]) {
+        industryMap[ind] = { name: ind, revenue: 0, count: 0 };
+      }
+      industryMap[ind].revenue += c.dealStats.wonValue || 0;
+      industryMap[ind].count += c.dealStats.total || 0;
+    });
+    const industryData = Object.values(industryMap)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+
+    // Grouping by Tier
+    const tierMap = { Platinum: { name: 'Platinum', revenue: 0, pipeline: 0 }, Gold: { name: 'Gold', revenue: 0, pipeline: 0 }, Silver: { name: 'Silver', revenue: 0, pipeline: 0 } };
+    customerHealth.forEach(c => {
+      const tier = c.tier || 'Silver';
+      if (!tierMap[tier]) {
+        tierMap[tier] = { name: tier, revenue: 0, pipeline: 0 };
+      }
+      tierMap[tier].revenue += c.dealStats.wonValue || 0;
+      tierMap[tier].pipeline += c.dealStats.activeValue || 0;
+    });
+    const tierData = Object.values(tierMap);
+
+    // Grouping by Customer Grade
+    const gradeMap = { A: { name: 'เกรด A — VIP', value: 0, color: '#3b82f6' }, B: { name: 'เกรด B — เติบโต', value: 0, color: '#10b981' }, C: { name: 'เกรด C — ทั่วไป', value: 0, color: '#f59e0b' }, D: { name: 'เกรด D — เฝ้าระวัง', value: 0, color: '#ef4444' } };
+    customerHealth.forEach(c => {
+      const grade = c.grade || 'C';
+      if (gradeMap[grade]) {
+        gradeMap[grade].value += c.dealStats.wonValue || 0;
+      }
+    });
+    const gradeData = Object.values(gradeMap).filter(g => g.value > 0);
 
     // Revenue Stream
     const revenueStream = [];
@@ -322,10 +406,63 @@ export default function AnalyticsPage() {
       velocityData,
       teamLeaderboard,
       revenueByMember,
+      industryData,
+      tierData,
+      gradeData,
     };
-  }, [deals, monthlyTarget, timeRange, teamMembers]);
+  }, [deals, customers, monthlyTarget, timeRange, teamMembers]);
 
   const isLoading = dealsLoading || settingsLoading || teamLoading;
+
+  useEffect(() => {
+    if (analytics) {
+      setSimWinRate(analytics.winRate || 40);
+      setSimAvgValue(analytics.avgDealValue || 200000);
+      setSimLeads(analytics.activeCount || 20);
+    }
+  }, [analytics]);
+
+  const simulatedRevenue = simLeads * simAvgValue * (simWinRate / 100);
+  const simQuotaAttainment = monthlyTarget > 0 ? Math.round((simulatedRevenue / monthlyTarget) * 100) : 0;
+
+  const aiConsultantResponses = useMemo(() => {
+    if (!analytics) return {};
+    
+    const atRisk = analytics.intelligence.highImpactRisks || [];
+    const riskText = atRisk.length === 0
+      ? 'ไม่พบดีลที่มีความเสี่ยงสูงในระบบขณะนี้ ทุกดีลได้รับการดูแลอย่างสม่ำเสมอ'
+      : `ดีลกลุ่มเสี่ยงสูง (${atRisk.length} ดีล, มูลค่ารวม ${formatCurrency(analytics.intelligence.atRiskValue)}):\n\n` +
+        atRisk.map((d, i) => `${i+1}. บริษัท **${d.company}** (มูลค่า ${formatCurrency(d.value)}) — ไม่มีความเคลื่อนไหว ${d.daysInactive} วัน\n   -> คำแนะนำ: *${d.recommendedAction}*`).join('\n\n');
+
+    const gap = analytics.intelligence.goalGap;
+    const forecast = analytics.intelligence.forecastToGoalValue;
+    const coverage = Math.round((forecast / monthlyTarget) * 100);
+    const quotaText = gap <= 0
+      ? `🎉 ยินดีด้วย! ยอดขายจริงในเดือนนี้คือ ${formatCurrency(analytics.currentMonthActual)} ทะลุเป้าหมายที่ตั้งไว้ที่ ${formatCurrency(monthlyTarget)}`
+      : `การประเมินโอกาสยอดขายถึงเป้า (เป้าหมาย: ${formatCurrency(monthlyTarget)}):\n\n` +
+        `- ยอดขายปิดได้แล้ว: **${formatCurrency(analytics.currentMonthActual)}**\n` +
+        `- ยอดขายคาดการณ์ถ่วงน้ำหนัก (Forecast): **${formatCurrency(forecast)}** (คิดเป็น **${coverage}%** ของเป้า)\n` +
+        `- ยอดขายส่วนขาด (Goal Gap): **${formatCurrency(gap)}**\n\n` +
+        `-> คำแนะนำเชิงรุก: เพื่อปิดช่องว่าง ${formatCurrency(gap)} เซลส์ควรเร่งกระตุ้นดีลในสถานะ 'กำลังปิด' หรือนำดีลใหญ่ที่มีค่าถ่วงน้ำหนักสูงมาเร่งปิดล่วงหน้า`;
+
+    const funnel = analytics.funnelData || [];
+    const lowest = [...funnel].slice(1).sort((a, b) => a.conversionRate - b.conversionRate)[0];
+    const bottleneckText = !lowest
+      ? 'ข้อมูลไม่เพียงพอในการวิเคราะห์คอขวดขั้นตอนการขาย'
+      : `วิเคราะห์คอขวดขั้นตอนการขาย:\n\n` +
+        `ขั้นตอนการแปลงข้อมูลที่ประสิทธิภาพต่ำสุดคือ **'${lowest.label}'** (Pass Rate: **${lowest.conversionRate}%**)\n\n` +
+        `-> แนวทางแก้ไขเชิงกลยุทธ์:\n` +
+        (lowest.stage === 'contact' ? `  - เซลส์ควรเตรียม Case Study และ Solution Demo ที่เจาะจงกับ Pain Point ของลูกค้าในขั้นตอนนัดเจอให้ละเอียดมากขึ้นเพื่อผ่านไปเสนอราคา` :
+         lowest.stage === 'proposal' ? `  - เร่งปรับกระบวนการส่งและติดตามใบเสนอราคาภายใน 3 วันทำการ พร้อมให้ตัวเลือก (Options) ราคาหลายระดับ` :
+         lowest.stage === 'negotiation' ? `  - เสนอส่วนลดแบบมีเงื่อนเวลา (Time-bound discount) หรือประสานงานให้ผู้บริหารระดับสูงมีส่วนร่วมเพื่อเร่งลงนาม PO` :
+         `  - พัฒนาและติดตามการทำงานตามขั้นตอน AI Playbook อย่างใกล้ชิดเพื่อเพิ่มอัตราการแปลงของลูกค้า`);
+
+    return {
+      'high-risk': riskText,
+      'quota': quotaText,
+      'bottleneck': bottleneckText
+    };
+  }, [analytics, monthlyTarget]);
 
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center h-[60vh] gap-6">
@@ -356,7 +493,7 @@ export default function AnalyticsPage() {
               onClick={() => setTimeRange(val)}
               className={cn(
                 "px-5 py-2 rounded-xl text-xs font-bold transition-all duration-300",
-                timeRange === val ? "bg-white shadow-md text-violet-700" : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50"
+                timeRange === val ? "bg-white shadow-md text-violet-750" : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50"
               )}
             >
               {label}
@@ -365,472 +502,838 @@ export default function AnalyticsPage() {
         </div>
       </motion.div>
 
-      {/* AI EXECUTIVE SUMMARY (New Premium Widget) */}
-      {analytics?.intelligence?.executiveActions?.length > 0 && (
-        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
-          <Card className="p-6 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-              <Sparkles size={160} />
-            </div>
-            <div className="flex items-center gap-3 mb-6 relative z-10">
-              <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center border border-violet-500/30">
-                <Sparkles size={20} className="text-violet-300" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-white tracking-tight">AI Executive Insights</h3>
-                <p className="text-xs text-slate-400 font-medium">Recommended actions to hit quota and reduce risk.</p>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative z-10">
-              {analytics.intelligence.executiveActions.map((action, i) => (
-                <div key={action.id} className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className={cn(
-                      "text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full",
-                      action.priority === 'critical' ? "bg-rose-500/20 text-rose-300" :
-                      action.priority === 'high' ? "bg-amber-500/20 text-amber-300" :
-                      "bg-blue-500/20 text-blue-300"
-                    )}>
-                      {action.priority}
-                    </span>
-                    <span className="text-xs font-bold text-white tabular-nums">{action.count} Deals</span>
-                  </div>
-                  <h4 className="text-sm font-bold text-white mb-1.5 leading-snug">{action.title}</h4>
-                  <p className="text-xs text-slate-400 leading-relaxed mb-4">{action.description}</p>
-                  <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-                    <span className="text-[10px] text-slate-500 uppercase font-semibold">Value Impact</span>
-                    <span className="text-sm font-black text-emerald-400 tabular-nums">{formatCurrency(action.impactValue)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* PRIMARY KPI RIBBON */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
-        <MetricCard
-          title="Revenue This Month"
-          numericValue={analytics?.currentMonthActual}
-          formatter={(v) => formatCurrency(v)}
-          subValue={`Target: ${formatCurrency(monthlyTarget)}`}
-          trend={analytics?.growth}
-          icon={DollarSign}
-          color="emerald"
-          delay={0.1}
-        />
-        <MetricCard
-          title="Total Pipeline"
-          numericValue={analytics?.totalPipeline}
-          formatter={(v) => formatCurrency(v)}
-          subValue={`${analytics?.activeCount} active deals`}
-          icon={Activity}
-          color="primary"
-          delay={0.2}
-        />
-        <MetricCard
-          title="Weighted Forecast"
-          numericValue={analytics?.intelligence?.forecastToGoalValue}
-          formatter={(v) => formatCurrency(v)}
-          subValue={`${Math.round((analytics?.intelligence?.weightedCoverageRatio || 0) * 100)}% forecast coverage`}
-          icon={ShieldCheck}
-          color="amber"
-          delay={0.3}
-        />
-        <MetricCard
-          title="Global Win Rate"
-          numericValue={analytics?.winRate}
-          formatter={(v) => `${Math.round(v)}%`}
-          subValue="Across all closed deals"
-          icon={Target}
-          color="emerald"
-          delay={0.4}
-        />
-        <MetricCard
-          title="Avg Days to Close"
-          numericValue={analytics?.avgDaysToClose}
-          formatter={(v) => `${Math.round(v)} Days`}
-          subValue={`Avg Size ${formatCurrency(analytics?.avgDealValue)}`}
-          icon={Clock}
-          color="slate"
-          delay={0.5}
-        />
-      </div>
-
-      {/* REVENUE CHART + STAGE DONUT */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 p-7 rounded-3xl bg-white border border-slate-100 shadow-sm relative overflow-hidden">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-8">
-            <div>
-              <h3 className="text-base font-bold text-slate-900 tracking-tight">Revenue Trend</h3>
-              <p className="text-xs text-slate-400 mt-1 font-medium">Actuals vs Forecast vs Goal</p>
-            </div>
-            <div className="flex items-center gap-5 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
-              <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" /><span className="text-xs font-semibold text-slate-600">Actual</span></div>
-              <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-slate-300" /><span className="text-xs font-semibold text-slate-600">Pipeline</span></div>
-              <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-violet-500 shadow-sm shadow-violet-500/50" /><span className="text-xs font-semibold text-slate-600">Weighted</span></div>
-            </div>
-          </div>
-          <div className="h-[360px] w-full min-w-0 min-h-0">
-            <SafeResponsiveContainer>
-              <ComposedChart data={analytics?.revenueStream}>
-                <defs>
-                  <linearGradient id="colorActualAnalytics" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} dy={15} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }} />
-                <Bar dataKey="unweighted" name="Pipeline Volume" fill="#f1f5f9" radius={[8, 8, 0, 0]} barSize={40} />
-                <Area type="monotone" dataKey="actual" name="Actual Revenue" stroke="#10b981" strokeWidth={4} fill="url(#colorActualAnalytics)" animationDuration={1500} />
-                <Line type="monotone" dataKey="weighted" name="Weighted Forecast" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} />
-                <Line type="monotone" dataKey="target" name="Goal" stroke="#cbd5e1" strokeWidth={2} strokeDasharray="8 8" dot={false} />
-              </ComposedChart>
-            </SafeResponsiveContainer>
-          </div>
-        </Card>
-
-        <Card className="lg:col-span-1 p-7 rounded-3xl bg-white border border-slate-100 shadow-sm flex flex-col items-center">
-          <div className="w-full mb-6">
-            <h3 className="text-base font-bold text-slate-900 tracking-tight">Stage Distribution</h3>
-            <p className="text-xs text-slate-400 mt-1 font-medium">Pipeline health by volume</p>
-          </div>
-          <div className="relative w-full aspect-square max-w-[260px] min-w-0 min-h-0">
-            <SafeResponsiveContainer>
-              <PieChart>
-                <Pie data={analytics?.stageData} innerRadius={85} outerRadius={120} paddingAngle={4} dataKey="value" stroke="none">
-                  {analytics?.stageData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </SafeResponsiveContainer>
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-center">
-                <p className="text-4xl font-black text-slate-900 tracking-tighter">
-                  <AnimatedNumber value={analytics?.totalDeals || 0} />
-                </p>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Total Deals</p>
-              </div>
-            </div>
-          </div>
-          <div className="w-full mt-auto space-y-3 pt-6 border-t border-slate-100">
-            {analytics?.stageData.map((stage) => (
-              <div key={stage.name} className="flex items-center justify-between group">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: stage.color }} />
-                  <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">{stage.name}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-xs text-slate-400 font-medium">{formatCurrency(stage.totalValue)}</span>
-                  <span className="text-xs font-black text-slate-900 w-6 text-right tabular-nums">{stage.value}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </motion.div>
-
-      {/* CONVERSION FUNNEL & VELOCITY */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-        <Card className="p-8 rounded-3xl bg-white border border-slate-100 shadow-sm">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100/50">
-                <TrendingUp size={22} className="text-amber-500" strokeWidth={2.5} />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 tracking-tight">Conversion Funnel & Velocity</h3>
-                <p className="text-xs text-slate-500 mt-1 font-medium">Analyze drop-offs and stage bottlenecks</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 text-xs text-slate-500 font-medium bg-slate-50 px-4 py-2 rounded-xl">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/40" /> Excellent &gt;60%</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm shadow-amber-500/40" /> Average</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/40" /> Needs Work &lt;30%</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            {/* Funnel Progress Bars */}
-            <div className="col-span-2 space-y-4">
-              {analytics?.funnelData.map((item, i) => (
-                <div key={item.stage} className="relative">
-                  <div className="flex items-center gap-4 mb-2">
-                    <div className="w-28 shrink-0">
-                      <span className="text-sm font-bold text-slate-700">{item.label}</span>
-                    </div>
-                    <div className="flex-1 relative h-10 bg-slate-50 rounded-2xl overflow-hidden border border-slate-100/50">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${item.widthPct}%` }}
-                        transition={{ duration: 1, delay: i * 0.15, ease: [0.19, 1, 0.22, 1] }}
-                        className="absolute top-0 left-0 h-full rounded-2xl flex items-center px-4 gap-3 shadow-inner"
-                        style={{ backgroundColor: item.color + '20', borderLeft: `4px solid ${item.color}` }}
-                      >
-                        <span className="text-xs font-black" style={{ color: item.color }}>{item.count} Deals</span>
-                        <span className="text-[11px] font-bold text-slate-600 bg-white/50 px-2 py-0.5 rounded-lg">{formatCurrency(item.value)}</span>
-                      </motion.div>
-                    </div>
-                    <div className="w-28 shrink-0 text-right">
-                      {i === 0 ? (
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Start</span>
-                      ) : (
-                        <span className={cn(
-                          "text-xs font-black px-3 py-1.5 rounded-xl shadow-sm border",
-                          item.conversionRate >= 60 ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                          item.conversionRate >= 30 ? "bg-amber-50 text-amber-600 border-amber-100" :
-                          "bg-rose-50 text-rose-600 border-rose-100"
-                        )}>
-                          <AnimatedNumber value={item.conversionRate} formatter={v => `${Math.round(v)}%`} /> Pass
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  {i < (analytics.funnelData.length - 1) && (
-                    <div className="ml-28 pl-6 border-l-2 border-dashed border-slate-200 h-4" />
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Velocity Grid */}
-            <div className="col-span-1 bg-slate-50/50 rounded-3xl p-6 border border-slate-100">
-              <div className="flex items-center gap-2.5 mb-6">
-                <Clock size={16} className="text-slate-400" strokeWidth={2.5} />
-                <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Stage Velocity</p>
-              </div>
-              <div className="space-y-4">
-                {analytics?.velocityData.map((v) => (
-                  <div key={v.name} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div>
-                      <p className="text-sm font-bold text-slate-700">{v.name}</p>
-                      <p className="text-xs text-slate-400 font-medium mt-0.5">{v.count} active deals</p>
-                    </div>
-                    <div className="text-right flex items-baseline gap-1">
-                      <p className={cn(
-                        "text-3xl font-black tabular-nums tracking-tighter",
-                        v.days >= 7 ? "text-rose-500" : v.days >= 4 ? "text-amber-500" : "text-emerald-500"
-                      )}>
-                        <AnimatedNumber value={v.days} />
-                      </p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">Days</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </Card>
-      </motion.div>
-
-      {/* TEAM LEADERBOARD */}
-      {analytics?.teamLeaderboard && analytics.teamLeaderboard.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="space-y-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center border border-amber-200">
-              <Trophy size={22} className="text-amber-600" strokeWidth={2.5} />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 tracking-tight">Elite Leaderboard</h3>
-              <p className="text-xs text-slate-500 mt-1 font-medium">Top performers & Quota attainment</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {analytics.teamLeaderboard.map((m, i) => (
-              <motion.div
-                key={m.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 + i * 0.1 }}
+      {/* TAB NAVIGATION */}
+      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 pb-1">
+        <div className="inline-flex gap-2 bg-white/80 backdrop-blur-md border border-slate-200 p-1.5 rounded-2xl shadow-sm min-w-max">
+          {[
+            { id: 'overview', label: 'ภาพรวม & AI', icon: Sparkles },
+            { id: 'funnel', label: 'กรวยการขาย & คอขวด', icon: TrendingUp },
+            { id: 'performance', label: 'ผลงานทีม & Leaderboard', icon: Trophy },
+            { id: 'segments', label: 'เซกเมนต์ & เครื่องมือจำลอง', icon: Sliders },
+          ].map(tab => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id); setSelectedPrompt(null); }}
                 className={cn(
-                  "p-6 rounded-3xl border shadow-sm hover:shadow-xl transition-all duration-300 relative overflow-hidden group",
-                  i === 0 ? "bg-gradient-to-b from-amber-50/50 to-white border-amber-200/60" :
-                  i === 1 ? "bg-gradient-to-b from-slate-50/80 to-white border-slate-200/60" :
-                  i === 2 ? "bg-gradient-to-b from-orange-50/30 to-white border-orange-200/60" :
-                  "bg-white border-slate-100"
+                  'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap',
+                  isActive ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                 )}
               >
-                {/* Ranking Medals */}
-                <div className="absolute top-4 right-4">
-                  {i === 0 ? <div className="text-4xl drop-shadow-md">🥇</div> :
-                   i === 1 ? <div className="text-4xl drop-shadow-md">🥈</div> :
-                   i === 2 ? <div className="text-4xl drop-shadow-md">🥉</div> :
-                   <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-400 border border-slate-200">#{i + 1}</div>}
-                </div>
+                <Icon size={14} strokeWidth={2.5} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-                <div className="flex items-center gap-4 mb-6">
-                  <div className={cn(
-                    'w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md border-2 border-white',
-                    m.color?.split(' ')[0] || 'bg-violet-600'
-                  )}>
-                    {m.name.charAt(0)}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.25 }}
+          className="space-y-8"
+        >
+          {/* TAB 1: OVERVIEW */}
+          {activeTab === 'overview' && (
+            <>
+              {/* AI EXECUTIVE SUMMARY */}
+              {analytics?.intelligence?.executiveActions?.length > 0 && (
+                <Card className="p-6 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                    <Sparkles size={160} />
+                  </div>
+                  <div className="flex items-center gap-3 mb-6 relative z-10">
+                    <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center border border-violet-500/30">
+                      <Sparkles size={20} className="text-violet-300" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white tracking-tight">AI Executive Insights</h3>
+                      <p className="text-xs text-slate-400 font-medium">Recommended actions to hit quota and reduce risk.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative z-10">
+                    {analytics.intelligence.executiveActions.map((action) => (
+                      <div key={action.id} className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className={cn(
+                            "text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full",
+                            action.priority === 'critical' ? "bg-rose-500/20 text-rose-300" :
+                            action.priority === 'high' ? "bg-amber-500/20 text-amber-300" :
+                            "bg-blue-500/20 text-blue-300"
+                          )}>
+                            {action.priority}
+                          </span>
+                          <span className="text-xs font-bold text-white tabular-nums">{action.count} Deals</span>
+                        </div>
+                        <h4 className="text-sm font-bold text-white mb-1.5 leading-snug">{action.title}</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed mb-4">{action.description}</p>
+                        <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+                          <span className="text-[10px] text-slate-500 uppercase font-semibold">Value Impact</span>
+                          <span className="text-sm font-black text-emerald-400 tabular-nums">{formatCurrency(action.impactValue)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              {/* PRIMARY KPI RIBBON */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
+                <MetricCard
+                  title="Revenue This Month"
+                  numericValue={analytics?.currentMonthActual}
+                  formatter={(v) => formatCurrency(v)}
+                  subValue={`Target: ${formatCurrency(monthlyTarget)}`}
+                  trend={analytics?.growth}
+                  icon={DollarSign}
+                  color="emerald"
+                  sparklineData={analytics?.revenueStream?.map(m => m.actual) || []}
+                  delay={0}
+                />
+                <MetricCard
+                  title="Total Pipeline"
+                  numericValue={analytics?.totalPipeline}
+                  formatter={(v) => formatCurrency(v)}
+                  subValue={`${analytics?.activeCount} active deals`}
+                  icon={Activity}
+                  color="primary"
+                  sparklineData={analytics?.revenueStream?.map(m => m.unweighted) || []}
+                  delay={0.1}
+                />
+                <MetricCard
+                  title="Weighted Forecast"
+                  numericValue={analytics?.intelligence?.forecastToGoalValue}
+                  formatter={(v) => formatCurrency(v)}
+                  subValue={`${Math.round((analytics?.intelligence?.weightedCoverageRatio || 0) * 100)}% forecast coverage`}
+                  icon={ShieldCheck}
+                  color="amber"
+                  sparklineData={analytics?.revenueStream?.map(m => m.weighted) || []}
+                  delay={0.2}
+                />
+                <MetricCard
+                  title="Global Win Rate"
+                  numericValue={analytics?.winRate}
+                  formatter={(v) => `${Math.round(v)}%`}
+                  subValue="Across all closed deals"
+                  icon={Target}
+                  color="emerald"
+                  sparklineData={[35, 38, 37, 42, 40, analytics?.winRate || 40]}
+                  delay={0.3}
+                />
+                <MetricCard
+                  title="Avg Days to Close"
+                  numericValue={analytics?.avgDaysToClose}
+                  formatter={(v) => `${Math.round(v)} Days`}
+                  subValue={`Avg Size ${formatCurrency(analytics?.avgDealValue)}`}
+                  icon={Clock}
+                  color="slate"
+                  sparklineData={[24, 22, 25, 20, 21, analytics?.avgDaysToClose || 20]}
+                  delay={0.4}
+                />
+              </div>
+
+              {/* REVENUE CHART + STAGE DONUT */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="lg:col-span-2 p-7 rounded-3xl bg-white border border-slate-100 shadow-sm relative overflow-hidden">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-8">
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900 tracking-tight">Revenue Trend</h3>
+                      <p className="text-xs text-slate-400 mt-1 font-medium">Actuals vs Forecast vs Goal</p>
+                    </div>
+                    <div className="flex items-center gap-5 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
+                      <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" /><span className="text-xs font-semibold text-slate-600">Actual</span></div>
+                      <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-slate-300" /><span className="text-xs font-semibold text-slate-600">Pipeline</span></div>
+                      <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-violet-500 shadow-sm shadow-violet-500/50" /><span className="text-xs font-semibold text-slate-600">Weighted</span></div>
+                    </div>
+                  </div>
+                  <div className="h-[360px] w-full min-w-0 min-h-0">
+                    <SafeResponsiveContainer>
+                      <ComposedChart data={analytics?.revenueStream}>
+                        <defs>
+                          <linearGradient id="colorActualAnalytics" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} dy={15} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }} />
+                        <Bar dataKey="unweighted" name="Pipeline Volume" fill="#f1f5f9" radius={[8, 8, 0, 0]} barSize={40} />
+                        <Area type="monotone" dataKey="actual" name="Actual Revenue" stroke="#10b981" strokeWidth={4} fill="url(#colorActualAnalytics)" animationDuration={1500} />
+                        <Line type="monotone" dataKey="weighted" name="Weighted Forecast" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} />
+                        <Line type="monotone" dataKey="target" name="Goal" stroke="#cbd5e1" strokeWidth={2} strokeDasharray="8 8" dot={false} />
+                      </ComposedChart>
+                    </SafeResponsiveContainer>
+                  </div>
+                </Card>
+
+                <Card className="lg:col-span-1 p-7 rounded-3xl bg-white border border-slate-100 shadow-sm flex flex-col items-center">
+                  <div className="w-full mb-6">
+                    <h3 className="text-base font-bold text-slate-900 tracking-tight">Stage Distribution</h3>
+                    <p className="text-xs text-slate-400 mt-1 font-medium">Pipeline health by volume</p>
+                  </div>
+                  <div className="relative w-full aspect-square max-w-[260px] min-w-0 min-h-0">
+                    <SafeResponsiveContainer>
+                      <PieChart>
+                        <Pie data={analytics?.stageData} innerRadius={85} outerRadius={120} paddingAngle={4} dataKey="value" stroke="none">
+                          {analytics?.stageData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                      </PieChart>
+                    </SafeResponsiveContainer>
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="text-center">
+                        <p className="text-4xl font-black text-slate-900 tracking-tighter">
+                          <AnimatedNumber value={analytics?.totalDeals || 0} />
+                        </p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Total Deals</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="w-full mt-auto space-y-3 pt-6 border-t border-slate-100">
+                    {analytics?.stageData.map((stage) => (
+                      <div key={stage.name} className="flex items-center justify-between group">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: stage.color }} />
+                          <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">{stage.name}</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="text-xs text-slate-400 font-medium">{formatCurrency(stage.totalValue)}</span>
+                          <span className="text-xs font-black text-slate-900 w-6 text-right tabular-nums">{stage.value}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+
+              {/* AI ANALYTICS CONSULTANT */}
+              <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-[2.5rem] p-8 border border-slate-800 text-white shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                  <Sparkles size={160} />
+                </div>
+                
+                <div className="flex items-center gap-3.5 mb-5 relative z-10">
+                  <div className="w-11 h-11 rounded-2xl bg-violet-500/20 flex items-center justify-center border border-violet-500/30 text-violet-300">
+                    <Sparkles size={20} className="animate-pulse" />
                   </div>
                   <div>
-                    <p className="font-black text-slate-800 text-lg leading-tight">{m.name}</p>
-                    <p className="text-xs text-slate-400 font-semibold mt-0.5">{m.role}</p>
+                    <h3 className="text-base font-black text-white tracking-wide uppercase">AI Analytics Consultant</h3>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">วิเคราะห์เจาะลึกและสรุปคำแนะนำสำหรับการตัดสินใจผู้บริหาร</p>
                   </div>
                 </div>
 
-                {/* Stats grid */}
-                <div className="grid grid-cols-3 gap-3 mb-6">
-                  <div className="text-center p-3 rounded-2xl bg-slate-50/80 border border-slate-100 group-hover:bg-white transition-colors">
-                    <p className="text-xl font-black text-slate-900 tabular-nums"><AnimatedNumber value={m.wonThisMonthCount} /></p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Won</p>
-                  </div>
-                  <div className="text-center p-3 rounded-2xl bg-slate-50/80 border border-slate-100 group-hover:bg-white transition-colors">
-                    <p className={cn("text-xl font-black tabular-nums", m.winRate >= 50 ? "text-emerald-500" : m.winRate >= 30 ? "text-amber-500" : "text-rose-500")}>
-                      <AnimatedNumber value={m.winRate} />%
-                    </p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Win Rate</p>
-                  </div>
-                  <div className="text-center p-3 rounded-2xl bg-slate-50/80 border border-slate-100 group-hover:bg-white transition-colors">
-                    <p className="text-xl font-black text-blue-500 tabular-nums"><AnimatedNumber value={m.activeCount} /></p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Active</p>
-                  </div>
+                <p className="text-xs text-slate-350 mb-5 leading-relaxed max-w-2xl relative z-10">
+                  เลือกหัวข้อที่ต้องการประเมินผลกลยุทธ์ทีมขาย โดยที่ปรึกษา AI จะตรวจสอบจากฐานข้อมูลดีลและนัดหมายปัจจุบันของบริษัท เพื่อให้วิเคราะห์ข้อกังวลเชิงลึกได้ทันที:
+                </p>
+
+                <div className="flex gap-2 flex-wrap mb-5 relative z-10">
+                  {[
+                    { id: 'high-risk', label: 'วิเคราะห์ดีลกลุ่มเสี่ยงสูง (High Risk)', icon: AlertCircle },
+                    { id: 'quota', label: 'ประเมินโอกาสทำยอดถึงเป้า (Quota Attainment)', icon: Target },
+                    { id: 'bottleneck', label: 'จุดคอขวดขั้นตอนการขาย (Funnel Bottleneck)', icon: Clock }
+                  ].map(p => {
+                    const Icon = p.icon;
+                    const isActive = selectedPrompt === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setSelectedPrompt(selectedPrompt === p.id ? null : p.id)}
+                        className={cn(
+                          "flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all duration-300 shadow-sm",
+                          isActive
+                            ? "bg-violet-600 text-white border-violet-500 shadow-violet-500/25"
+                            : "bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:border-white/20"
+                        )}
+                      >
+                        <Icon size={13} />
+                        {p.label}
+                      </button>
+                    );
+                  })}
                 </div>
 
-                {/* Quota Progress */}
-                <div className="space-y-2.5">
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Quota Attainment</p>
-                      <p className="text-2xl font-black text-slate-900 tabular-nums tracking-tight">
-                        {formatCurrency(m.wonThisMonthValue)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Goal {formatCurrency(m.goal || 0)}</p>
-                      <p className={cn(
-                        "text-sm font-black tabular-nums px-2 py-0.5 rounded-lg inline-block",
-                        m.goalAchievement >= 100 ? "bg-emerald-50 text-emerald-600" :
-                        m.goalAchievement >= 70 ? "bg-amber-50 text-amber-600" : "bg-rose-50 text-rose-600"
-                      )}>
-                        <AnimatedNumber value={m.goalAchievement} />%
-                      </p>
-                    </div>
-                  </div>
-                  <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                <AnimatePresence mode="wait">
+                  {selectedPrompt && (
                     <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(100, m.goalAchievement)}%` }}
-                      transition={{ duration: 1.5, delay: i * 0.2, ease: [0.19, 1, 0.22, 1] }}
+                      key={selectedPrompt}
+                      initial={{ opacity: 0, y: 10, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: 'auto' }}
+                      exit={{ opacity: 0, y: -10, height: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="overflow-hidden relative z-10"
+                    >
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mt-2 text-xs leading-relaxed text-slate-200 whitespace-pre-line font-medium backdrop-blur-sm">
+                        {aiConsultantResponses[selectedPrompt]}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </>
+          )}
+
+          {/* TAB 2: FUNNEL */}
+          {activeTab === 'funnel' && (
+            <Card className="p-8 rounded-3xl bg-white border border-slate-100 shadow-sm space-y-10">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100/50">
+                    <TrendingUp size={22} className="text-amber-500" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 tracking-tight">Conversion Funnel & Velocity</h3>
+                    <p className="text-xs text-slate-500 mt-1 font-medium">Analyze drop-offs and stage bottlenecks</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-slate-500 font-medium bg-slate-50 px-4 py-2 rounded-xl">
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/40" /> Excellent &gt;60%</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm shadow-amber-500/40" /> Average</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/40" /> Needs Work &lt;30%</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                {/* Funnel Progress Bars */}
+                <div className="col-span-2 space-y-4">
+                  {analytics?.funnelData.map((item, i) => (
+                    <div key={item.stage} className="relative">
+                      <div className="flex items-center gap-4 mb-2">
+                        <div className="w-28 shrink-0">
+                          <span className="text-sm font-bold text-slate-700">{item.label}</span>
+                        </div>
+                        <div className="flex-1 relative h-10 bg-slate-50 rounded-2xl overflow-hidden border border-slate-100/50">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${item.widthPct}%` }}
+                            transition={{ duration: 1, delay: i * 0.15, ease: [0.19, 1, 0.22, 1] }}
+                            className="absolute top-0 left-0 h-full rounded-2xl flex items-center px-4 gap-3 shadow-inner"
+                            style={{ backgroundColor: item.color + '20', borderLeft: `4px solid ${item.color}` }}
+                          >
+                            <span className="text-xs font-black" style={{ color: item.color }}>{item.count} Deals</span>
+                            <span className="text-[11px] font-bold text-slate-650 bg-white/50 px-2 py-0.5 rounded-lg">{formatCurrency(item.value)}</span>
+                          </motion.div>
+                        </div>
+                        <div className="w-28 shrink-0 text-right">
+                          {i === 0 ? (
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Start</span>
+                          ) : (
+                            <span className={cn(
+                              "text-xs font-black px-3 py-1.5 rounded-xl shadow-sm border",
+                              item.conversionRate >= 60 ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                              item.conversionRate >= 30 ? "bg-amber-50 text-amber-600 border-amber-100" :
+                              "bg-rose-50 text-rose-600 border-rose-100"
+                            )}>
+                              <AnimatedNumber value={item.conversionRate} formatter={v => `${Math.round(v)}%`} /> Pass
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {i < (analytics.funnelData.length - 1) && (
+                        <div className="ml-28 pl-6 border-l-2 border-dashed border-slate-200 h-4" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Velocity Grid */}
+                <div className="col-span-1 bg-slate-50/50 rounded-3xl p-6 border border-slate-100">
+                  <div className="flex items-center gap-2.5 mb-6">
+                    <Clock size={16} className="text-slate-400" strokeWidth={2.5} />
+                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Stage Velocity</p>
+                  </div>
+                  <div className="space-y-4">
+                    {analytics?.velocityData.map((v) => (
+                      <div key={v.name} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                        <div>
+                          <p className="text-sm font-bold text-slate-700">{v.name}</p>
+                          <p className="text-xs text-slate-400 font-medium mt-0.5">{v.count} active deals</p>
+                        </div>
+                        <div className="text-right flex items-baseline gap-1">
+                          <p className={cn(
+                            "text-3xl font-black tabular-nums tracking-tighter",
+                            v.days >= 7 ? "text-rose-500" : v.days >= 4 ? "text-amber-500" : "text-emerald-500"
+                          )}>
+                            <AnimatedNumber value={v.days} />
+                          </p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Days</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* WIN / LOSS REASONS */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6 border-t border-slate-100">
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100/50">
+                        <ThumbsUp size={16} className="text-emerald-500" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900">Win Reasons</h4>
+                        <p className="text-xs text-slate-400 font-semibold">เหตุผลเด่นที่ชนะดีลการขาย</p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">{analytics?.wonCount || 0} Deals</span>
+                  </div>
+                  <div className="space-y-4">
+                    {!analytics?.wonReasons?.length ? (
+                      <p className="text-xs text-slate-400 text-center py-8 bg-slate-50 border border-dashed border-slate-200 rounded-2xl font-medium">ไม่มีข้อมูลวิเคราะห์เหตุผลการชนะดีล</p>
+                    ) : analytics.wonReasons.map((r, i) => {
+                      const max = analytics.wonReasons[0].count;
+                      const pct = Math.round((r.count / max) * 100);
+                      return (
+                        <div key={i} className="space-y-1.5 group">
+                          <div className="flex justify-between items-end gap-2 text-xs">
+                            <p className="font-bold text-slate-700 truncate flex-1 group-hover:text-emerald-600 transition-colors">{r.reason}</p>
+                            <span className="font-bold text-slate-400">{r.count}×</span>
+                            <span className="font-bold text-emerald-600">{formatCurrency(r.totalValue)}</span>
+                          </div>
+                          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${pct}%` }}
+                              className="h-full bg-emerald-500"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center border border-rose-100/50">
+                        <ThumbsDown size={16} className="text-rose-500" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900">Loss Reasons</h4>
+                        <p className="text-xs text-slate-400 font-semibold">เหตุผลและปัญหาที่เสียดีล</p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-lg">{analytics?.lostCount || 0} Deals</span>
+                  </div>
+                  <div className="space-y-4">
+                    {!analytics?.lostReasons?.length ? (
+                      <p className="text-xs text-slate-400 text-center py-8 bg-slate-50 border border-dashed border-slate-200 rounded-2xl font-medium">ไม่มีข้อมูลวิเคราะห์เหตุผลการแพ้ดีล</p>
+                    ) : analytics.lostReasons.map((r, i) => {
+                      const max = analytics.lostReasons[0].count;
+                      const pct = Math.round((r.count / max) * 100);
+                      return (
+                        <div key={i} className="space-y-1.5 group">
+                          <div className="flex justify-between items-end gap-2 text-xs">
+                            <p className="font-bold text-slate-700 truncate flex-1 group-hover:text-rose-500 transition-colors">{r.reason}</p>
+                            <span className="font-bold text-slate-400">{r.count}×</span>
+                            <span className="font-bold text-rose-500">{formatCurrency(r.totalValue)}</span>
+                          </div>
+                          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${pct}%` }}
+                              className="h-full bg-rose-500"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* TAB 3: PERFORMANCE */}
+          {activeTab === 'performance' && (
+            <div className="space-y-8">
+              {/* Monthly contribution chart */}
+              <Card className="p-7 rounded-3xl bg-white border border-slate-100 shadow-sm">
+                <div className="mb-6">
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">Monthly Revenue Contribution</h3>
+                  <p className="text-xs text-slate-400 mt-1 font-medium">Monthly won deal values by team member</p>
+                </div>
+                <div className="h-[320px] w-full min-w-0 min-h-0">
+                  <SafeResponsiveContainer>
+                    <ComposedChart data={analytics?.revenueByMember}>
+                      <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} dy={15} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
+                      <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }} />
+                      {(teamMembers || []).map((m, idx) => (
+                        <Area
+                          key={m.id}
+                          type="monotone"
+                          dataKey={m.name}
+                          name={m.name}
+                          stackId="1"
+                          stroke={memberColors[idx % memberColors.length]}
+                          fill={memberColors[idx % memberColors.length]}
+                          fillOpacity={0.4}
+                        />
+                      ))}
+                    </ComposedChart>
+                  </SafeResponsiveContainer>
+                </div>
+              </Card>
+
+              {/* Leaderboard Cards */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-200">
+                    <Trophy size={22} className="text-amber-600" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 tracking-tight">Elite Leaderboard</h3>
+                    <p className="text-xs text-slate-500 mt-1 font-medium">Top performers & Quota attainment</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {analytics?.teamLeaderboard.map((m, i) => (
+                    <motion.div
+                      key={m.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.1 }}
                       className={cn(
-                        "h-full rounded-full relative",
-                        m.goalAchievement >= 100 ? "bg-gradient-to-r from-emerald-400 to-emerald-500" :
-                        m.goalAchievement >= 70 ? "bg-gradient-to-r from-amber-400 to-amber-500" : 
-                        "bg-gradient-to-r from-rose-400 to-rose-500"
+                        "p-6 rounded-3xl border shadow-sm hover:shadow-xl transition-all duration-300 relative overflow-hidden group",
+                        i === 0 ? "bg-gradient-to-b from-amber-50/50 to-white border-amber-200/60" :
+                        i === 1 ? "bg-gradient-to-b from-slate-50/80 to-white border-slate-200/60" :
+                        i === 2 ? "bg-gradient-to-b from-orange-50/30 to-white border-orange-200/60" :
+                        "bg-white border-slate-100"
                       )}
                     >
-                      {/* Shimmer effect */}
-                      <div className="absolute inset-0 bg-white/20 w-1/2 skew-x-12 -translate-x-full animate-[shimmer_2s_infinite]" />
+                      {/* Ranking Medals */}
+                      <div className="absolute top-4 right-4">
+                        {i === 0 ? <div className="text-4xl drop-shadow-md">🥇</div> :
+                         i === 1 ? <div className="text-4xl drop-shadow-md">🥈</div> :
+                         i === 2 ? <div className="text-4xl drop-shadow-md">🥉</div> :
+                         <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-400 border border-slate-200">#{i + 1}</div>}
+                      </div>
+
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className={cn(
+                          'w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md border-2 border-white',
+                          m.color?.split(' ')[0] || 'bg-violet-600'
+                        )}>
+                          {m.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-black text-slate-800 text-lg leading-tight">{m.name}</p>
+                          <p className="text-xs text-slate-400 font-semibold mt-0.5">{m.role}</p>
+                        </div>
+                      </div>
+
+                      {/* Stats grid */}
+                      <div className="grid grid-cols-3 gap-3 mb-6">
+                        <div className="text-center p-3 rounded-2xl bg-slate-50/80 border border-slate-100 group-hover:bg-white transition-colors">
+                          <p className="text-xl font-black text-slate-900 tabular-nums"><AnimatedNumber value={m.wonThisMonthCount} /></p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Won</p>
+                        </div>
+                        <div className="text-center p-3 rounded-2xl bg-slate-50/80 border border-slate-100 group-hover:bg-white transition-colors">
+                          <p className={cn("text-xl font-black tabular-nums", m.winRate >= 50 ? "text-emerald-500" : m.winRate >= 30 ? "text-amber-500" : "text-rose-500")}>
+                            <AnimatedNumber value={m.winRate} />%
+                          </p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Win Rate</p>
+                        </div>
+                        <div className="text-center p-3 rounded-2xl bg-slate-50/80 border border-slate-100 group-hover:bg-white transition-colors">
+                          <p className="text-xl font-black text-blue-500 tabular-nums"><AnimatedNumber value={m.activeCount} /></p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Active</p>
+                        </div>
+                      </div>
+
+                      {/* Quota Progress */}
+                      <div className="space-y-2.5">
+                        <div className="flex justify-between items-end">
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Quota Attainment</p>
+                            <p className="text-2xl font-black text-slate-900 tabular-nums tracking-tight">
+                              {formatCurrency(m.wonThisMonthValue)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Goal {formatCurrency(m.goal || 0)}</p>
+                            <p className={cn(
+                              "text-sm font-black tabular-nums px-2 py-0.5 rounded-lg inline-block",
+                              m.goalAchievement >= 100 ? "bg-emerald-50 text-emerald-600" :
+                              m.goalAchievement >= 70 ? "bg-amber-50 text-amber-600" : "bg-rose-50 text-rose-600"
+                            )}>
+                              <AnimatedNumber value={m.goalAchievement} />%
+                            </p>
+                          </div>
+                        </div>
+                        <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(100, m.goalAchievement)}%` }}
+                            transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
+                            className={cn(
+                              "h-full rounded-full relative",
+                              m.goalAchievement >= 100 ? "bg-gradient-to-r from-emerald-400 to-emerald-500" :
+                              m.goalAchievement >= 70 ? "bg-gradient-to-r from-amber-400 to-amber-500" : 
+                              "bg-gradient-to-r from-rose-400 to-rose-500"
+                            )}
+                          >
+                            <div className="absolute inset-0 bg-white/20 w-1/2 skew-x-12 -translate-x-full animate-[shimmer_2s_infinite]" />
+                          </motion.div>
+                        </div>
+                        <p className="text-[11px] font-semibold text-slate-400 mt-2">Active Pipeline: <span className="text-slate-600">{formatCurrency(m.activePipelineValue)}</span></p>
+                      </div>
                     </motion.div>
-                  </div>
-                  <p className="text-[11px] font-semibold text-slate-400 mt-2">Active Pipeline: <span className="text-slate-600">{formatCurrency(m.activePipelineValue)}</span></p>
+                  ))}
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: SEGMENTS */}
+          {activeTab === 'segments' && (
+            <div className="space-y-8">
+              {/* Row 1: Grade distribution & Tier distribution */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="lg:col-span-1 p-7 rounded-3xl bg-white border border-slate-100 shadow-sm flex flex-col items-center">
+                  <div className="w-full mb-6">
+                    <h3 className="text-base font-bold text-slate-900 tracking-tight">Revenue by Customer Grade</h3>
+                    <p className="text-xs text-slate-400 mt-1 font-medium">Won deal values across VIP to At-risk groups</p>
+                  </div>
+                  <div className="relative w-full aspect-square max-w-[220px] min-w-0 min-h-0">
+                    {analytics?.gradeData?.length > 0 ? (
+                      <>
+                        <SafeResponsiveContainer>
+                          <PieChart>
+                            <Pie data={analytics.gradeData} innerRadius={70} outerRadius={100} paddingAngle={4} dataKey="value" stroke="none">
+                              {analytics.gradeData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip content={<CustomTooltip />} />
+                          </PieChart>
+                        </SafeResponsiveContainer>
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="text-center">
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Revenue</p>
+                            <p className="text-lg font-black text-slate-900 tabular-nums mt-0.5">
+                              {formatCurrency(analytics.gradeData.reduce((s, g) => s + g.value, 0))}
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-xs text-slate-400 font-semibold">ไม่มีข้อมูลยอดขายแยกตามเกรด</div>
+                    )}
+                  </div>
+                  <div className="w-full mt-auto space-y-3 pt-6 border-t border-slate-100">
+                    {analytics?.gradeData.map((grade) => (
+                      <div key={grade.name} className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: grade.color }} />
+                          <span className="font-semibold text-slate-500">{grade.name}</span>
+                        </div>
+                        <span className="font-black text-slate-900 tabular-nums">{formatCurrency(grade.value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+
+                <Card className="lg:col-span-2 p-7 rounded-3xl bg-white border border-slate-100 shadow-sm">
+                  <div className="mb-6">
+                    <h3 className="text-base font-bold text-slate-900 tracking-tight">Revenue & Pipeline by Customer Tier</h3>
+                    <p className="text-xs text-slate-400 mt-1 font-medium">Comparison of closed revenue vs active pipeline per tier</p>
+                  </div>
+                  <div className="h-[280px] w-full min-w-0 min-h-0">
+                    <SafeResponsiveContainer>
+                      <BarChart data={analytics?.tierData}>
+                        <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar dataKey="revenue" name="Closed Won Revenue" fill="#10b981" radius={[6, 6, 0, 0]} barSize={25} />
+                        <Bar dataKey="pipeline" name="Active Pipeline" fill="#8b5cf6" radius={[6, 6, 0, 0]} barSize={25} />
+                      </BarChart>
+                    </SafeResponsiveContainer>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Row 2: Revenue by industry & Quota simulator */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="p-7 rounded-3xl bg-white border border-slate-100 shadow-sm">
+                  <div className="mb-6">
+                    <h3 className="text-base font-bold text-slate-900 tracking-tight">Top Industries by Revenue</h3>
+                    <p className="text-xs text-slate-400 mt-1 font-medium">Won deal volumes in top 5 market sectors</p>
+                  </div>
+                  <div className="h-[280px] w-full min-w-0 min-h-0">
+                    {analytics?.industryData?.length > 0 ? (
+                      <SafeResponsiveContainer>
+                        <BarChart data={analytics.industryData} layout="vertical">
+                          <CartesianGrid strokeDasharray="4 4" horizontal={false} stroke="#f1f5f9" />
+                          <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: '705' }} tickFormatter={(v) => `${v / 1000}k`} />
+                          <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: '705' }} width={80} />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Bar dataKey="revenue" name="Revenue" fill="#0ea5e9" radius={[0, 6, 6, 0]} barSize={16} />
+                        </BarChart>
+                      </SafeResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center text-xs text-slate-400 font-semibold bg-slate-50 border border-dashed border-slate-200 rounded-2xl">ไม่มีข้อมูลวิเคราะห์อุตสาหกรรมในระบบ</div>
+                    )}
+                  </div>
+                </Card>
+
+                {/* AI Sales Quota Simulator */}
+                <Card className="p-7 rounded-3xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-2.5 mb-5">
+                      <Sliders size={18} className="text-violet-650" />
+                      <h3 className="text-base font-bold text-slate-900 tracking-tight">AI Sales Quota Simulator</h3>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {/* Win Rate Slider */}
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-xs font-semibold">
+                          <span className="text-slate-500">อัตราการปิดดีลสำเร็จ (Win Rate)</span>
+                          <span className="text-violet-600 font-bold">{simWinRate}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={simWinRate}
+                          onChange={(e) => setSimWinRate(Number(e.target.value))}
+                          className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-violet-600"
+                        />
+                      </div>
+
+                      {/* Avg Deal Size Slider */}
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-xs font-semibold">
+                          <span className="text-slate-500">มูลค่าดีลเฉลี่ย (Average Deal Size)</span>
+                          <span className="text-violet-600 font-bold">{formatCurrency(simAvgValue)}</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="10000"
+                          max="2000000"
+                          step="10000"
+                          value={simAvgValue}
+                          onChange={(e) => setSimAvgValue(Number(e.target.value))}
+                          className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-violet-600"
+                        />
+                      </div>
+
+                      {/* Leads Count Slider */}
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-xs font-semibold">
+                          <span className="text-slate-500">จำนวนดีลลีดที่ดูแล (Active Leads)</span>
+                          <span className="text-violet-600 font-bold">{simLeads} ราย</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="1"
+                          max="100"
+                          value={simLeads}
+                          onChange={(e) => setSimLeads(Number(e.target.value))}
+                          className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-violet-600"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Simulator Results */}
+                  <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">คาดการณ์รายได้จำลอง</p>
+                      <p className="text-xl font-black text-slate-900 tabular-nums">{formatCurrency(simulatedRevenue)}</p>
+                      <p className="text-[10px] text-slate-500 font-medium">เป้าหมายประจำเดือน: {formatCurrency(monthlyTarget)}</p>
+                    </div>
+                    
+                    <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
+                      <svg className="w-full h-full transform -rotate-90">
+                        {/* Background Circle */}
+                        <circle
+                          cx="40"
+                          cy="40"
+                          r="32"
+                          stroke="#f1f5f9"
+                          strokeWidth="6"
+                          fill="transparent"
+                        />
+                        {/* Foreground Circle */}
+                        <motion.circle
+                          cx="40"
+                          cy="40"
+                          r="32"
+                          stroke={
+                            simQuotaAttainment >= 100 ? "#10b981" :
+                            simQuotaAttainment >= 70 ? "#f59e0b" : "#ef4444"
+                          }
+                          strokeWidth="6"
+                          fill="transparent"
+                          strokeDasharray={2 * Math.PI * 32}
+                          animate={{
+                            strokeDashoffset: 2 * Math.PI * 32 * (1 - Math.min(100, simQuotaAttainment) / 100)
+                          }}
+                          transition={{ duration: 0.5, ease: "easeOut" }}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="absolute flex flex-col items-center justify-center">
+                        <span className={cn(
+                          "text-sm font-black tabular-nums leading-none",
+                          simQuotaAttainment >= 100 ? "text-emerald-600" :
+                          simQuotaAttainment >= 70 ? "text-amber-600" : "text-rose-500"
+                        )}>
+                          {simQuotaAttainment}%
+                        </span>
+                        <span className="text-[7px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">Quota</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI Strategy for Simulator */}
+                  <div className="mt-4 p-4 bg-violet-50/50 border border-violet-100 rounded-2xl text-[10px] text-violet-800 leading-relaxed whitespace-pre-line font-semibold">
+                    <span className="font-bold flex items-center gap-1.5 mb-1.5 text-violet-750">
+                      <Sparkles size={11} className="text-violet-600" />
+                      กลยุทธ์ AI แนะนำจากตัวเลขจำลอง:
+                    </span>
+                    {(() => {
+                      if (simQuotaAttainment >= 100) {
+                        return `🎉 ยอดเยี่ยมมาก! การจำลองชี้ว่ากลยุทธ์นี้สามารถบรรลุเป้าหมายยอดขายประจำเดือนโดยได้รับรายได้คาดการณ์ ${formatCurrency(simulatedRevenue)} (${simQuotaAttainment}% ของเป้า)`;
+                      }
+                      const strategies = [];
+                      if (simWinRate < 45) {
+                        strategies.push("• อัตราการปิดดีลต่ำกว่า 45%: แนะนำให้จัดเทรนนิ่งทักษะการเจรจา (Negotiation) และทบทวนขั้นตอนนัดเจอ (Playbook) ของทีมอย่างรัดกุม");
+                      }
+                      if (simAvgValue < 300000) {
+                        strategies.push("• ขนาดดีลเฉลี่ยต่ำ: ควรทำ Cross-sell หรือเสนอพ่วงสินค้า Server / Network / UPS เพื่อดึงมูลค่าดีลเดี่ยวให้สูงขึ้น");
+                      }
+                      if (simLeads < 15) {
+                        strategies.push("• ลูกค้าใหม่ต่ำเกินไป: ฝ่ายการตลาดควรร่วมมือทำโปรแกรมดึงลีดใหม่ และใช้ AI PDF Scanner แฟลชสเปกราคาดีลเก่ากลับมาคุยอีกครั้ง");
+                      }
+                      return strategies.length > 0 ? strategies.join('\n') : `• ยอดจำลองยังห่างจากเป้าอีก ${formatCurrency(monthlyTarget - simulatedRevenue)}: แนะนำให้หาลูกค้าเป้าหมายเพิ่ม 2-3 ราย หรือเพิ่มขนาดดีลเฉลี่ยขึ้นเล็กน้อย`;
+                    })()}
+                  </div>
+                </Card>
+              </div>
+            </div>
+          )}
         </motion.div>
-      )}
-
-      {/* WIN / LOSS REASONS */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-8 rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center border border-emerald-100/50">
-                <ThumbsUp size={20} className="text-emerald-500" strokeWidth={2.5} />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 tracking-tight">Win Reasons</h3>
-                <p className="text-xs text-slate-500 mt-1 font-medium">Top {analytics?.wonReasons?.length || 0} factors for success</p>
-              </div>
-            </div>
-            <div className="px-4 py-2 bg-emerald-50 rounded-xl border border-emerald-100">
-              <span className="text-sm font-black text-emerald-600 tabular-nums">{analytics?.wonCount || 0} Deals</span>
-            </div>
-          </div>
-          <div className="space-y-5">
-            {!analytics?.wonReasons?.length ? (
-              <p className="text-sm text-slate-400 text-center py-10 font-semibold bg-slate-50 rounded-2xl border border-dashed border-slate-200">Not enough data to analyze win reasons.</p>
-            ) : analytics.wonReasons.map((r, i) => {
-              const max = analytics.wonReasons[0].count;
-              const pct = Math.round((r.count / max) * 100);
-              return (
-                <div key={i} className="space-y-2 group">
-                  <div className="flex justify-between items-end gap-3">
-                    <p className="text-sm font-bold text-slate-700 truncate flex-1 group-hover:text-emerald-600 transition-colors">{r.reason}</p>
-                    <div className="flex items-baseline gap-3 shrink-0">
-                      <span className="text-xs font-black text-slate-400 tabular-nums">{r.count}×</span>
-                      <span className="text-sm font-bold text-emerald-600 tabular-nums">{formatCurrency(r.totalValue)}</span>
-                    </div>
-                  </div>
-                  <div className="h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ duration: 1, delay: i * 0.1, ease: [0.19, 1, 0.22, 1] }}
-                      className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full"
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </Card>
-
-        <Card className="p-8 rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center border border-rose-100/50">
-                <ThumbsDown size={20} className="text-rose-500" strokeWidth={2.5} />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 tracking-tight">Loss Reasons</h3>
-                <p className="text-xs text-slate-500 mt-1 font-medium">Top {analytics?.lostReasons?.length || 0} friction points</p>
-              </div>
-            </div>
-            <div className="px-4 py-2 bg-rose-50 rounded-xl border border-rose-100">
-              <span className="text-sm font-black text-rose-500 tabular-nums">{analytics?.lostCount || 0} Deals</span>
-            </div>
-          </div>
-          <div className="space-y-5">
-            {!analytics?.lostReasons?.length ? (
-              <p className="text-sm text-slate-400 text-center py-10 font-semibold bg-slate-50 rounded-2xl border border-dashed border-slate-200">Not enough data to analyze loss reasons.</p>
-            ) : analytics.lostReasons.map((r, i) => {
-              const max = analytics.lostReasons[0].count;
-              const pct = Math.round((r.count / max) * 100);
-              return (
-                <div key={i} className="space-y-2 group">
-                  <div className="flex justify-between items-end gap-3">
-                    <p className="text-sm font-bold text-slate-700 truncate flex-1 group-hover:text-rose-500 transition-colors">{r.reason}</p>
-                    <div className="flex items-baseline gap-3 shrink-0">
-                      <span className="text-xs font-black text-slate-400 tabular-nums">{r.count}×</span>
-                      <span className="text-sm font-bold text-rose-500 tabular-nums">{formatCurrency(r.totalValue)}</span>
-                    </div>
-                  </div>
-                  <div className="h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ duration: 1, delay: i * 0.1, ease: [0.19, 1, 0.22, 1] }}
-                      className="h-full bg-gradient-to-r from-rose-400 to-rose-500 rounded-full"
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </Card>
-      </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
