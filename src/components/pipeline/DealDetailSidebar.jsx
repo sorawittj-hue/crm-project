@@ -192,7 +192,6 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose, o
     setFollowUpDate('');
     setFollowUpNote('');
     setAiAnalysis(null);
-    setCloseModal({ open: false, targetStage: null });
     if (deal) {
       setLocalEdit({
         title: deal.title || '',
