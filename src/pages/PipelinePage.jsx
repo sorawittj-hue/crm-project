@@ -1,4 +1,4 @@
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { useDeals, useUpdateDeal, useAddDeal, useAddMultipleDeals, useDeleteDeals } from '../hooks/useDeals';
 import { useCustomers } from '../hooks/useCustomers';
 import { useTeam } from '../hooks/useTeam';
@@ -44,6 +44,31 @@ export default function PipelinePage() {
     contact: '', contact_email: '', contact_phone: '', probability: '50',
     expected_close_date: '', assigned_to: '',
   });
+
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [isCustomerDropdownOpen, setIsCustomerDropdownOpen] = useState(false);
+
+  // Auto-reset customer search query when modal opens or closes
+  useEffect(() => {
+    if (!isAddModalOpen) {
+      setCustomerSearch('');
+      setIsCustomerDropdownOpen(false);
+    } else if (newDeal.customer_id) {
+      const c = customers.find(x => x.id === newDeal.customer_id);
+      if (c) {
+        setCustomerSearch(c.name + (c.company ? ` (${c.company})` : ''));
+      }
+    }
+  }, [isAddModalOpen, newDeal.customer_id, customers]);
+
+  const filteredCustomers = useMemo(() => {
+    if (!customerSearch) return customers;
+    const q = customerSearch.toLowerCase();
+    return customers.filter(c =>
+      c.name?.toLowerCase().includes(q) ||
+      c.company?.toLowerCase().includes(q)
+    );
+  }, [customers, customerSearch]);
 
   // CSV export helper
   const exportToCSV = () => {
@@ -326,182 +351,404 @@ export default function PipelinePage() {
 
       {/* ADD ASSET MODAL */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-lg bg-white rounded-2xl p-6 border-0 shadow-2xl">
-          <DialogHeader className="mb-4">
-             <DialogTitle className="text-lg font-bold text-slate-900">เพิ่มดีลใหม่</DialogTitle>
-             <p className="text-xs text-slate-400 mt-0.5">กรอกรายละเอียดดีลที่ต้องการเพิ่ม</p>
+        <DialogContent className="max-w-4xl lg:max-w-5xl bg-white rounded-3xl p-8 border-0 shadow-2xl overflow-y-auto max-h-[90vh]">
+          <DialogHeader className="mb-6 border-b border-slate-100 pb-4">
+             <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
+               <Plus size={20} className="text-violet-600" />
+               <span>เพิ่มดีลการขายใหม่</span>
+             </DialogTitle>
+             <p className="text-xs text-slate-400 mt-0.5">กรอกข้อมูลเพื่อบันทึกดีลและวิเคราะห์โอกาสชนะด้วย AI</p>
           </DialogHeader>
 
-          <form onSubmit={handleAddSubmit} className="space-y-3">
-             {/* Customer selector */}
-             <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500">ลูกค้า (ถ้ามีในระบบ)</label>
-                <select
-                   value={newDeal.customer_id}
-                   onChange={(e) => {
-                     const cid = e.target.value;
-                     const c = customers.find(x => x.id === cid);
-                     setNewDeal({ ...newDeal, customer_id: cid, company: c?.company || c?.name || newDeal.company });
-                   }}
-                   className="w-full h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 transition-all text-sm"
-                >
-                   <option value="">— ไม่เลือกลูกค้า —</option>
-                   {customers.map(c => (
-                     <option key={c.id} value={c.id}>{c.name}{c.company ? ` (${c.company})` : ''}</option>
-                   ))}
-                </select>
-             </div>
-             <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                   <label className="text-xs font-semibold text-slate-500">ชื่อดีล *</label>
-                   <Input
-                      required
-                      placeholder="เช่น โปรเจกต์ติดตั้งระบบ"
-                      value={newDeal.title}
-                      onChange={(e) => setNewDeal({...newDeal, title: e.target.value})}
-                      className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
-                   />
-                </div>
-                <div className="space-y-1">
-                   <label className="text-xs font-semibold text-slate-500">บริษัท *</label>
-                   <Input
-                      required
-                      placeholder="เช่น บริษัท ABC จำกัด"
-                      value={newDeal.company}
-                      onChange={(e) => {
-                        const company = e.target.value;
-                        const matched = customers.find(c =>
-                          c.company?.toLowerCase() === company.toLowerCase() ||
-                          c.name?.toLowerCase() === company.toLowerCase()
-                        );
-                        setNewDeal({
-                          ...newDeal,
-                          company,
-                          customer_id: matched ? matched.id : newDeal.customer_id,
-                        });
-                      }}
-                      className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
-                   />
-                </div>
-             </div>
-             <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500">มูลค่า (บาท) *</label>
-                    <Input
-                       required
-                       type="number"
-                       placeholder="0"
-                       value={newDeal.value}
-                       onChange={(e) => setNewDeal({...newDeal, value: e.target.value})}
-                       className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold"
-                    />
-                </div>
-                <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500">ขั้นตอน</label>
-                    <select
-                       value={newDeal.stage}
-                       onChange={(e) => setNewDeal({...newDeal, stage: e.target.value})}
-                       className="w-full h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 transition-all text-sm"
+          <form onSubmit={handleAddSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+             {/* Left side: Form (Column Span 7) */}
+             <div className="lg:col-span-7 space-y-5">
+                 {/* Customer selector (Search Autocomplete) */}
+                 <div className="space-y-1.5 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 relative">
+                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                      ลูกค้าในระบบ (เชื่อมโยงเพื่อกรอกข้อมูลติดต่ออัตโนมัติ)
+                    </label>
+                    <div className="relative">
+                      <Input
+                        placeholder="🔍 พิมพ์เพื่อค้นหาลูกค้า เช่น ชื่อ หรือชื่อบริษัท..."
+                        value={customerSearch}
+                        onChange={(e) => {
+                          setCustomerSearch(e.target.value);
+                          setIsCustomerDropdownOpen(true);
+                        }}
+                        onFocus={() => setIsCustomerDropdownOpen(true)}
+                        className="w-full h-11 rounded-xl border border-slate-200 bg-white px-4 outline-none focus:border-violet-400 transition-all text-sm font-semibold"
+                      />
+                      {customerSearch && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomerSearch('');
+                            setIsCustomerDropdownOpen(false);
+                            setNewDeal(prev => ({
+                              ...prev,
+                              customer_id: '',
+                              company: '',
+                              contact: '',
+                              contact_phone: '',
+                              contact_email: '',
+                            }));
+                          }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-semibold px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"
+                        >
+                          ล้าง
+                        </button>
+                      )}
+                    </div>
+
+                    {isCustomerDropdownOpen && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setIsCustomerDropdownOpen(false)} />
+                        <div className="absolute left-4 right-4 mt-1 max-h-48 overflow-y-auto bg-white border border-slate-150 rounded-xl shadow-xl z-20 py-1.5 custom-scrollbar">
+                          {filteredCustomers.length === 0 ? (
+                            <div className="px-4 py-3 text-xs text-slate-400 text-center font-medium">ไม่พบรายชื่อลูกค้า</div>
+                          ) : (
+                            filteredCustomers.map(c => (
+                              <button
+                                key={c.id}
+                                type="button"
+                                onClick={() => {
+                                  setCustomerSearch(c.name + (c.company ? ` (${c.company})` : ''));
+                                  setIsCustomerDropdownOpen(false);
+                                  setNewDeal(prev => ({
+                                    ...prev,
+                                    customer_id: c.id,
+                                    company: c.company || c.name || '',
+                                    contact: c.name || '',
+                                    contact_phone: c.phone || '',
+                                    contact_email: c.email || '',
+                                  }));
+                                }}
+                                className="w-full text-left px-4 py-2 hover:bg-violet-50 text-xs font-semibold text-slate-700 flex flex-col gap-0.5 border-b border-slate-50 last:border-0"
+                              >
+                                <span className="text-slate-900 font-bold">{c.name}</span>
+                                {c.company && <span className="text-slate-400 text-[10px]">{c.company}</span>}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      </>
+                    )}
+                 </div>
+
+                 {/* Primary info */}
+                 <div className="space-y-4">
+                    <div className="border-b border-slate-100 pb-2">
+                       <h4 className="text-xs font-black uppercase tracking-wider text-violet-600">ข้อมูลดีลหลัก</h4>
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-xs font-semibold text-slate-500">ชื่อดีล *</label>
+                       <Input
+                          required
+                          placeholder="เช่น โปรเจกต์ติดตั้งระบบ"
+                          value={newDeal.title}
+                          onChange={(e) => setNewDeal({...newDeal, title: e.target.value})}
+                          className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
+                       />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-500">ชื่อบริษัท / องค์กร *</label>
+                          <Input
+                             required
+                             placeholder="เช่น บริษัท ABC จำกัด"
+                             value={newDeal.company}
+                             onChange={(e) => {
+                               const company = e.target.value;
+                               const matched = customers.find(c =>
+                                 c.company?.toLowerCase() === company.toLowerCase() ||
+                                 c.name?.toLowerCase() === company.toLowerCase()
+                               );
+                               setNewDeal({
+                                 ...newDeal,
+                                 company,
+                                 customer_id: matched ? matched.id : newDeal.customer_id,
+                               });
+                             }}
+                             className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
+                          />
+                       </div>
+                       <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-500">มูลค่าดีล (บาท) *</label>
+                          <Input
+                             required
+                             type="number"
+                             placeholder="0"
+                             value={newDeal.value}
+                             onChange={(e) => setNewDeal({...newDeal, value: e.target.value})}
+                             className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-black focus:bg-white text-violet-700 focus:border-violet-400"
+                          />
+                       </div>
+                    </div>
+
+                    {/* Stage Buttons */}
+                    <div className="space-y-1.5">
+                       <label className="text-xs font-semibold text-slate-500">ขั้นตอนปัจจุบัน</label>
+                       <div className="grid grid-cols-3 gap-2">
+                          {[
+                            { id: 'lead', label: 'ลูกค้าใหม่', color: 'bg-slate-400', activeBg: 'bg-slate-100 border-slate-400 text-slate-900' },
+                            { id: 'contact', label: 'นัดเจอ', color: 'bg-amber-500', activeBg: 'bg-amber-50 border-amber-500 text-amber-900' },
+                            { id: 'proposal', label: 'เสนอราคา', color: 'bg-sky-500', activeBg: 'bg-sky-50 border-sky-500 text-sky-900' },
+                            { id: 'negotiation', label: 'กำลังปิด', color: 'bg-violet-500', activeBg: 'bg-violet-50 border-violet-500 text-violet-900' },
+                            { id: 'won', label: 'ปิดได้', color: 'bg-emerald-500', activeBg: 'bg-emerald-50 border-emerald-500 text-emerald-900' },
+                            { id: 'lost', label: 'ปิดไม่ได้', color: 'bg-rose-500', activeBg: 'bg-rose-50 border-rose-500 text-rose-900' }
+                          ].map((stage) => {
+                            const isActive = newDeal.stage === stage.id;
+                            return (
+                              <button
+                                key={stage.id}
+                                type="button"
+                                onClick={() => {
+                                  const stageProbMap = {
+                                    lead: 10,
+                                    contact: 30,
+                                    proposal: 60,
+                                    negotiation: 80,
+                                    won: 100,
+                                    lost: 0,
+                                  };
+                                  const autoProb = stageProbMap[stage.id] ?? 50;
+                                  setNewDeal({
+                                    ...newDeal,
+                                    stage: stage.id,
+                                    probability: String(autoProb),
+                                  });
+                                }}
+                                className={cn(
+                                  "flex items-center justify-center gap-1.5 h-10 px-2 rounded-xl border text-center transition-all duration-200 text-xs font-semibold",
+                                  isActive
+                                    ? cn("border-2 shadow-sm", stage.activeBg)
+                                    : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                                )}
+                              >
+                                <span className={cn("w-2 h-2 rounded-full", stage.color)} />
+                                <span>{stage.label}</span>
+                              </button>
+                            );
+                          })}
+                       </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                       <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-500">โอกาสปิด (%)</label>
+                          <Input
+                             type="number"
+                             min="0"
+                             max="100"
+                             placeholder="50"
+                             value={newDeal.probability}
+                             onChange={(e) => setNewDeal({...newDeal, probability: e.target.value})}
+                             className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
+                          />
+                       </div>
+                       <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-500">วันคาดว่าจะปิด</label>
+                          <input
+                             type="date"
+                             value={newDeal.expected_close_date}
+                             onChange={(e) => setNewDeal({...newDeal, expected_close_date: e.target.value})}
+                             className="w-full h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-bold text-slate-800"
+                          />
+                       </div>
+                    </div>
+
+                    {teamMembers.length > 0 && (
+                       <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-500">ผู้รับผิดชอบดีล</label>
+                          <select
+                             value={newDeal.assigned_to}
+                             onChange={(e) => setNewDeal({ ...newDeal, assigned_to: e.target.value })}
+                             className="w-full h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-semibold"
+                          >
+                             <option value="">— ไม่ระบุ —</option>
+                             {teamMembers.map(m => (
+                                <option key={m.id} value={m.id}>{m.name}{m.role ? ` (${m.role})` : ''}</option>
+                             ))}
+                          </select>
+                       </div>
+                    )}
+                 </div>
+
+                 {/* Contact info */}
+                 <div className="space-y-4 pt-2">
+                    <div className="border-b border-slate-100 pb-2">
+                       <h4 className="text-xs font-black uppercase tracking-wider text-violet-600">ข้อมูลผู้ติดต่อประสานงาน</h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                       <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-500">ชื่อผู้ติดต่อ</label>
+                          <Input
+                             placeholder="ระบุชื่อจริง/ชื่อเล่น"
+                             value={newDeal.contact}
+                             onChange={(e) => setNewDeal({...newDeal, contact: e.target.value})}
+                             className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
+                          />
+                       </div>
+                       <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-500">เบอร์โทรศัพท์</label>
+                          <Input
+                             placeholder="เช่น 089-XXX-XXXX"
+                             value={newDeal.contact_phone}
+                             onChange={(e) => setNewDeal({...newDeal, contact_phone: e.target.value})}
+                             className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
+                          />
+                       </div>
+                       <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-500">อีเมล</label>
+                          <Input
+                             type="email"
+                             placeholder="เช่น name@company.com"
+                             value={newDeal.contact_email}
+                             onChange={(e) => setNewDeal({...newDeal, contact_email: e.target.value})}
+                             className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
+                          />
+                       </div>
+                    </div>
+                 </div>
+
+                 {formError && (
+                    <div className="px-4 py-2.5 rounded-xl bg-rose-50 border border-rose-100 text-xs font-bold text-rose-600">
+                      ⚠️ {formError}
+                    </div>
+                 )}
+
+                 <div className="pt-4 flex gap-3 border-t border-slate-100 mt-4">
+                    <Button
+                       type="button"
+                       variant="ghost"
+                       disabled={addDealMutation.isPending}
+                       onClick={() => setIsAddModalOpen(false)}
+                       className="flex-1 h-11 rounded-xl text-sm text-slate-500 font-semibold"
                     >
-                        {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                    </select>
-                </div>
-             </div>
-             {/* Assigned to */}
-             {teamMembers.length > 0 && (
-               <div className="space-y-1">
-                 <label className="text-xs font-semibold text-slate-500">รับผิดชอบโดย</label>
-                 <select
-                   value={newDeal.assigned_to}
-                   onChange={(e) => setNewDeal({ ...newDeal, assigned_to: e.target.value })}
-                   className="w-full h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 transition-all text-sm"
-                 >
-                   <option value="">— ไม่ระบุ —</option>
-                   {teamMembers.map(m => (
-                     <option key={m.id} value={m.id}>{m.name}{m.role ? ` (${m.role})` : ''}</option>
-                   ))}
-                 </select>
-               </div>
-             )}
-
-             <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500">โอกาสปิด (%)</label>
-                    <Input
-                       type="number"
-                       min="0"
-                       max="100"
-                       placeholder="50"
-                       value={newDeal.probability}
-                       onChange={(e) => setNewDeal({...newDeal, probability: e.target.value})}
-                       className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
-                    />
-                </div>
-                <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500">วันคาดว่าจะปิด</label>
-                    <input
-                       type="date"
-                       value={newDeal.expected_close_date}
-                       onChange={(e) => setNewDeal({...newDeal, expected_close_date: e.target.value})}
-                       className="w-full h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 transition-all text-sm"
-                    />
-                </div>
-             </div>
-             <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1">
-                   <label className="text-xs font-semibold text-slate-500">ผู้ติดต่อ</label>
-                   <Input
-                      placeholder="ชื่อ"
-                      value={newDeal.contact}
-                      onChange={(e) => setNewDeal({...newDeal, contact: e.target.value})}
-                      className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
-                   />
-                </div>
-                <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500">เบอร์โทร</label>
-                    <Input
-                       placeholder="0XX-XXX-XXXX"
-                       value={newDeal.contact_phone}
-                       onChange={(e) => setNewDeal({...newDeal, contact_phone: e.target.value})}
-                       className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
-                    />
-                </div>
-                <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500">อีเมล</label>
-                    <Input
-                       type="email"
-                       placeholder="email@co.com"
-                       value={newDeal.contact_email}
-                       onChange={(e) => setNewDeal({...newDeal, contact_email: e.target.value})}
-                       className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
-                    />
-                </div>
+                       ยกเลิก
+                    </Button>
+                    <Button
+                       type="submit"
+                       disabled={addDealMutation.isPending}
+                       className="flex-[2] h-11 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-bold shadow-md shadow-violet-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                       {addDealMutation.isPending && <Loader2 size={14} className="animate-spin" />}
+                       {addDealMutation.isPending ? 'กำลังบันทึก...' : 'บันทึกดีล'}
+                    </Button>
+                 </div>
              </div>
 
-             {formError && (
-                <div className="px-3 py-2 rounded-xl bg-rose-50 border border-rose-100 text-sm text-rose-600">
-                  {formError}
-                </div>
-             )}
+             {/* Right side: Live Preview and AI Guidance (Column Span 5) */}
+             <div className="lg:col-span-5 bg-slate-50/80 p-6 rounded-2xl border border-slate-150 flex flex-col justify-between space-y-6 max-h-[75vh] overflow-y-auto">
+                 <div className="space-y-5">
+                    <div>
+                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                         <span>👀 Live Card Preview</span>
+                         <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                       </h4>
+                       <p className="text-[10px] text-slate-400 mt-0.5">การ์ดของคุณจะแสดงบนบอร์ด Kanban ดังนี้:</p>
+                    </div>
 
-             <div className="pt-2 flex gap-3">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={addDealMutation.isPending}
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="flex-1 h-10 rounded-xl text-sm text-slate-500"
-                >
-                  ยกเลิก
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={addDealMutation.isPending}
-                  className="flex-[2] h-10 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-violet-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {addDealMutation.isPending && <Loader2 size={14} className="animate-spin" />}
-                  {addDealMutation.isPending ? 'กำลังบันทึก...' : 'บันทึกดีล'}
-                </Button>
+                    {/* Kanban Deal Card Mock */}
+                    <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4 space-y-3 pointer-events-none relative overflow-hidden">
+                       <div className="flex items-start justify-between gap-2">
+                         <div className="min-w-0 flex-1">
+                           <p className="text-xs font-bold text-slate-900 truncate leading-tight">
+                             {newDeal.company || 'ยังไม่ระบุชื่อบริษัท'}
+                           </p>
+                           <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-snug">
+                             {newDeal.title || 'กรอกชื่อดีลเพื่อสร้างพรีวิว'}
+                           </p>
+                         </div>
+                         <div className="flex items-center gap-1 shrink-0">
+                           <span className={cn(
+                             "w-2.5 h-2.5 rounded-full",
+                             newDeal.stage === 'won' ? 'bg-emerald-500' :
+                             newDeal.stage === 'lost' ? 'bg-rose-500' :
+                             newDeal.stage === 'negotiation' ? 'bg-violet-500' :
+                             newDeal.stage === 'proposal' ? 'bg-sky-500' :
+                             newDeal.stage === 'contact' ? 'bg-amber-500' : 'bg-slate-400'
+                           )} />
+                         </div>
+                       </div>
+
+                       <div className="flex items-baseline justify-between gap-2 pt-1">
+                         <span className="text-base font-black text-slate-955 tabular-nums leading-none">
+                           {new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(Number(newDeal.value) || 0)}
+                         </span>
+                         <span className="text-xs font-bold text-slate-700">
+                           {newDeal.probability || '50'}%
+                         </span>
+                       </div>
+
+                       <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                         <div className="w-6 h-6 rounded-full bg-slate-900/10 border border-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-700 shrink-0">
+                           {newDeal.assigned_to ? (teamMembers.find(t => t.id === newDeal.assigned_to)?.name?.charAt(0).toUpperCase() || 'U') : 'U'}
+                         </div>
+                         <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                           <div
+                             className={cn(
+                               "h-full rounded-full transition-all duration-500",
+                               Number(newDeal.probability) >= 70 ? 'bg-emerald-500' :
+                               Number(newDeal.probability) >= 40 ? 'bg-slate-900' : 'bg-slate-350'
+                             )}
+                             style={{ width: `${Math.max(0, Math.min(100, Number(newDeal.probability) || 0))}%` }}
+                           />
+                         </div>
+                       </div>
+                    </div>
+                 </div>
+
+                 {/* AI Guidance Box */}
+                 <div className="bg-violet-50/50 border border-violet-100 p-4 rounded-xl space-y-2.5 mt-auto">
+                    <h5 className="text-[10px] font-bold uppercase tracking-wider text-violet-700 flex items-center gap-1.5">
+                       <Zap size={12} className="text-violet-600 fill-violet-200" />
+                       <span>การวิเคราะห์ของ AI ผู้ช่วยการขาย</span>
+                    </h5>
+                    <div className="text-xs text-slate-600 leading-relaxed space-y-2">
+                       {(() => {
+                         const val = Number(newDeal.value) || 0;
+                         const stage = newDeal.stage;
+                         const expClose = newDeal.expected_close_date;
+                         const assignee = newDeal.assigned_to;
+                         const tips = [];
+
+                         if (val >= 1000000) {
+                           tips.push("ดีลมีมูลค่าสูงมาก (High-Value) ควรเฝ้าระวังไม่ให้ขาดกิจกรรมการคุยนานเกิน 7 วัน!");
+                         } else if (val > 0 && val < 50000) {
+                           tips.push("ดีลขนาดเล็ก (Fast-Track) แนะนำให้เร่งส่งข้อเสนอราคาเพื่อปิดงานด่วน");
+                         }
+
+                         if (stage === 'lead') {
+                           tips.push("ขั้นตอน 'ลูกค้าใหม่': แนะนำโทรนัดหมายและระบุความต้องการให้ชัดเจน");
+                         } else if (stage === 'negotiation') {
+                           tips.push("ขั้นตอน 'กำลังปิด': ดีลนี้เกือบสำเร็จแล้ว แนะนำเตรียมใบเสนอราคา PO ล่าสุดให้พร้อม");
+                         }
+
+                         if (!expClose) {
+                           tips.push("ยังไม่ได้ใส่วันคาดปิด: แนะนำระบุเพื่อให้บอร์ดวิเคราะห์ยอดขายล่วงหน้าได้");
+                         }
+
+                         if (!assignee) {
+                           tips.push("ยังไม่ได้ตั้งคนรับผิดชอบ ดีลจะถูกส่งเข้าดีลส่วนกลาง");
+                         }
+
+                         if (tips.length === 0) {
+                           return <p className="text-slate-400">กรอกข้อมูลดีลด้านซ้ายเพื่อประเมินความเสี่ยงและคำแนะนำจาก AI แบบทันที</p>;
+                         }
+
+                         return (
+                           <ul className="list-disc list-inside space-y-1.5 text-slate-700 font-medium text-[11px]">
+                             {tips.map((tip, idx) => (
+                               <li key={idx}>{tip}</li>
+                             ))}
+                           </ul>
+                         );
+                       })()}
+                    </div>
+                 </div>
              </div>
           </form>
         </DialogContent>

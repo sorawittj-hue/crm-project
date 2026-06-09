@@ -13,6 +13,7 @@ import { useHorizontalScroll, usePipelineKeyboard } from '../../hooks/useHorizon
 import { calculateRiskScore } from '../../services/aiDeals';
 import { STAGE_IDS } from '../../lib/constants';
 import WinLossModal from './WinLossModal';
+import { useAuth } from '../../hooks/useAuth';
 
 const STAGE_CONFIG = {
   lead: {
@@ -77,6 +78,7 @@ export default function PipelineBoard({
   selectedMonth,
   selectedYear,
 }) {
+  const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedDealId, setSelectedDealId] = useState(null);
   const [pinnedDealIds, setPinnedDealIds] = useState([]);
@@ -136,7 +138,7 @@ export default function PipelineBoard({
 
     switch (activeFilter) {
       case 'my-deals':
-        result = result.filter((deal) => deal.assigned_to === 'leader');
+        result = result.filter((deal) => deal.assigned_to === user?.id || deal.assigned_to === 'leader');
         break;
       case 'high-value':
         result = result.filter((deal) => Number(deal.value) >= 1000000);
@@ -150,7 +152,7 @@ export default function PipelineBoard({
         break;
     }
     return result;
-  }, [deals, activeFilter, selectedMonth, selectedYear]);
+  }, [deals, activeFilter, selectedMonth, selectedYear, user?.id]);
 
   const dealsByStage = useMemo(() => {
     return STAGES.reduce((acc, stageId) => {
