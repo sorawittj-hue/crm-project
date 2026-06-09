@@ -4,6 +4,7 @@ import { useCustomers } from '../hooks/useCustomers';
 import { useTeam } from '../hooks/useTeam';
 import { useAuth } from '../hooks/useAuth';
 import { useAppStore } from '../store/useAppStore';
+import { useAddActivity } from '../hooks/useActivities';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
 import { Plus, Sliders, ScanLine, Download, User, Zap, Loader2, ChevronDown, Search } from 'lucide-react';
 
@@ -26,8 +27,57 @@ export default function PipelinePage() {
   const addDealMutation = useAddDeal();
   const addMultipleDealsMutation = useAddMultipleDeals();
   const deleteDealsMutation = useDeleteDeals();
+  const addActivityMutation = useAddActivity();
   const { pendingOpenDeal, clearPendingOpenDeal, pendingNewDealCustomer, clearPendingNewDealCustomer } = useAppStore();
   const { user } = useAuth();
+
+  const handleUpdateDeal = async (id, updates) => {
+    const originalDeal = (deals || []).find(d => d.id === id);
+    if (originalDeal && updates.stage && updates.stage !== originalDeal.stage) {
+      const nextStage = updates.stage;
+      try {
+        let taskTitle = '';
+        let taskDesc = '';
+        let daysAhead = 0;
+
+        if (nextStage === 'proposal') {
+          taskTitle = '📝 ส่งและติดตามใบเสนอราคา';
+          taskDesc = `ระบบอัตโนมัติ: ดีลย้ายสู่ขั้นตอน 'เสนอราคา' กรุณาจัดส่งเอกสารใบเสนอราคาให้ครบถ้วน และโทรติดตามสอบถามผลภายใน 3 วัน`;
+          daysAhead = 3;
+        } else if (nextStage === 'negotiation') {
+          taskTitle = '🤝 เจรจาปิดสัญญา / ติดตาม PO';
+          taskDesc = `ระบบอัตโนมัติ: ดีลย้ายสู่ขั้นตอน 'กำลังปิด' กรุณาติดตามสัญญาหรือใบสั่งซื้อ (PO) และยืนยันข้อตกลงกับผู้มีอำนาจตัดสินใจ`;
+          daysAhead = 3;
+        } else if (nextStage === 'won') {
+          taskTitle = '⚙️ ดำเนินการออกใบแจ้งหนี้ (Invoice) & ส่งมอบงาน';
+          taskDesc = `ระบบอัตโนมัติ: ดีลสำเร็จแล้ว! กรุณาออก Invoice และประสานงานทีมส่งมอบสินค้า/บริการตามข้อตกลง`;
+          daysAhead = 1;
+        } else if (nextStage === 'lost') {
+          taskTitle = '📊 วิเคราะห์สาเหตุและทบทวนใน 3 เดือน';
+          taskDesc = `ระบบอัตโนมัติ: ดีลปิดไม่ได้ (Lost) บันทึกสาเหตุและตั้งเตือนเพื่อตรวจสอบโอกาสติดต่อใหม่อีกครั้งใน 3-6 เดือน`;
+          daysAhead = 90;
+        }
+
+        if (taskTitle) {
+          const scheduledAt = new Date();
+          scheduledAt.setDate(scheduledAt.getDate() + daysAhead);
+          scheduledAt.setHours(9, 0, 0, 0);
+
+          await addActivityMutation.mutateAsync({
+            deal_id: id,
+            type: 'task',
+            title: taskTitle,
+            description: taskDesc,
+            scheduled_at: scheduledAt.toISOString(),
+          });
+        }
+      } catch (err) {
+        console.error('Failed to trigger automatic task:', err);
+      }
+    }
+
+    updateDealMutation.mutate({ id, ...updates });
+  };
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isScanOpen, setIsScanOpen] = useState(false);
@@ -365,7 +415,7 @@ export default function PipelinePage() {
           if (data) addDealMutation.mutate(data);
           else setIsAddModalOpen(true);
         }}
-        onUpdateDeal={(id, updates) => updateDealMutation.mutate({ id, ...updates })}
+        onUpdateDeal={handleUpdateDeal}
         onDeleteDeal={(id) => deleteDealsMutation.mutate([id])}
         pendingOpenDeal={pendingOpenDeal}
         onPendingOpenDealHandled={clearPendingOpenDeal}

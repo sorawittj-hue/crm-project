@@ -19,6 +19,7 @@ import { formatFullCurrency as formatCurrency } from '../../lib/formatters';
 import { callGeminiAPI } from '../../services/ai';
 import { Card, CardContent } from '../ui/Card';
 import { useDealActivities, useAddActivity } from '../../hooks/useActivities';
+import { useEmailTemplates } from '../../hooks/useEmailTemplates';
 
 const STAGE_WORKFLOW = {
   lead: {
@@ -131,6 +132,12 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose, o
   const [followUpDate, setFollowUpDate] = useState('');
   const [followUpNote, setFollowUpNote] = useState('');
 
+  const [showEmailTemplatesPanel, setShowEmailTemplatesPanel] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const [copiedTemplate, setCopiedTemplate] = useState(false);
+
+  const { data: emailTemplates = [] } = useEmailTemplates();
+
   // Local controlled state for deal edit fields — syncs on deal.id change
   const [localEdit, setLocalEdit] = useState({
     title: '', company: '', value: '', probability: '', stage: 'lead',
@@ -194,6 +201,9 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose, o
     setFollowUpDate('');
     setFollowUpNote('');
     setAiAnalysis(null);
+    setShowEmailTemplatesPanel(false);
+    setSelectedTemplateId('');
+    setCopiedTemplate(false);
     if (deal) {
       setLocalEdit({
         title: deal.title || '',
@@ -360,32 +370,162 @@ export default function DealDetailSidebar({ deal, onUpdate, onDelete, onClose, o
 
                   {/* Quick Contact */}
                   {(deal.contact_email || deal.contact_phone) && (
-                    <div className="grid grid-cols-2 gap-3">
-                      {deal.contact_phone && (
-                        <a
-                          href={`tel:${deal.contact_phone}`}
-                          onClick={() => addActivityMutation.mutate({
-                            deal_id: deal.id, type: 'call',
-                            title: `โทรหา ${deal.contact || deal.contact_phone}`,
-                            completed_at: new Date().toISOString(),
-                          })}
-                          className="flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold transition-colors border border-blue-100"
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        {deal.contact_phone && (
+                          <a
+                            href={`tel:${deal.contact_phone}`}
+                            onClick={() => addActivityMutation.mutate({
+                              deal_id: deal.id, type: 'call',
+                              title: `โทรหา ${deal.contact || deal.contact_phone}`,
+                              completed_at: new Date().toISOString(),
+                            })}
+                            className="flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold transition-colors border border-blue-100"
+                          >
+                            <Phone size={14} /> โทรศัพท์หาลูกค้า
+                          </a>
+                        )}
+                        {deal.contact_email && (
+                          <button
+                            type="button"
+                            onClick={() => setShowEmailTemplatesPanel(v => !v)}
+                            className={cn(
+                              "flex items-center justify-center gap-2 h-11 rounded-xl text-xs font-semibold transition-all border",
+                              showEmailTemplatesPanel
+                                ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-500/20"
+                                : "bg-violet-50 hover:bg-violet-100 text-violet-700 border-violet-100"
+                            )}
+                          >
+                            <Mail size={14} /> ส่งอีเมลพร้อม Template
+                          </button>
+                        )}
+                      </div>
+
+                      {/* templated email panel */}
+                      {showEmailTemplatesPanel && deal.contact_email && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="bg-violet-50/40 border border-violet-100 rounded-2xl p-5 space-y-4"
                         >
-                          <Phone size={14} /> โทรศัพท์หาลูกค้า
-                        </a>
-                      )}
-                      {deal.contact_email && (
-                        <a
-                          href={`mailto:${deal.contact_email}?subject=${encodeURIComponent(deal.title)}`}
-                          onClick={() => addActivityMutation.mutate({
-                            deal_id: deal.id, type: 'email',
-                            title: `ส่งอีเมลถึง ${deal.contact_email}`,
-                            completed_at: new Date().toISOString(),
-                          })}
-                          className="flex items-center justify-center gap-2 h-11 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 text-sm font-semibold transition-colors border border-violet-100"
-                        >
-                          <Mail size={14} /> ส่งอีเมลหาลูกค้า
-                        </a>
+                          <div className="flex items-center justify-between border-b border-violet-100 pb-2">
+                            <h4 className="text-xs font-black uppercase tracking-wider text-violet-700">ส่งอีเมลด่วนด้วย Template</h4>
+                            <button
+                              type="button"
+                              onClick={() => { setShowEmailTemplatesPanel(false); setSelectedTemplateId(''); }}
+                              className="text-slate-400 hover:text-slate-600 text-xs font-semibold"
+                            >
+                              ปิด
+                            </button>
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">เลือกเทมเพลต</label>
+                            <select
+                              value={selectedTemplateId}
+                              onChange={(e) => setSelectedTemplateId(e.target.value)}
+                              className="w-full h-10 rounded-xl bg-white border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-violet-400 transition-all"
+                            >
+                              <option value="">— เลือกเทมเพลต —</option>
+                              {emailTemplates.map(t => (
+                                <option key={t.id} value={t.id}>{t.name} ({t.category || 'อื่นๆ'})</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {selectedTemplateId ? (() => {
+                            const template = emailTemplates.find(t => t.id === selectedTemplateId);
+                            if (!template) return null;
+
+                            const formatText = (text) => {
+                              if (!text) return '';
+                              return text
+                                .replace(/\{\{name\}\}/g, deal.contact || 'ลูกค้า')
+                                .replace(/\{\{company\}\}/g, deal.company || 'บริษัท')
+                                .replace(/\{\{value\}\}/g, new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(Number(deal.value) || 0));
+                            };
+
+                            const parsedSubject = formatText(template.subject || deal.title || 'ติดต่อผู้ประสานงาน');
+                            const parsedBody = formatText(template.body || '');
+
+                            const handleSendEmail = () => {
+                              addActivityMutation.mutate({
+                                deal_id: deal.id,
+                                type: 'email',
+                                title: `ส่งอีเมลด้วยเทมเพลต: ${template.name}`,
+                                description: `หัวข้อ: ${parsedSubject}\n\n${parsedBody.slice(0, 200)}${parsedBody.length > 200 ? '...' : ''}`,
+                                completed_at: new Date().toISOString(),
+                              });
+                              
+                              // open mailto
+                              const mailtoUrl = `mailto:${deal.contact_email}?subject=${encodeURIComponent(parsedSubject)}&body=${encodeURIComponent(parsedBody)}`;
+                              window.open(mailtoUrl, '_blank');
+                              // update last_activity
+                              onUpdate(deal.id, { last_activity: new Date().toISOString() });
+                            };
+
+                            const handleCopyToClipboard = () => {
+                              navigator.clipboard.writeText(parsedBody);
+                              setCopiedTemplate(true);
+                              setTimeout(() => setCopiedTemplate(false), 2000);
+
+                              addActivityMutation.mutate({
+                                deal_id: deal.id,
+                                type: 'note',
+                                title: `คัดลอกอีเมลเทมเพลต: ${template.name}`,
+                                description: `คัดลอกเนื้อหาอีเมลเตรียมส่งหา ${deal.contact_email}`,
+                                completed_at: new Date().toISOString(),
+                              });
+                              // update last_activity
+                              onUpdate(deal.id, { last_activity: new Date().toISOString() });
+                            };
+
+                            return (
+                              <div className="space-y-3 bg-white p-4 rounded-xl border border-slate-150 shadow-sm">
+                                <div className="space-y-1">
+                                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Subject</span>
+                                  <p className="text-xs font-bold text-slate-800 border-b border-slate-50 pb-1">{parsedSubject}</p>
+                                </div>
+                                <div className="space-y-1">
+                                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Body Preview</span>
+                                  <pre className="text-xs text-slate-650 font-sans whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                                    {parsedBody}
+                                  </pre>
+                                </div>
+
+                                <div className="flex gap-2 pt-1.5 border-t border-slate-100">
+                                  <button
+                                    type="button"
+                                    onClick={handleCopyToClipboard}
+                                    className="flex-1 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                                  >
+                                    {copiedTemplate ? <CheckCircle2 size={13} className="text-emerald-600" /> : <FileText size={13} />}
+                                    <span>{copiedTemplate ? 'คัดลอกแล้ว!' : 'คัดลอกเนื้อหา'}</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={handleSendEmail}
+                                    className="flex-1 h-9 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-violet-500/10"
+                                  >
+                                    <Send size={13} />
+                                    <span>เปิดแอปเมล (mailto:)</span>
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })() : (
+                            <div className="text-center py-4 bg-white/60 rounded-xl border border-slate-100">
+                              {emailTemplates.length === 0 ? (
+                                <p className="text-xs text-slate-400 font-semibold">
+                                  ยังไม่มี Email Template ในระบบ (เพิ่มได้ที่หน้า เครื่องมือ)
+                                </p>
+                              ) : (
+                                <p className="text-xs text-slate-400 font-semibold">กรุณาเลือกเทมเพลตเพื่อแสดงพรีวิว</p>
+                              )}
+                            </div>
+                          )}
+                        </motion.div>
                       )}
                     </div>
                   )}
