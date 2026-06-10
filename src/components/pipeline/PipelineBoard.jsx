@@ -1,5 +1,6 @@
-import { useState, useMemo, forwardRef, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useMemo, forwardRef, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
   Search, Filter, Star, TrendingUp, AlertTriangle,
   Zap, Users,
@@ -60,8 +61,6 @@ const STAGE_CONFIG = {
   },
 };
 
-// Use the shared stage order from constants so Pipeline, Analytics, and forms
-// can never drift apart. STAGE_CONFIG supplies the visual treatment per id.
 const STAGES = STAGE_IDS;
 
 const QUICK_FILTERS = [
@@ -82,10 +81,15 @@ export default function PipelineBoard({
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedDealId, setSelectedDealId] = useState(null);
   const [pinnedDealIds, setPinnedDealIds] = useState([]);
-  const [dropTarget, setDropTarget] = useState(null);
 
   // Win/Loss Reason State
   const [reasonModal, setReasonModal] = useState({ open: false, dealId: null, targetStage: null });
+  const [localDeals, setLocalDeals] = useState([]);
+
+  // Sync localDeals with parent deals
+  useEffect(() => {
+    setLocalDeals(deals);
+  }, [deals]);
 
   const scrollRef = useHorizontalScroll();
   const [viewMode, setViewMode] = useState('kanban');
@@ -104,9 +108,8 @@ export default function PipelineBoard({
     const today = new Date(nowMs);
     const curMonth = today.getMonth();
     const curYear = today.getFullYear();
-    const isCurrentMonth = targetMonth === curMonth && targetYear === curYear;
 
-    let result = deals.map((deal) => {
+    let result = localDeals.map((deal) => {
       const createdRaw = deal.createdAt || deal.created_at;
       const createdMs = createdRaw ? new Date(createdRaw).getTime() : nowMs;
       const agingDays = Math.floor((nowMs - createdMs) / 86_400_000);
@@ -117,21 +120,16 @@ export default function PipelineBoard({
       };
     });
 
-    // Apply monthly filtering and carry-over logic
     result = result.filter((deal) => {
       const isClosed = ['won', 'lost'].includes(deal.stage);
       
       if (isClosed) {
-        // Closed deals: show only if closed in the target month & year
         const parsedClose = parseYearMonth(deal.actual_close_date || deal.updated_at || deal.created_at);
         if (!parsedClose) return false;
         return parsedClose.month === targetMonth && parsedClose.year === targetYear;
       } else {
-        // Active deals:
         const parsedExpected = parseYearMonth(deal.expected_close_date || deal.created_at);
-        if (!parsedExpected) return true; // fallback
-
-        // Show strictly if it matches the target month & year
+        if (!parsedExpected) return true;
         return parsedExpected.month === targetMonth && parsedExpected.year === targetYear;
       }
     });
@@ -152,7 +150,7 @@ export default function PipelineBoard({
         break;
     }
     return result;
-  }, [deals, activeFilter, selectedMonth, selectedYear, user?.id]);
+  }, [localDeals, activeFilter, selectedMonth, selectedYear, user?.id]);
 
   const dealsByStage = useMemo(() => {
     return STAGES.reduce((acc, stageId) => {
@@ -161,8 +159,52 @@ export default function PipelineBoard({
     }, {});
   }, [processedDeals]);
 
+  const handleDragEnd = (result) => {
+    const { destination, source, draggableId } = result;
+
+    if (!destination) return;
+
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    if (destination.droppableId === source.droppableId) {
+      const stageDeals = Array.from(dealsByStage[source.droppableId] || []);
+      const [removed] = stageDeals.splice(source.index, 1);
+      stageDeals.splice(destination.index, 0, removed);
+
+      setLocalDeals((prev) => {
+        const cloned = [...prev];
+        const fromIndex = cloned.findIndex(d => d.id === removed.id);
+        if (fromIndex !== -1) cloned.splice(fromIndex, 1);
+        
+        if (destination.index === 0) {
+            const firstItem = stageDeals.find(d => d.id !== removed.id);
+            if (firstItem) {
+                const targetIdx = cloned.findIndex(d => d.id === firstItem.id);
+                cloned.splice(targetIdx, 0, removed);
+            } else {
+                cloned.push(removed);
+            }
+        } else {
+            const prevItem = stageDeals[destination.index - 1];
+            const targetIdx = cloned.findIndex(d => d.id === prevItem.id);
+            cloned.splice(targetIdx + 1, 0, removed);
+        }
+        return cloned;
+      });
+      return;
+    }
+
+    const targetStage = destination.droppableId;
+    initiateMove(draggableId, targetStage);
+  };
+
   const handleMoveDeal = (dealId, direction) => {
-    const deal = deals.find((d) => d.id === dealId);
+    const deal = localDeals.find((d) => d.id === dealId);
     if (!deal) return;
 
     const currentIndex = STAGES.indexOf(deal.stage);
@@ -175,6 +217,10 @@ export default function PipelineBoard({
   };
 
   const initiateMove = (dealId, targetStage) => {
+    setLocalDeals(prev => prev.map(d => 
+      d.id === dealId ? { ...d, stage: targetStage, last_activity: new Date().toISOString() } : d
+    ));
+
     if (targetStage === 'won' || targetStage === 'lost') {
       setReasonModal({ open: true, dealId, targetStage });
     } else {
@@ -187,7 +233,7 @@ export default function PipelineBoard({
 
   const submitReason = (reason, closeDate) => {
     const isWon = reasonModal.targetStage === 'won';
-    const deal = deals.find(d => d.id === reasonModal.dealId);
+    const deal = deals.find(d => d.id === reasonModal.dealId); // use original deals for metadata
     const closeIsoString = closeDate ? new Date(closeDate + 'T12:00:00').toISOString() : new Date().toISOString();
     const updates = {
       stage: reasonModal.targetStage,
@@ -202,6 +248,12 @@ export default function PipelineBoard({
       },
     };
     onUpdateDeal(reasonModal.dealId, updates);
+    setReasonModal({ open: false, dealId: null, targetStage: null });
+  };
+
+  const closeReasonModal = () => {
+    // Revert optimistic update
+    setLocalDeals(deals);
     setReasonModal({ open: false, dealId: null, targetStage: null });
   };
 
@@ -344,95 +396,97 @@ export default function PipelineBoard({
       )}
 
       {/* KANBAN BOARD */}
-      {viewMode === 'kanban' && <div
-        ref={scrollRef}
-        className="flex-1 min-h-[560px] relative overflow-x-auto overflow-y-hidden custom-scrollbar-horizontal"
-        style={{ scrollBehavior: 'smooth' }}
-      >
-        <div className="flex gap-4 h-full pb-3" style={{ minWidth: 'max-content' }}>
-          {STAGES.map((stageId) => {
-            const stage = STAGE_CONFIG[stageId];
-            const stageDeals = dealsByStage[stageId] || [];
-            const totalValue = stageDeals.reduce(
-              (sum, d) => sum + (Number(d.value) || 0),
-              0
-            );
-            const isDropTarget = dropTarget === stageId;
+      {viewMode === 'kanban' && (
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <div
+            ref={scrollRef}
+            className="flex-1 min-h-[560px] relative overflow-x-auto overflow-y-hidden custom-scrollbar-horizontal"
+            style={{ scrollBehavior: 'smooth' }}
+          >
+            <div className="flex gap-4 h-full pb-3" style={{ minWidth: 'max-content' }}>
+              {STAGES.map((stageId) => {
+                const stage = STAGE_CONFIG[stageId];
+                const stageDeals = dealsByStage[stageId] || [];
+                const totalValue = stageDeals.reduce(
+                  (sum, d) => sum + (Number(d.value) || 0),
+                  0
+                );
 
-            return (
-              <div
-                key={stageId}
-                className={cn(
-                  'flex-shrink-0 flex flex-col w-[260px] h-full rounded-2xl transition-all duration-200 border',
-                  isDropTarget
-                    ? 'bg-violet-50/60 border-violet-300 ring-4 ring-violet-500/10'
-                    : 'bg-slate-50 border-slate-200/70'
-                )}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDropTarget(stageId);
-                }}
-                onDragLeave={() => setDropTarget(null)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDropTarget(null);
-                  const dealId = e.dataTransfer.getData('dealId');
-                  if (dealId) initiateMove(dealId, stageId);
-                }}
-              >
-                {/* Column header */}
-                <div className="px-4 pt-4 pb-3 border-b border-slate-200/60">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className={cn('w-2 h-2 rounded-full', stage.dot)} />
-                      <h3 className="text-sm font-bold text-slate-900">{stage.label}</h3>
-                      <span className="text-xs text-slate-400 font-medium">
-                        {stageDeals.length}
-                      </span>
-                    </div>
-                    <span className={cn('text-[10px]', stage.accent)}>{stage.icon}</span>
-                  </div>
-                  <p className="text-xs font-semibold text-slate-500 tabular-nums">
-                    {formatCurrency(totalValue)}
-                  </p>
-                </div>
+                return (
+                  <Droppable droppableId={stageId} key={stageId}>
+                    {(provided, snapshot) => (
+                      <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className={cn(
+                          'flex-shrink-0 flex flex-col w-[260px] h-full rounded-2xl transition-all duration-300 border backdrop-blur-sm',
+                          snapshot.isDraggingOver
+                            ? 'bg-violet-50/80 border-violet-300 ring-4 ring-violet-500/20 shadow-inner'
+                            : 'bg-white/40 border-slate-200/60 shadow-sm hover:bg-white/60'
+                        )}
+                      >
+                        {/* Column header */}
+                        <div className="px-4 pt-4 pb-3 border-b border-slate-200/40">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className={cn('w-2 h-2 rounded-full', stage.dot)} />
+                              <h3 className="text-sm font-bold text-slate-800">{stage.label}</h3>
+                              <span className="text-xs text-slate-400 font-medium bg-slate-100/50 px-2 py-0.5 rounded-full">
+                                {stageDeals.length}
+                              </span>
+                            </div>
+                            <span className={cn('text-[10px]', stage.accent)}>{stage.icon}</span>
+                          </div>
+                          <p className="text-xs font-semibold text-slate-500 tabular-nums">
+                            {formatCurrency(totalValue)}
+                          </p>
+                        </div>
 
-                {/* Cards */}
-                <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2.5 custom-scrollbar-thin">
-                  <AnimatePresence mode="popLayout">
-                    {stageDeals.map((deal) => (
-                      <DealCard
-                        key={deal.id}
-                        deal={deal}
-                        isSelected={selectedDealId === deal.id}
-                        isPinned={pinnedDealIds.includes(deal.id)}
-                        canMoveLeft={STAGES.indexOf(deal.stage) > 0}
-                        canMoveRight={STAGES.indexOf(deal.stage) < STAGES.length - 1}
-                        onSelect={() => setSelectedDealId(deal.id)}
-                        onClick={() => onDealClick(deal)}
-                        onPin={() => togglePin(deal.id)}
-                        onMove={(dir) => handleMoveDeal(deal.id, dir)}
-                      />
-                    ))}
-                  </AnimatePresence>
-
-                  {stageDeals.length === 0 && (
-                    <div className="h-28 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center text-slate-300">
-                      <p className="text-xs font-medium">ยังไม่มีดีล</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>}
+                        {/* Cards */}
+                        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 custom-scrollbar-thin">
+                          {stageDeals.map((deal, index) => (
+                            <Draggable key={deal.id} draggableId={deal.id} index={index}>
+                              {(dragProvided, dragSnapshot) => (
+                                <DealCard
+                                  ref={dragProvided.innerRef}
+                                  draggableProps={dragProvided.draggableProps}
+                                  dragHandleProps={dragProvided.dragHandleProps}
+                                  isDragging={dragSnapshot.isDragging}
+                                  deal={deal}
+                                  isSelected={selectedDealId === deal.id}
+                                  isPinned={pinnedDealIds.includes(deal.id)}
+                                  canMoveLeft={STAGES.indexOf(deal.stage) > 0}
+                                  canMoveRight={STAGES.indexOf(deal.stage) < STAGES.length - 1}
+                                  onSelect={() => setSelectedDealId(deal.id)}
+                                  onClick={() => onDealClick(deal)}
+                                  onPin={() => togglePin(deal.id)}
+                                  onMove={(dir) => handleMoveDeal(deal.id, dir)}
+                                />
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                          {stageDeals.length === 0 && !snapshot.isDraggingOver && (
+                            <div className="h-28 border-2 border-dashed border-slate-200/60 rounded-xl flex flex-col items-center justify-center text-slate-400/60 bg-white/20">
+                              <p className="text-xs font-medium">ยังไม่มีดีล</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </Droppable>
+                );
+              })}
+            </div>
+          </div>
+        </DragDropContext>
+      )}
 
       {/* WIN/LOSS REASON MODAL — shared component */}
       <WinLossModal
         open={reasonModal.open}
         targetStage={reasonModal.targetStage}
-        onClose={() => setReasonModal({ open: false, dealId: null, targetStage: null })}
+        onClose={closeReasonModal}
         onConfirm={submitReason}
       />
     </div>
@@ -445,36 +499,38 @@ const DealCard = forwardRef(
       deal,
       isSelected,
       isPinned,
+      isDragging,
       canMoveLeft,
       canMoveRight,
       onSelect,
       onClick,
       onPin,
       onMove,
+      draggableProps,
+      dragHandleProps,
     },
     ref
   ) => {
     const isStagnant = deal.agingDays > 7 && !['won', 'lost'].includes(deal.stage);
 
     return (
-      <motion.div
+      <div
         ref={ref}
-        layout
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        draggable
-        onDragStart={(e) => {
-          e.dataTransfer.setData('dealId', deal.id);
-          e.dataTransfer.effectAllowed = 'move';
-        }}
-        className={cn(
-          'group relative bg-white rounded-xl border transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md',
-          isSelected ? 'border-violet-400 ring-2 ring-violet-500/15' : 'border-slate-200',
-          isPinned && 'border-amber-300 bg-amber-50/30',
-          isStagnant && !isSelected && 'border-rose-200'
-        )}
+        {...draggableProps}
+        {...dragHandleProps}
       >
+        <motion.div
+          initial={false}
+          animate={isDragging ? { scale: 1.05, rotate: 2 } : { scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          className={cn(
+            'group relative bg-white/80 backdrop-blur-md rounded-xl border transition-colors duration-200 cursor-grab active:cursor-grabbing',
+            isDragging ? 'shadow-xl border-violet-400 ring-2 ring-violet-500/30 z-50' : 'shadow-sm hover:shadow-md hover:border-violet-200',
+            isSelected ? 'border-violet-400 ring-2 ring-violet-500/15' : 'border-slate-200/80',
+            isPinned && 'border-amber-300 bg-amber-50/40',
+            isStagnant && !isSelected && 'border-rose-200 bg-rose-50/20'
+          )}
+        >
         {/* Main content (clickable) */}
         <div
           className="p-3.5 space-y-3"
@@ -487,7 +543,7 @@ const DealCard = forwardRef(
           {/* Top row: company + pin indicator */}
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-slate-900 truncate leading-tight">
+              <p className="text-xs font-bold text-slate-800 truncate leading-tight">
                 {deal.company || 'ไม่ระบุบริษัท'}
               </p>
               <p className="text-xs text-slate-500 line-clamp-2 mt-0.5 leading-snug">
@@ -498,7 +554,7 @@ const DealCard = forwardRef(
               {isPinned && <Star size={12} className="text-amber-500 fill-current" />}
               {isStagnant && (
                 <span
-                  className="inline-flex items-center gap-1 text-[10px] font-semibold bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded-md border border-rose-100"
+                  className="inline-flex items-center gap-1 text-[10px] font-semibold bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded-md border border-rose-200/50 shadow-sm"
                   title="ไม่มีความเคลื่อนไหวเกิน 7 วัน"
                 >
                   <Clock size={9} />
@@ -510,18 +566,18 @@ const DealCard = forwardRef(
 
           {/* Value */}
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-base font-bold text-slate-900 tabular-nums leading-none">
+            <span className="text-sm font-black text-slate-900 tabular-nums leading-none tracking-tight">
               {formatCurrency(deal.value)}
             </span>
             {deal.probability !== undefined && deal.probability !== null && (
               <span
                 className={cn(
-                  'text-[11px] font-semibold tabular-nums',
+                  'text-[11px] font-bold tabular-nums px-1.5 py-0.5 rounded-full bg-slate-50',
                   deal.probability >= 70
-                    ? 'text-emerald-600'
+                    ? 'text-emerald-600 bg-emerald-50'
                     : deal.probability >= 40
                     ? 'text-slate-700'
-                    : 'text-slate-400'
+                    : 'text-slate-500 bg-slate-100'
                 )}
               >
                 {deal.probability}%
@@ -533,21 +589,21 @@ const DealCard = forwardRef(
           <div className="flex items-center gap-2.5">
             <div
               className={cn(
-                'w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0',
-                deal.assigned_to === 'leader' ? 'bg-slate-900' : 'bg-slate-400'
+                'w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0 shadow-sm',
+                deal.assigned_to === 'leader' ? 'bg-indigo-600' : 'bg-slate-500'
               )}
               title={deal.assigned_to || 'ยังไม่มอบหมาย'}
             >
               {(deal.assigned_to || 'U').charAt(0).toUpperCase()}
             </div>
-            <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div className="flex-1 h-1.5 bg-slate-100/80 rounded-full overflow-hidden shadow-inner">
               <div
                 className={cn(
                   'h-full rounded-full transition-all duration-700',
                   deal.probability >= 70
-                    ? 'bg-emerald-500'
+                    ? 'bg-gradient-to-r from-emerald-400 to-emerald-500'
                     : deal.probability >= 40
-                    ? 'bg-slate-900'
+                    ? 'bg-gradient-to-r from-violet-400 to-violet-500'
                     : 'bg-slate-300'
                 )}
                 style={{ width: `${Math.max(0, Math.min(100, deal.probability || 0))}%` }}
@@ -557,7 +613,7 @@ const DealCard = forwardRef(
         </div>
 
         {/* Action row — visible on hover only to keep cards compact */}
-        <div className="flex items-center border-t border-slate-100 overflow-hidden max-h-0 group-hover:max-h-10 transition-all duration-200">
+        <div className="flex items-center border-t border-slate-100/80 overflow-hidden max-h-0 group-hover:max-h-10 transition-all duration-300 ease-in-out opacity-0 group-hover:opacity-100 bg-slate-50/50 rounded-b-xl backdrop-blur-sm">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -567,7 +623,7 @@ const DealCard = forwardRef(
             className={cn(
               'flex-1 h-9 flex items-center justify-center text-slate-400 transition-all',
               canMoveLeft
-                ? 'hover:bg-slate-50 hover:text-slate-900'
+                ? 'hover:bg-slate-200/50 hover:text-slate-900'
                 : 'opacity-30 cursor-not-allowed'
             )}
             title="ย้อนขั้นตอน"
@@ -575,7 +631,7 @@ const DealCard = forwardRef(
           >
             <ArrowLeft size={14} />
           </button>
-          <div className="w-px h-4 bg-slate-100" />
+          <div className="w-px h-4 bg-slate-200/60" />
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -584,15 +640,15 @@ const DealCard = forwardRef(
             className={cn(
               'flex-1 h-9 flex items-center justify-center transition-all',
               isPinned
-                ? 'text-amber-500 hover:bg-amber-50'
-                : 'text-slate-400 hover:bg-slate-50 hover:text-amber-500'
+                ? 'text-amber-500 hover:bg-amber-100/50'
+                : 'text-slate-400 hover:bg-slate-200/50 hover:text-amber-500'
             )}
             title={isPinned ? 'เลิกปักหมุด' : 'ปักหมุด'}
             aria-label="ปักหมุด"
           >
             <Star size={14} fill={isPinned ? 'currentColor' : 'none'} />
           </button>
-          <div className="w-px h-4 bg-slate-100" />
+          <div className="w-px h-4 bg-slate-200/60" />
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -602,7 +658,7 @@ const DealCard = forwardRef(
             className={cn(
               'flex-1 h-9 flex items-center justify-center text-slate-400 transition-all',
               canMoveRight
-                ? 'hover:bg-violet-50 hover:text-violet-600'
+                ? 'hover:bg-violet-100/50 hover:text-violet-600'
                 : 'opacity-30 cursor-not-allowed'
             )}
             title="ไปขั้นตอนถัดไป"
@@ -611,9 +667,11 @@ const DealCard = forwardRef(
             <ChevronRight size={16} />
           </button>
         </div>
-      </motion.div>
+        </motion.div>
+      </div>
     );
   }
 );
 
 DealCard.displayName = 'DealCard';
+

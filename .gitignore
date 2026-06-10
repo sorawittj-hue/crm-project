@@ -126,3 +126,4 @@ Desktop.ini
 # JetBrains
 .idea/
 .vercel
+.env*

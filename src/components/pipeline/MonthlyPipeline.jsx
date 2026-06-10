@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import DealDetailSidebar from './DealDetailSidebar';
-import { Dialog } from '../ui/Dialog';
 import { useTeam } from '../../hooks/useTeam';
 import PipelineHeader from './PipelineHeader';
 import PipelineBoard from './PipelineBoard';
@@ -25,6 +25,7 @@ export default function MonthlyPipeline({
   const { data: teamMembers } = useTeam();
   const { monthlyTarget } = useAppStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const drawerRef = useRef(null);
 
   // States for sub-dialogs lifted from DealDetailSidebar
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -56,6 +57,40 @@ export default function MonthlyPipeline({
       onPendingOpenDealHandled?.();
     }
   }, [pendingOpenDeal, setPeekDeal, onPendingOpenDealHandled]);
+
+  // Focus trap for sidebar
+  useEffect(() => {
+    if (isSidebarOpen && drawerRef.current) {
+      const focusableSelector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+      const focusableElements = drawerRef.current.querySelectorAll(focusableSelector);
+      
+      if (focusableElements.length > 0) {
+        // focus the first element (close button or whatever is first)
+        focusableElements[0].focus();
+      }
+
+      const handleKeyDown = (e) => {
+        if (e.key === 'Tab') {
+          const focusable = drawerRef.current.querySelectorAll(focusableSelector);
+          
+          if (focusable.length === 0) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+
+          if (e.shiftKey && document.activeElement === first) {
+            last.focus();
+            e.preventDefault();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            first.focus();
+            e.preventDefault();
+          }
+        }
+      };
+
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isSidebarOpen]);
 
   // ── KPI stats ──────────────────────────────────────────────────────────────
   // Use actual_close_date for won deals to measure monthly revenue correctly.
@@ -159,17 +194,46 @@ export default function MonthlyPipeline({
         />
       </div>
 
-      {/* DEAL DETAIL DIALOG */}
-      <Dialog open={isSidebarOpen} onOpenChange={setIsSidebarOpen} className="max-w-2xl">
-        <DealDetailSidebar
-          deal={visibleDeal}
-          onUpdate={onUpdateDeal}
-          onDelete={handleDelete}
-          onClose={() => setIsSidebarOpen(false)}
-          onRequestDelete={(dealId) => setConfirmDeleteId(dealId)}
-          onRequestCloseStage={(targetStage) => setWinLossState({ open: true, targetStage, deal: visibleDeal })}
-        />
-      </Dialog>
+      {/* SIDE DRAWER FOR DEAL DETAILS */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+            
+            {/* Drawer */}
+            <motion.div
+              ref={drawerRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="รายละเอียดดีล"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 z-50 w-full max-w-2xl h-full bg-white/95 backdrop-blur-xl shadow-2xl border-l border-slate-200/50 flex flex-col overflow-hidden"
+            >
+              <div className="flex-1 overflow-y-auto">
+                <DealDetailSidebar
+                  deal={visibleDeal}
+                  onUpdate={onUpdateDeal}
+                  onDelete={handleDelete}
+                  onClose={() => setIsSidebarOpen(false)}
+                  onRequestDelete={(dealId) => setConfirmDeleteId(dealId)}
+                  onRequestCloseStage={(targetStage) => setWinLossState({ open: true, targetStage, deal: visibleDeal })}
+                />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* CONFIRM DELETE DIALOG (Lifted) */}
       <ConfirmDialog
