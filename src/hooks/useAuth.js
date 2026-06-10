@@ -98,6 +98,10 @@ export function useAuth() {
 
   const getUserId = () => session?.user?.id ?? null;
 
+  const signInAsGuest = async () => {
+    return signIn('demo@novapipeline.com', 'demo123456');
+  };
+
   return {
     user,
     session,
@@ -105,6 +109,7 @@ export function useAuth() {
     error,
     isAuthenticated: !!user,
     signIn,
+    signInAsGuest,
     signUp,
     signOut,
     getUserId,

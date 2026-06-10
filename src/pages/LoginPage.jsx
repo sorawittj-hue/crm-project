@@ -6,7 +6,7 @@ import { Target, Eye, EyeOff, ArrowRight, Loader2, UserPlus, LogIn } from 'lucid
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { signIn, signUp, loading } = useAuth();
+  const { signIn, signUp, signInAsGuest, loading } = useAuth();
 
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [email, setEmail] = useState('');
@@ -40,6 +40,17 @@ export default function LoginPage() {
       if (error) { setFormError(error.message); return; }
       navigate('/command');
     }
+  };
+
+  const handleGuestLogin = async () => {
+    setFormError('');
+    setSuccessMsg('');
+    const { error } = await signInAsGuest();
+    if (error) { 
+      setFormError('ไม่สามารถเข้าสู่ระบบ Guest ได้ กรุณาตรวจสอบว่ามีบัญชี Demo ในระบบแล้วหรือยัง (' + error.message + ')');
+      return; 
+    }
+    navigate('/command');
   };
 
   const isLogin = mode === 'login';
@@ -254,6 +265,21 @@ export default function LoginPage() {
               </motion.button>
             </motion.form>
           </AnimatePresence>
+
+          <div className="mt-6 flex items-center gap-4 before:h-px before:flex-1 before:bg-slate-200 after:h-px after:flex-1 after:bg-slate-200">
+            <span className="text-xs font-semibold text-slate-400">หรือ</span>
+          </div>
+
+          <motion.button
+            type="button"
+            onClick={handleGuestLogin}
+            disabled={loading}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full h-12 mt-6 bg-white border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 font-semibold rounded-2xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            ทดลองใช้งาน (Guest Mode)
+          </motion.button>
 
           {isLogin && (
             <p className="text-center text-slate-400 text-xs mt-8">
