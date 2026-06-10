@@ -181,8 +181,9 @@ export default function AppLayout() {
   const userId = user?.id;
 
   const { data: myProfile } = useMyProfile(userId);
-  // Use personal target if set; fall back to company team target
-  const effectiveTarget = myProfile?.personal_target > 0 ? myProfile.personal_target : monthlyTarget;
+  // Use personal target if set; otherwise default to 0
+  const hasPersonalTarget = myProfile?.personal_target > 0;
+  const effectiveTarget = hasPersonalTarget ? myProfile.personal_target : 0;
 
   // DB-backed notifications
   const { data: notifications = [] } = useNotifications(userId);
@@ -374,7 +375,7 @@ export default function AppLayout() {
                   <span className="text-xs font-bold text-violet-600">{goalProgress}%</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <p className="text-base font-bold text-slate-800">{formatCurrency(effectiveTarget)}</p>
+                  <p className="text-base font-bold text-slate-800">{hasPersonalTarget ? formatCurrency(effectiveTarget) : 'ยังไม่ได้ตั้ง'}</p>
                   <TrendingUp size={15} className={goalProgress >= 75 ? 'text-emerald-500' : 'text-slate-300'} />
                 </div>
                 <div className="h-1.5 w-full bg-violet-100 rounded-full overflow-hidden">

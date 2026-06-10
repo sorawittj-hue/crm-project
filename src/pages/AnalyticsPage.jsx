@@ -160,7 +160,8 @@ export default function AnalyticsPage() {
   const [simLeads, setSimLeads] = useState(20);
 
   const teamTarget = settings?.monthly_target || 10000000;
-  const monthlyTarget = myProfile?.personal_target > 0 ? myProfile.personal_target : teamTarget;
+  const hasPersonalTarget = myProfile?.personal_target > 0;
+  const monthlyTarget = hasPersonalTarget ? myProfile.personal_target : 0;
 
   const analytics = useMemo(() => {
     if (!deals) return null;
@@ -439,7 +440,7 @@ export default function AnalyticsPage() {
     const coverage = Math.round((forecast / monthlyTarget) * 100);
     const quotaText = gap <= 0
       ? `🎉 ยินดีด้วย! ยอดขายจริงในเดือนนี้คือ ${formatCurrency(analytics.currentMonthActual)} ทะลุเป้าหมายที่ตั้งไว้ที่ ${formatCurrency(monthlyTarget)}`
-      : `การประเมินโอกาสยอดขายถึงเป้า (เป้าหมาย: ${formatCurrency(monthlyTarget)}):\n\n` +
+      : `การประเมินโอกาสยอดขายถึงเป้า (เป้าหมาย: ${hasPersonalTarget ? formatCurrency(monthlyTarget) : 'ยังไม่ได้ตั้งเป้าหมายส่วนตัว'}):\n\n` +
         `- ยอดขายปิดได้แล้ว: **${formatCurrency(analytics.currentMonthActual)}**\n` +
         `- ยอดขายคาดการณ์ถ่วงน้ำหนัก (Forecast): **${formatCurrency(forecast)}** (คิดเป็น **${coverage}%** ของเป้า)\n` +
         `- ยอดขายส่วนขาด (Goal Gap): **${formatCurrency(gap)}**\n\n` +

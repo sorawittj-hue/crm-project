@@ -87,7 +87,8 @@ export default function CommandCenterPage() {
   const { setPendingOpenDeal } = useAppStore();
 
   const teamGoal = settings?.monthly_target || 10000000;
-  const monthlyGoal = myProfile?.personal_target > 0 ? myProfile.personal_target : teamGoal;
+  const hasPersonalTarget = myProfile?.personal_target > 0;
+  const monthlyGoal = hasPersonalTarget ? myProfile.personal_target : 0;
 
   const stats = useMemo(() => {
     if (!deals) return null;
@@ -404,9 +405,9 @@ export default function CommandCenterPage() {
           <div className="relative z-10">
             <div className="flex items-start justify-between mb-6">
               <div>
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">เป้าหมายส่วนตัว</p>
+                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">เป้าหมายเดือนนี้</p>
                 <p className="text-sm text-slate-300 mt-1 font-medium">
-                  {myProfile?.personal_target > 0 && teamGoal !== monthlyGoal ? `ยอดทีม ${formatCurrency(teamGoal)}` : 'เป้าหมายรายเดือน'}
+                  {stats?.hasPersonalTarget ? `เป้าหมายส่วนตัว ${formatCurrency(monthlyGoal)}` : 'ยังไม่ได้ตั้งเป้าหมายส่วนตัว'}
                 </p>
               </div>
               <div className={cn('flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold',
