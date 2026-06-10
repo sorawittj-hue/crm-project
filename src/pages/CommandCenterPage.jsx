@@ -1,32 +1,55 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeals } from '../hooks/useDeals';
 import { useTeam } from '../hooks/useTeam';
 import { useSettings } from '../hooks/useSettings';
 import { useActivities } from '../hooks/useActivities';
+import { useCustomers } from '../hooks/useCustomers';
 import { useAppStore } from '../store/useAppStore';
 import { useAuth } from '../hooks/useAuth';
 import { useMyProfile } from '../hooks/useUserProfiles';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { motion } from 'framer-motion';
+import { motion, animate, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { formatCurrency, formatFullCurrency, daysSince } from '../lib/formatters';
-import { buildPipelineIntelligence } from '../utils/salesIntelligence';
+import { buildPipelineIntelligence, buildCustomerHealth, DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
+import { STAGE_COLORS, STAGE_LABELS } from '../lib/constants';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
 import {
   TrendingUp,
   Users, AlertCircle,
-  ArrowUpRight, Briefcase,
+  ArrowUpRight, ArrowDownRight, Briefcase,
   Target, Clock, CalendarClock, ChevronRight, CheckCircle2,
   Phone, Mail, FileText, MessageSquare, Activity, Trophy,
-  Star, Flame
+  Star, Flame, BarChart3, Sparkles, Shield, Zap,
+  PieChart as PieChartIcon, Wrench, Settings, ShieldCheck
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip as RechartsTooltip
 } from 'recharts';
+
+// --- Animated Number Component ---
+function AnimatedNumber({ value, formatter, duration = 1.2 }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const numericValue = typeof value === 'number' ? value : parseFloat(value?.toString().replace(/[^0-9.-]+/g, "") || 0);
+    if (isNaN(numericValue)) return;
+    const controls = animate(0, numericValue, {
+      duration,
+      ease: [0.19, 1, 0.22, 1],
+      onUpdate(val) {
+        if (ref.current) {
+          ref.current.textContent = formatter ? formatter(val) : Math.round(val).toLocaleString();
+        }
+      }
+    });
+    return () => controls.stop();
+  }, [value, duration, formatter]);
+  return <span ref={ref}>{formatter ? formatter(0) : 0}</span>;
+}
 
 const ACTIVITY_ICON = {
   call: { Icon: Phone, color: 'bg-blue-50 text-blue-500' },
@@ -37,6 +60,21 @@ const ACTIVITY_ICON = {
   whatsapp: { Icon: MessageSquare, color: 'bg-emerald-50 text-emerald-600' },
 };
 
+const FUNNEL_STAGES = ['lead', 'contact', 'proposal', 'negotiation'];
+
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'สวัสดีตอนเช้า';
+  if (hour < 17) return 'สวัสดีตอนบ่าย';
+  return 'สวัสดีตอนเย็น';
+};
+
+const getDateString = () => {
+  return new Date().toLocaleDateString('th-TH', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+};
+
 export default function CommandCenterPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -45,10 +83,10 @@ export default function CommandCenterPage() {
   const { data: teamMembers, isLoading: teamLoading } = useTeam();
   const { data: settings, isLoading: settingsLoading } = useSettings();
   const { data: activities = [] } = useActivities();
+  const { data: customers = [] } = useCustomers();
   const { setPendingOpenDeal } = useAppStore();
 
   const teamGoal = settings?.monthly_target || 10000000;
-  // Personal target: use user's own if set, else fall back to team target
   const monthlyGoal = myProfile?.personal_target > 0 ? myProfile.personal_target : teamGoal;
 
   const stats = useMemo(() => {
@@ -99,11 +137,9 @@ export default function CommandCenterPage() {
       ? ((currentMonthActual - prevMonthActual) / prevMonthActual * 100).toFixed(1)
       : 0;
 
-    // New deals this week
     const weekAgo = now.getTime() - 7 * 86_400_000;
     const newDealsThisWeek = deals.filter(d => new Date(d.created_at).getTime() >= weekAgo).length;
 
-    // Won deals this week
     const wonThisWeek = deals.filter(d => {
       if (d.stage !== 'won') return false;
       const dt = new Date(d.actual_close_date || d.updated_at || d.created_at);
@@ -111,7 +147,6 @@ export default function CommandCenterPage() {
     });
     const wonThisWeekValue = wonThisWeek.reduce((s, d) => s + Number(d.value || 0), 0);
 
-    // Forecast scenarios
     const activeDealsArr = activePipeline;
     const commitValue = activeDealsArr
       .filter(d => Number(d.probability) >= 70)
@@ -122,7 +157,6 @@ export default function CommandCenterPage() {
       .filter(d => Number(d.probability) >= 90)
       .reduce((s, d) => s + Number(d.value || 0), 0);
 
-    // Hot deals — high-value × probability, closing soon
     const now30 = now.getTime() + 30 * 86_400_000;
     const hotDeals = activeDealsArr
       .map(d => ({
@@ -132,6 +166,32 @@ export default function CommandCenterPage() {
       }))
       .sort((a, b) => b.score - a.score)
       .slice(0, 5);
+
+    // Pipeline mini-funnel
+    const funnelData = FUNNEL_STAGES.map(stage => {
+      const stageDeals = deals.filter(d => d.stage === stage);
+      return {
+        stage,
+        label: STAGE_LABELS[stage] || stage,
+        count: stageDeals.length,
+        value: stageDeals.reduce((s, d) => s + Number(d.value || 0), 0),
+        color: STAGE_COLORS[stage],
+      };
+    });
+
+    // Won deals stats
+    const wonDeals = deals.filter(d => d.stage === 'won');
+    const lostDeals = deals.filter(d => d.stage === 'lost');
+    const winRate = (wonDeals.length + lostDeals.length) > 0
+      ? Math.round((wonDeals.length / (wonDeals.length + lostDeals.length)) * 100)
+      : 0;
+    const avgDaysToClose = wonDeals.length > 0
+      ? Math.round(wonDeals.reduce((s, d) => {
+          const created = new Date(d.created_at);
+          const closed = new Date(d.actual_close_date || d.updated_at || d.created_at);
+          return s + Math.max(0, (closed - created) / 86400000);
+        }, 0) / wonDeals.length)
+      : 0;
 
     return {
       totalWonValue,
@@ -149,18 +209,33 @@ export default function CommandCenterPage() {
       bestCaseValue,
       worstCaseValue,
       hotDeals,
+      funnelData,
+      winRate,
+      avgDaysToClose,
     };
   }, [deals, monthlyGoal]);
 
-  // Today's Action Plan — pulls real data from activities + deals
+  // Customer Health
+  const customerStats = useMemo(() => {
+    if (!customers.length && !deals?.length) return null;
+    const health = buildCustomerHealth(customers, deals || [], { now: new Date() });
+    const gradeCount = { A: 0, B: 0, C: 0, D: 0 };
+    const atRiskCustomers = [];
+    health.forEach(c => {
+      if (gradeCount[c.grade] !== undefined) gradeCount[c.grade]++;
+      if (c.health?.status === 'at_risk') atRiskCustomers.push(c);
+    });
+    atRiskCustomers.sort((a, b) => (b.dealStats?.wonValue || 0) - (a.dealStats?.wonValue || 0));
+    return { gradeCount, atRiskCustomers: atRiskCustomers.slice(0, 3), total: health.length };
+  }, [customers, deals]);
+
+  // Today's Action Plan
   const actionPlan = useMemo(() => {
     if (!deals) return { followUps: [], closingThisWeek: [], stale: [] };
-    // eslint-disable-next-line react-hooks/purity
     const now = Date.now();
     const endOfToday = new Date(now); endOfToday.setHours(23, 59, 59, 999);
     const dealMap = Object.fromEntries(deals.map(d => [d.id, d]));
 
-    // Pending follow-ups scheduled for today or overdue
     const followUps = activities
       .filter(a => a.scheduled_at && !a.completed_at && a.deal_id && dealMap[a.deal_id])
       .filter(a => new Date(a.scheduled_at).getTime() <= endOfToday.getTime())
@@ -171,18 +246,13 @@ export default function CommandCenterPage() {
       }))
       .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at));
 
-    // Active deals expected to close within 7 days
     const sevenDays = now + 7 * 86_400_000;
     const closingThisWeek = deals
       .filter(d => !['won', 'lost'].includes(d.stage) && d.expected_close_date)
-      .filter(d => {
-        const t = new Date(d.expected_close_date).getTime();
-        return t <= sevenDays;
-      })
+      .filter(d => new Date(d.expected_close_date).getTime() <= sevenDays)
       .sort((a, b) => Number(b.value) - Number(a.value))
       .slice(0, 5);
 
-    // Stale active deals
     const stale = deals
       .filter(d => !['won', 'lost'].includes(d.stage))
       .filter(d => daysSince(d.last_activity || d.created_at) >= 3)
@@ -192,7 +262,7 @@ export default function CommandCenterPage() {
     return { followUps, closingThisWeek, stale };
   }, [deals, activities]);
 
-  // Today's real activity feed
+  // Activity feed
   const todayActivities = useMemo(() => {
     if (!activities.length) return [];
     const dealMap = Object.fromEntries((deals || []).map(d => [d.id, d]));
@@ -213,7 +283,7 @@ export default function CommandCenterPage() {
       }));
   }, [activities, deals]);
 
-  // Team leaderboard — actual won this month per member
+  // Team leaderboard
   const teamLeaderboard = useMemo(() => {
     if (!deals || !teamMembers) return [];
     const now = new Date();
@@ -252,6 +322,7 @@ export default function CommandCenterPage() {
 
   const isLoading = dealsLoading || teamLoading || settingsLoading;
   const hasNoDeals = (deals || []).length === 0;
+  const userName = myProfile?.full_name || user?.email?.split('@')[0] || '';
 
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center h-[70vh] gap-4">
@@ -262,28 +333,41 @@ export default function CommandCenterPage() {
   );
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-8 pb-10">
+    <div className="max-w-[1600px] mx-auto space-y-8 pb-24 px-4 md:px-6 mt-4">
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      {/* PREMIUM HEADER */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row md:items-end justify-between gap-6"
+      >
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">ภาพรวมยอดขาย</h1>
-          <p className="text-sm text-slate-500 mt-1">สถานะดีลและงานสำคัญประจำวัน</p>
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles size={16} className="text-violet-500" />
+            <span className="text-xs font-bold text-violet-600 uppercase tracking-widest">Nova Pipeline</span>
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+            {getGreeting()}, <span className="text-violet-600">{userName}</span>
+          </h1>
+          <p className="text-sm text-slate-500 mt-1 font-medium">{getDateString()}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={() => navigate('/customers')}
-            className="h-9 px-4 rounded-xl text-sm bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm">
-            <Users size={14} className="mr-1.5" />
-            ลูกค้า
-          </Button>
-          <Button onClick={() => navigate('/pipeline')}
-            className="h-9 px-5 rounded-xl text-sm bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20">
-            <ArrowUpRight size={14} className="mr-1.5" />
-            ดูดีลทั้งหมด
-          </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {[
+            { label: 'Pipeline', icon: Briefcase, to: '/pipeline', tone: 'bg-violet-600 text-white shadow-violet-500/20' },
+            { label: 'ลูกค้า', icon: Users, to: '/customers', tone: 'bg-white text-slate-700 border-slate-200' },
+            { label: 'Analytics', icon: BarChart3, to: '/analytics', tone: 'bg-white text-slate-700 border-slate-200' },
+            { label: 'เครื่องมือ', icon: Wrench, to: '/tools', tone: 'bg-white text-slate-700 border-slate-200' },
+          ].map(btn => (
+            <Button key={btn.to} onClick={() => navigate(btn.to)}
+              className={cn("h-9 px-4 rounded-xl text-xs font-bold border shadow-sm transition-all hover:shadow-md", btn.tone)}>
+              <btn.icon size={14} className="mr-1.5" />
+              {btn.label}
+            </Button>
+          ))}
         </div>
-      </div>
+      </motion.div>
 
+      {/* ONBOARDING CTA */}
       {hasNoDeals && (
         <motion.section
           initial={{ opacity: 0, y: 8 }}
@@ -291,191 +375,274 @@ export default function CommandCenterPage() {
           className="grid grid-cols-1 gap-3 md:grid-cols-3"
         >
           {[
-            {
-              title: 'เพิ่มดีลแรก',
-              detail: 'สร้าง pipeline ให้ dashboard เริ่มวิเคราะห์ทันที',
-              icon: Briefcase,
-              action: () => navigate('/pipeline'),
-              tone: 'bg-violet-600 text-white shadow-violet-500/20',
-            },
-            {
-              title: 'เพิ่มลูกค้า',
-              detail: 'ผูกดีลกับบัญชีลูกค้าเพื่อเห็นมูลค่ารวม',
-              icon: Users,
-              action: () => navigate('/customers'),
-              tone: 'bg-white text-slate-800 border-slate-100',
-            },
-            {
-              title: 'ตั้งเป้าหมาย',
-              detail: 'กำหนด target เพื่อให้ forecast มีบริบท',
-              icon: Target,
-              action: () => navigate('/settings'),
-              tone: 'bg-white text-slate-800 border-slate-100',
-            },
+            { title: 'เพิ่มดีลแรก', detail: 'สร้าง pipeline ให้ dashboard เริ่มวิเคราะห์ทันที', icon: Briefcase, action: () => navigate('/pipeline'), tone: 'bg-violet-600 text-white shadow-violet-500/20' },
+            { title: 'เพิ่มลูกค้า', detail: 'ผูกดีลกับบัญชีลูกค้าเพื่อเห็นมูลค่ารวม', icon: Users, action: () => navigate('/customers'), tone: 'bg-white text-slate-800 border-slate-100' },
+            { title: 'ตั้งเป้าหมาย', detail: 'กำหนด target เพื่อให้ forecast มีบริบท', icon: Target, action: () => navigate('/settings'), tone: 'bg-white text-slate-800 border-slate-100' },
           ].map((item) => (
-            <button
-              key={item.title}
-              type="button"
-              onClick={item.action}
-              className={cn(
-                'group rounded-2xl border p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md',
-                item.tone
-              )}
-            >
+            <button key={item.title} type="button" onClick={item.action}
+              className={cn('group rounded-2xl border p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md', item.tone)}>
               <div className="mb-4 flex items-center justify-between">
-                <div className={cn(
-                  'flex h-10 w-10 items-center justify-center rounded-xl',
-                  item.tone.includes('violet') ? 'bg-white/15 text-white' : 'bg-violet-50 text-violet-600'
-                )}>
+                <div className={cn('flex h-10 w-10 items-center justify-center rounded-xl', item.tone.includes('violet') ? 'bg-white/15 text-white' : 'bg-violet-50 text-violet-600')}>
                   <item.icon size={18} />
                 </div>
                 <ChevronRight size={16} className={cn('transition-transform group-hover:translate-x-0.5', item.tone.includes('violet') ? 'text-white/70' : 'text-slate-300')} />
               </div>
               <p className="text-sm font-bold">{item.title}</p>
-              <p className={cn('mt-1 text-xs leading-5', item.tone.includes('violet') ? 'text-violet-100' : 'text-slate-500')}>
-                {item.detail}
-              </p>
+              <p className={cn('mt-1 text-xs leading-5', item.tone.includes('violet') ? 'text-violet-100' : 'text-slate-500')}>{item.detail}</p>
             </button>
           ))}
         </motion.section>
       )}
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Goal Card */}
-        <Card className="p-6 rounded-2xl bg-gradient-to-br from-violet-600 to-violet-800 text-white border-0 shadow-lg shadow-violet-500/20 lg:col-span-2 relative overflow-hidden">
-          <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
-          <div className="absolute -bottom-10 -left-4 w-32 h-32 rounded-full bg-white/5" />
-          <div className="relative z-10 space-y-4">
-            <div className="flex justify-between items-start">
+      {/* GOAL CARD + KPI RIBBON */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+        {/* Goal Card with SVG Radial Gauge */}
+        <Card className="p-7 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-2xl lg:col-span-2 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+            <Target size={160} />
+          </div>
+          <div className="relative z-10">
+            <div className="flex items-start justify-between mb-6">
               <div>
-                <p className="text-violet-200 text-xs font-medium">เป้าหมายส่วนตัว</p>
-                <p className="text-3xl font-bold text-white mt-1 tabular-nums">{formatFullCurrency(monthlyGoal)}</p>
-                {myProfile?.personal_target > 0 && teamGoal !== monthlyGoal && (
-                  <p className="text-violet-300 text-[11px] mt-1">ยอดทีม {formatCurrency(teamGoal)}</p>
-                )}
+                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">เป้าหมายส่วนตัว</p>
+                <p className="text-sm text-slate-300 mt-1 font-medium">
+                  {myProfile?.personal_target > 0 && teamGoal !== monthlyGoal ? `ยอดทีม ${formatCurrency(teamGoal)}` : 'เป้าหมายรายเดือน'}
+                </p>
               </div>
-              <div className={cn('flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold',
-                Number(stats?.growthPercent) >= 0
-                  ? 'bg-emerald-400/20 text-emerald-200'
-                  : 'bg-rose-400/20 text-rose-200'
+              <div className={cn('flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold',
+                Number(stats?.growthPercent) >= 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
               )}>
-                <TrendingUp size={11} />
-                {stats?.growthPercent > 0 ? '+' : ''}{stats?.growthPercent}% จากเดือนที่แล้ว
+                {Number(stats?.growthPercent) >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                {stats?.growthPercent > 0 ? '+' : ''}{stats?.growthPercent}%
               </div>
             </div>
-            <div className="space-y-2">
-              <div className="flex justify-between items-end">
-                <div>
-                  <p className="text-violet-200 text-xs">ยอดขายปัจจุบัน</p>
-                  <p className="text-xl font-bold text-white tabular-nums">{formatFullCurrency(stats?.totalWonValue)}</p>
+            <div className="flex items-center gap-6">
+              {/* SVG Radial Gauge */}
+              <div className="relative w-28 h-28 shrink-0">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="34" stroke="rgba(255,255,255,0.1)" strokeWidth="7" fill="transparent" />
+                  <motion.circle cx="40" cy="40" r="34"
+                    stroke={stats?.achievementPercent >= 100 ? "#10b981" : stats?.achievementPercent >= 70 ? "#f59e0b" : "#8b5cf6"}
+                    strokeWidth="7" fill="transparent"
+                    strokeDasharray={2 * Math.PI * 34}
+                    animate={{ strokeDashoffset: 2 * Math.PI * 34 * (1 - Math.min(100, stats?.achievementPercent || 0) / 100) }}
+                    transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-2xl font-black text-white tabular-nums leading-none">
+                    <AnimatedNumber value={stats?.achievementPercent || 0} />%
+                  </span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase mt-1 tracking-wider">Achieved</span>
                 </div>
-                <p className="text-4xl font-bold text-white/20 tabular-nums">{stats?.achievementPercent}%</p>
               </div>
-              <div className="h-2 w-full bg-white/15 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min(100, stats?.achievementPercent)}%` }}
-                  transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
-                  className="h-full bg-white rounded-full"
-                />
+              <div className="flex-1 space-y-3">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ยอดขายปัจจุบัน</p>
+                  <p className="text-2xl font-black text-white tabular-nums tracking-tight leading-none mt-1">
+                    <AnimatedNumber value={stats?.totalWonValue || 0} formatter={v => formatCurrency(v)} />
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">เป้าหมาย</p>
+                  <p className="text-lg font-bold text-slate-300 tabular-nums leading-none mt-0.5">{formatFullCurrency(monthlyGoal)}</p>
+                </div>
               </div>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
-            <Briefcase size={20} />
-          </div>
-          <div>
-            <p className="text-xs text-slate-400 font-medium">ดีลที่กำลังดำเนินการ</p>
-            <p className="text-3xl font-bold text-slate-800 mt-1 tabular-nums">
-              {stats?.activeCount}
-              <span className="text-base text-slate-300 font-normal ml-1.5">ดีล</span>
-            </p>
-            <p className="text-xs text-slate-400 mt-1">มูลค่ารวม {formatCurrency(stats?.totalPipelineValue)}</p>
-          </div>
-        </Card>
-
-        <Card className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
-          <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500">
-            <AlertCircle size={20} />
-          </div>
-          <div>
-            <p className="text-xs text-slate-400 font-medium">ต้องติดตามด่วน</p>
-            <p className="text-3xl font-bold text-rose-500 mt-1 tabular-nums">
-              {stats?.urgentDeals?.length || 0}
-              <span className="text-base text-slate-300 font-normal ml-1.5">ดีล</span>
-            </p>
-            <p className="text-xs text-slate-400 mt-1">ไม่มีความเคลื่อนไหว 3+ วัน</p>
-          </div>
-        </Card>
+        {/* KPI Cards */}
+        {[
+          { title: 'Active Pipeline', value: stats?.totalPipelineValue, formatter: v => formatCurrency(v), sub: `${stats?.activeCount || 0} active deals`, icon: Briefcase, color: 'violet', sparkline: stats?.revenueStream?.map(m => m.forecast) },
+          { title: 'Win Rate', value: stats?.winRate, formatter: v => `${Math.round(v)}%`, sub: 'All closed deals', icon: ShieldCheck, color: 'emerald', sparkline: [35, 38, 42, 40, 45, stats?.winRate || 40] },
+          { title: 'Avg Velocity', value: stats?.avgDaysToClose, formatter: v => `${Math.round(v)} Days`, sub: 'Time to close', icon: Zap, color: 'amber', sparkline: [24, 22, 25, 20, 21, stats?.avgDaysToClose || 20] },
+        ].map((kpi, i) => (
+          <motion.div key={kpi.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1, duration: 0.5 }} className="group">
+            <Card className="p-5 h-full rounded-3xl bg-white border border-slate-100/60 shadow-sm hover:shadow-xl transition-all duration-500 relative overflow-hidden">
+              <div className="relative z-10 flex flex-col justify-between h-full">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center",
+                    kpi.color === 'violet' ? 'text-violet-600 bg-violet-50' :
+                    kpi.color === 'emerald' ? 'text-emerald-600 bg-emerald-50' : 'text-amber-600 bg-amber-50')}>
+                    <kpi.icon size={18} strokeWidth={2.5} />
+                  </div>
+                  {/* Mini sparkline */}
+                  {kpi.sparkline && kpi.sparkline.length > 1 && (
+                    <div className="w-16 h-8 shrink-0">
+                      <svg className="w-full h-full overflow-visible" viewBox="0 0 60 20">
+                        <motion.path
+                          d={(() => {
+                            const data = kpi.sparkline;
+                            const min = Math.min(...data);
+                            const max = Math.max(...data);
+                            const range = max - min || 1;
+                            return data.map((val, idx) => {
+                              const x = (idx / (data.length - 1)) * 60;
+                              const y = 20 - ((val - min) / range) * 16 - 2;
+                              return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
+                            }).join(' ');
+                          })()}
+                          fill="none"
+                          stroke={kpi.color === 'violet' ? '#8b5cf6' : kpi.color === 'emerald' ? '#10b981' : '#f59e0b'}
+                          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+                          transition={{ duration: 1.2, ease: "easeInOut", delay: 0.3 + i * 0.1 }}
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{kpi.title}</p>
+                  <p className="text-2xl font-black text-slate-900 tabular-nums leading-none tracking-tight mt-1">
+                    <AnimatedNumber value={kpi.value || 0} formatter={kpi.formatter} />
+                  </p>
+                  <p className="text-xs text-slate-500 font-medium mt-1.5">{kpi.sub}</p>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Weekly Pulse */}
+      {/* WEEKLY PULSE */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
-            <Flame size={16} className="text-violet-600" />
-          </div>
-          <div>
-            <p className="text-xs text-slate-400">ดีลใหม่สัปดาห์นี้</p>
-            <p className="text-2xl font-black text-slate-900 tabular-nums leading-none">{stats?.newDealsThisWeek || 0}</p>
-          </div>
-        </Card>
-        <Card className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-            <Trophy size={16} className="text-emerald-600" />
-          </div>
-          <div>
-            <p className="text-xs text-slate-400">ปิดได้สัปดาห์นี้</p>
-            <p className="text-2xl font-black text-emerald-600 tabular-nums leading-none">{stats?.wonThisWeek || 0}</p>
-          </div>
-        </Card>
-        <Card className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-            <Star size={16} className="text-blue-600" />
-          </div>
-          <div>
-            <p className="text-xs text-slate-400">มูลค่าปิดสัปดาห์นี้</p>
-            <p className="text-xl font-black text-blue-600 tabular-nums leading-none">{formatCurrency(stats?.wonThisWeekValue)}</p>
-          </div>
-        </Card>
+        {[
+          { label: 'ดีลใหม่สัปดาห์นี้', value: stats?.newDealsThisWeek || 0, icon: Flame, iconColor: 'text-violet-600', iconBg: 'bg-violet-50', valueColor: 'text-slate-900' },
+          { label: 'ปิดได้สัปดาห์นี้', value: stats?.wonThisWeek || 0, icon: Trophy, iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50', valueColor: 'text-emerald-600' },
+          { label: 'มูลค่าปิดสัปดาห์นี้', value: formatCurrency(stats?.wonThisWeekValue), icon: Star, iconColor: 'text-blue-600', iconBg: 'bg-blue-50', valueColor: 'text-blue-600', isText: true },
+        ].map(item => (
+          <Card key={item.label} className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center gap-3 hover:shadow-md transition-all">
+            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", item.iconBg)}>
+              <item.icon size={16} className={item.iconColor} />
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 font-medium">{item.label}</p>
+              <p className={cn("text-xl font-black tabular-nums leading-none", item.valueColor)}>
+                {item.isText ? item.value : <AnimatedNumber value={item.value} />}
+              </p>
+            </div>
+          </Card>
+        ))}
       </div>
 
-      {/* Executive Forecast Strip */}
-      <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
+      {/* PIPELINE MINI-FUNNEL */}
+      {stats?.funnelData && (
+        <Card className="p-6 rounded-3xl bg-white border border-slate-100 shadow-sm">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center">
+              <BarChart3 size={18} className="text-violet-600" strokeWidth={2.5} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 tracking-tight">Pipeline Snapshot</h3>
+              <p className="text-xs text-slate-400 font-medium">สรุปจำนวนดีลและมูลค่าในแต่ละขั้นตอน</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {stats.funnelData.map((item, i) => (
+              <motion.div key={item.stage} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+                className="p-4 rounded-2xl border border-slate-100 hover:shadow-md transition-all cursor-pointer group"
+                onClick={() => navigate('/pipeline')}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: item.color }} />
+                  <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900 transition-colors">{item.label}</span>
+                </div>
+                <p className="text-3xl font-black text-slate-900 tabular-nums tracking-tighter leading-none">
+                  <AnimatedNumber value={item.count} />
+                </p>
+                <p className="text-xs font-medium text-slate-400 mt-1 tabular-nums">{formatCurrency(item.value)}</p>
+                <div className="mt-3 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, (item.count / Math.max(1, ...(stats.funnelData.map(f => f.count)))) * 100)}%` }}
+                    transition={{ duration: 1, delay: i * 0.1, ease: [0.19, 1, 0.22, 1] }}
+                    className="h-full rounded-full" style={{ backgroundColor: item.color }}
+                  />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* CUSTOMER HEALTH SUMMARY */}
+      {customerStats && customerStats.total > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center">
+              <Shield size={18} className="text-blue-600" strokeWidth={2.5} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 tracking-tight">Customer Health</h3>
+              <p className="text-xs text-slate-400 font-medium">ภาพรวมสุขภาพลูกค้าจากระบบเกรด A-D</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { grade: 'A', label: 'VIP', color: 'bg-blue-50 border-blue-100 text-blue-600', dotColor: 'bg-blue-500' },
+              { grade: 'B', label: 'เติบโต', color: 'bg-emerald-50 border-emerald-100 text-emerald-600', dotColor: 'bg-emerald-500' },
+              { grade: 'C', label: 'ทั่วไป', color: 'bg-amber-50 border-amber-100 text-amber-600', dotColor: 'bg-amber-500' },
+              { grade: 'D', label: 'เฝ้าระวัง', color: 'bg-rose-50 border-rose-100 text-rose-500', dotColor: 'bg-rose-500' },
+            ].map((g, i) => (
+              <motion.div key={g.grade} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }}
+                onClick={() => navigate('/customers')}
+                className={cn("p-4 rounded-2xl border cursor-pointer hover:shadow-md transition-all", g.color)}>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={cn("w-2.5 h-2.5 rounded-full", g.dotColor)} />
+                  <span className="text-xs font-bold uppercase tracking-wider">เกรด {g.grade}</span>
+                </div>
+                <p className="text-3xl font-black tabular-nums leading-none">
+                  <AnimatedNumber value={customerStats.gradeCount[g.grade] || 0} />
+                </p>
+                <p className="text-xs font-medium mt-1 opacity-70">{g.label}</p>
+              </motion.div>
+            ))}
+          </div>
+          {/* At-risk customers */}
+          {customerStats.atRiskCustomers.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-bold text-rose-600 uppercase tracking-wider flex items-center gap-1.5">
+                <AlertCircle size={12} /> ลูกค้าที่ต้องดูแลเร่งด่วน
+              </p>
+              {customerStats.atRiskCustomers.map(c => (
+                <button key={c.id} onClick={() => navigate('/customers')}
+                  className="w-full text-left p-3 rounded-2xl bg-rose-50 border border-rose-100 hover:shadow-sm transition-all flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-500 flex items-center justify-center shrink-0">
+                    <AlertCircle size={14} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-slate-800 truncate">{c.company || c.name}</p>
+                    <p className="text-xs text-rose-500 font-medium">เกรด {c.grade} · {c.health?.inactiveDays != null ? `${c.health.inactiveDays} วันไม่มีกิจกรรม` : 'ไม่มีข้อมูลกิจกรรม'}</p>
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 tabular-nums shrink-0">{formatCurrency(c.dealStats?.wonValue || 0)}</span>
+                  <ChevronRight size={14} className="text-slate-300" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* EXECUTIVE FORECAST STRIP */}
+      <Card className="p-6 rounded-3xl bg-white border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center">
+            <Target size={18} className="text-violet-600" strokeWidth={2.5} />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-900 tracking-tight">Executive Forecast</h3>
+            <p className="text-xs text-slate-400 font-medium">สรุปสถานะพยากรณ์ยอดขายประจำเดือน</p>
+          </div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[
-            {
-              label: 'คาดการณ์ถ่วงน้ำหนัก',
-              value: formatCurrency(stats?.intelligence?.forecastToGoalValue),
-              detail: `${Math.round((stats?.intelligence?.weightedCoverageRatio || 0) * 100)}% ของเป้าหมาย`,
-              icon: Target,
-              tone: 'text-violet-600 bg-violet-50',
-            },
-            {
-              label: '30 วันข้างหน้า',
-              value: formatCurrency(stats?.intelligence?.next30DayWeightedValue),
-              detail: `${stats?.intelligence?.closingSoonDeals?.length || 0} ดีลใกล้ปิด`,
-              icon: CalendarClock,
-              tone: 'text-blue-600 bg-blue-50',
-            },
-            {
-              label: 'ดีลเสี่ยงหลุด',
-              value: formatCurrency(stats?.intelligence?.atRiskValue),
-              detail: `${stats?.intelligence?.highImpactRisks?.length || 0} ดีลต้องช่วยด่วน`,
-              icon: AlertCircle,
-              tone: 'text-rose-600 bg-rose-50',
-            },
-            {
-              label: 'มูลค่ามั่นใจสูง',
-              value: formatCurrency(stats?.intelligence?.commitValue),
-              detail: `เฉลี่ย ${stats?.intelligence?.averageInactiveDays || 0} วันไม่มีกิจกรรม`,
-              icon: CheckCircle2,
-              tone: 'text-emerald-600 bg-emerald-50',
-            },
+            { label: 'คาดการณ์ถ่วงน้ำหนัก', value: stats?.intelligence?.forecastToGoalValue, detail: `${Math.round((stats?.intelligence?.weightedCoverageRatio || 0) * 100)}% ของเป้าหมาย`, icon: Target, tone: 'text-violet-600 bg-violet-50' },
+            { label: '30 วันข้างหน้า', value: stats?.intelligence?.next30DayWeightedValue, detail: `${stats?.intelligence?.closingSoonDeals?.length || 0} ดีลใกล้ปิด`, icon: CalendarClock, tone: 'text-blue-600 bg-blue-50' },
+            { label: 'ดีลเสี่ยงหลุด', value: stats?.intelligence?.atRiskValue, detail: `${stats?.intelligence?.highImpactRisks?.length || 0} ดีลต้องช่วยด่วน`, icon: AlertCircle, tone: 'text-rose-600 bg-rose-50' },
+            { label: 'มูลค่ามั่นใจสูง', value: stats?.intelligence?.commitValue, detail: `เฉลี่ย ${stats?.intelligence?.averageInactiveDays || 0} วันไม่มีกิจกรรม`, icon: CheckCircle2, tone: 'text-emerald-600 bg-emerald-50' },
           ].map((item) => (
             <div key={item.label} className="flex items-center gap-3 min-w-0">
               <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0', item.tone)}>
@@ -483,7 +650,9 @@ export default function CommandCenterPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-400">{item.label}</p>
-                <p className="text-xl font-bold text-slate-900 tabular-nums truncate">{item.value}</p>
+                <p className="text-xl font-black text-slate-900 tabular-nums truncate">
+                  <AnimatedNumber value={item.value || 0} formatter={v => formatCurrency(v)} />
+                </p>
                 <p className="text-xs text-slate-400">{item.detail}</p>
               </div>
             </div>
@@ -491,11 +660,11 @@ export default function CommandCenterPage() {
         </div>
       </Card>
 
-      {/* Forecast Scenarios */}
-      <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
-        <div className="flex items-center gap-2 mb-4">
+      {/* FORECAST SCENARIOS */}
+      <Card className="p-6 rounded-3xl bg-white border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-2 mb-5">
           <Target size={14} className="text-violet-600" />
-          <h3 className="text-sm font-semibold text-slate-800">Forecast Scenarios — เดือนนี้</h3>
+          <h3 className="text-sm font-bold text-slate-800">Forecast Scenarios — เดือนนี้</h3>
         </div>
         <div className="grid grid-cols-3 gap-4">
           {[
@@ -505,7 +674,7 @@ export default function CommandCenterPage() {
           ].map(s => {
             const pct = monthlyGoal > 0 ? Math.round((s.value / monthlyGoal) * 100) : 0;
             return (
-              <div key={s.label} className={`p-4 rounded-xl border ${s.bg} ${s.border} text-center space-y-1`}>
+              <div key={s.label} className={`p-4 rounded-2xl border ${s.bg} ${s.border} text-center space-y-1`}>
                 <p className="text-xs font-semibold text-slate-600">{s.label}</p>
                 <p className="text-[10px] text-slate-400">{s.sub}</p>
                 <p className={`text-xl font-black tabular-nums ${s.color}`}>{formatCurrency(s.value)}</p>
@@ -516,34 +685,37 @@ export default function CommandCenterPage() {
         </div>
       </Card>
 
-      {/* Hot Deals */}
+      {/* HOT DEALS */}
       {stats?.hotDeals && stats.hotDeals.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center">
-              <Flame size={14} className="text-rose-500" />
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center">
+              <Flame size={18} className="text-rose-500" strokeWidth={2.5} />
             </div>
-            <h3 className="font-semibold text-slate-800">Hot Deals</h3>
-            <span className="text-xs text-slate-400">— มูลค่าสูงสุด × โอกาสปิด</span>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 tracking-tight">Hot Deals</h3>
+              <p className="text-xs text-slate-400 font-medium">มูลค่าสูงสุด × โอกาสปิด</p>
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {stats.hotDeals.map((d, i) => (
-              <motion.button
-                key={d.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
+              <motion.button key={d.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                 onClick={() => openDeal(d)}
-                className="text-left p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-violet-200 transition-all group"
-              >
+                className="text-left p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-violet-200 transition-all group">
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-slate-800 truncate group-hover:text-violet-700 transition-colors">{d.title}</p>
                     <p className="text-xs text-slate-400 truncate">{d.company}</p>
                   </div>
-                  {d.closingSoon && (
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 shrink-0">ใกล้ปิด</span>
-                  )}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {d.closingSoon && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">ใกล้ปิด</span>}
+                    <div className={cn("px-1.5 py-0.5 rounded text-[9px] font-bold",
+                      d.healthScore >= 70 ? "bg-emerald-100 text-emerald-700" :
+                      d.healthScore >= 45 ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700"
+                    )}>
+                      {d.healthScore || 0}HP
+                    </div>
+                  </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div>
@@ -565,16 +737,19 @@ export default function CommandCenterPage() {
         </div>
       )}
 
-      {/* Tasks + Chart */}
+      {/* TASKS + CHART */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-        {/* Today's Action Plan — real follow-ups + closing this week + stale */}
+        {/* Today's Action Plan */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center">
-              <Target size={14} className="text-violet-600" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center">
+              <Target size={18} className="text-violet-600" strokeWidth={2.5} />
             </div>
-            <h3 className="font-semibold text-slate-800">วันนี้ต้องทำ</h3>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 tracking-tight">วันนี้ต้องทำ</h3>
+              <p className="text-xs text-slate-400 font-medium">งานและนัดหมายที่ต้องจัดการ</p>
+            </div>
           </div>
 
           {stats?.intelligence?.executiveActions?.length === 0 &&
@@ -591,40 +766,23 @@ export default function CommandCenterPage() {
           {stats?.intelligence?.executiveActions?.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider">งานเร่งด่วน</p>
-                <span className="text-xs text-slate-400">{stats.intelligence.executiveActions.length}</span>
+                <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">งานเร่งด่วน</p>
+                <span className="text-xs text-slate-400 font-bold">{stats.intelligence.executiveActions.length}</span>
               </div>
               {stats.intelligence.executiveActions.slice(0, 3).map((action) => (
-                <button
-                  key={action.id}
-                  onClick={() => navigate('/pipeline')}
-                  className={cn(
-                    'w-full text-left p-3 rounded-2xl border transition-all flex items-start gap-3 hover:shadow-sm',
-                    action.priority === 'critical'
-                      ? 'bg-rose-50 border-rose-100'
-                      : action.priority === 'high'
-                      ? 'bg-violet-50 border-violet-100'
-                      : 'bg-slate-50 border-slate-100'
-                  )}
-                >
-                  <div
-                    className={cn(
-                      'w-8 h-8 rounded-xl flex items-center justify-center shrink-0',
-                      action.priority === 'critical'
-                        ? 'bg-rose-100 text-rose-600'
-                        : action.priority === 'high'
-                        ? 'bg-violet-100 text-violet-600'
-                        : 'bg-slate-100 text-slate-600'
-                    )}
-                  >
+                <button key={action.id} onClick={() => navigate('/pipeline')}
+                  className={cn('w-full text-left p-3 rounded-2xl border transition-all flex items-start gap-3 hover:shadow-sm',
+                    action.priority === 'critical' ? 'bg-rose-50 border-rose-100' :
+                    action.priority === 'high' ? 'bg-violet-50 border-violet-100' : 'bg-slate-50 border-slate-100')}>
+                  <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center shrink-0',
+                    action.priority === 'critical' ? 'bg-rose-100 text-rose-600' :
+                    action.priority === 'high' ? 'bg-violet-100 text-violet-600' : 'bg-slate-100 text-slate-600')}>
                     <AlertCircle size={15} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-slate-800 truncate">{action.title}</p>
-                      <span className="text-xs font-bold text-slate-500 tabular-nums shrink-0">
-                        {formatCurrency(action.impactValue)}
-                      </span>
+                      <span className="text-xs font-bold text-slate-500 tabular-nums shrink-0">{formatCurrency(action.impactValue)}</span>
                     </div>
                     <p className="text-xs text-slate-500 line-clamp-2">{action.description}</p>
                   </div>
@@ -634,11 +792,11 @@ export default function CommandCenterPage() {
             </div>
           )}
 
-          {/* Today's Follow-ups */}
+          {/* Follow-ups */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider">นัดติดตามถึงกำหนด</p>
-              <span className="text-xs text-slate-400">{actionPlan.followUps.length}</span>
+              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">นัดติดตามถึงกำหนด</p>
+              <span className="text-xs text-slate-400 font-bold">{actionPlan.followUps.length}</span>
             </div>
             {actionPlan.followUps.length === 0 ? (
               <div className="p-4 rounded-2xl bg-white border border-slate-100 text-center">
@@ -646,27 +804,17 @@ export default function CommandCenterPage() {
                 <p className="text-xs text-slate-400 font-medium">ไม่มีนัดวันนี้</p>
               </div>
             ) : actionPlan.followUps.slice(0, 4).map((a, i) => (
-              <motion.button
-                key={a.id}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05 }}
+              <motion.button key={a.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
                 onClick={() => openDeal(a.deal)}
-                className={cn(
-                  'w-full text-left p-3 rounded-2xl border transition-all flex items-start gap-3 hover:shadow-sm',
-                  a.overdue ? 'bg-rose-50 border-rose-100' : 'bg-amber-50 border-amber-100'
-                )}
-              >
+                className={cn('w-full text-left p-3 rounded-2xl border transition-all flex items-start gap-3 hover:shadow-sm',
+                  a.overdue ? 'bg-rose-50 border-rose-100' : 'bg-amber-50 border-amber-100')}>
                 <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center shrink-0',
-                  a.overdue ? 'bg-rose-100 text-rose-500' : 'bg-amber-100 text-amber-600'
-                )}>
+                  a.overdue ? 'bg-rose-100 text-rose-500' : 'bg-amber-100 text-amber-600')}>
                   <CalendarClock size={15} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    {a.overdue && (
-                      <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">เลยกำหนด</span>
-                    )}
+                    {a.overdue && <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">เลยกำหนด</span>}
                     <span className="text-[10px] text-slate-500 font-semibold">{a.deal?.company || a.deal?.title}</span>
                   </div>
                   <p className="text-sm font-semibold text-slate-800 truncate">{a.title}</p>
@@ -680,15 +828,12 @@ export default function CommandCenterPage() {
           {actionPlan.closingThisWeek.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-violet-700 uppercase tracking-wider">คาดว่าจะปิดสัปดาห์นี้</p>
-                <span className="text-xs text-slate-400">{actionPlan.closingThisWeek.length}</span>
+                <p className="text-xs font-bold text-violet-700 uppercase tracking-wider">คาดว่าจะปิดสัปดาห์นี้</p>
+                <span className="text-xs text-slate-400 font-bold">{actionPlan.closingThisWeek.length}</span>
               </div>
               {actionPlan.closingThisWeek.slice(0, 3).map((d) => (
-                <button
-                  key={d.id}
-                  onClick={() => openDeal(d)}
-                  className="w-full text-left p-3 rounded-2xl bg-violet-50 border border-violet-100 hover:shadow-sm transition-all flex items-center gap-3"
-                >
+                <button key={d.id} onClick={() => openDeal(d)}
+                  className="w-full text-left p-3 rounded-2xl bg-violet-50 border border-violet-100 hover:shadow-sm transition-all flex items-center gap-3">
                   <div className="w-8 h-8 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center shrink-0">
                     <Briefcase size={14} />
                   </div>
@@ -706,17 +851,14 @@ export default function CommandCenterPage() {
           {actionPlan.stale.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-rose-700 uppercase tracking-wider">หยุดนิ่ง 3+ วัน</p>
-                <span className="text-xs text-slate-400">{actionPlan.stale.length}</span>
+                <p className="text-xs font-bold text-rose-700 uppercase tracking-wider">หยุดนิ่ง 3+ วัน</p>
+                <span className="text-xs text-slate-400 font-bold">{actionPlan.stale.length}</span>
               </div>
               {actionPlan.stale.slice(0, 3).map((d) => {
                 const days = daysSince(d.last_activity || d.created_at);
                 return (
-                  <button
-                    key={d.id}
-                    onClick={() => openDeal(d)}
-                    className="w-full text-left p-3 rounded-2xl bg-rose-50 border border-rose-100 hover:shadow-sm transition-all flex items-center gap-3"
-                  >
+                  <button key={d.id} onClick={() => openDeal(d)}
+                    className="w-full text-left p-3 rounded-2xl bg-rose-50 border border-rose-100 hover:shadow-sm transition-all flex items-center gap-3">
                     <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-500 flex items-center justify-center shrink-0">
                       <Clock size={14} />
                     </div>
@@ -733,89 +875,77 @@ export default function CommandCenterPage() {
         </div>
 
         {/* Revenue Chart */}
-        <Card className="lg:col-span-2 p-6 rounded-2xl bg-white border border-slate-100 shadow-sm">
+        <Card className="lg:col-span-2 p-7 rounded-3xl bg-white border border-slate-100 shadow-sm">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h3 className="font-semibold text-slate-800">ยอดขาย 6 เดือนล่าสุด</h3>
-              <p className="text-xs text-slate-400 mt-0.5">ยอดขายจริง เทียบกับคาดการณ์</p>
+              <h3 className="text-sm font-bold text-slate-900 tracking-tight">ยอดขาย 6 เดือนล่าสุด</h3>
+              <p className="text-xs text-slate-400 mt-0.5 font-medium">ยอดขายจริง เทียบกับคาดการณ์</p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-5 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-violet-500" />
-                <span className="text-xs text-slate-400">จริง</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-violet-500 shadow-sm shadow-violet-500/50" />
+                <span className="text-xs text-slate-500 font-semibold">จริง</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-slate-200" />
-                <span className="text-xs text-slate-400">คาดการณ์</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                <span className="text-xs text-slate-500 font-semibold">คาดการณ์</span>
               </div>
             </div>
           </div>
-
-          <div className="h-[280px] w-full min-w-0 min-h-0">
+          <div className="h-[320px] w-full min-w-0 min-h-0">
             <SafeResponsiveContainer>
               <AreaChart data={stats?.revenueStream}>
                 <defs>
-                  <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.15} />
+                  <linearGradient id="colorActualCmd" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.2} />
                     <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
                   </linearGradient>
-                  <linearGradient id="colorForecast" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="colorForecastCmd" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#cbd5e1" stopOpacity={0.1} />
                     <stop offset="95%" stopColor="#cbd5e1" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false}
-                  tick={{ fill: '#94a3b8', fontSize: 11 }} dy={10} />
-                <YAxis axisLine={false} tickLine={false}
-                  tick={{ fill: '#94a3b8', fontSize: 11 }}
-                  tickFormatter={(v) => `${v / 1000000}M`} />
-                <RechartsTooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="actual" name="ยอดขายจริง"
-                  stroke="#7c3aed" strokeWidth={2.5}
-                  fill="url(#colorActual)" animationDuration={1500} />
-                <Area type="monotone" dataKey="forecast" name="คาดการณ์"
-                  stroke="#cbd5e1" strokeWidth={2} strokeDasharray="5 5"
-                  fill="url(#colorForecast)" />
+                <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} dy={15} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
+                <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }} />
+                <Area type="monotone" dataKey="actual" name="ยอดขายจริง" stroke="#7c3aed" strokeWidth={3} fill="url(#colorActualCmd)" animationDuration={1500} />
+                <Area type="monotone" dataKey="forecast" name="คาดการณ์" stroke="#cbd5e1" strokeWidth={2} strokeDasharray="5 5" fill="url(#colorForecastCmd)" />
               </AreaChart>
             </SafeResponsiveContainer>
           </div>
         </Card>
       </div>
 
-      {/* Recent Activity Feed */}
+      {/* ACTIVITY FEED */}
       {todayActivities.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
-              <Activity size={14} className="text-slate-600" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center">
+              <Activity size={18} className="text-slate-600" strokeWidth={2.5} />
             </div>
-            <h3 className="font-semibold text-slate-800">กิจกรรมล่าสุด</h3>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 tracking-tight">กิจกรรมล่าสุด</h3>
+              <p className="text-xs text-slate-400 font-medium">ไทม์ไลน์กิจกรรมของทีม</p>
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {todayActivities.map((a) => {
               const cfg = ACTIVITY_ICON[a.type] || ACTIVITY_ICON.note;
               const { Icon, color } = cfg;
               return (
-                <button
-                  key={a.id}
-                  onClick={() => a.deal && openDeal(a.deal)}
-                  className="text-left p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all flex items-start gap-3"
-                >
+                <button key={a.id} onClick={() => a.deal && openDeal(a.deal)}
+                  className="text-left p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all flex items-start gap-3">
                   <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center shrink-0', color)}>
                     <Icon size={16} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-slate-800 truncate">{a.title || a.type}</p>
-                      <span className="text-[10px] text-slate-400 shrink-0">{a.timeLabel}</span>
+                      <span className="text-[10px] text-slate-400 shrink-0 font-medium">{a.timeLabel}</span>
                     </div>
-                    {a.deal && (
-                      <p className="text-xs text-slate-500 truncate mt-0.5">{a.deal.company || a.deal.title}</p>
-                    )}
-                    {a.notes && (
-                      <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{a.notes}</p>
-                    )}
+                    {a.deal && <p className="text-xs text-slate-500 truncate mt-0.5">{a.deal.company || a.deal.title}</p>}
+                    {a.notes && <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{a.notes}</p>}
                   </div>
                 </button>
               );
@@ -824,15 +954,17 @@ export default function CommandCenterPage() {
         </div>
       )}
 
-      {/* Team Leaderboard */}
+      {/* TEAM LEADERBOARD */}
       {teamLeaderboard.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center">
-              <Trophy size={14} className="text-amber-500" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center">
+              <Trophy size={18} className="text-amber-600" strokeWidth={2.5} />
             </div>
-            <h3 className="font-semibold text-slate-800">Team Leaderboard</h3>
-            <span className="text-xs text-slate-400">— ผลงานเดือนนี้</span>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 tracking-tight">Team Leaderboard</h3>
+              <p className="text-xs text-slate-400 font-medium">ผลงานเดือนนี้</p>
+            </div>
           </div>
 
           {/* Team total */}
@@ -842,22 +974,21 @@ export default function CommandCenterPage() {
             const teamPercent = totalGoal > 0 ? Math.round((teamWon / totalGoal) * 100) : 0;
             const wonCount = teamLeaderboard.reduce((s, m) => s + m.wonThisMonthCount, 0);
             return (
-              <Card className="p-5 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border-0 shadow-lg text-white">
-                <div className="flex items-center justify-between mb-3">
+              <Card className="p-6 rounded-3xl bg-gradient-to-br from-slate-800 to-slate-900 border-0 shadow-2xl text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none"><Trophy size={120} /></div>
+                <div className="relative z-10 flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-slate-400 text-xs font-medium">ยอดรวมทีม (เดือนนี้)</p>
-                    <p className="text-2xl font-bold text-white tabular-nums mt-0.5">{formatFullCurrency(teamWon)}</p>
-                    <p className="text-slate-400 text-xs mt-0.5">เป้าหมายรวม {formatCurrency(totalGoal)} · {wonCount} ดีลปิดแล้ว</p>
+                    <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">ยอดรวมทีม (เดือนนี้)</p>
+                    <p className="text-3xl font-black text-white tabular-nums mt-1">
+                      <AnimatedNumber value={teamWon} formatter={v => formatFullCurrency(v)} />
+                    </p>
+                    <p className="text-slate-400 text-xs mt-1 font-medium">เป้าหมายรวม {formatCurrency(totalGoal)} · {wonCount} ดีลปิดแล้ว</p>
                   </div>
-                  <p className="text-5xl font-black text-white/15 tabular-nums">{teamPercent}%</p>
+                  <p className="text-5xl font-black text-white/10 tabular-nums">{teamPercent}%</p>
                 </div>
-                <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, teamPercent)}%` }}
-                    transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
-                    className="h-full bg-white rounded-full"
-                  />
+                <div className="h-2.5 w-full bg-white/10 rounded-full overflow-hidden relative z-10">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, teamPercent)}%` }}
+                    transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }} className="h-full bg-white rounded-full" />
                 </div>
               </Card>
             );
@@ -865,26 +996,15 @@ export default function CommandCenterPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {teamLeaderboard.map((m, i) => (
-              <motion.div
-                key={m.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08 }}
-                className={cn(
-                  "p-5 rounded-2xl border shadow-sm hover:shadow-md transition-all relative overflow-hidden",
-                  i === 0 ? "bg-gradient-to-br from-amber-50 to-white border-amber-200" : "bg-white border-slate-100"
-                )}
-              >
+              <motion.div key={m.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+                className={cn("p-5 rounded-2xl border shadow-sm hover:shadow-md transition-all relative overflow-hidden",
+                  i === 0 ? "bg-gradient-to-br from-amber-50 to-white border-amber-200" : "bg-white border-slate-100")}>
                 {i === 0 && <span className="absolute top-3 right-3 text-lg">🏆</span>}
                 <div className="flex items-center gap-3 mb-4">
                   <div className="relative">
                     <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm',
-                      m.color?.split(' ')[0] || 'bg-violet-600')}>
-                      {m.name.charAt(0)}
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-slate-800 text-white text-[9px] font-black flex items-center justify-center">
-                      {i + 1}
-                    </div>
+                      m.color?.split(' ')[0] || 'bg-violet-600')}>{m.name.charAt(0)}</div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-slate-800 text-white text-[9px] font-black flex items-center justify-center">{i + 1}</div>
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-800 text-sm leading-tight">{m.name}</h4>
@@ -892,47 +1012,43 @@ export default function CommandCenterPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2 mb-3">
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-[10px] text-slate-400">ยอดขายเดือนนี้</p>
-                      <p className="text-lg font-black text-slate-900 tabular-nums leading-tight">{formatCurrency(m.wonThisMonthValue)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[10px] text-slate-400">เป้า {formatCurrency(m.goal || 0)}</p>
-                      <p className={cn("text-sm font-black",
-                        m.goalAchievement >= 100 ? "text-emerald-600" :
-                        m.goalAchievement >= 70 ? "text-amber-500" : "text-rose-500"
-                      )}>{m.goalAchievement}%</p>
+                {/* Mini circular gauge */}
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="relative w-14 h-14 shrink-0">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 56 56">
+                      <circle cx="28" cy="28" r="22" stroke="#f1f5f9" strokeWidth="5" fill="transparent" />
+                      <motion.circle cx="28" cy="28" r="22"
+                        stroke={m.goalAchievement >= 100 ? "#10b981" : m.goalAchievement >= 70 ? "#f59e0b" : "#ef4444"}
+                        strokeWidth="5" fill="transparent"
+                        strokeDasharray={2 * Math.PI * 22}
+                        animate={{ strokeDashoffset: 2 * Math.PI * 22 * (1 - Math.min(100, m.goalAchievement) / 100) }}
+                        transition={{ duration: 1, delay: i * 0.1 }} strokeLinecap="round" />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className={cn("text-[11px] font-black tabular-nums",
+                        m.goalAchievement >= 100 ? "text-emerald-600" : m.goalAchievement >= 70 ? "text-amber-600" : "text-rose-500"
+                      )}>{m.goalAchievement}%</span>
                     </div>
                   </div>
-                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${m.goalAchievement}%` }}
-                      transition={{ duration: 1, delay: i * 0.1, ease: [0.19, 1, 0.22, 1] }}
-                      className={cn("h-full rounded-full",
-                        m.goalAchievement >= 100 ? "bg-emerald-500" :
-                        m.goalAchievement >= 70 ? "bg-amber-500" : "bg-rose-500"
-                      )}
-                    />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">ยอดเดือนนี้</p>
+                    <p className="text-lg font-black text-slate-900 tabular-nums leading-tight truncate">{formatCurrency(m.wonThisMonthValue)}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">เป้า {formatCurrency(m.goal || 0)}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-1.5 pt-3 border-t border-slate-100">
                   <div className="text-center">
                     <p className="text-sm font-black text-slate-800">{m.wonThisMonthCount}</p>
-                    <p className="text-[9px] text-slate-400">ปิดได้</p>
+                    <p className="text-[9px] text-slate-400 font-medium">ปิดได้</p>
                   </div>
                   <div className="text-center">
-                    <p className={cn("text-sm font-black", m.winRate >= 50 ? "text-emerald-600" : m.winRate >= 30 ? "text-amber-500" : "text-rose-500")}>
-                      {m.winRate}%
-                    </p>
-                    <p className="text-[9px] text-slate-400">Win Rate</p>
+                    <p className={cn("text-sm font-black", m.winRate >= 50 ? "text-emerald-600" : m.winRate >= 30 ? "text-amber-500" : "text-rose-500")}>{m.winRate}%</p>
+                    <p className="text-[9px] text-slate-400 font-medium">Win Rate</p>
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-black text-blue-600">{m.activeCount}</p>
-                    <p className="text-[9px] text-slate-400">Active</p>
+                    <p className="text-[9px] text-slate-400 font-medium">Active</p>
                   </div>
                 </div>
               </motion.div>
