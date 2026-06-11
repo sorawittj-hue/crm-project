@@ -301,7 +301,7 @@ export default function AppLayout() {
             {...mobileSidebarMotion}
             variants={sidebarVariants}
             className={cn(
-              "fixed inset-y-0 left-0 z-50 w-72 bg-white/90 backdrop-blur-2xl border-r border-slate-100/50 px-5 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)]",
+              "fixed inset-y-0 left-0 z-50 w-72 bg-white/95 backdrop-blur-md border-r border-slate-100/80 px-5 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)]",
               "lg:static lg:translate-x-0 lg:opacity-100",
             )}
           >
@@ -343,12 +343,12 @@ export default function AppLayout() {
                         <motion.span
                           layoutId="activeNavBackground"
                           className="absolute inset-0 rounded-[14px] bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/20"
-                          transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                          transition={springSmooth}
                         />
                         <motion.span
                           layoutId="activeNavRail"
                           className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-white rounded-r-full z-20"
-                          transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                          transition={springSmooth}
                         />
                       </>
                     )}
@@ -373,8 +373,8 @@ export default function AppLayout() {
             {/* Monthly Goal */}
             <div className="pb-5 pt-5 relative">
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
-              <div className="bg-gradient-to-br from-violet-50/80 to-indigo-50/50 border border-violet-100/60 rounded-[1.25rem] p-4 space-y-3 relative overflow-hidden group">
-                <div className="absolute -top-10 -right-10 w-24 h-24 bg-violet-400/10 rounded-full blur-xl transition-all group-hover:bg-violet-400/20" />
+              <div className="bg-gradient-to-br from-violet-50 to-indigo-50/50 border border-violet-100/60 rounded-[1.25rem] p-4 space-y-3 relative overflow-hidden group">
+                <div className="absolute -top-10 -right-10 w-24 h-24 bg-gradient-to-br from-violet-300/20 to-indigo-300/20 rounded-full transition-all group-hover:scale-110 duration-500" />
                 <div className="flex items-center justify-between relative z-10">
                   <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">เป้าหมายส่วนตัว</p>
                   <span className="text-[11px] font-black text-violet-600 bg-white px-2 py-0.5 rounded-full shadow-sm">{goalProgress}%</span>
