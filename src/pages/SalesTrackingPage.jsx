@@ -132,15 +132,8 @@ export default function SalesTrackingPage() {
     setEditingMonth(null);
   };
 
-  const isLoading = loadingDeals || loadingSales;
-
-  if (isLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center min-h-[400px]">
-        <Loader2 className="animate-spin text-violet-500" size={32} />
-      </div>
-    );
-  }
+  // No blocking loader, let the page render immediately.
+  // React Query will seamlessly update the UI when data arrives.
 
   return (
     <motion.div {...pageMotion} className="max-w-6xl mx-auto space-y-6 pb-20">

@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   LayoutDashboard, ListTree, Users, BarChart3,
-  Menu, X, Wrench,
+  Menu, X, Wrench, Loader2,
   Search, Settings, Bell,
   ChevronRight, Target, TrendingUp,
   AlertCircle, Clock, CheckCircle2, CalendarClock, Briefcase,
@@ -620,7 +620,9 @@ export default function AppLayout() {
                 effectiveTarget={effectiveTarget}
                 navigate={navigate}
               />
-              <Outlet />
+              <Suspense fallback={<div className="flex-1 flex items-center justify-center min-h-[400px]"><Loader2 className="animate-spin text-violet-500" size={32} /></div>}>
+                <Outlet />
+              </Suspense>
             </motion.div>
           </AnimatePresence>
         </main>
