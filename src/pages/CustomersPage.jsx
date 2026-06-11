@@ -211,10 +211,41 @@ export default function CustomersPage() {
 
   const isLoading = customersLoading || dealsLoading;
 
+  // Generate gradient avatar color from name
+  const getAvatarGradient = (name) => {
+    const gradients = [
+      ['#6366f1', '#8b5cf6'],
+      ['#0ea5e9', '#6366f1'],
+      ['#10b981', '#06b6d4'],
+      ['#f59e0b', '#ef4444'],
+      ['#ec4899', '#8b5cf6'],
+      ['#3b82f6', '#06b6d4'],
+      ['#14b8a6', '#10b981'],
+      ['#f97316', '#ef4444'],
+      ['#8b5cf6', '#ec4899'],
+      ['#06b6d4', '#3b82f6'],
+    ];
+    const hash = (name || 'C').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    return gradients[hash % gradients.length];
+  };
+
   if (isLoading) return (
-    <div className="flex flex-col items-center justify-center h-[60vh] gap-6">
-      <Loader2 className="animate-spin text-primary" size={32} />
-      <p className="text-sm text-slate-400">กำลังโหลดข้อมูลลูกค้า...</p>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="bg-white rounded-2xl border border-slate-100 p-5 space-y-4 animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 bg-slate-200 rounded-xl" />
+            <div className="space-y-2 flex-1">
+              <div className="h-3 bg-slate-200 rounded w-2/3" />
+              <div className="h-2.5 bg-slate-100 rounded w-1/2" />
+            </div>
+          </div>
+          <div className="h-2 bg-slate-100 rounded-full" />
+          <div className="grid grid-cols-3 gap-3 pt-2">
+            {[1,2,3].map(j => <div key={j} className="h-8 bg-slate-100 rounded-lg" />)}
+          </div>
+        </div>
+      ))}
     </div>
   );
 
@@ -237,43 +268,51 @@ export default function CustomersPage() {
       </header>
 
       {/* KPI RIBBON */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600"><Users size={20} /></div>
-            <div>
-              <p className="text-xs font-medium text-slate-400">ลูกค้าทั้งหมด</p>
-              <p className="text-2xl font-bold text-slate-900 tabular-nums">{totalStats.total}</p>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-700 text-white shadow-lg shadow-violet-200 relative overflow-hidden">
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold text-violet-200 uppercase tracking-wider">ลูกค้าทั้งหมด</p>
+              <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center"><Users size={18} /></div>
             </div>
+            <p className="text-3xl font-black tabular-nums">{totalStats.total}</p>
+            <p className="text-xs text-violet-200 mt-1">รายชื่อในระบบ</p>
           </div>
-        </Card>
-        <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600"><DollarSign size={20} /></div>
-            <div>
-              <p className="text-xs font-medium text-slate-400">มูลค่ารวมที่ปิดได้</p>
-              <p className="text-2xl font-bold text-emerald-600 tabular-nums">{formatCurrency(totalStats.totalWonValue)}</p>
+        </div>
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-200 relative overflow-hidden">
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold text-emerald-100 uppercase tracking-wider">ปิดได้รวม</p>
+              <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center"><DollarSign size={18} /></div>
             </div>
+            <p className="text-2xl font-black tabular-nums leading-tight">{formatCurrency(totalStats.totalWonValue)}</p>
+            <p className="text-xs text-emerald-100 mt-1">มูลค่าดีลที่ Won</p>
           </div>
-        </Card>
-        <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600"><TrendingUp size={20} /></div>
-            <div>
-              <p className="text-xs font-medium text-slate-400">ดีลที่กำลังดำเนินการ</p>
-              <p className="text-2xl font-bold text-amber-600 tabular-nums">{formatCurrency(totalStats.totalActiveValue)}</p>
+        </div>
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-200 relative overflow-hidden">
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold text-amber-100 uppercase tracking-wider">ดีลดำเนินการ</p>
+              <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center"><TrendingUp size={18} /></div>
             </div>
+            <p className="text-2xl font-black tabular-nums leading-tight">{formatCurrency(totalStats.totalActiveValue)}</p>
+            <p className="text-xs text-amber-100 mt-1">มูลค่า Pipeline</p>
           </div>
-        </Card>
-        <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500"><AlertTriangle size={20} /></div>
-            <div>
-              <p className="text-xs font-medium text-slate-400">บัญชีที่ต้องดูแล</p>
-              <p className="text-2xl font-bold text-rose-500 tabular-nums">{totalStats.atRiskAccounts}</p>
+        </div>
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-lg shadow-rose-200 relative overflow-hidden">
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold text-rose-100 uppercase tracking-wider">ต้องดูแลด่วน</p>
+              <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center"><AlertTriangle size={18} /></div>
             </div>
+            <p className="text-3xl font-black tabular-nums">{totalStats.atRiskAccounts}</p>
+            <p className="text-xs text-rose-100 mt-1">บัญชีเสี่ยง</p>
           </div>
-        </Card>
+        </div>
       </div>
 
       {/* SEARCH & FILTERS */}
@@ -281,30 +320,34 @@ export default function CustomersPage() {
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <Input
-            placeholder="ค้นหาลูกค้าด้วยชื่อ, บริษัท, อีเมล..."
+            placeholder="ค้นหาลูกค้าด้วยชื่อ, บริษัท, อีเมล, อุตสาหกรรม..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-10 pl-11 bg-white border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:ring-violet-500/20"
+            className="h-11 pl-11 bg-white border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:ring-violet-500/20 shadow-sm"
           />
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5 overflow-x-auto bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <div className="flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
             {[
-              ['all', `ทั้งหมด (${gradeCounts.all})`],
-              ['grade-A', `เกรด A — VIP (${gradeCounts.A})`],
-              ['grade-B', `เกรด B — ดี (${gradeCounts.B})`],
-              ['grade-C', `เกรด C — ปกติ (${gradeCounts.C})`],
-              ['grade-D', `เกรด D — เสี่ยง (${gradeCounts.D})`],
-            ].map(([val, label]) => (
+              { val: 'all', label: 'ทั้งหมด', count: gradeCounts.all, activeClass: 'bg-violet-600 text-white shadow-sm' },
+              { val: 'grade-A', label: 'A', count: gradeCounts.A, activeClass: 'bg-emerald-600 text-white shadow-sm' },
+              { val: 'grade-B', label: 'B', count: gradeCounts.B, activeClass: 'bg-blue-600 text-white shadow-sm' },
+              { val: 'grade-C', label: 'C', count: gradeCounts.C, activeClass: 'bg-amber-500 text-white shadow-sm' },
+              { val: 'grade-D', label: 'D', count: gradeCounts.D, activeClass: 'bg-rose-500 text-white shadow-sm' },
+            ].map(({ val, label, count, activeClass }) => (
               <button
                 key={val}
                 onClick={() => setTierFilter(val)}
                 className={cn(
-                  "px-4 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap",
-                  tierFilter === val ? "bg-white shadow text-violet-750 font-bold border border-slate-200/50" : "text-slate-500 hover:text-slate-800"
+                  'flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
+                  tierFilter === val ? activeClass : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                 )}
               >
                 {label}
+                <span className={cn(
+                  'text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center',
+                  tierFilter === val ? 'bg-white/25 text-white' : 'bg-slate-100 text-slate-400'
+                )}>{count}</span>
               </button>
             ))}
           </div>
@@ -312,9 +355,9 @@ export default function CustomersPage() {
             <select
               value={industryFilter}
               onChange={e => setIndustryFilter(e.target.value)}
-              className="h-9 px-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 outline-none cursor-pointer hover:border-slate-300"
+              className="h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 outline-none cursor-pointer hover:border-violet-300 transition-colors shadow-sm"
             >
-              <option value="all">อุตสาหกรรม: ทั้งหมด</option>
+              <option value="all">🏭 อุตสาหกรรม: ทั้งหมด</option>
               {industries.map(ind => <option key={ind} value={ind}>{ind}</option>)}
             </select>
           )}
@@ -334,19 +377,24 @@ export default function CustomersPage() {
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: Math.min(i * 0.05, 0.3) }}
               >
-                <Card
-                  className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm cursor-pointer hover:shadow-lg hover:border-violet-200 transition-all duration-300 group"
+                <div
+                  className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm cursor-pointer group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-violet-200"
                   onClick={() => { setSelectedCustomer(customer); setIsSidebarOpen(true); }}
                 >
+                  {/* Gradient left border accent */}
+                  <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ background: `linear-gradient(to bottom, ${getAvatarGradient(customer.name)[0]}, ${getAvatarGradient(customer.name)[1]})` }} />
+
                   <div className="space-y-4">
                     {/* Header */}
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-xl bg-slate-900 flex items-center justify-center text-white text-base font-bold shadow-sm group-hover:scale-105 transition-transform">
-                          {customer.name?.charAt(0) || '?'}
+                        <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-base font-black shadow-md group-hover:scale-110 transition-transform duration-300"
+                          style={{ background: `linear-gradient(135deg, ${getAvatarGradient(customer.name)[0]}, ${getAvatarGradient(customer.name)[1]})` }}>
+                          {customer.name?.charAt(0).toUpperCase() || '?'}
                         </div>
                         <div>
-                          <h3 className="text-sm font-semibold text-slate-900 leading-tight group-hover:text-violet-700 transition-colors">{customer.name}</h3>
+                          <h3 className="text-sm font-bold text-slate-900 leading-tight group-hover:text-violet-700 transition-colors">{customer.name}</h3>
                           {customer.company && (
                             <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
                               <Building2 size={11} /> {customer.company}
@@ -361,102 +409,117 @@ export default function CustomersPage() {
                           </span>
                         )}
                         {customer.grade ? (
-                          <span className={cn("px-2.5 py-1 rounded-full text-xs font-black border", GRADE_CONFIG[customer.grade]?.color)}>
-                            เกรด {customer.grade}
+                          <span className={cn('px-2.5 py-1 rounded-xl text-xs font-black border', GRADE_CONFIG[customer.grade]?.color)}>
+                            {customer.grade}
                           </span>
                         ) : (
-                          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-400 border border-slate-200">
-                            ไม่มีดีล
+                          <span className="px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 text-slate-400">
+                            —
                           </span>
                         )}
                       </div>
                     </div>
 
-                    {/* Contact */}
-                    <div className="flex flex-wrap gap-2 text-xs text-slate-400">
+                    {/* Contact chips */}
+                    <div className="flex flex-wrap gap-1.5 text-xs text-slate-500">
                       {customer.email && (
-                        <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg">
-                          <Mail size={10} /> {customer.email}
+                        <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 truncate max-w-[180px]">
+                          <Mail size={10} className="text-slate-400 shrink-0" /> <span className="truncate">{customer.email}</span>
                         </span>
                       )}
                       {customer.phone && (
-                        <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg">
-                          <Phone size={10} /> {customer.phone}
+                        <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+                          <Phone size={10} className="text-slate-400" /> {customer.phone}
                         </span>
                       )}
                       {customer.industry && (
-                        <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg">
-                          <BarChart3 size={10} /> {customer.industry}
+                        <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+                          <BarChart3 size={10} className="text-slate-400" /> {customer.industry}
                         </span>
                       )}
                     </div>
 
-                    <div className="space-y-1">
+                    {/* Health bar */}
+                    <div className="space-y-1.5">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs text-slate-400">ความแข็งแรง</span>
-                        <span className="text-xs font-bold text-slate-500 tabular-nums">{customer.health?.score ?? 0}%</span>
+                        <span className="text-xs font-medium text-slate-400">Health Score</span>
+                        <span className={cn(
+                          'text-xs font-bold tabular-nums px-2 py-0.5 rounded-full',
+                          customer.health?.status === 'at_risk' ? 'bg-rose-50 text-rose-600'
+                            : customer.health?.status === 'watch' ? 'bg-amber-50 text-amber-600'
+                            : customer.health?.status === 'growth' ? 'bg-blue-50 text-blue-600'
+                            : 'bg-emerald-50 text-emerald-600'
+                        )}>{customer.health?.score ?? 0}%</span>
                       </div>
-                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          className={cn(
-                            'h-full rounded-full transition-all',
-                            customer.health?.status === 'at_risk' ? 'bg-rose-500'
-                              : customer.health?.status === 'watch' ? 'bg-amber-500'
-                              : customer.health?.status === 'growth' ? 'bg-blue-500'
-                              : 'bg-emerald-500'
-                          )}
-                          style={{ width: `${Math.max(0, Math.min(100, customer.health?.score || 0))}%` }}
+                      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.max(0, Math.min(100, customer.health?.score || 0))}%` }}
+                          transition={{ duration: 1, ease: [0.19, 1, 0.22, 1], delay: i * 0.04 }}
+                          className="h-full rounded-full"
+                          style={{ 
+                            background: customer.health?.status === 'at_risk' ? 'linear-gradient(to right, #fda4af, #f43f5e)'
+                              : customer.health?.status === 'watch' ? 'linear-gradient(to right, #fcd34d, #f59e0b)'
+                              : customer.health?.status === 'growth' ? 'linear-gradient(to right, #93c5fd, #3b82f6)'
+                              : 'linear-gradient(to right, #6ee7b7, #10b981)'
+                          }}
                         />
                       </div>
                     </div>
 
                     {/* Stats */}
-                    <div className="grid grid-cols-3 gap-3 pt-3 border-t border-slate-100">
-                      <div>
-                        <p className="text-xs text-slate-400 mb-0.5">ดีล</p>
-                        <p className="text-base font-bold text-slate-900 tabular-nums">{customer.dealStats.total}</p>
+                    <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100">
+                      <div className="text-center p-2 rounded-xl bg-slate-50">
+                        <p className="text-[10px] text-slate-400 mb-0.5">ดีลทั้งหมด</p>
+                        <p className="text-lg font-black text-slate-900 tabular-nums">{customer.dealStats.total}</p>
                       </div>
-                      <div>
-                        <p className="text-xs text-slate-400 mb-0.5">ปิดได้</p>
-                        <p className="text-base font-bold text-emerald-600 tabular-nums">{customer.dealStats.won}</p>
+                      <div className="text-center p-2 rounded-xl bg-emerald-50">
+                        <p className="text-[10px] text-emerald-500 mb-0.5">ปิดได้</p>
+                        <p className="text-lg font-black text-emerald-600 tabular-nums">{customer.dealStats.won}</p>
                       </div>
-                      <div>
-                        <p className="text-xs text-slate-400 mb-0.5">ปิดแล้ว</p>
-                        <p className="text-base font-bold text-violet-700 tabular-nums">{formatCurrency(customer.dealStats.wonValue)}</p>
+                      <div className="text-center p-2 rounded-xl bg-violet-50">
+                        <p className="text-[10px] text-violet-500 mb-0.5">มูลค่า</p>
+                        <p className="text-sm font-black text-violet-700 tabular-nums leading-tight">{formatCurrency(customer.dealStats.wonValue)}</p>
                       </div>
                     </div>
+
                     {/* CLV */}
-                    {(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0)) > 0 && (
-                      <div className="pt-2 border-t border-slate-50">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">CLV (Won + Pipeline)</span>
+                    <div className="flex items-center justify-between pt-1">
+                      {(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0)) > 0 ? (
+                        <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-1.5 flex-1 mr-2">
+                          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">CLV</span>
                           <span className="text-xs font-black text-slate-700 tabular-nums">
                             {formatCurrency(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0))}
                           </span>
                         </div>
-                      </div>
-                    )}
-
-                    {/* Hover CTA */}
-                    <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="flex items-center gap-1 text-xs font-medium text-violet-600">
-                        ดูรายละเอียด <ChevronRight size={13} />
+                      ) : <div />}
+                      {/* Hover CTA */}
+                      <span className="flex items-center gap-1 text-xs font-semibold text-violet-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        ดูข้อมูล <ChevronRight size={13} />
                       </span>
                     </div>
                   </div>
-                </Card>
+                </div>
               </motion.div>
             );
           })}
         </AnimatePresence>
 
         {filteredCustomers.length === 0 && (
-          <div className="col-span-full text-center py-20 space-y-3">
-            <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto">
-              <Users size={28} className="text-slate-300" />
+          <div className="col-span-full text-center py-24 space-y-4">
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-50 to-purple-100 flex items-center justify-center mx-auto shadow-sm">
+              <Users size={32} className="text-violet-300" />
             </div>
-            <h3 className="text-base font-semibold text-slate-400">ไม่พบข้อมูลลูกค้า</h3>
-            <p className="text-sm text-slate-300">ปรับตัวกรองหรือเพิ่มลูกค้าใหม่</p>
+            <div>
+              <h3 className="text-base font-bold text-slate-500">ไม่พบข้อมูลลูกค้า</h3>
+              <p className="text-sm text-slate-300 mt-1">ลองปรับตัวกรองหรือเพิ่มลูกค้าใหม่ได้เลย</p>
+            </div>
+            <button
+              onClick={() => { setNewCustomer(EMPTY_FORM); setFormError(null); setIsAddModalOpen(true); }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-600 text-white text-sm font-semibold rounded-xl hover:bg-violet-700 transition-colors shadow-md shadow-violet-200"
+            >
+              <Plus size={14} /> เพิ่มลูกค้าใหม่
+            </button>
           </div>
         )}
       </div>

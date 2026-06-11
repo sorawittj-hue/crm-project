@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Target, Activity, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, Activity, ChevronLeft, ChevronRight, CalendarDays, AlertTriangle } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
 
@@ -6,6 +6,19 @@ const MONTHS_TH = [
   'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
   'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
 ];
+
+function AnimatedNumber({ value, prefix = '', suffix = '' }) {
+  return (
+    <motion.span
+      key={value}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+    >
+      {prefix}{value}{suffix}
+    </motion.span>
+  );
+}
 
 export default function PipelineHeader({
   selectedMonth,
@@ -17,6 +30,8 @@ export default function PipelineHeader({
   totalDeals,
   monthlyTarget,
   lastMonthTotal,
+  atRiskValue,
+  atRiskCount,
 }) {
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -59,10 +74,10 @@ export default function PipelineHeader({
     }).format(val || 0);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* MONTH NAVIGATOR */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center bg-white border border-slate-200 rounded-2xl p-1 shadow-sm">
+        <div className="flex items-center bg-white border border-slate-200 rounded-2xl p-1 shadow-sm gap-1">
           <button
             onClick={goPrev}
             className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all"
@@ -71,11 +86,16 @@ export default function PipelineHeader({
             <ChevronLeft size={18} />
           </button>
 
-          <div className="flex items-center gap-2 px-4 min-w-[180px] justify-center select-none">
+          <div className="flex items-center gap-2 px-4 min-w-[190px] justify-center select-none">
             <CalendarDays size={15} className="text-violet-500" />
             <span className="text-sm font-bold text-slate-900 tabular-nums">
               {MONTHS_TH[selectedMonth]} {selectedYear + 543}
             </span>
+            {isCurrent && (
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-violet-100 text-violet-600 rounded-full">
+                ปัจจุบัน
+              </span>
+            )}
           </div>
 
           <button
@@ -88,86 +108,111 @@ export default function PipelineHeader({
         </div>
 
         {!isCurrent && (
-          <button
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
             onClick={goToday}
-            className="h-10 px-4 rounded-xl bg-violet-50 text-violet-700 hover:bg-violet-100 text-xs font-semibold flex items-center gap-2 transition-all"
+            className="h-10 px-5 rounded-xl bg-violet-600 text-white hover:bg-violet-700 text-xs font-semibold flex items-center gap-2 transition-all shadow-md shadow-violet-200"
           >
-            <Target size={14} /> กลับไปเดือนปัจจุบัน
-          </button>
+            <Target size={14} />
+            กลับไปเดือนปัจจุบัน
+          </motion.button>
         )}
       </div>
 
-      {/* COMPACT KPI STRIP */}
+      {/* KPI STRIP */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Target progress — prominent */}
-        <div className="lg:col-span-2 p-5 rounded-2xl bg-gradient-to-br from-violet-600 to-violet-700 text-white shadow-md shadow-violet-500/20 relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-white/5" />
+        <div className="lg:col-span-2 p-5 rounded-2xl bg-gradient-to-br from-violet-600 via-violet-700 to-purple-700 text-white shadow-lg shadow-violet-500/25 relative overflow-hidden">
+          <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/5" />
+          <div className="absolute -bottom-12 -left-6 w-28 h-28 rounded-full bg-white/5" />
           <div className="relative z-10 space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-violet-100 font-medium">ยอดขายเดือนนี้</p>
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/15 text-[10px] font-bold">
+              <p className="text-xs text-violet-200 font-semibold tracking-wide uppercase">ยอดขายเดือนนี้</p>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 text-[11px] font-bold backdrop-blur-sm">
                 <Target size={11} />
-                {Math.round(progress)}%
+                <AnimatedNumber value={Math.round(progress)} suffix="%" />
               </div>
             </div>
 
             <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-3xl font-bold tabular-nums leading-none">{formatValue(monthlyTotal)}</span>
-              <span className="text-xs text-violet-100">จากเป้า {formatValue(monthlyTarget)}</span>
+              <span className="text-3xl font-black tabular-nums leading-none tracking-tight">
+                <AnimatedNumber value={formatValue(monthlyTotal)} />
+              </span>
+              <span className="text-xs text-violet-200">จากเป้า {formatValue(monthlyTarget)}</span>
             </div>
 
-            <div className="h-2 bg-white/15 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(100, progress)}%` }}
-                transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
-                className="h-full bg-white rounded-full"
-              />
+            <div className="space-y-1.5">
+              <div className="h-2 bg-white/15 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(100, progress)}%` }}
+                  transition={{ duration: 1.4, ease: [0.19, 1, 0.22, 1] }}
+                  className={cn(
+                    'h-full rounded-full',
+                    progress >= 100 ? 'bg-emerald-300' : progress >= 70 ? 'bg-white' : 'bg-white/80'
+                  )}
+                />
+              </div>
+              {progress >= 100 && (
+                <p className="text-[10px] text-emerald-200 font-bold">🎉 ทะลุเป้าแล้ว!</p>
+              )}
             </div>
           </div>
         </div>
 
         {/* Growth */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex justify-between items-start">
-            <p className="text-xs text-slate-400 font-medium">การเติบโต</p>
+        <div className={cn(
+          'p-5 rounded-2xl border shadow-sm flex flex-col justify-between relative overflow-hidden',
+          isPositiveTrend
+            ? 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-100'
+            : 'bg-gradient-to-br from-rose-50 to-red-50 border-rose-100'
+        )}>
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full opacity-20"
+            style={{ backgroundColor: isPositiveTrend ? '#10b981' : '#f43f5e' }} />
+          <div className="flex justify-between items-start relative z-10">
+            <p className="text-xs font-semibold tracking-wide uppercase"
+              style={{ color: isPositiveTrend ? '#059669' : '#e11d48' }}>การเติบโต</p>
             <div
               className={cn(
-                'w-8 h-8 rounded-xl flex items-center justify-center',
-                isPositiveTrend ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'
+                'w-9 h-9 rounded-xl flex items-center justify-center shadow-sm',
+                isPositiveTrend ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-500'
               )}
             >
-              {isPositiveTrend ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+              {isPositiveTrend ? <TrendingUp size={17} /> : <TrendingDown size={17} />}
             </div>
           </div>
-          <div className="mt-3">
+          <div className="mt-3 relative z-10">
             <h3
               className={cn(
-                'text-2xl font-bold tabular-nums leading-none',
+                'text-2xl font-black tabular-nums leading-none',
                 isPositiveTrend ? 'text-emerald-600' : 'text-rose-500'
               )}
             >
               {trend > 0 ? '+' : ''}
-              {trend.toFixed(1)}%
+              <AnimatedNumber value={trend.toFixed(1)} suffix="%" />
             </h3>
-            <p className="text-[11px] text-slate-400 mt-1.5">เทียบเดือนที่แล้ว</p>
+            <p className="text-[11px] mt-1.5" style={{ color: isPositiveTrend ? '#6ee7b7' : '#fca5a5' }}>
+              เทียบกับเดือนก่อน
+            </p>
           </div>
         </div>
 
         {/* Deal count */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex justify-between items-start">
-            <p className="text-xs text-slate-400 font-medium">ปิดได้เดือนนี้</p>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
-              <Activity size={16} />
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 shadow-sm flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-amber-200/30" />
+          <div className="flex justify-between items-start relative z-10">
+            <p className="text-xs text-amber-700 font-semibold tracking-wide uppercase">ปิดได้เดือนนี้</p>
+            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-500 flex items-center justify-center shadow-sm">
+              <Activity size={17} />
             </div>
           </div>
-          <div className="mt-3">
-            <h3 className="text-2xl font-bold text-slate-900 tabular-nums leading-none">
-              {monthlyCount}
-              <span className="text-sm text-slate-400 font-medium ml-1">ดีล</span>
+          <div className="mt-3 relative z-10">
+            <h3 className="text-2xl font-black text-amber-700 tabular-nums leading-none">
+              <AnimatedNumber value={monthlyCount} />
+              <span className="text-sm font-semibold text-amber-400 ml-1">ดีล</span>
             </h3>
-            <p className="text-[11px] text-slate-400 mt-1.5">ดีลทั้งหมดในระบบ {totalDeals} ดีล</p>
+            <p className="text-[11px] text-amber-400 mt-1.5">ทั้งหมดในระบบ {totalDeals} ดีล</p>
           </div>
         </div>
       </div>
