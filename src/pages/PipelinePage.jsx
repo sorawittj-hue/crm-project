@@ -342,68 +342,72 @@ export default function PipelinePage() {
 
       {/* QUICK ADD DIALOG */}
       <Dialog open={isQuickAddOpen} onOpenChange={(v) => { setIsQuickAddOpen(v); if (!v) { setQuickDeal({ company: '', title: '', value: '', expected_close_date: '' }); setQuickError(null); } }}>
-        <DialogContent className="max-w-sm rounded-2xl p-6">
-          <DialogHeader>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 rounded-xl bg-amber-500 flex items-center justify-center">
-                <Zap size={15} className="text-white" />
+        <DialogContent className="max-w-sm p-0 overflow-hidden rounded-2xl border-0">
+          {/* Amber top ribbon */}
+          <div className="h-1.5 bg-gradient-to-r from-amber-400 to-orange-500" />
+          <div className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                <Zap size={18} className="text-amber-500 fill-amber-500" />
               </div>
-              <DialogTitle className="text-lg font-bold text-slate-900">Quick Add Deal</DialogTitle>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Quick Add Deal</h3>
+                <p className="text-xs text-slate-400 mt-0.5">เพิ่มดีลด่วน — กรอกแค่สิ่งสำคัญ</p>
+              </div>
             </div>
-            <p className="text-xs text-slate-400">เพิ่มดีลด่วน — กรอกแค่สิ่งสำคัญ</p>
-          </DialogHeader>
 
-          <form onSubmit={handleQuickAdd} className="space-y-3 mt-2">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-500">ชื่อบริษัท</label>
-              <Input
-                placeholder="เช่น บริษัท ABC จำกัด"
-                value={quickDeal.company}
-                onChange={e => setQuickDeal(q => ({ ...q, company: e.target.value }))}
-                className="h-10 rounded-xl text-sm"
-                autoFocus
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-500">มูลค่า (บาท)</label>
-              <Input
-                type="number"
-                placeholder="500000"
-                value={quickDeal.value}
-                onChange={e => setQuickDeal(q => ({ ...q, value: e.target.value }))}
-                className="h-10 rounded-xl text-sm"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-500">วันคาดว่าจะปิด</label>
-              <input
-                type="date"
-                value={quickDeal.expected_close_date}
-                onChange={e => setQuickDeal(q => ({ ...q, expected_close_date: e.target.value }))}
-                className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 outline-none focus:border-amber-400 transition-all text-sm"
-              />
-            </div>
-            {quickError && (
-              <p className="text-xs text-rose-500 font-medium">{quickError}</p>
-            )}
-            <div className="flex gap-2 pt-1">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setIsQuickAddOpen(false)}
-                className="flex-1 h-10 rounded-xl text-sm text-slate-500"
-              >
-                ยกเลิก
-              </Button>
-              <Button
-                type="submit"
-                disabled={addDealMutation.isPending}
-                className="flex-[2] h-10 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold border-0 shadow-sm disabled:opacity-60"
-              >
-                {addDealMutation.isPending ? <Loader2 size={13} className="animate-spin" /> : 'บันทึกด่วน ⚡'}
-              </Button>
-            </div>
-          </form>
+            <form onSubmit={handleQuickAdd} className="space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">ชื่อบริษัท</label>
+                <Input
+                  placeholder="เช่น บริษัท ABC จำกัด"
+                  value={quickDeal.company}
+                  onChange={e => setQuickDeal(q => ({ ...q, company: e.target.value }))}
+                  className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm font-semibold"
+                  autoFocus
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">มูลค่า (บาท)</label>
+                <Input
+                  type="number"
+                  placeholder="500,000"
+                  value={quickDeal.value}
+                  onChange={e => setQuickDeal(q => ({ ...q, value: e.target.value }))}
+                  className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm font-bold text-amber-700"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">วันคาดว่าจะปิด</label>
+                <input
+                  type="date"
+                  value={quickDeal.expected_close_date}
+                  onChange={e => setQuickDeal(q => ({ ...q, expected_close_date: e.target.value }))}
+                  className="w-full h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-amber-400 focus:bg-white transition-all text-sm font-semibold"
+                />
+              </div>
+              {quickError && (
+                <p className="text-xs text-rose-500 font-medium bg-rose-50 px-3 py-2 rounded-xl">{quickError}</p>
+              )}
+              <div className="flex gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsQuickAddOpen(false)}
+                  className="flex-1 h-11 rounded-xl text-sm text-slate-500 border border-slate-200 hover:bg-slate-50"
+                >
+                  ยกเลิก
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={addDealMutation.isPending}
+                  className="flex-[2] h-11 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold border-0 shadow-md shadow-amber-500/20 disabled:opacity-60"
+                >
+                  {addDealMutation.isPending ? <Loader2 size={13} className="animate-spin" /> : '⚡ บันทึกด่วน'}
+                </Button>
+              </div>
+            </form>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -423,14 +427,19 @@ export default function PipelinePage() {
 
       {/* ADD ASSET MODAL */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-4xl lg:max-w-5xl bg-white rounded-3xl p-8 border-0 shadow-2xl overflow-y-auto max-h-[90vh]">
-          <DialogHeader className="mb-6 border-b border-slate-100 pb-4">
-             <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
-               <Plus size={20} className="text-violet-600" />
-               <span>เพิ่มดีลการขายใหม่</span>
-             </DialogTitle>
-             <p className="text-xs text-slate-400 mt-0.5">กรอกข้อมูลเพื่อบันทึกดีลและวิเคราะห์โอกาสชนะด้วย AI</p>
-          </DialogHeader>
+        <DialogContent className="max-w-4xl lg:max-w-5xl p-0 border-0 shadow-2xl overflow-hidden rounded-2xl">
+          {/* Violet top ribbon */}
+          <div className="h-1.5 bg-gradient-to-r from-violet-500 to-indigo-600" />
+          <div className="p-8 overflow-y-auto max-h-[88vh]">
+          <div className="flex items-center gap-4 mb-6 pb-5 border-b border-slate-100">
+            <div className="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center shrink-0">
+              <Plus size={22} className="text-violet-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">เพิ่มดีลการขายใหม่</h2>
+              <p className="text-xs text-slate-400 mt-0.5">กรอกข้อมูลเพื่อบันทึกดีลและวิเคราะห์โอกาสชนะด้วย AI</p>
+            </div>
+          </div>
 
           <form onSubmit={handleAddSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
              {/* Left side: Form (Column Span 7) */}
@@ -823,20 +832,25 @@ export default function PipelinePage() {
                  </div>
              </div>
           </form>
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* SYNC MODAL */}
       <Dialog open={isScanOpen} onOpenChange={setIsScanOpen}>
-        <DialogContent className="max-w-xl p-0 overflow-hidden rounded-[3.5rem] bg-white border-0 shadow-3xl">
-          <div className="p-10">
-            <DialogHeader className="mb-10 text-center">
-              <div className="w-16 h-16 rounded-[2rem] bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
-                 <ScanLine size={32} />
+        <DialogContent className="max-w-xl p-0 overflow-hidden rounded-2xl bg-white border-0 shadow-2xl">
+          {/* Scanner ribbon */}
+          <div className="h-1.5 bg-gradient-to-r from-violet-500 via-indigo-500 to-blue-500" />
+          <div className="p-8">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-500/20 shrink-0">
+                 <ScanLine size={26} />
               </div>
-              <DialogTitle className="text-3xl font-black text-slate-900 tracking-tight uppercase">AI Quote Scanner</DialogTitle>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2 px-10">Automatic AI extraction of deal details from multiple quote PDFs.</p>
-            </DialogHeader>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">AI Quote Scanner</h2>
+                <p className="text-sm text-slate-400 mt-0.5">วิเคราะห์และดึงข้อมูลดีลจากไฟล์ PDF อัตโนมัติ</p>
+              </div>
+            </div>
             
             <Suspense fallback={
               <div className="flex flex-col items-center justify-center p-12 gap-4">
