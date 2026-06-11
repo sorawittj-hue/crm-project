@@ -109,8 +109,11 @@ function EmailTemplates() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
           >
-            <Card className="p-5 rounded-2xl border-violet-200 bg-violet-50/30">
-              <h4 className="text-sm font-bold text-violet-700 mb-4">เพิ่ม Template ใหม่</h4>
+            <Card className="p-6 md:p-8 rounded-[2rem] border-violet-200/60 bg-gradient-to-br from-violet-50/80 to-white/80 backdrop-blur-xl shadow-2xl shadow-violet-500/10 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-violet-400/10 rounded-bl-full -z-0 pointer-events-none" />
+              <h4 className="text-sm font-black text-violet-700 uppercase tracking-wider mb-5 relative z-10 flex items-center gap-2">
+                <Sparkles size={14} /> เพิ่ม Template ใหม่
+              </h4>
               <form onSubmit={handleAdd} className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
@@ -169,9 +172,12 @@ function EmailTemplates() {
           const isEditing = editingId === t.id;
 
           return (
-            <motion.div key={t.id} layout>
-              <Card className={cn("rounded-2xl overflow-hidden border-y border-r border-slate-100 border-l-4 shadow-sm", cat.border || "border-l-slate-200")}>
-                <div className="p-4">
+            <motion.div key={t.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+              <Card className={cn(
+                "rounded-[1.5rem] overflow-hidden border-y border-r border-slate-100/80 border-l-4 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 bg-white/60 backdrop-blur-md group",
+                cat.border || "border-l-slate-200"
+              )}>
+                <div className="p-4 md:p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <span className={cn('px-2.5 py-0.5 rounded-lg text-[10px] font-bold shrink-0', cat.color)}>{cat.label}</span>
@@ -204,8 +210,8 @@ function EmailTemplates() {
                 <AnimatePresence>
                   {isExpanded && !isEditing && (
                     <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
-                      <div className="px-4 pb-4 border-t border-slate-100 pt-3">
-                        <pre className="text-xs text-slate-600 whitespace-pre-wrap font-sans leading-relaxed bg-slate-50 rounded-xl p-3">{t.body}</pre>
+                      <div className="px-4 md:px-5 pb-5 border-t border-slate-100/80 pt-4">
+                        <pre className="text-[13px] text-slate-600 whitespace-pre-wrap font-medium leading-relaxed bg-slate-50/80 border border-slate-100 rounded-2xl p-4 shadow-inner">{t.body}</pre>
                         <button onClick={() => handleCopy(t.body, t.id + '-body')}
                           className="mt-2 flex items-center gap-1.5 text-xs text-violet-600 hover:text-violet-800 font-semibold">
                           {copiedId === t.id + '-body' ? <Check size={12} /> : <Copy size={12} />}
@@ -282,74 +288,87 @@ function DealCalculator() {
   })();
 
   const SCENARIOS = [
-    { label: 'Worst Case (30%)', value: Number(dealValue) * 0.3, color: 'text-rose-600' },
-    { label: 'Commit (70%)', value: Number(dealValue) * 0.7, color: 'text-amber-600' },
-    { label: 'Best Case (100%)', value: Number(dealValue), color: 'text-emerald-600' },
+    { label: 'Worst Case (30%)', value: Number(dealValue) * 0.3, bg: 'from-rose-50 to-rose-100/50', border: 'border-rose-200', text: 'text-rose-700' },
+    { label: 'Commit (70%)', value: Number(dealValue) * 0.7, bg: 'from-amber-50 to-amber-100/50', border: 'border-amber-200', text: 'text-amber-700' },
+    { label: 'Best Case (100%)', value: Number(dealValue), bg: 'from-emerald-50 to-emerald-100/50', border: 'border-emerald-200', text: 'text-emerald-700' },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Inputs */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-bold text-slate-700">ข้อมูลดีล</h3>
-          <div className="space-y-3">
+        <div className="lg:col-span-5 space-y-5 bg-white/60 backdrop-blur-xl p-6 rounded-[2rem] border border-white shadow-xl shadow-slate-200/40 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0" />
+          <h3 className="text-xs font-black uppercase tracking-wider text-violet-600 flex items-center gap-2 relative z-10">
+            <Calculator size={14} /> พารามิเตอร์ของดีล
+          </h3>
+          <div className="space-y-4 relative z-10">
             {[
-              { label: 'มูลค่าดีล (บาท)', value: dealValue, setter: setDealValue, placeholder: '1,000,000' },
-              { label: 'ต้นทุน / ค่าใช้จ่าย (บาท)', value: cost, setter: setCost, placeholder: '600,000' },
+              { label: 'มูลค่าดีล (Revenue)', value: dealValue, setter: setDealValue, placeholder: '1,000,000', prefix: '฿' },
+              { label: 'ต้นทุน (Cost/COGS)', value: cost, setter: setCost, placeholder: '600,000', prefix: '฿' },
             ].map(f => (
-              <div key={f.label} className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500">{f.label}</label>
-                <Input type="number" value={f.value} onChange={e => f.setter(e.target.value)}
-                  placeholder={f.placeholder} className="h-10 rounded-xl text-sm" />
+              <div key={f.label} className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{f.label}</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">{f.prefix}</span>
+                  <Input type="number" value={f.value} onChange={e => f.setter(e.target.value)}
+                    placeholder={f.placeholder} className="h-12 pl-8 rounded-xl text-base font-bold bg-white/80 border-slate-200 focus:border-violet-400 focus:ring-violet-400/20" />
+                </div>
               </div>
             ))}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500">โอกาสปิด (%)</label>
-                <Input type="number" min="0" max="100" value={probability} onChange={e => setProbability(e.target.value)}
-                  className="h-10 rounded-xl text-sm" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">โอกาสปิด (%)</label>
+                <div className="relative">
+                  <Input type="number" min="0" max="100" value={probability} onChange={e => setProbability(e.target.value)}
+                    className="h-12 pr-8 rounded-xl text-base font-bold bg-white/80 border-slate-200 focus:border-amber-400 focus:ring-amber-400/20" />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
+                </div>
               </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500">ระยะเวลา (เดือน)</label>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">ระยะเวลา (ด.)</label>
                 <Input type="number" min="1" value={months} onChange={e => setMonths(e.target.value)}
-                  className="h-10 rounded-xl text-sm" />
+                  className="h-12 rounded-xl text-base font-bold bg-white/80 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Results */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-bold text-slate-700">ผลลัพธ์</h3>
-          <div className="grid grid-cols-2 gap-3">
+        <div className="lg:col-span-7 space-y-5">
+          <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
+            <Sparkles size={14} className="text-amber-500" /> การวิเคราะห์ผลตอบแทน (ROI Analysis)
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {[
-              { label: 'กำไรขั้นต้น', value: formatCurrency(calc.grossProfit), color: calc.grossProfit >= 0 ? 'text-emerald-600' : 'text-rose-600' },
-              { label: 'Margin', value: `${calc.margin.toFixed(1)}%`, color: calc.margin >= 20 ? 'text-emerald-600' : calc.margin >= 10 ? 'text-amber-600' : 'text-rose-600' },
-              { label: 'Expected Revenue', value: formatCurrency(calc.expectedRevenue), color: 'text-violet-600' },
-              { label: 'Expected Profit', value: formatCurrency(calc.expectedProfit), color: 'text-violet-600' },
-              { label: 'รายได้ต่อเดือน', value: formatCurrency(calc.monthlyRevenue), color: 'text-blue-600' },
-              { label: 'ROI', value: `${calc.roi.toFixed(0)}%`, color: calc.roi >= 100 ? 'text-emerald-600' : calc.roi >= 50 ? 'text-amber-600' : 'text-rose-600' },
-            ].map(m => (
-              <div key={m.label} className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <p className="text-xs text-slate-400">{m.label}</p>
-                <p className={cn('text-lg font-black tabular-nums', m.color)}>{m.value}</p>
-              </div>
+              { label: 'กำไรขั้นต้น', value: formatCurrency(calc.grossProfit), color: calc.grossProfit >= 0 ? 'text-emerald-600' : 'text-rose-600', bg: 'bg-white', border: 'border-slate-100' },
+              { label: 'Margin', value: `${calc.margin.toFixed(1)}%`, color: calc.margin >= 20 ? 'text-emerald-600' : calc.margin >= 10 ? 'text-amber-600' : 'text-rose-600', bg: 'bg-white', border: 'border-slate-100' },
+              { label: 'ROI', value: `${calc.roi.toFixed(0)}%`, color: calc.roi >= 100 ? 'text-emerald-600' : calc.roi >= 50 ? 'text-amber-600' : 'text-rose-600', bg: 'bg-white', border: 'border-slate-100' },
+              { label: 'Expected Revenue', value: formatCurrency(calc.expectedRevenue), color: 'text-violet-700', bg: 'bg-violet-50/50', border: 'border-violet-100' },
+              { label: 'Expected Profit', value: formatCurrency(calc.expectedProfit), color: 'text-violet-700', bg: 'bg-violet-50/50', border: 'border-violet-100' },
+              { label: 'รายได้ต่อเดือน', value: formatCurrency(calc.monthlyRevenue), color: 'text-blue-700', bg: 'bg-blue-50/50', border: 'border-blue-100' },
+            ].map((m, i) => (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={m.label} 
+                className={cn('p-4 rounded-2xl border shadow-sm', m.bg, m.border)}>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{m.label}</p>
+                <p className={cn('text-lg sm:text-xl font-black tabular-nums tracking-tight', m.color)}>{m.value}</p>
+              </motion.div>
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* Forecast scenarios */}
-      <div className="border-t border-slate-100 pt-5">
-        <h3 className="text-sm font-bold text-slate-700 mb-3">Forecast Scenarios</h3>
-        <div className="grid grid-cols-3 gap-3">
-          {SCENARIOS.map(s => (
-            <div key={s.label} className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
-              <p className="text-xs text-slate-400 mb-1">{s.label}</p>
-              <p className={cn('text-xl font-black tabular-nums', s.color)}>{formatCurrency(s.value)}</p>
+          <div className="pt-2">
+            <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3">ฉากทัศน์คาดการณ์ (Forecast Scenarios)</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {SCENARIOS.map((s, i) => (
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 + (i * 0.1) }} 
+                  key={s.label} className={cn('p-5 rounded-2xl border bg-gradient-to-br shadow-sm relative overflow-hidden group', s.bg, s.border)}>
+                  <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <p className={cn('text-[10px] font-black uppercase tracking-wider mb-1 opacity-70', s.text)}>{s.label}</p>
+                  <p className={cn('text-xl font-black tabular-nums tracking-tight', s.text)}>{formatCurrency(s.value)}</p>
+                </motion.div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </div>
@@ -477,32 +496,38 @@ export default function ToolsPage() {
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -12 }}
-          transition={{ duration: 0.25 }}
-          className="rounded-3xl border border-slate-100 shadow-xl bg-white overflow-hidden"
+          initial={{ opacity: 0, y: 16, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -16, scale: 0.98 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/50 bg-white/80 backdrop-blur-3xl overflow-hidden relative"
         >
-          <div className={`h-1.5 bg-gradient-to-r ${activeTool.gradient}`} />
+          {/* Glass glare effect */}
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-80 z-10" />
+          
+          <div className={`h-1.5 bg-gradient-to-r ${activeTool.gradient} relative z-10`} />
 
-          <div className="px-6 py-6 md:px-10 md:py-8 border-b border-slate-100">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${activeTool.gradient} flex items-center justify-center text-white shadow-lg shrink-0`}>
-                <activeTool.icon size={26} strokeWidth={2} />
+          <div className="px-6 py-8 md:px-12 md:py-10 border-b border-slate-100/80 relative bg-gradient-to-b from-white to-transparent">
+            <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
+              <activeTool.icon size={160} />
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-6 relative z-10">
+              <div className={`w-16 h-16 rounded-3xl bg-gradient-to-br ${activeTool.gradient} flex items-center justify-center text-white shadow-xl shadow-${activeTool.gradient.split(' ')[0].split('-')[1]}/30 shrink-0 transform transition-transform hover:scale-105 hover:rotate-3`}>
+                <activeTool.icon size={28} strokeWidth={2.5} />
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-bold text-slate-900 mb-0.5">{activeTool.title}</h2>
-                <p className="text-xs text-slate-400">{activeTool.desc}</p>
+                <h2 className="text-2xl font-black text-slate-900 mb-1 tracking-tight">{activeTool.title}</h2>
+                <p className="text-sm text-slate-500 font-medium">{activeTool.desc}</p>
               </div>
               <div className="flex flex-wrap gap-2 shrink-0">
                 {activeTool.badges.map(b => (
-                  <span key={b.label} className={cn('px-3 py-1.5 rounded-xl border text-xs font-medium', b.color)}>{b.label}</span>
+                  <span key={b.label} className={cn('px-3.5 py-1.5 rounded-xl border text-[11px] font-bold tracking-wide uppercase', b.color)}>{b.label}</span>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="p-6 md:p-10">
+          <div className="p-6 md:p-12 relative z-10">
             {ActiveComponent && <ActiveComponent />}
           </div>
         </motion.div>
