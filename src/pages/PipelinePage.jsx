@@ -454,47 +454,44 @@ export default function PipelinePage() {
                  {/* Customer selector (Search Autocomplete) */}
                  <div className="space-y-1.5 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 relative z-50">
                     <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                      ลูกค้าในระบบ (เชื่อมโยงเพื่อกรอกข้อมูลติดต่ออัตโนมัติ)
+                      เลือกลูกค้าที่มีในระบบ (เพื่อกรอกข้อมูลอัตโนมัติ)
                     </label>
                     <div className="relative z-20">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                        <Search size={16} />
+                      </div>
                       <Input
-                        placeholder="🔍 พิมพ์เพื่อค้นหาลูกค้า เช่น ชื่อ หรือชื่อบริษัท..."
+                        placeholder="พิมพ์ค้นหา หรือคลิกเพื่อเลือก..."
                         value={customerSearch}
                         onChange={(e) => {
                           setCustomerSearch(e.target.value);
                           setIsCustomerDropdownOpen(true);
                         }}
+                        onClick={() => setIsCustomerDropdownOpen(true)}
                         onFocus={() => setIsCustomerDropdownOpen(true)}
-                        className="w-full h-11 rounded-xl border border-slate-200 bg-white px-4 outline-none focus:border-violet-400 transition-all text-sm font-semibold"
+                        className="w-full h-11 rounded-xl border border-slate-200 bg-white pl-10 pr-10 outline-none focus:border-violet-400 transition-all text-sm font-semibold cursor-pointer"
                       />
-                      {customerSearch && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCustomerSearch('');
-                            setIsCustomerDropdownOpen(false);
-                            setNewDeal(prev => ({
-                              ...prev,
-                              customer_id: '',
-                              company: '',
-                              contact: '',
-                              contact_phone: '',
-                              contact_email: '',
-                            }));
-                          }}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-semibold px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"
-                        >
-                          ล้าง
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsCustomerDropdownOpen(!isCustomerDropdownOpen);
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                      >
+                        <ChevronDown size={16} className={cn("transition-transform duration-200", isCustomerDropdownOpen && "rotate-180")} />
+                      </button>
                     </div>
 
                     {isCustomerDropdownOpen && (
                       <>
                         <div className="fixed inset-0 z-10" onClick={() => setIsCustomerDropdownOpen(false)} />
-                        <div className="absolute left-4 right-4 mt-1 max-h-48 overflow-y-auto bg-white border border-slate-150 rounded-xl shadow-xl z-20 py-1.5 custom-scrollbar">
+                        <div className="absolute left-4 right-4 mt-2 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-2xl z-50 py-2 custom-scrollbar">
                           {filteredCustomers.length === 0 ? (
-                            <div className="px-4 py-3 text-xs text-slate-400 text-center font-medium">ไม่พบรายชื่อลูกค้า</div>
+                            <div className="px-4 py-6 text-sm text-slate-400 text-center font-medium flex flex-col items-center gap-2">
+                              <span>ไม่มีชื่อลูกค้านี้ในระบบ</span>
+                              <span className="text-[10px] bg-slate-100 px-2 py-1 rounded-md">พิมพ์ชื่อต่อไปเพื่อสร้างลูกค้าใหม่</span>
+                            </div>
                           ) : (
                             filteredCustomers.map(c => (
                               <button
@@ -513,10 +510,10 @@ export default function PipelinePage() {
                                     contact_email: c.email || '',
                                   }));
                                 }}
-                                className="w-full text-left px-4 py-2 hover:bg-violet-50 text-xs font-semibold text-slate-700 flex flex-col gap-0.5 border-b border-slate-50 last:border-0"
+                                className="w-full text-left px-4 py-2.5 hover:bg-violet-50 text-xs font-semibold text-slate-700 flex flex-col gap-0.5 border-b border-slate-50 last:border-0 transition-colors"
                               >
-                                <span className="text-slate-900 font-bold">{c.name}</span>
-                                {c.company && <span className="text-slate-400 text-[10px]">{c.company}</span>}
+                                <span className="text-slate-900 font-bold text-sm">{c.name}</span>
+                                {c.company && <span className="text-slate-500 text-[11px]">{c.company}</span>}
                               </button>
                             ))
                           )}
