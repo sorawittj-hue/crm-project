@@ -21,14 +21,12 @@ export function UsersSection() {
   };
 
   return (
-    <Card className="p-6 rounded-3xl border-slate-100">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center">
-          <ShieldCheck size={18} className="text-violet-600" />
-        </div>
+    <Card className="p-8 rounded-[2rem] bg-white/60 backdrop-blur-3xl border border-white shadow-xl shadow-slate-200/50 space-y-8 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+      <div className="flex items-center justify-between relative z-10">
         <div>
-          <h3 className="text-base font-bold text-slate-900">ผู้ใช้งานในระบบ</h3>
-          <p className="text-xs text-slate-400">{allProfiles.length} บัญชี — เฉพาะ admin เห็นหน้านี้</p>
+          <h2 className="text-xl font-black text-slate-900 tracking-tight relative z-10">จัดการผู้ใช้งานระบบ</h2>
+          <p className="text-sm font-medium text-slate-500 mt-1 relative z-10">เพิ่ม/ลบผู้ใช้ และกำหนดสิทธิ์การใช้งาน</p>
         </div>
       </div>
 

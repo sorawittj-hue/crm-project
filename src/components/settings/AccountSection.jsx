@@ -36,11 +36,14 @@ export function AccountSection() {
   };
 
   return (
-    <div className="space-y-4">
-      <Card className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-6">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900">บัญชีผู้ใช้</h2>
-          <p className="text-xs text-slate-400 mt-0.5">ข้อมูลบัญชีที่ใช้เข้าสู่ระบบ</p>
+    <div className="space-y-6">
+      <Card className="p-8 rounded-[2rem] bg-white/60 backdrop-blur-3xl border border-white shadow-xl shadow-slate-200/50 space-y-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+        <div className="flex items-center justify-between relative z-10">
+          <div>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight relative z-10">โปรไฟล์ของคุณ</h2>
+            <p className="text-sm font-medium text-slate-500 mt-1 relative z-10">ข้อมูลส่วนตัวและรหัสผ่าน</p>
+          </div>
         </div>
         <div className="space-y-4">
           <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50">
@@ -63,15 +66,16 @@ export function AccountSection() {
         <Button
           onClick={signOut}
           variant="ghost"
-          className="w-full h-11 rounded-2xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-semibold text-sm"
+          className="w-full h-11 rounded-2xl bg-rose-50/50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-semibold text-sm relative z-10"
         >
           <LogOut size={15} className="mr-2" /> ออกจากระบบ
         </Button>
       </Card>
 
       {/* Personal Target Card */}
-      <Card className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm">
-        <div className="flex items-center justify-between mb-5">
+      <Card className="p-8 rounded-[2rem] bg-white/60 backdrop-blur-3xl border border-white shadow-xl shadow-slate-200/50 space-y-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+        <div className="flex items-center justify-between relative z-10">
           <div>
             <h3 className="text-base font-bold text-slate-900">เป้าหมายยอดขายส่วนตัว</h3>
             <p className="text-xs text-slate-400 mt-0.5">ใช้ติดตามยอดขายของคุณเป็นการส่วนตัว</p>

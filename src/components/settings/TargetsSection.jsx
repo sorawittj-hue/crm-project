@@ -36,11 +36,12 @@ export function TargetsSection() {
   };
 
   return (
-    <Card className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-6">
-      <div className="flex items-center justify-between">
+    <Card className="p-8 rounded-[2rem] bg-white/60 backdrop-blur-3xl border border-white shadow-xl shadow-slate-200/50 space-y-8 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">เป้าหมายยอดขาย</h2>
-          <p className="text-xs text-slate-400 mt-0.5">กำหนดเป้าหมายรายเดือนของทีม</p>
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">เป้าหมายยอดขาย</h2>
+          <p className="text-sm font-medium text-slate-500 mt-1">กำหนดเป้าหมายรายเดือนของทีม</p>
         </div>
         {!targetForm && (
           <Button
@@ -53,12 +54,19 @@ export function TargetsSection() {
       </div>
 
       {!targetForm ? (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50">
-            <p className="text-sm font-medium text-slate-600">เป้าหมายรวมทีม (เดือน)</p>
-            <p className="text-lg font-black tabular-nums text-violet-600">{formatFullCurrency(settings?.monthly_target)}</p>
+        <div className="space-y-4 relative z-10">
+          <div className="flex items-center justify-between p-6 rounded-[1.5rem] bg-gradient-to-r from-violet-50 to-white border border-violet-100 shadow-sm hover:shadow-md transition-all">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600">
+                <Target size={20} />
+              </div>
+              <p className="text-sm font-bold text-slate-700">เป้าหมายรวมทีม (ต่อเดือน)</p>
+            </div>
+            <p className="text-2xl font-black tabular-nums tracking-tight text-violet-700">{formatFullCurrency(settings?.monthly_target)}</p>
           </div>
-          <p className="text-xs text-slate-400 px-1">เป้าหมายยอดขายส่วนตัวของแต่ละคน ตั้งได้ที่หน้า <span className="font-semibold text-violet-500">บัญชีผู้ใช้</span></p>
+          <p className="text-xs font-medium text-slate-400 px-2">
+            💡 เป้าหมายยอดขายส่วนตัวของแต่ละคน สามารถตั้งค่าแยกได้ที่หน้า <span className="font-bold text-violet-600">บัญชีผู้ใช้</span>
+          </p>
         </div>
       ) : (
         <form onSubmit={handleSaveTargets} className="space-y-4">

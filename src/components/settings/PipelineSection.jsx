@@ -13,14 +13,17 @@ const STAGE_COLORS = {
 
 export function PipelineSection() {
   return (
-    <Card className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-6">
-      <div>
-        <h2 className="text-lg font-bold text-slate-900">ขั้นตอนดีล</h2>
-        <p className="text-xs text-slate-400 mt-0.5">ขั้นตอนที่ใช้ในระบบ Pipeline</p>
+    <Card className="p-8 rounded-[2rem] bg-white/60 backdrop-blur-3xl border border-white shadow-xl shadow-slate-200/50 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+      <div className="flex items-center justify-between mb-8 relative z-10">
+        <div>
+          <h2 className="text-xl font-black text-slate-900 tracking-tight relative z-10">ขั้นตอนดีล (Pipeline Stages)</h2>
+          <p className="text-sm font-medium text-slate-500 mt-1 relative z-10">{STAGES.length} ขั้นตอนที่ใช้ในระบบ Pipeline</p>
+        </div>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-3 relative z-10">
         {STAGES.map((s, i) => (
-          <div key={s.id} className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50">
+          <div key={s.id} className="flex items-center gap-4 p-4 rounded-2xl bg-white/50 border border-white/50 backdrop-blur-sm">
             <div className="w-7 h-7 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-400">
               {i + 1}
             </div>

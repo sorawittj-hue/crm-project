@@ -69,11 +69,12 @@ export function TeamSection() {
 
   return (
     <div className="space-y-4">
-      <Card className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
+      <Card className="p-8 rounded-[2rem] bg-white/60 backdrop-blur-3xl border border-white shadow-xl shadow-slate-200/50 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+        <div className="flex items-center justify-between mb-8 relative z-10">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">ทีมงาน</h2>
-            <p className="text-xs text-slate-400 mt-0.5">{teamMembers.length} สมาชิก</p>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight relative z-10">ทีมงาน</h2>
+            <p className="text-sm font-medium text-slate-500 mt-1 relative z-10">{teamMembers.length} สมาชิก</p>
           </div>
           <Button
             onClick={() => { setAddingMember(true); setNewMember(EMPTY_MEMBER); }}
