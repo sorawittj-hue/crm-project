@@ -475,7 +475,7 @@ export default function AnalyticsPage() {
   const memberColors = ['#8b5cf6', '#0ea5e9', '#f59e0b', '#10b981', '#ec4899', '#f43f5e'];
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-8 pb-24 px-4 md:px-6 mt-4">
+    <div className="max-w-[1600px] mx-auto space-y-8 pb-24 px-4 md:px-6 mt-4 bg-gradient-to-b from-slate-50 to-white min-h-screen">
       
       {/* HEADER */}
       <motion.div 
@@ -520,7 +520,7 @@ export default function AnalyticsPage() {
                 onClick={() => { setActiveTab(tab.id); setSelectedPrompt(null); }}
                 className={cn(
                   'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap',
-                  isActive ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                  isActive ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/25' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                 )}
               >
                 <Icon size={14} strokeWidth={2.5} />
@@ -667,7 +667,7 @@ export default function AnalyticsPage() {
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} dy={15} />
                         <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
                         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }} />
-                        <Bar dataKey="unweighted" name="Pipeline Volume" fill="#f1f5f9" radius={[8, 8, 0, 0]} barSize={40} />
+                        <Bar dataKey="unweighted" name="Pipeline Volume" fill="#c4b5fd" radius={[8, 8, 0, 0]} barSize={40} />
                         <Area type="monotone" dataKey="actual" name="Actual Revenue" stroke="#10b981" strokeWidth={4} fill="url(#colorActualAnalytics)" animationDuration={1500} />
                         <Line type="monotone" dataKey="weighted" name="Weighted Forecast" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} />
                         <Line type="monotone" dataKey="target" name="Goal" stroke="#cbd5e1" strokeWidth={2} strokeDasharray="8 8" dot={false} />
@@ -820,7 +820,7 @@ export default function AnalyticsPage() {
                             animate={{ width: `${item.widthPct}%` }}
                             transition={{ duration: 1, delay: i * 0.15, ease: [0.19, 1, 0.22, 1] }}
                             className="absolute top-0 left-0 h-full rounded-2xl flex items-center px-4 gap-3 shadow-inner"
-                            style={{ backgroundColor: item.color + '20', borderLeft: `4px solid ${item.color}` }}
+                            style={{ background: `linear-gradient(135deg, ${item.color}20, ${item.color}40)`, borderLeft: `4px solid ${item.color}`, boxShadow: `0 4px 12px ${item.color}15` }}
                           >
                             <span className="text-xs font-black" style={{ color: item.color }}>{item.count} Deals</span>
                             <span className="text-[11px] font-bold text-slate-650 bg-white/50 px-2 py-0.5 rounded-lg">{formatCurrency(item.value)}</span>
@@ -904,11 +904,11 @@ export default function AnalyticsPage() {
                             <span className="font-bold text-slate-400">{r.count}×</span>
                             <span className="font-bold text-emerald-600">{formatCurrency(r.totalValue)}</span>
                           </div>
-                          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                          <div className="h-3 bg-slate-100 rounded-full overflow-hidden shadow-inner">
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${pct}%` }}
-                              className="h-full bg-emerald-500"
+                              className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500"
                             />
                           </div>
                         </div>
@@ -943,11 +943,11 @@ export default function AnalyticsPage() {
                             <span className="font-bold text-slate-400">{r.count}×</span>
                             <span className="font-bold text-rose-500">{formatCurrency(r.totalValue)}</span>
                           </div>
-                          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                          <div className="h-3 bg-slate-100 rounded-full overflow-hidden shadow-inner">
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${pct}%` }}
-                              className="h-full bg-rose-500"
+                              className="h-full bg-gradient-to-r from-rose-400 to-rose-500"
                             />
                           </div>
                         </div>
@@ -1028,11 +1028,13 @@ export default function AnalyticsPage() {
                       </div>
 
                       <div className="flex items-center gap-4 mb-6">
-                        <div className={cn(
-                          'w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md border-2 border-white',
-                          m.color?.split(' ')[0] || 'bg-violet-600'
-                        )}>
-                          {m.name.charAt(0)}
+                        <div className="p-0.5 rounded-2xl bg-gradient-to-br from-violet-400 to-indigo-500 shadow-md">
+                          <div className={cn(
+                            'w-14 h-14 rounded-xl flex items-center justify-center text-white font-black text-xl border-2 border-white',
+                            m.color?.split(' ')[0] || 'bg-violet-600'
+                          )}>
+                            {m.name.charAt(0)}
+                          </div>
                         </div>
                         <div>
                           <p className="font-black text-slate-800 text-lg leading-tight">{m.name}</p>

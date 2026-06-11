@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mail, Calculator, Plus, Pencil, Trash2,
   Copy, Check, Loader2, FileText,
-  ChevronDown, ChevronUp, Search, Battery, HardDrive, Laptop
+  ChevronDown, ChevronUp, Search, Battery, HardDrive, Laptop, Sparkles
 } from 'lucide-react';
 import { useEmailTemplates, useAddEmailTemplate, useUpdateEmailTemplate, useDeleteEmailTemplate } from '../hooks/useEmailTemplates';
 import UPSCalculator from '../components/tools/UPSCalculator';
@@ -32,12 +32,12 @@ function EmailTemplates() {
   const [editForm, setEditForm] = useState({});
 
   const CATEGORIES = [
-    { id: 'follow_up', label: 'Follow Up', color: 'bg-blue-50 text-blue-700' },
-    { id: 'proposal', label: 'เสนอราคา', color: 'bg-violet-50 text-violet-700' },
-    { id: 'introduction', label: 'แนะนำตัว', color: 'bg-emerald-50 text-emerald-700' },
-    { id: 'closing', label: 'ปิดดีล', color: 'bg-amber-50 text-amber-700' },
-    { id: 'win_back', label: 'Win Back', color: 'bg-rose-50 text-rose-700' },
-    { id: 'other', label: 'อื่นๆ', color: 'bg-slate-100 text-slate-700' },
+    { id: 'follow_up', label: 'Follow Up', color: 'bg-blue-50 text-blue-700', border: 'border-l-blue-400' },
+    { id: 'proposal', label: 'เสนอราคา', color: 'bg-violet-50 text-violet-700', border: 'border-l-violet-400' },
+    { id: 'introduction', label: 'แนะนำตัว', color: 'bg-emerald-50 text-emerald-700', border: 'border-l-emerald-400' },
+    { id: 'closing', label: 'ปิดดีล', color: 'bg-amber-50 text-amber-700', border: 'border-l-amber-400' },
+    { id: 'win_back', label: 'Win Back', color: 'bg-rose-50 text-rose-700', border: 'border-l-rose-400' },
+    { id: 'other', label: 'อื่นๆ', color: 'bg-slate-100 text-slate-700', border: 'border-l-slate-400' },
   ];
 
   const getCatConfig = (id) => CATEGORIES.find(c => c.id === id) || CATEGORIES[5];
@@ -170,7 +170,7 @@ function EmailTemplates() {
 
           return (
             <motion.div key={t.id} layout>
-              <Card className="rounded-2xl overflow-hidden border-slate-100">
+              <Card className={cn("rounded-2xl overflow-hidden border-y border-r border-slate-100 border-l-4 shadow-sm", cat.border || "border-l-slate-200")}>
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -439,9 +439,15 @@ export default function ToolsPage() {
       transition={{ duration: 0.4 }}
       className="max-w-[1400px] mx-auto pb-20 px-4 md:px-0"
     >
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">เครื่องมือ</h1>
-        <p className="text-sm text-slate-500 mt-1">Email Templates, Deal Calculator, UPS และ RAID Calculator</p>
+      <header className="mb-6 flex items-center gap-3">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20 text-white shrink-0">
+          <Sparkles size={24} />
+        </div>
+        <div>
+          <p className="text-[10px] font-bold text-violet-500 uppercase tracking-widest mb-0.5">Nova Pipeline</p>
+          <h1 className="text-2xl font-black text-slate-900 leading-tight">เครื่องมือ</h1>
+          <p className="text-sm text-slate-400 mt-0.5 font-medium">คำนวณ คาดการณ์ และสร้างเนื้อหา</p>
+        </div>
       </header>
 
       {/* Tab List */}
@@ -456,7 +462,7 @@ export default function ToolsPage() {
                 onClick={() => setActiveTab(tool.key)}
                 className={cn(
                   'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 whitespace-nowrap',
-                  isActive ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                  isActive ? `bg-gradient-to-r ${tool.gradient} text-white shadow-md` : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                 )}
               >
                 <Icon size={14} strokeWidth={2.5} />

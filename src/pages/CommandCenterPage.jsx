@@ -511,11 +511,11 @@ export default function CommandCenterPage() {
       {/* WEEKLY PULSE */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: 'ดีลใหม่สัปดาห์นี้', value: stats?.newDealsThisWeek || 0, icon: Flame, iconColor: 'text-violet-600', iconBg: 'bg-violet-50', valueColor: 'text-slate-900' },
-          { label: 'ปิดได้สัปดาห์นี้', value: stats?.wonThisWeek || 0, icon: Trophy, iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50', valueColor: 'text-emerald-600' },
-          { label: 'มูลค่าปิดสัปดาห์นี้', value: formatCurrency(stats?.wonThisWeekValue), icon: Star, iconColor: 'text-blue-600', iconBg: 'bg-blue-50', valueColor: 'text-blue-600', isText: true },
+          { label: 'ดีลใหม่สัปดาห์นี้', value: stats?.newDealsThisWeek || 0, icon: Flame, iconColor: 'text-violet-600', iconBg: 'bg-violet-50', valueColor: 'text-slate-900', bgClass: 'bg-gradient-to-br from-violet-50 to-purple-50 border-violet-100' },
+          { label: 'ปิดได้สัปดาห์นี้', value: stats?.wonThisWeek || 0, icon: Trophy, iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50', valueColor: 'text-emerald-600', bgClass: 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-100' },
+          { label: 'มูลค่าปิดสัปดาห์นี้', value: formatCurrency(stats?.wonThisWeekValue), icon: Star, iconColor: 'text-blue-600', iconBg: 'bg-blue-50', valueColor: 'text-blue-600', isText: true, bgClass: 'bg-gradient-to-br from-blue-50 to-sky-50 border-blue-100' },
         ].map(item => (
-          <Card key={item.label} className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center gap-3 hover:shadow-md transition-all">
+          <Card key={item.label} className={cn("p-4 rounded-2xl border shadow-sm flex items-center gap-3 hover:shadow-md transition-all", item.bgClass || "bg-white border-slate-100")}>
             <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", item.iconBg)}>
               <item.icon size={16} className={item.iconColor} />
             </div>
@@ -675,11 +675,14 @@ export default function CommandCenterPage() {
           ].map(s => {
             const pct = monthlyGoal > 0 ? Math.round((s.value / monthlyGoal) * 100) : 0;
             return (
-              <div key={s.label} className={`p-4 rounded-2xl border ${s.bg} ${s.border} text-center space-y-1`}>
+              <div key={s.label} className={`p-4 rounded-2xl border ${s.bg} ${s.border} text-center space-y-1 relative overflow-hidden`}>
                 <p className="text-xs font-semibold text-slate-600">{s.label}</p>
                 <p className="text-[10px] text-slate-400">{s.sub}</p>
                 <p className={`text-xl font-black tabular-nums ${s.color}`}>{formatCurrency(s.value)}</p>
                 <p className="text-xs text-slate-400">{pct}% ของเป้าหมาย</p>
+                <div className="mt-2 h-1.5 bg-black/5 rounded-full overflow-hidden w-3/4 mx-auto">
+                  <div className={`h-full rounded-full ${s.color.replace('text-', 'bg-')} opacity-50`} style={{ width: `${Math.min(100, pct)}%` }} />
+                </div>
               </div>
             );
           })}
@@ -702,7 +705,7 @@ export default function CommandCenterPage() {
             {stats.hotDeals.map((d, i) => (
               <motion.button key={d.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                 onClick={() => openDeal(d)}
-                className="text-left p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-violet-200 transition-all group">
+                className={cn('text-left p-4 rounded-2xl shadow-sm hover:shadow-md transition-all group', i === 0 ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200' : 'bg-white border border-slate-100 hover:border-violet-200')}>
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-slate-800 truncate group-hover:text-violet-700 transition-colors">{d.title}</p>
@@ -935,8 +938,10 @@ export default function CommandCenterPage() {
               const cfg = ACTIVITY_ICON[a.type] || ACTIVITY_ICON.note;
               const { Icon, color } = cfg;
               return (
-                <button key={a.id} onClick={() => a.deal && openDeal(a.deal)}
-                  className="text-left p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all flex items-start gap-3">
+                <div key={a.id} className="relative group">
+                  <div className="absolute left-[36px] top-10 bottom-[-12px] w-px bg-slate-200 group-last:hidden" />
+                  <button onClick={() => a.deal && openDeal(a.deal)}
+                    className="w-full text-left p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all flex items-start gap-3 relative z-10">
                   <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center shrink-0', color)}>
                     <Icon size={16} />
                   </div>
@@ -948,7 +953,8 @@ export default function CommandCenterPage() {
                     {a.deal && <p className="text-xs text-slate-500 truncate mt-0.5">{a.deal.company || a.deal.title}</p>}
                     {a.notes && <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{a.notes}</p>}
                   </div>
-                </button>
+                  </button>
+                </div>
               );
             })}
           </div>
