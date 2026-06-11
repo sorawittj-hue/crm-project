@@ -452,7 +452,7 @@ export default function PipelinePage() {
              {/* Left side: Form (Column Span 7) */}
              <div className="lg:col-span-7 space-y-5">
                  {/* Customer selector (Search Autocomplete) */}
-                 <div className="space-y-1.5 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 relative">
+                 <div className="space-y-1.5 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 relative z-50">
                     <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
                       ลูกค้าในระบบ (เชื่อมโยงเพื่อกรอกข้อมูลติดต่ออัตโนมัติ)
                     </label>
