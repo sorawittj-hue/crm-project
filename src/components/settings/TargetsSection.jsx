@@ -4,7 +4,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { formatFullCurrency } from '../../lib/formatters';
 import { useToast } from '../ui/Toast';
-import { Pencil, Save, Loader2 } from 'lucide-react';
+import { Pencil, Save, Loader2, Target } from 'lucide-react';
 import { useSettings, useUpdateSettings } from '../../hooks/useSettings';
 
 export function TargetsSection() {
