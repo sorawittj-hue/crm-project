@@ -23,6 +23,7 @@ import {
   useDismissNotification,
   useDismissAllNotifications,
 } from '../../hooks/useNotifications';
+import { useAutoBackup } from '../../hooks/useAutoBackup';
 import { cn, parseYearMonth } from '../../lib/utils';
 import { formatCurrency } from '../../lib/formatters';
 import { pageMotion, reduceMotionProps, springSmooth } from '../../lib/motion';
@@ -193,6 +194,9 @@ export default function AppLayout() {
 
   // Proactive engine — runs on load and every 5 min; uses personal target
   useProactiveEngine({ userId, deals, activities, monthlyTarget: effectiveTarget });
+
+  // Auto-backup engine — runs silently once a day
+  useAutoBackup();
 
   const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications]);
   const totalCount = notifications.length;

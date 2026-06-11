@@ -13,6 +13,8 @@ import { PipelineSection } from '../components/settings/PipelineSection';
 import { CompanySection } from '../components/settings/CompanySection';
 import { AccountSection } from '../components/settings/AccountSection';
 import { UsersSection } from '../components/settings/UsersSection';
+import { BackupSection } from '../components/settings/BackupSection';
+import { Database } from 'lucide-react';
 
 const BASE_SECTIONS = [
   { id: 'targets',  label: 'เป้าหมายยอดขาย', icon: Target },
@@ -20,6 +22,7 @@ const BASE_SECTIONS = [
   { id: 'pipeline', label: 'ขั้นตอนดีล',        icon: ListTree },
   { id: 'company',  label: 'บริษัท',            icon: Building2 },
   { id: 'account',  label: 'บัญชีผู้ใช้',        icon: User },
+  { id: 'data',     label: 'จัดการข้อมูล',       icon: Database },
 ];
 
 export default function SettingsPage() {
@@ -105,6 +108,7 @@ export default function SettingsPage() {
               {activeSection === 'pipeline' && <PipelineSection />}
               {activeSection === 'company' && <CompanySection />}
               {activeSection === 'account' && <AccountSection />}
+              {activeSection === 'data' && <BackupSection />}
               {activeSection === 'users' && isAdmin && <UsersSection />}
             </motion.div>
           </AnimatePresence>
