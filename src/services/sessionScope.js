@@ -1,7 +1,7 @@
 import { supabase } from '../utils/supabase';
 
-export const DEFAULT_MONTHLY_TARGET = 10000000;
-export const DEFAULT_MEMBER_TARGET = 3000000;
+export const DEFAULT_MONTHLY_TARGET = 0;
+export const DEFAULT_MEMBER_TARGET = 0;
 
 const OWNER_COLUMN_STORAGE_KEY = 'crm.ownerScopedTables.v1';
 

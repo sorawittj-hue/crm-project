@@ -184,7 +184,8 @@ export default function AppLayout() {
 
   const { data: myProfile } = useMyProfile(userId);
   // Use personal target if set; otherwise default to 0
-  const hasPersonalTarget = myProfile?.personal_target > 0;
+  const isGuestMode = user?.email === 'demo@novapipeline.com';
+  const hasPersonalTarget = myProfile?.personal_target > 0 && !isGuestMode;
   const effectiveTarget = hasPersonalTarget ? myProfile.personal_target : 0;
 
   // DB-backed notifications
