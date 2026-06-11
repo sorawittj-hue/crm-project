@@ -201,9 +201,16 @@ export default function PipelinePage() {
     if (!quickDeal.title && !quickDeal.company) { setQuickError('ใส่ชื่อดีลหรือบริษัทอย่างน้อย 1 อย่าง'); return; }
     setQuickError(null);
     try {
+      // Auto-match customer if existing
+      const matched = customers.find(c =>
+        c.company?.toLowerCase() === quickDeal.company.toLowerCase() ||
+        c.name?.toLowerCase() === quickDeal.company.toLowerCase()
+      );
+
       await addDealMutation.mutateAsync({
         title: quickDeal.title || quickDeal.company,
         company: quickDeal.company,
+        customer_id: matched ? matched.id : null,
         value: Number(quickDeal.value) || 0,
         stage: 'lead',
         probability: 50,
@@ -449,7 +456,7 @@ export default function PipelinePage() {
                     <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
                       ลูกค้าในระบบ (เชื่อมโยงเพื่อกรอกข้อมูลติดต่ออัตโนมัติ)
                     </label>
-                    <div className="relative">
+                    <div className="relative z-20">
                       <Input
                         placeholder="🔍 พิมพ์เพื่อค้นหาลูกค้า เช่น ชื่อ หรือชื่อบริษัท..."
                         value={customerSearch}
@@ -500,6 +507,7 @@ export default function PipelinePage() {
                                     ...prev,
                                     customer_id: c.id,
                                     company: c.company || c.name || '',
+                                    title: prev.title || `ดีลใหม่ - ${c.company || c.name}`,
                                     contact: c.name || '',
                                     contact_phone: c.phone || '',
                                     contact_email: c.email || '',
