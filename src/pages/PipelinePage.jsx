@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useAppStore } from '../store/useAppStore';
 import { useAddActivity } from '../hooks/useActivities';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
-import { Plus, Sliders, ScanLine, Download, User, Zap, Loader2, ChevronDown, Search } from 'lucide-react';
+import { Plus, Sliders, ScanLine, Download, User, Zap, Loader2, ChevronDown, Search, Briefcase, Calendar, Building2, Sparkles, UserCheck, Smile, DollarSign, Check, Phone, Mail, ArrowRight, ArrowLeft } from 'lucide-react';
 
 // Lazy-load PDFImporter to avoid bundling pdfjs-dist (~5MB) in initial load
 const PDFImporter = lazy(() => import('../components/pipeline/PDFImporter'));
@@ -85,6 +85,7 @@ export default function PipelinePage() {
   };
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [formTab, setFormTab] = useState('details'); // details, contact
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [myDealsOnly, setMyDealsOnly] = useState(false);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
@@ -108,6 +109,7 @@ export default function PipelinePage() {
     if (!isAddModalOpen) {
       setCustomerSearch('');
       setIsCustomerDropdownOpen(false);
+      setFormTab('details');
     } else if (newDeal.customer_id) {
       const c = customers.find(x => x.id === newDeal.customer_id);
       if (c) {
@@ -465,149 +467,264 @@ export default function PipelinePage() {
 
       {/* ADD ASSET MODAL */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-4xl lg:max-w-5xl p-0 border-0 shadow-2xl overflow-hidden rounded-2xl">
-          {/* Violet top ribbon */}
-          <div className="h-1.5 bg-gradient-to-r from-violet-500 to-indigo-600" />
+        <DialogContent className="max-w-4xl lg:max-w-5xl p-0 border-0 shadow-2xl overflow-hidden rounded-[2rem] bg-white/95 backdrop-blur-2xl">
+          {/* Top Gradient Ribbon */}
+          <div className="h-2 bg-gradient-to-r from-violet-600 via-indigo-600 to-fuchsia-600" />
+          
           <div className="p-8 overflow-y-auto max-h-[88vh]">
-          <div className="flex items-center gap-4 mb-6 pb-5 border-b border-slate-100">
-            <div className="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center shrink-0">
-              <Plus size={22} className="text-violet-600" />
+            <div className="flex items-center gap-4 mb-6 pb-5 border-b border-slate-100">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-100 flex items-center justify-center shrink-0 shadow-sm shadow-violet-500/5">
+                <Plus size={22} className="text-violet-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  เพิ่มดีลการขายใหม่ 
+                  <Sparkles size={16} className="text-amber-400 fill-amber-400/10" />
+                </h2>
+                <p className="text-xs text-slate-400 font-semibold mt-0.5">กรอกรายละเอียดดีลการขายและรับคำแนะนำเชิงกลยุทธ์จาก AI ทันที</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">เพิ่มดีลการขายใหม่</h2>
-              <p className="text-xs text-slate-400 mt-0.5">กรอกข้อมูลเพื่อบันทึกดีลและวิเคราะห์โอกาสชนะด้วย AI</p>
+
+            {/* Wizard Steps Header */}
+            <div className="flex items-center gap-6 border-b border-slate-100 pb-4 mb-6">
+              <button
+                type="button"
+                onClick={() => setFormTab('details')}
+                className={cn(
+                  "flex items-center gap-2 pb-2 text-sm font-bold relative transition-all duration-200",
+                  formTab === 'details' ? "text-violet-600" : "text-slate-400 hover:text-slate-600"
+                )}
+              >
+                <div className={cn(
+                  "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200",
+                  formTab === 'details' ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-500"
+                )}>
+                  1
+                </div>
+                <span>ข้อมูลดีลหลัก</span>
+                {formTab === 'details' && (
+                  <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-600 rounded-full" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormTab('contact')}
+                className={cn(
+                  "flex items-center gap-2 pb-2 text-sm font-bold relative transition-all duration-200",
+                  formTab === 'contact' ? "text-violet-600" : "text-slate-400 hover:text-slate-600"
+                )}
+              >
+                <div className={cn(
+                  "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200",
+                  formTab === 'contact' ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-500"
+                )}>
+                  2
+                </div>
+                <span>ผู้ติดต่อ & ผู้รับผิดชอบ</span>
+                {formTab === 'contact' && (
+                  <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-600 rounded-full" />
+                )}
+              </button>
             </div>
-          </div>
 
-          <form onSubmit={handleAddSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-             {/* Left side: Form (Column Span 7) */}
-             <div className="lg:col-span-7 space-y-5">
-                 {/* Customer selector (Search Autocomplete) */}
-                 <div className="space-y-1.5 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 relative z-50">
-                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                      เลือกลูกค้าที่มีในระบบ (เพื่อกรอกข้อมูลอัตโนมัติ)
-                    </label>
-                    <div className="relative z-20">
-                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                        <Search size={16} />
-                      </div>
-                      <Input
-                        placeholder="พิมพ์ค้นหา หรือคลิกเพื่อเลือก..."
-                        value={customerSearch}
-                        onChange={(e) => {
-                          setCustomerSearch(e.target.value);
-                          setIsCustomerDropdownOpen(true);
-                        }}
-                        onClick={() => setIsCustomerDropdownOpen(true)}
-                        onFocus={() => setIsCustomerDropdownOpen(true)}
-                        className="w-full h-11 rounded-xl border border-slate-200 bg-white pl-10 pr-10 outline-none focus:border-violet-400 transition-all text-sm font-semibold cursor-pointer"
-                      />
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setIsCustomerDropdownOpen(!isCustomerDropdownOpen);
-                        }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                      >
-                        <ChevronDown size={16} className={cn("transition-transform duration-200", isCustomerDropdownOpen && "rotate-180")} />
-                      </button>
-                    </div>
-
-                    {isCustomerDropdownOpen && (
-                      <>
-                        <div className="fixed inset-0 z-10" onClick={() => setIsCustomerDropdownOpen(false)} />
-                        <div className="absolute left-4 right-4 mt-2 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-2xl z-50 py-2 custom-scrollbar">
-                          {filteredCustomers.length === 0 ? (
-                            <div className="px-4 py-6 text-sm text-slate-400 text-center font-medium flex flex-col items-center gap-2">
-                              <span>ไม่มีชื่อลูกค้านี้ในระบบ</span>
-                              <span className="text-[10px] bg-slate-100 px-2 py-1 rounded-md">พิมพ์ชื่อต่อไปเพื่อสร้างลูกค้าใหม่</span>
+            <form onSubmit={handleAddSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Left Column: Interactive Form Steps (7 cols) */}
+              <div className="lg:col-span-7 flex flex-col justify-between min-h-[420px]">
+                <AnimatePresence mode="wait">
+                  {formTab === 'details' ? (
+                    <motion.div
+                      key="details-tab"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 10 }}
+                      transition={{ duration: 0.15 }}
+                      className="space-y-5"
+                    >
+                      {/* Customer Selector / Linkage */}
+                      <div className="space-y-1.5 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 relative z-50">
+                        {newDeal.customer_id ? (
+                          <div className="bg-gradient-to-br from-violet-50/80 to-indigo-50/80 border border-violet-100 rounded-2xl p-4 flex items-center justify-between gap-4 shadow-sm shadow-violet-500/5 transition-all duration-300">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-sm shadow-violet-500/20">
+                                {(customers.find(c => c.id === newDeal.customer_id)?.name || 'C').charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">ลูกค้าที่เชื่อมโยง</p>
+                                <p className="text-sm font-extrabold text-slate-900 leading-tight mt-1">
+                                  {customers.find(c => c.id === newDeal.customer_id)?.name || 'ไม่พบบัญชีลูกค้า'}
+                                </p>
+                                <p className="text-xs text-slate-500 font-semibold mt-0.5 leading-none">
+                                  {customers.find(c => c.id === newDeal.customer_id)?.company || 'ไม่มีข้อมูลบริษัท'}
+                                </p>
+                              </div>
                             </div>
-                          ) : (
-                            filteredCustomers.map(c => (
-                              <button
-                                key={c.id}
-                                type="button"
-                                onClick={() => {
-                                  setCustomerSearch(c.name + (c.company ? ` (${c.company})` : ''));
-                                  setIsCustomerDropdownOpen(false);
-                                  setNewDeal(prev => ({
-                                    ...prev,
-                                    customer_id: c.id,
-                                    company: c.company || c.name || '',
-                                    title: prev.title || `ดีลใหม่ - ${c.company || c.name}`,
-                                    contact: c.name || '',
-                                    contact_phone: c.phone || '',
-                                    contact_email: c.email || '',
-                                  }));
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              onClick={() => {
+                                setCustomerSearch('');
+                                setNewDeal(prev => ({
+                                  ...prev,
+                                  customer_id: '',
+                                  company: '',
+                                  title: '',
+                                  contact: '',
+                                  contact_phone: '',
+                                  contact_email: '',
+                                }));
+                              }}
+                              className="h-8 px-2.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 border-slate-100 hover:border-rose-100 text-xs font-bold border transition-all"
+                            >
+                              ยกเลิกเชื่อมโยง
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-1.5 relative z-50">
+                            <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                              เลือกลูกค้าที่มีในระบบ (เพื่อกรอกข้อมูลอัตโนมัติ)
+                            </label>
+                            <div className="relative z-20">
+                              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                <Search size={16} />
+                              </div>
+                              <Input
+                                placeholder="พิมพ์ค้นหา หรือคลิกเพื่อเลือก..."
+                                value={customerSearch}
+                                onChange={(e) => {
+                                  setCustomerSearch(e.target.value);
+                                  setIsCustomerDropdownOpen(true);
                                 }}
-                                className="w-full text-left px-4 py-2.5 hover:bg-violet-50 text-xs font-semibold text-slate-700 flex flex-col gap-0.5 border-b border-slate-50 last:border-0 transition-colors"
+                                onClick={() => setIsCustomerDropdownOpen(true)}
+                                onFocus={() => setIsCustomerDropdownOpen(true)}
+                                className="w-full h-11 rounded-xl border border-slate-200 bg-white pl-10 pr-10 outline-none focus:border-violet-400 transition-all text-sm font-semibold cursor-pointer"
+                              />
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setIsCustomerDropdownOpen(!isCustomerDropdownOpen);
+                                }}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                               >
-                                <span className="text-slate-900 font-bold text-sm">{c.name}</span>
-                                {c.company && <span className="text-slate-500 text-[11px]">{c.company}</span>}
+                                <ChevronDown size={16} className={cn("transition-transform duration-200", isCustomerDropdownOpen && "rotate-180")} />
                               </button>
-                            ))
-                          )}
+                            </div>
+
+                            {isCustomerDropdownOpen && (
+                              <>
+                                <div className="fixed inset-0 z-10" onClick={() => setIsCustomerDropdownOpen(false)} />
+                                <div className="absolute left-0 right-0 mt-2 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-2xl z-50 py-2 custom-scrollbar">
+                                  {filteredCustomers.length === 0 ? (
+                                    <div className="px-4 py-6 text-sm text-slate-400 text-center font-medium flex flex-col items-center gap-2">
+                                      <span>ไม่มีชื่อลูกค้านี้ในระบบ</span>
+                                      <span className="text-[10px] bg-slate-100 px-2 py-1 rounded-md">พิมพ์ชื่อต่อไปเพื่อสร้างลูกค้าใหม่</span>
+                                    </div>
+                                  ) : (
+                                    filteredCustomers.map(c => (
+                                      <button
+                                        key={c.id}
+                                        type="button"
+                                        onClick={() => {
+                                          setCustomerSearch(c.name + (c.company ? ` (${c.company})` : ''));
+                                          setIsCustomerDropdownOpen(false);
+                                          setNewDeal(prev => ({
+                                            ...prev,
+                                            customer_id: c.id,
+                                            company: c.company || c.name || '',
+                                            title: prev.title || `ดีลใหม่ - ${c.company || c.name}`,
+                                            contact: c.name || '',
+                                            contact_phone: c.phone || '',
+                                            contact_email: c.email || '',
+                                          }));
+                                        }}
+                                        className="w-full text-left px-4 py-2.5 hover:bg-violet-50 text-xs font-semibold text-slate-700 flex flex-col gap-0.5 border-b border-slate-50 last:border-0 transition-colors"
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center text-[10px] font-bold text-violet-700">
+                                            {(c.name || 'C').charAt(0).toUpperCase()}
+                                          </div>
+                                          <div>
+                                            <span className="text-slate-900 font-bold text-sm block leading-none">{c.name}</span>
+                                            {c.company && <span className="text-slate-500 text-[11px] block mt-1 leading-none">{c.company}</span>}
+                                          </div>
+                                        </div>
+                                      </button>
+                                    ))
+                                  )}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Deal Title */}
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-500">ชื่อดีล *</label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                            <Briefcase size={16} />
+                          </span>
+                          <Input
+                            required
+                            placeholder="เช่น โปรเจกต์ติดตั้งระบบ"
+                            value={newDeal.title}
+                            onChange={(e) => setNewDeal({...newDeal, title: e.target.value})}
+                            className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
+                          />
                         </div>
-                      </>
-                    )}
-                 </div>
+                      </div>
 
-                 {/* Primary info */}
-                 <div className="space-y-4">
-                    <div className="border-b border-slate-100 pb-2">
-                       <h4 className="text-xs font-black uppercase tracking-wider text-violet-600">ข้อมูลดีลหลัก</h4>
-                    </div>
-                    <div className="space-y-1">
-                       <label className="text-xs font-semibold text-slate-500">ชื่อดีล *</label>
-                       <Input
-                          required
-                          placeholder="เช่น โปรเจกต์ติดตั้งระบบ"
-                          value={newDeal.title}
-                          onChange={(e) => setNewDeal({...newDeal, title: e.target.value})}
-                          className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
-                       />
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                       <div className="space-y-1">
-                          <label className="text-xs font-semibold text-slate-500">ชื่อบริษัท / องค์กร *</label>
-                          <Input
-                             required
-                             placeholder="เช่น บริษัท ABC จำกัด"
-                             value={newDeal.company}
-                             onChange={(e) => {
-                               const company = e.target.value;
-                               const matched = customers.find(c =>
-                                 (c.company || '').toLowerCase() === company.toLowerCase() ||
-                                 (c.name || '').toLowerCase() === company.toLowerCase()
-                               );
-                               setNewDeal({
-                                 ...newDeal,
-                                 company,
-                                 customer_id: matched ? matched.id : newDeal.customer_id,
-                               });
-                             }}
-                             className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
-                          />
-                       </div>
-                       <div className="space-y-1">
-                          <label className="text-xs font-semibold text-slate-500">มูลค่าดีล (บาท) *</label>
-                          <Input
-                             required
-                             type="number"
-                             placeholder="0"
-                             value={newDeal.value}
-                             onChange={(e) => setNewDeal({...newDeal, value: e.target.value})}
-                             className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-black focus:bg-white text-violet-700 focus:border-violet-400"
-                          />
-                       </div>
-                    </div>
+                      {/* Company & Value */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-slate-500">ชื่อบริษัท / องค์กร *</label>
+                          <div className="relative">
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                              <Building2 size={16} />
+                            </span>
+                            <Input
+                              required
+                              placeholder="เช่น บริษัท ABC จำกัด"
+                              value={newDeal.company}
+                              onChange={(e) => {
+                                const company = e.target.value;
+                                const matched = customers.find(c =>
+                                  (c.company || '').toLowerCase() === company.toLowerCase() ||
+                                  (c.name || '').toLowerCase() === company.toLowerCase()
+                                );
+                                setNewDeal({
+                                  ...newDeal,
+                                  company,
+                                  customer_id: matched ? matched.id : newDeal.customer_id,
+                                });
+                              }}
+                              className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-slate-500">มูลค่าดีล (บาท) *</label>
+                          <div className="relative">
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                              <DollarSign size={16} className="text-violet-500" />
+                            </span>
+                            <Input
+                              required
+                              type="number"
+                              placeholder="0"
+                              value={newDeal.value}
+                              onChange={(e) => setNewDeal({...newDeal, value: e.target.value})}
+                              className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-black focus:bg-white text-violet-700 focus:border-violet-400"
+                            />
+                          </div>
+                        </div>
+                      </div>
 
-                    {/* Stage Buttons */}
-                    <div className="space-y-1.5">
-                       <label className="text-xs font-semibold text-slate-500">ขั้นตอนปัจจุบัน</label>
-                       <div className="grid grid-cols-3 gap-2">
+                      {/* Stage Selector Grid */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-500">ขั้นตอนปัจจุบัน</label>
+                        <div className="grid grid-cols-3 gap-2">
                           {[
                             { id: 'lead', label: 'ลูกค้าใหม่', color: 'bg-slate-400', activeBg: 'bg-slate-100 border-slate-400 text-slate-900' },
                             { id: 'contact', label: 'นัดเจอ', color: 'bg-amber-500', activeBg: 'bg-amber-50 border-amber-500 text-amber-900' },
@@ -618,9 +735,11 @@ export default function PipelinePage() {
                           ].map((stage) => {
                             const isActive = newDeal.stage === stage.id;
                             return (
-                              <button
+                              <motion.button
                                 key={stage.id}
                                 type="button"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                                 onClick={() => {
                                   const stageProbMap = {
                                     lead: 10,
@@ -638,240 +757,355 @@ export default function PipelinePage() {
                                   });
                                 }}
                                 className={cn(
-                                  "flex items-center justify-center gap-1.5 h-10 px-2 rounded-xl border text-center transition-all duration-200 text-xs font-semibold",
+                                  "flex items-center justify-center gap-1.5 h-10 px-2 rounded-xl border text-center transition-all duration-200 text-xs font-semibold relative overflow-hidden",
                                   isActive
                                     ? cn("border-2 shadow-sm", stage.activeBg)
                                     : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                                 )}
                               >
+                                {isActive && (
+                                  <motion.div
+                                    layoutId="activeStageGlow"
+                                    className="absolute inset-0 bg-gradient-to-r from-violet-500/5 to-fuchsia-500/5 opacity-50"
+                                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                  />
+                                )}
                                 <span className={cn("w-2 h-2 rounded-full", stage.color)} />
                                 <span>{stage.label}</span>
-                              </button>
+                                {isActive && <Check size={12} className="text-current ml-0.5 shrink-0" />}
+                              </motion.button>
                             );
                           })}
-                       </div>
-                    </div>
+                        </div>
+                      </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                       <div className="space-y-1">
-                          <label className="text-xs font-semibold text-slate-500">โอกาสปิด (%)</label>
-                          <Input
-                             type="number"
-                             min="0"
-                             max="100"
-                             placeholder="50"
-                             value={newDeal.probability}
-                             onChange={(e) => setNewDeal({...newDeal, probability: e.target.value})}
-                             className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
-                          />
-                       </div>
-                       <div className="space-y-1">
-                          <label className="text-xs font-semibold text-slate-500">วันคาดว่าจะปิด</label>
-                          <input
-                             type="date"
-                             value={newDeal.expected_close_date}
-                             onChange={(e) => setNewDeal({...newDeal, expected_close_date: e.target.value})}
-                             className="w-full h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-bold text-slate-800"
-                          />
-                       </div>
-                    </div>
+                      {/* Probability & expected close date */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-slate-500">โอกาสปิด (%)</label>
+                          <div className="relative">
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                              <Smile size={16} />
+                            </span>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="100"
+                              placeholder="50"
+                              value={newDeal.probability}
+                              onChange={(e) => setNewDeal({...newDeal, probability: e.target.value})}
+                              className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-slate-500">วันคาดว่าจะปิด</label>
+                          <div className="relative">
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                              <Calendar size={16} />
+                            </span>
+                            <input
+                              type="date"
+                              value={newDeal.expected_close_date}
+                              onChange={(e) => setNewDeal({...newDeal, expected_close_date: e.target.value})}
+                              className="w-full h-11 pl-10 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-bold text-slate-800"
+                            />
+                          </div>
+                        </div>
+                      </div>
 
-                    {teamMembers.length > 0 && (
-                       <div className="space-y-1">
-                          <label className="text-xs font-semibold text-slate-500">ผู้รับผิดชอบดีล</label>
-                          <select
-                             value={newDeal.assigned_to}
-                             onChange={(e) => setNewDeal({ ...newDeal, assigned_to: e.target.value })}
-                             className="w-full h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-semibold"
-                          >
-                             <option value="">— ไม่ระบุ —</option>
-                             {teamMembers.map(m => (
+                      {/* Nav Buttons Tab 1 */}
+                      <div className="pt-6 flex gap-3 border-t border-slate-100 mt-6">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => setIsAddModalOpen(false)}
+                          className="flex-1 h-11 rounded-xl text-sm text-slate-500 font-semibold"
+                        >
+                          ยกเลิก
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => setFormTab('contact')}
+                          className="flex-[2] h-11 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-bold shadow-md shadow-violet-500/20 flex items-center justify-center gap-2"
+                        >
+                          ถัดไป <ArrowRight size={16} />
+                        </Button>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="contact-tab"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 10 }}
+                      transition={{ duration: 0.15 }}
+                      className="space-y-5"
+                    >
+                      {/* Owner selection */}
+                      {teamMembers.length > 0 && (
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-slate-500">ผู้รับผิดชอบดีล</label>
+                          <div className="relative">
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                              <UserCheck size={16} />
+                            </span>
+                            <select
+                              value={newDeal.assigned_to}
+                              onChange={(e) => setNewDeal({ ...newDeal, assigned_to: e.target.value })}
+                              className="w-full h-11 pl-10 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-semibold appearance-none"
+                            >
+                              <option value="">— ไม่ระบุ —</option>
+                              {teamMembers.map(m => (
                                 <option key={m.id} value={m.id}>{m.name}{m.role ? ` (${m.role})` : ''}</option>
-                             ))}
-                          </select>
-                       </div>
-                    )}
-                 </div>
+                              ))}
+                            </select>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                              <ChevronDown size={16} />
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
-                 {/* Contact info */}
-                 <div className="space-y-4 pt-2">
-                    <div className="border-b border-slate-100 pb-2">
-                       <h4 className="text-xs font-black uppercase tracking-wider text-violet-600">ข้อมูลผู้ติดต่อประสานงาน</h4>
+                      {/* Contacts block */}
+                      <div className="space-y-4 pt-2">
+                        <div className="border-b border-slate-100 pb-2">
+                          <h4 className="text-xs font-black uppercase tracking-wider text-violet-600">ข้อมูลผู้ติดต่อประสานงาน</h4>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold text-slate-500">ชื่อผู้ติดต่อ</label>
+                            <div className="relative">
+                              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                                <User size={16} />
+                              </span>
+                              <Input
+                                placeholder="ระบุชื่อจริง/ชื่อเล่น"
+                                value={newDeal.contact}
+                                onChange={(e) => setNewDeal({...newDeal, contact: e.target.value})}
+                                className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold text-slate-500">เบอร์โทรศัพท์</label>
+                            <div className="relative">
+                              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                                <Phone size={16} />
+                              </span>
+                              <Input
+                                placeholder="เช่น 089-XXX-XXXX"
+                                value={newDeal.contact_phone}
+                                onChange={(e) => setNewDeal({...newDeal, contact_phone: e.target.value})}
+                                className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold text-slate-500">อีเมล</label>
+                            <div className="relative">
+                              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                                <Mail size={16} />
+                              </span>
+                              <Input
+                                type="email"
+                                placeholder="เช่น name@company.com"
+                                value={newDeal.contact_email}
+                                onChange={(e) => setNewDeal({...newDeal, contact_email: e.target.value})}
+                                className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {formError && (
+                        <div className="px-4 py-2.5 rounded-xl bg-rose-50 border border-rose-100 text-xs font-bold text-rose-600">
+                          ⚠️ {formError}
+                        </div>
+                      )}
+
+                      {/* Nav Buttons Tab 2 */}
+                      <div className="pt-6 flex gap-3 border-t border-slate-100 mt-6">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => setFormTab('details')}
+                          className="flex-1 h-11 rounded-xl text-sm text-slate-500 font-semibold flex items-center justify-center gap-2"
+                        >
+                          <ArrowLeft size={16} /> ย้อนกลับ
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={addDealMutation.isPending}
+                          className="flex-[2] h-11 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-bold shadow-md shadow-violet-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {addDealMutation.isPending && <Loader2 size={14} className="animate-spin" />}
+                          {addDealMutation.isPending ? 'กำลังบันทึก...' : 'บันทึกดีล'}
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Right Column: Live Card Preview & AI Guidance (5 cols) */}
+              <div className="lg:col-span-5 bg-gradient-to-br from-slate-50 to-slate-100/50 p-6 rounded-3xl border border-slate-200/60 flex flex-col justify-between space-y-6 max-h-[78vh] overflow-y-auto">
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                      <span>👀 Live Card Preview</span>
+                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                    </h4>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-0.5">การ์ดจำลองบนบอร์ด Kanban ของคุณ:</p>
+                  </div>
+
+                  {/* Kanban Deal Card Mock */}
+                  <div className="bg-white rounded-2xl border border-slate-200/80 shadow-md p-5 space-y-4 pointer-events-none relative overflow-hidden group">
+                    {/* Pulsing state light */}
+                    <div className="absolute top-4 right-4 flex items-center gap-1 shrink-0">
+                      <span className={cn(
+                        "w-2.5 h-2.5 rounded-full ring-4 ring-offset-0 transition-all duration-300",
+                        newDeal.stage === 'won' ? 'bg-emerald-500 ring-emerald-100' :
+                        newDeal.stage === 'lost' ? 'bg-rose-500 ring-rose-100' :
+                        newDeal.stage === 'negotiation' ? 'bg-violet-500 ring-violet-100' :
+                        newDeal.stage === 'proposal' ? 'bg-sky-500 ring-sky-100' :
+                        newDeal.stage === 'contact' ? 'bg-amber-500 ring-amber-100' : 'bg-slate-400 ring-slate-100'
+                      )} />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                       <div className="space-y-1">
-                          <label className="text-xs font-semibold text-slate-500">ชื่อผู้ติดต่อ</label>
-                          <Input
-                             placeholder="ระบุชื่อจริง/ชื่อเล่น"
-                             value={newDeal.contact}
-                             onChange={(e) => setNewDeal({...newDeal, contact: e.target.value})}
-                             className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-slate-900/5 border border-slate-200/60 flex items-center justify-center text-slate-700 font-black text-sm uppercase shrink-0">
+                        {(newDeal.company || 'C').charAt(0)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-[9px] leading-none">
+                          {newDeal.company || 'ยังไม่ระบุชื่อบริษัท'}
+                        </p>
+                        <p className="text-sm font-extrabold text-slate-900 truncate mt-1 leading-tight">
+                          {newDeal.title || 'กรอกชื่อดีลเพื่อสร้างพรีวิว'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-baseline justify-between gap-2 pt-2 border-t border-slate-50">
+                      <div>
+                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">มูลค่าดีล</p>
+                        <span className="text-lg font-black text-slate-900 tabular-nums leading-none block mt-1">
+                          {new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(Number(newDeal.value) || 0)}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">โอกาสปิด</p>
+                        <span className="text-sm font-black text-violet-600 block mt-1">
+                          {newDeal.probability || '50'}%
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-[9px] font-black text-white shrink-0 shadow-sm shadow-violet-500/10">
+                        {newDeal.assigned_to ? (teamMembers.find(t => t.id === newDeal.assigned_to)?.name?.charAt(0).toUpperCase() || 'U') : 'U'}
+                      </div>
+                      <div className="flex-1">
+                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className={cn(
+                              "h-full rounded-full transition-all duration-500",
+                              Number(newDeal.probability) >= 70 ? 'bg-emerald-500' :
+                              Number(newDeal.probability) >= 40 ? 'bg-violet-600' : 'bg-slate-350'
+                            )}
+                            style={{ width: `${Math.max(0, Math.min(100, Number(newDeal.probability) || 0))}%` }}
                           />
-                       </div>
-                       <div className="space-y-1">
-                          <label className="text-xs font-semibold text-slate-500">เบอร์โทรศัพท์</label>
-                          <Input
-                             placeholder="เช่น 089-XXX-XXXX"
-                             value={newDeal.contact_phone}
-                             onChange={(e) => setNewDeal({...newDeal, contact_phone: e.target.value})}
-                             className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
-                          />
-                       </div>
-                       <div className="space-y-1">
-                          <label className="text-xs font-semibold text-slate-500">อีเมล</label>
-                          <Input
-                             type="email"
-                             placeholder="เช่น name@company.com"
-                             value={newDeal.contact_email}
-                             onChange={(e) => setNewDeal({...newDeal, contact_email: e.target.value})}
-                             className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
-                          />
-                       </div>
+                        </div>
+                      </div>
                     </div>
-                 </div>
+                  </div>
+                </div>
 
-                 {formError && (
-                    <div className="px-4 py-2.5 rounded-xl bg-rose-50 border border-rose-100 text-xs font-bold text-rose-600">
-                      ⚠️ {formError}
-                    </div>
-                 )}
+                {/* AI Guidance Box */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-white p-5 border border-slate-800/80 shadow-xl space-y-3 mt-auto">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-2xl pointer-events-none" />
+                  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-violet-500/10 rounded-full blur-xl pointer-events-none" />
+                  
+                  <h5 className="text-[10px] font-black uppercase tracking-widest text-violet-400 flex items-center gap-1.5 relative z-10">
+                    <Zap size={12} className="text-violet-400 fill-violet-400/20 animate-pulse" />
+                    <span>วิเคราะห์กลยุทธ์ด้วย AI ผู้ช่วยขาย</span>
+                  </h5>
+                  <div className="text-xs leading-relaxed space-y-2 relative z-10">
+                    {(() => {
+                      const val = Number(newDeal.value) || 0;
+                      const stage = newDeal.stage;
+                      const expClose = newDeal.expected_close_date;
+                      const assignee = newDeal.assigned_to;
+                      const tips = [];
+                      
+                      let priorityChip = null;
+                      if (val >= 1000000) {
+                        priorityChip = (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-[9px] font-black text-amber-400 tracking-wider uppercase">
+                            👑 VIP Deal (มูลค่าสูง)
+                          </span>
+                        );
+                      } else if (val > 0 && val < 50000) {
+                        priorityChip = (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[9px] font-black text-cyan-400 tracking-wider uppercase">
+                            ⚡ Fast Run (ดีลปิดด่วน)
+                          </span>
+                        );
+                      } else if (val > 0) {
+                        priorityChip = (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-[9px] font-black text-violet-400 tracking-wider uppercase">
+                            💼 Standard Deal
+                          </span>
+                        );
+                      }
 
-                 <div className="pt-4 flex gap-3 border-t border-slate-100 mt-4">
-                    <Button
-                       type="button"
-                       variant="ghost"
-                       disabled={addDealMutation.isPending}
-                       onClick={() => setIsAddModalOpen(false)}
-                       className="flex-1 h-11 rounded-xl text-sm text-slate-500 font-semibold"
-                    >
-                       ยกเลิก
-                    </Button>
-                    <Button
-                       type="submit"
-                       disabled={addDealMutation.isPending}
-                       className="flex-[2] h-11 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-bold shadow-md shadow-violet-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                       {addDealMutation.isPending && <Loader2 size={14} className="animate-spin" />}
-                       {addDealMutation.isPending ? 'กำลังบันทึก...' : 'บันทึกดีล'}
-                    </Button>
-                 </div>
-             </div>
+                      if (val >= 1000000) {
+                        tips.push("ดีลมีมูลค่าสูงมาก ควรเฝ้าระวังไม่ให้ขาดกิจกรรมการคุยนานเกิน 7 วัน");
+                      } else if (val > 0 && val < 50000) {
+                        tips.push("ดีลขนาดเล็ก แนะนำส่งใบเสนอราคาอย่างรวดเร็วเพื่อกระตุ้นให้ปิดใน 3 วัน");
+                      }
 
-             {/* Right side: Live Preview and AI Guidance (Column Span 5) */}
-             <div className="lg:col-span-5 bg-slate-50/80 p-6 rounded-2xl border border-slate-150 flex flex-col justify-between space-y-6 max-h-[75vh] overflow-y-auto">
-                 <div className="space-y-5">
-                    <div>
-                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                         <span>👀 Live Card Preview</span>
-                         <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
-                       </h4>
-                       <p className="text-[10px] text-slate-400 mt-0.5">การ์ดของคุณจะแสดงบนบอร์ด Kanban ดังนี้:</p>
-                    </div>
+                      if (stage === 'lead') {
+                        tips.push("ขั้นตอน 'ลูกค้าใหม่': แนะนำโทรนัดหมายและสอบถามความต้องการที่แท้จริงด่วนที่สุด");
+                      } else if (stage === 'negotiation') {
+                        tips.push("ขั้นตอน 'กำลังปิด': ดีลเข้าใกล้เป้าหมายแล้ว เตรียมสัญญาและสรุปราคาสุดท้าย");
+                      }
 
-                    {/* Kanban Deal Card Mock */}
-                    <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-4 space-y-3 pointer-events-none relative overflow-hidden">
-                       <div className="flex items-start justify-between gap-2">
-                         <div className="min-w-0 flex-1">
-                           <p className="text-xs font-bold text-slate-900 truncate leading-tight">
-                             {newDeal.company || 'ยังไม่ระบุชื่อบริษัท'}
-                           </p>
-                           <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-snug">
-                             {newDeal.title || 'กรอกชื่อดีลเพื่อสร้างพรีวิว'}
-                           </p>
-                         </div>
-                         <div className="flex items-center gap-1 shrink-0">
-                           <span className={cn(
-                             "w-2.5 h-2.5 rounded-full",
-                             newDeal.stage === 'won' ? 'bg-emerald-500' :
-                             newDeal.stage === 'lost' ? 'bg-rose-500' :
-                             newDeal.stage === 'negotiation' ? 'bg-violet-500' :
-                             newDeal.stage === 'proposal' ? 'bg-sky-500' :
-                             newDeal.stage === 'contact' ? 'bg-amber-500' : 'bg-slate-400'
-                           )} />
-                         </div>
-                       </div>
+                      if (!expClose) {
+                        tips.push("ยังไม่ระบุวันคาดปิด: แนะนำระบุวันเพื่อให้ AI สามารถพยากรณ์รายรับได้แม่นยำ");
+                      }
 
-                       <div className="flex items-baseline justify-between gap-2 pt-1">
-                         <span className="text-base font-black text-slate-955 tabular-nums leading-none">
-                           {new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(Number(newDeal.value) || 0)}
-                         </span>
-                         <span className="text-xs font-bold text-slate-700">
-                           {newDeal.probability || '50'}%
-                         </span>
-                       </div>
+                      if (!assignee) {
+                        tips.push("ยังไม่มีผู้ดูแลรับผิดชอบ: ดีลจะถูกจัดอยู่ในดีลกลาง (Unassigned)");
+                      }
 
-                       <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
-                         <div className="w-6 h-6 rounded-full bg-slate-900/10 border border-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-700 shrink-0">
-                           {newDeal.assigned_to ? (teamMembers.find(t => t.id === newDeal.assigned_to)?.name?.charAt(0).toUpperCase() || 'U') : 'U'}
-                         </div>
-                         <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                           <div
-                             className={cn(
-                               "h-full rounded-full transition-all duration-500",
-                               Number(newDeal.probability) >= 70 ? 'bg-emerald-500' :
-                               Number(newDeal.probability) >= 40 ? 'bg-slate-900' : 'bg-slate-350'
-                             )}
-                             style={{ width: `${Math.max(0, Math.min(100, Number(newDeal.probability) || 0))}%` }}
-                           />
-                         </div>
-                       </div>
-                    </div>
-                 </div>
-
-                 {/* AI Guidance Box */}
-                 <div className="bg-violet-50/50 border border-violet-100 p-4 rounded-xl space-y-2.5 mt-auto">
-                    <h5 className="text-[10px] font-bold uppercase tracking-wider text-violet-700 flex items-center gap-1.5">
-                       <Zap size={12} className="text-violet-600 fill-violet-200" />
-                       <span>การวิเคราะห์ของ AI ผู้ช่วยการขาย</span>
-                    </h5>
-                    <div className="text-xs text-slate-600 leading-relaxed space-y-2">
-                       {(() => {
-                         const val = Number(newDeal.value) || 0;
-                         const stage = newDeal.stage;
-                         const expClose = newDeal.expected_close_date;
-                         const assignee = newDeal.assigned_to;
-                         const tips = [];
-
-                         if (val >= 1000000) {
-                           tips.push("ดีลมีมูลค่าสูงมาก (High-Value) ควรเฝ้าระวังไม่ให้ขาดกิจกรรมการคุยนานเกิน 7 วัน!");
-                         } else if (val > 0 && val < 50000) {
-                           tips.push("ดีลขนาดเล็ก (Fast-Track) แนะนำให้เร่งส่งข้อเสนอราคาเพื่อปิดงานด่วน");
-                         }
-
-                         if (stage === 'lead') {
-                           tips.push("ขั้นตอน 'ลูกค้าใหม่': แนะนำโทรนัดหมายและระบุความต้องการให้ชัดเจน");
-                         } else if (stage === 'negotiation') {
-                           tips.push("ขั้นตอน 'กำลังปิด': ดีลนี้เกือบสำเร็จแล้ว แนะนำเตรียมใบเสนอราคา PO ล่าสุดให้พร้อม");
-                         }
-
-                         if (!expClose) {
-                           tips.push("ยังไม่ได้ใส่วันคาดปิด: แนะนำระบุเพื่อให้บอร์ดวิเคราะห์ยอดขายล่วงหน้าได้");
-                         }
-
-                         if (!assignee) {
-                           tips.push("ยังไม่ได้ตั้งคนรับผิดชอบ ดีลจะถูกส่งเข้าดีลส่วนกลาง");
-                         }
-
-                         if (tips.length === 0) {
-                           return <p className="text-slate-400">กรอกข้อมูลดีลด้านซ้ายเพื่อประเมินความเสี่ยงและคำแนะนำจาก AI แบบทันที</p>;
-                         }
-
-                         return (
-                           <ul className="list-disc list-inside space-y-1.5 text-slate-700 font-medium text-[11px]">
-                             {tips.map((tip, idx) => (
-                               <li key={idx}>{tip}</li>
-                             ))}
-                           </ul>
-                         );
-                       })()}
-                    </div>
-                 </div>
-             </div>
-          </form>
+                      return (
+                        <div className="space-y-3">
+                          {priorityChip && <div className="flex gap-1.5">{priorityChip}</div>}
+                          {tips.length === 0 ? (
+                            <p className="text-slate-400 font-medium text-[11px] leading-snug">กรอกข้อมูลดีลทางด้านซ้ายเพื่อรับการพยากรณ์และกลยุทธ์ปิดการขายจาก AI ทันที</p>
+                          ) : (
+                            <ul className="space-y-2 text-slate-350 font-medium text-[11px] leading-snug">
+                              {tips.map((tip, idx) => (
+                                <li key={idx} className="flex items-start gap-1.5">
+                                  <span className="text-violet-400 mt-0.5 shrink-0">•</span>
+                                  <span>{tip}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </form>
           </div>
         </DialogContent>
       </Dialog>
-
       {/* SYNC MODAL */}
       <Dialog open={isScanOpen} onOpenChange={setIsScanOpen}>
         <DialogContent className="max-w-xl p-0 overflow-hidden rounded-2xl bg-white border-0 shadow-2xl">
