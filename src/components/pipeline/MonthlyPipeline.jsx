@@ -195,45 +195,15 @@ export default function MonthlyPipeline({
       </div>
 
       {/* SIDE DRAWER FOR DEAL DETAILS */}
-      <AnimatePresence>
-        {isSidebarOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm"
-              onClick={() => setIsSidebarOpen(false)}
-            />
-            
-            {/* Drawer */}
-            <motion.div
-              ref={drawerRef}
-              role="dialog"
-              aria-modal="true"
-              aria-label="รายละเอียดดีล"
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 z-50 w-full max-w-2xl h-full bg-white/95 backdrop-blur-xl shadow-2xl border-l border-slate-200/50 flex flex-col overflow-hidden"
-            >
-              <div className="flex-1 overflow-y-auto">
-                <DealDetailSidebar
-                  deal={visibleDeal}
-                  onUpdate={onUpdateDeal}
-                  onDelete={handleDelete}
-                  onClose={() => setIsSidebarOpen(false)}
-                  onRequestDelete={(dealId) => setConfirmDeleteId(dealId)}
-                  onRequestCloseStage={(targetStage) => setWinLossState({ open: true, targetStage, deal: visibleDeal })}
-                />
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <DealDetailSidebar
+        isOpen={isSidebarOpen}
+        deal={visibleDeal}
+        onUpdate={onUpdateDeal}
+        onDelete={handleDelete}
+        onClose={() => setIsSidebarOpen(false)}
+        onRequestDelete={(dealId) => setConfirmDeleteId(dealId)}
+        onRequestCloseStage={(targetStage) => setWinLossState({ open: true, targetStage, deal: visibleDeal })}
+      />
 
       {/* CONFIRM DELETE DIALOG (Lifted) */}
       <ConfirmDialog

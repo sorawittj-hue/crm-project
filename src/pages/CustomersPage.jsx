@@ -529,9 +529,10 @@ export default function CustomersPage() {
         <DialogContent className="p-0 border-0 bg-white max-w-2xl overflow-y-auto max-h-[90vh]">
           {selectedCustomer && (
             <div className="p-8 space-y-6 pb-8">
-              <DialogHeader className="space-y-4 border-b border-slate-100 pb-4">
+              <DialogHeader className="space-y-4 border-b border-slate-100 pb-6 mb-2 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-violet-50/50 to-fuchsia-50/50 rounded-t-3xl -z-10 -mx-8 -mt-8 px-8 pt-8 pb-6 border-b border-violet-100/50" />
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-[2rem] bg-slate-900 flex items-center justify-center text-white text-2xl font-black shadow-xl">
+                  <div className="w-16 h-16 rounded-[2rem] bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-white text-2xl font-black shadow-xl ring-4 ring-white">
                     {selectedCustomer.name?.charAt(0)}
                   </div>
                   <div>
@@ -981,11 +982,20 @@ export default function CustomersPage() {
 
       {/* ADD CUSTOMER MODAL */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-xl bg-white rounded-[3rem] p-12 border-0 shadow-2xl">
-          <DialogHeader className="mb-8">
-            <DialogTitle className="text-xl font-bold text-slate-900">เพิ่มลูกค้าใหม่</DialogTitle>
-            <p className="text-sm text-slate-400 mt-1">กรอกข้อมูลลูกค้าที่ต้องการเพิ่ม</p>
-          </DialogHeader>
+        <DialogContent className="max-w-xl bg-white rounded-[3rem] p-0 border-0 shadow-2xl overflow-hidden">
+          <div className="h-2 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-purple-600" />
+          <div className="p-12 pt-8">
+            <DialogHeader className="mb-8">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center shrink-0">
+                  <Users size={24} className="text-violet-600" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-bold text-slate-900">เพิ่มลูกค้าใหม่</DialogTitle>
+                  <p className="text-sm text-slate-400 mt-1">กรอกข้อมูลลูกค้าที่ต้องการเพิ่มเข้าสู่ระบบ</p>
+                </div>
+              </div>
+            </DialogHeader>
 
           <form onSubmit={handleAddSubmit} className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
@@ -1085,6 +1095,7 @@ export default function CustomersPage() {
               </Button>
             </div>
           </form>
+          </div>
         </DialogContent>
       </Dialog>
 
