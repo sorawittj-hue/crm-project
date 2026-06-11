@@ -75,8 +75,8 @@ export default function PaywallModal() {
               {/* Payment Info */}
               <div className="flex flex-col items-center p-4 rounded-2xl border-2 border-dashed border-violet-100 bg-violet-50/20 mb-6 text-center">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">สแกนชำระเงินเพื่อปลดล็อค</p>
-                <div className="w-36 h-36 border border-slate-100 rounded-xl overflow-hidden mt-3 shadow-md bg-white p-1">
-                  <img src="/promptpay_qr.png" alt="PromptPay QR Code" className="w-full h-full object-contain" />
+                <div className="w-48 border border-slate-100 rounded-xl overflow-hidden mt-3 shadow-md bg-white p-1">
+                  <img src="/promptpay_qr.png" alt="PromptPay QR Code" className="w-full h-auto object-contain rounded-lg" />
                 </div>
                 <div className="mt-3 flex flex-col items-center">
                   <p className="text-xs font-bold text-slate-500">บัญชีพร้อมเพย์ (PromptPay)</p>
