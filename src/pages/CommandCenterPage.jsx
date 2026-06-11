@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeals } from '../hooks/useDeals';
 import { useTeam } from '../hooks/useTeam';
@@ -17,6 +17,7 @@ import { buildPipelineIntelligence, buildCustomerHealth, DEFAULT_STAGE_PROBABILI
 import { STAGE_COLORS, STAGE_LABELS } from '../lib/constants';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
+import QuickWinModal from '../components/pipeline/QuickWinModal';
 import {
   TrendingUp,
   Users, AlertCircle,
@@ -85,6 +86,8 @@ export default function CommandCenterPage() {
   const { data: activities = [] } = useActivities();
   const { data: customers = [] } = useCustomers();
   const { setPendingOpenDeal } = useAppStore();
+
+  const [isQuickWinOpen, setIsQuickWinOpen] = useState(false);
 
   const teamGoal = settings?.monthly_target || 10000000;
   const hasPersonalTarget = myProfile?.personal_target > 0;
@@ -353,6 +356,11 @@ export default function CommandCenterPage() {
           <p className="text-sm text-slate-500 mt-1 font-medium">{getDateString()}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <Button onClick={() => setIsQuickWinOpen(true)}
+            className="h-9 px-4 rounded-xl text-xs font-bold border shadow-sm transition-all hover:shadow-md bg-emerald-500 text-white shadow-emerald-500/20 border-emerald-400 hover:bg-emerald-600">
+            <Zap size={14} className="mr-1.5" />
+            บันทึกยอดด่วน
+          </Button>
           {[
             { label: 'Pipeline', icon: Briefcase, to: '/pipeline', tone: 'bg-violet-600 text-white shadow-violet-500/20' },
             { label: 'ลูกค้า', icon: Users, to: '/customers', tone: 'bg-white text-slate-700 border-slate-200' },
@@ -1063,6 +1071,8 @@ export default function CommandCenterPage() {
           </div>
         </div>
       )}
+
+      <QuickWinModal open={isQuickWinOpen} onOpenChange={setIsQuickWinOpen} />
     </div>
   );
 }
