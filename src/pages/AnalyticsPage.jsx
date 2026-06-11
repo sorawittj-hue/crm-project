@@ -7,6 +7,7 @@ import { useMyProfile } from '../hooks/useUserProfiles';
 import { useCustomers } from '../hooks/useCustomers';
 import { Card } from '../components/ui/Card';
 import { motion, animate, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/formatters';
 import { STAGE_COLORS, STAGE_LABELS } from '../lib/constants';
@@ -23,6 +24,26 @@ import {
   Activity, DollarSign, ShieldCheck, ThumbsUp, ThumbsDown, AlertCircle,
   Trophy, Zap, Clock, Sparkles, TrendingUp, Sliders, Info, Briefcase
 } from 'lucide-react';
+
+// --- Premium Typewriter Effect Component ---
+function TypewriterEffect({ text }) {
+  const [displayedText, setDisplayedText] = useState('');
+  
+  useEffect(() => {
+    setDisplayedText('');
+    let idx = 0;
+    const interval = setInterval(() => {
+      setDisplayedText((prev) => prev + text.charAt(idx));
+      idx += 1;
+      if (idx >= text.length) {
+        clearInterval(interval);
+      }
+    }, 4);
+    return () => clearInterval(interval);
+  }, [text]);
+
+  return <span className="whitespace-pre-line font-medium leading-relaxed text-slate-200">{displayedText}</span>;
+}
 
 // --- Premium Animated Number Component ---
 function AnimatedNumber({ value, formatter, duration = 1.2 }) {
@@ -143,6 +164,7 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
 const FUNNEL_STAGES = ['lead', 'contact', 'proposal', 'negotiation', 'won'];
 
 export default function AnalyticsPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { data: myProfile } = useMyProfile(user?.id);
   const { data: deals, isLoading: dealsLoading } = useDeals();
@@ -659,17 +681,26 @@ export default function AnalyticsPage() {
                       <ComposedChart data={analytics?.revenueStream}>
                         <defs>
                           <linearGradient id="colorActualAnalytics" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
                             <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                          </linearGradient>
+                          <linearGradient id="colorPipeline" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#c4b5fd" stopOpacity={0.95} />
+                            <stop offset="95%" stopColor="#a78bfa" stopOpacity={0.4} />
+                          </linearGradient>
+                          <linearGradient id="colorWeightedAnalytics" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} dy={15} />
                         <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
                         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }} />
-                        <Bar dataKey="unweighted" name="Pipeline Volume" fill="#c4b5fd" radius={[8, 8, 0, 0]} barSize={40} />
+                        <Bar dataKey="unweighted" name="Pipeline Volume" fill="url(#colorPipeline)" radius={[8, 8, 0, 0]} barSize={40} />
                         <Area type="monotone" dataKey="actual" name="Actual Revenue" stroke="#10b981" strokeWidth={4} fill="url(#colorActualAnalytics)" animationDuration={1500} />
-                        <Line type="monotone" dataKey="weighted" name="Weighted Forecast" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} />
+                        <Area type="monotone" dataKey="weighted" name="Weighted Forecast" stroke="#8b5cf6" strokeWidth={3} fill="url(#colorWeightedAnalytics)" animationDuration={1500} />
+                        <Line type="monotone" dataKey="weighted" name="Weighted Forecast Line" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} />
                         <Line type="monotone" dataKey="target" name="Goal" stroke="#cbd5e1" strokeWidth={2} strokeDasharray="8 8" dot={false} />
                       </ComposedChart>
                     </SafeResponsiveContainer>
@@ -775,8 +806,40 @@ export default function AnalyticsPage() {
                       transition={{ duration: 0.25 }}
                       className="overflow-hidden relative z-10"
                     >
-                      <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mt-2 text-xs leading-relaxed text-slate-200 whitespace-pre-line font-medium backdrop-blur-sm">
-                        {aiConsultantResponses[selectedPrompt]}
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mt-2 text-xs leading-relaxed text-slate-200 backdrop-blur-sm">
+                        <TypewriterEffect text={aiConsultantResponses[selectedPrompt]} />
+                        
+                        {/* Quick-Action Buttons based on selected prompt */}
+                        {selectedPrompt === 'high-risk' && (
+                          <div className="flex gap-2 mt-4 flex-wrap">
+                            <button
+                              onClick={() => navigate('/pipeline')}
+                              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-[11px] font-black transition-all shadow-md shadow-rose-600/20 flex items-center gap-1.5 border-0 cursor-pointer animate-[fadeIn_0.5s_ease]"
+                            >
+                              <Briefcase size={12} /> ไปหน้าบอร์ดดีลการขาย เพื่อตั้งกิจกรรมด่วน
+                            </button>
+                          </div>
+                        )}
+                        {selectedPrompt === 'quota' && (
+                          <div className="flex gap-2 mt-4 flex-wrap">
+                            <button
+                              onClick={() => navigate('/settings')}
+                              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-black transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5 border-0 cursor-pointer animate-[fadeIn_0.5s_ease]"
+                            >
+                              <Target size={12} /> ไปหน้าการตั้งค่า เพื่อปรับเป้าหมายเปรียบเทียบ
+                            </button>
+                          </div>
+                        )}
+                        {selectedPrompt === 'bottleneck' && (
+                          <div className="flex gap-2 mt-4 flex-wrap">
+                            <button
+                              onClick={() => navigate('/tools')}
+                              className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-[11px] font-black transition-all shadow-md shadow-violet-500/20 flex items-center gap-1.5 border-0 cursor-pointer animate-[fadeIn_0.5s_ease]"
+                            >
+                              <Sparkles size={12} /> ไปหน้าเครื่องมือ AI เพื่อเขียนอีเมลแก้คอขวด
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   )}
@@ -814,16 +877,19 @@ export default function AnalyticsPage() {
                         <div className="w-28 shrink-0">
                           <span className="text-sm font-bold text-slate-700">{item.label}</span>
                         </div>
-                        <div className="flex-1 relative h-10 bg-slate-50 rounded-2xl overflow-hidden border border-slate-100/50">
+                        <div className="flex-1 relative h-11 bg-slate-100/50 rounded-2xl overflow-hidden border border-slate-200/60 shadow-inner">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${item.widthPct}%` }}
                             transition={{ duration: 1, delay: i * 0.15, ease: [0.19, 1, 0.22, 1] }}
-                            className="absolute top-0 left-0 h-full rounded-2xl flex items-center px-4 gap-3 shadow-inner"
-                            style={{ background: `linear-gradient(135deg, ${item.color}20, ${item.color}40)`, borderLeft: `4px solid ${item.color}`, boxShadow: `0 4px 12px ${item.color}15` }}
+                            className="absolute top-0 left-0 h-full rounded-2xl flex items-center px-4 gap-3 shadow-md border-r border-white/20"
+                            style={{ 
+                              background: `linear-gradient(135deg, ${item.color}ee, ${item.color})`, 
+                              boxShadow: `0 4px 16px ${item.color}33` 
+                            }}
                           >
-                            <span className="text-xs font-black" style={{ color: item.color }}>{item.count} Deals</span>
-                            <span className="text-[11px] font-bold text-slate-650 bg-white/50 px-2 py-0.5 rounded-lg">{formatCurrency(item.value)}</span>
+                            <span className="text-xs font-black text-white">{item.count} Deals</span>
+                            <span className="text-[11px] font-bold text-white bg-white/25 px-2 py-0.5 rounded-lg">{formatCurrency(item.value)}</span>
                           </motion.div>
                         </div>
                         <div className="w-28 shrink-0 text-right">
@@ -1012,23 +1078,31 @@ export default function AnalyticsPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.1 }}
                       className={cn(
-                        "p-6 rounded-3xl border shadow-sm hover:shadow-xl transition-all duration-300 relative overflow-hidden group",
-                        i === 0 ? "bg-gradient-to-b from-amber-50/50 to-white border-amber-200/60" :
+                        "p-6 rounded-3xl border shadow-sm hover:shadow-xl transition-all duration-350 relative overflow-hidden group",
+                        i === 0 ? "bg-gradient-to-b from-amber-50/80 to-white border-amber-300 ring-2 ring-amber-400/10 shadow-amber-500/5" :
                         i === 1 ? "bg-gradient-to-b from-slate-50/80 to-white border-slate-200/60" :
                         i === 2 ? "bg-gradient-to-b from-orange-50/30 to-white border-orange-200/60" :
                         "bg-white border-slate-100"
                       )}
                     >
                       {/* Ranking Medals */}
-                      <div className="absolute top-4 right-4">
-                        {i === 0 ? <div className="text-4xl drop-shadow-md">🥇</div> :
+                      <div className="absolute top-4 right-4 flex items-center gap-1.5">
+                        {i === 0 && (
+                          <span className="text-[9px] font-black text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-md tracking-wider">
+                            👑 CHAMPION
+                          </span>
+                        )}
+                        {i === 0 ? <div className="text-4xl drop-shadow-md">🏆</div> :
                          i === 1 ? <div className="text-4xl drop-shadow-md">🥈</div> :
                          i === 2 ? <div className="text-4xl drop-shadow-md">🥉</div> :
                          <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-400 border border-slate-200">#{i + 1}</div>}
                       </div>
 
                       <div className="flex items-center gap-4 mb-6">
-                        <div className="p-0.5 rounded-2xl bg-gradient-to-br from-violet-400 to-indigo-500 shadow-md">
+                        <div className={cn(
+                          "p-0.5 rounded-2xl shadow-md",
+                          i === 0 ? "bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-500" : "bg-gradient-to-br from-violet-400 to-indigo-500"
+                        )}>
                           <div className={cn(
                             'w-14 h-14 rounded-xl flex items-center justify-center text-white font-black text-xl border-2 border-white',
                             m.color?.split(' ')[0] || 'bg-violet-600'
@@ -1161,12 +1235,22 @@ export default function AnalyticsPage() {
                   <div className="h-[280px] w-full min-w-0 min-h-0">
                     <SafeResponsiveContainer>
                       <BarChart data={analytics?.tierData}>
+                        <defs>
+                          <linearGradient id="colorTierRevenue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.95} />
+                            <stop offset="95%" stopColor="#10b981" stopOpacity={0.45} />
+                          </linearGradient>
+                          <linearGradient id="colorTierPipeline" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.95} />
+                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.45} />
+                          </linearGradient>
+                        </defs>
                         <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} />
                         <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Bar dataKey="revenue" name="Closed Won Revenue" fill="#10b981" radius={[6, 6, 0, 0]} barSize={25} />
-                        <Bar dataKey="pipeline" name="Active Pipeline" fill="#8b5cf6" radius={[6, 6, 0, 0]} barSize={25} />
+                        <Bar dataKey="revenue" name="Closed Won Revenue" fill="url(#colorTierRevenue)" radius={[6, 6, 0, 0]} barSize={25} />
+                        <Bar dataKey="pipeline" name="Active Pipeline" fill="url(#colorTierPipeline)" radius={[6, 6, 0, 0]} barSize={25} />
                       </BarChart>
                     </SafeResponsiveContainer>
                   </div>
@@ -1184,11 +1268,17 @@ export default function AnalyticsPage() {
                     {analytics?.industryData?.length > 0 ? (
                       <SafeResponsiveContainer>
                         <BarChart data={analytics.industryData} layout="vertical">
+                          <defs>
+                            <linearGradient id="colorIndustryRevenue" x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.95} />
+                              <stop offset="95%" stopColor="#2563eb" stopOpacity={0.45} />
+                            </linearGradient>
+                          </defs>
                           <CartesianGrid strokeDasharray="4 4" horizontal={false} stroke="#f1f5f9" />
                           <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: '705' }} tickFormatter={(v) => `${v / 1000}k`} />
                           <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: '705' }} width={80} />
                           <Tooltip content={<CustomTooltip />} />
-                          <Bar dataKey="revenue" name="Revenue" fill="#0ea5e9" radius={[0, 6, 6, 0]} barSize={16} />
+                          <Bar dataKey="revenue" name="Revenue" fill="url(#colorIndustryRevenue)" radius={[0, 6, 6, 0]} barSize={16} />
                         </BarChart>
                       </SafeResponsiveContainer>
                     ) : (
@@ -1265,45 +1355,54 @@ export default function AnalyticsPage() {
                       <p className="text-[10px] text-slate-500 font-medium">เป้าหมายประจำเดือน: {formatCurrency(monthlyTarget)}</p>
                     </div>
                     
-                    <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
-                      <svg className="w-full h-full transform -rotate-90">
+                    <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
+                      <svg className="w-full h-full transform -rotate-90 overflow-visible">
+                        <defs>
+                          <filter id="gauge-glow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor={
+                              simQuotaAttainment >= 100 ? "#10b981" :
+                              simQuotaAttainment >= 70 ? "#f59e0b" : "#ef4444"
+                            } floodOpacity="0.4"/>
+                          </filter>
+                        </defs>
                         {/* Background Circle */}
                         <circle
-                          cx="40"
-                          cy="40"
-                          r="32"
+                          cx="48"
+                          cy="48"
+                          r="40"
                           stroke="#f1f5f9"
-                          strokeWidth="6"
+                          strokeWidth="8"
                           fill="transparent"
                         />
                         {/* Foreground Circle */}
                         <motion.circle
-                          cx="40"
-                          cy="40"
-                          r="32"
+                          cx="48"
+                          cy="48"
+                          r="40"
                           stroke={
                             simQuotaAttainment >= 100 ? "#10b981" :
                             simQuotaAttainment >= 70 ? "#f59e0b" : "#ef4444"
                           }
-                          strokeWidth="6"
+                          strokeWidth="8"
                           fill="transparent"
-                          strokeDasharray={2 * Math.PI * 32}
+                          strokeDasharray={2 * Math.PI * 40}
                           animate={{
-                            strokeDashoffset: 2 * Math.PI * 32 * (1 - Math.min(100, simQuotaAttainment) / 100)
+                            strokeDashoffset: 2 * Math.PI * 40 * (1 - Math.min(100, simQuotaAttainment) / 100)
                           }}
                           transition={{ duration: 0.5, ease: "easeOut" }}
                           strokeLinecap="round"
+                          filter="url(#gauge-glow)"
                         />
                       </svg>
                       <div className="absolute flex flex-col items-center justify-center">
                         <span className={cn(
-                          "text-sm font-black tabular-nums leading-none",
+                          "text-base font-black tabular-nums leading-none",
                           simQuotaAttainment >= 100 ? "text-emerald-600" :
                           simQuotaAttainment >= 70 ? "text-amber-600" : "text-rose-500"
                         )}>
                           {simQuotaAttainment}%
                         </span>
-                        <span className="text-[7px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">Quota</span>
+                        <span className="text-[8px] font-bold text-slate-400 uppercase mt-1 tracking-wider">Quota</span>
                       </div>
                     </div>
                   </div>
