@@ -8,9 +8,12 @@ import { cn } from '../../lib/utils';
 import { Pencil, Save, Loader2, LogOut } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useMyProfile, useUpdateMyPersonalTarget } from '../../hooks/useUserProfiles';
+import { useAppStore } from '../../store/useAppStore';
 
 export function AccountSection() {
   const { user, signOut } = useAuth();
+  const { openPaywall } = useAppStore();
+  const isGuest = user?.email === 'demo@novapipeline.com';
   const { data: myProfile } = useMyProfile(user?.id);
   const updatePersonalTarget = useUpdateMyPersonalTarget();
   const { success, error } = useToast();
@@ -22,6 +25,11 @@ export function AccountSection() {
 
   const handleSavePersonalTarget = async (e) => {
     e.preventDefault();
+    if (isGuest) {
+      openPaywall();
+      setPersonalTargetForm(null);
+      return;
+    }
     if (!user?.id) return;
     setSavingPersonalTarget(true);
     try {

@@ -10,9 +10,12 @@ import ConfirmDialog from '../ui/ConfirmDialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAppStore } from '../../store/useAppStore';
 
 export function BackupSection() {
   const { user } = useAuth();
+  const { openPaywall } = useAppStore();
+  const isGuest = user?.email === 'demo@novapipeline.com';
   const { success, error } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
@@ -35,6 +38,10 @@ export function BackupSection() {
   }, [user?.id]);
 
   const handleExport = async () => {
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
     if (!user?.id) return;
     setIsExporting(true);
     try {
@@ -74,6 +81,10 @@ export function BackupSection() {
   };
 
   const handleRestoreAutoBackup = async (backupData) => {
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
     if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการกู้คืนข้อมูลจากวันที่นี้? (ข้อมูลที่มีอยู่จะถูกเขียนทับด้วย ID เดิม)')) return;
     setIsRestoring(true);
     try {
@@ -169,7 +180,13 @@ export function BackupSection() {
                 className="hidden"
               />
               <Button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => {
+                  if (isGuest) {
+                    openPaywall();
+                  } else {
+                    fileInputRef.current?.click();
+                  }
+                }}
                 disabled={isRestoring}
                 className="w-full h-11 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl shadow-sm text-sm font-semibold mt-4"
               >
@@ -243,7 +260,13 @@ export function BackupSection() {
             <p className="text-xs font-medium text-rose-500/80 mt-1">ลบข้อมูลลูกค้า, ดีล, และกิจกรรมทั้งหมดออกจากระบบ</p>
           </div>
           <Button
-            onClick={() => setShowResetConfirm(true)}
+            onClick={() => {
+              if (isGuest) {
+                openPaywall();
+              } else {
+                setShowResetConfirm(true);
+              }
+            }}
             variant="destructive"
             className="h-10 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm shadow-md shadow-rose-500/20 whitespace-nowrap"
           >

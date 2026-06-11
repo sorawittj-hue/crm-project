@@ -9,6 +9,8 @@ import { Plus, Check, X, Pencil, Trash2, Users, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTeam, useAddTeamMember, useUpdateTeamMember, useDeleteTeamMember } from '../../hooks/useTeam';
 import ConfirmDialog from '../ui/ConfirmDialog';
+import { useAuth } from '../../hooks/useAuth';
+import { useAppStore } from '../../store/useAppStore';
 
 const MEMBER_COLORS = [
   { value: 'bg-violet-600', label: 'ม่วง' },
@@ -30,6 +32,9 @@ export function TeamSection() {
   const updateMember = useUpdateTeamMember();
   const deleteMember = useDeleteTeamMember();
   const { success, error } = useToast();
+  const { user } = useAuth();
+  const { openPaywall } = useAppStore();
+  const isGuest = user?.email === 'demo@novapipeline.com';
 
   const [addingMember, setAddingMember] = useState(false);
   const [newMember, setNewMember] = useState(EMPTY_MEMBER);
@@ -39,6 +44,10 @@ export function TeamSection() {
 
   const handleAddMember = async (e) => {
     e.preventDefault();
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
     if (!newMember.name.trim()) return;
     try {
       await addMember.mutateAsync({
@@ -54,6 +63,10 @@ export function TeamSection() {
   };
 
   const handleUpdateMember = async (id) => {
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
     try {
       await updateMember.mutateAsync({
         id,
@@ -77,8 +90,15 @@ export function TeamSection() {
             <p className="text-sm font-medium text-slate-500 mt-1 relative z-10">{teamMembers.length} สมาชิก</p>
           </div>
           <Button
-            onClick={() => { setAddingMember(true); setNewMember(EMPTY_MEMBER); }}
-            className="h-9 px-4 rounded-xl text-sm bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20"
+            onClick={() => {
+              if (isGuest) {
+                openPaywall();
+              } else {
+                setAddingMember(true);
+                setNewMember(EMPTY_MEMBER);
+              }
+            }}
+            className="h-9 px-4 rounded-xl text-xs bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20 font-bold flex items-center gap-1.5"
           >
             <Plus size={13} className="mr-1.5" /> เพิ่มสมาชิก
           </Button>
@@ -149,13 +169,26 @@ export function TeamSection() {
                   </p>
                   <div className="flex gap-1.5 shrink-0">
                     <button
-                      onClick={() => { setEditingMemberId(m.id); setEditMemberForm({ name: m.name, role: m.role, goal: m.goal, color: m.color }); }}
+                      onClick={() => {
+                        if (isGuest) {
+                          openPaywall();
+                        } else {
+                          setEditingMemberId(m.id);
+                          setEditMemberForm({ name: m.name, role: m.role, goal: m.goal, color: m.color });
+                        }
+                      }}
                       className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-violet-600 hover:border-violet-300 transition-all"
                     >
                       <Pencil size={13} />
                     </button>
                     <button
-                      onClick={() => setConfirmDeleteMember({ open: true, id: m.id, name: m.name })}
+                      onClick={() => {
+                        if (isGuest) {
+                          openPaywall();
+                        } else {
+                          setConfirmDeleteMember({ open: true, id: m.id, name: m.name });
+                        }
+                      }}
                       className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 transition-all"
                     >
                       <Trash2 size={13} />
@@ -265,6 +298,11 @@ export function TeamSection() {
         description="การดำเนินการนี้จะลบสมาชิกออกจากทีมถาวร"
         confirmLabel="ลบ"
         onConfirm={() => {
+          if (isGuest) {
+            openPaywall();
+            setConfirmDeleteMember({ open: false, id: null, name: '' });
+            return;
+          }
           if (confirmDeleteMember.id) {
             deleteMember.mutate(confirmDeleteMember.id, {
               onSuccess: () => success('ลบสมาชิกออกจากทีมสำเร็จ'),

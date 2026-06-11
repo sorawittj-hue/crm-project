@@ -3,6 +3,7 @@ import { useCustomers, useDeleteCustomer, useCreateCustomer, useUpdateCustomer }
 import { useDeals } from '../hooks/useDeals';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
+import { useAuth } from '../hooks/useAuth';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -71,7 +72,9 @@ export default function CustomersPage() {
   const createCustomerMutation = useCreateCustomer();
   const updateCustomerMutation = useUpdateCustomer();
   const navigate = useNavigate();
-  const { setPendingNewDealCustomer } = useAppStore();
+  const { setPendingNewDealCustomer, openPaywall } = useAppStore();
+  const { user } = useAuth();
+  const isGuest = user?.email === 'demo@novapipeline.com';
 
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState('all');
@@ -108,6 +111,24 @@ export default function CustomersPage() {
 
   const handleSaveCustomer = async (e) => {
     e.preventDefault();
+    if (isGuest) {
+      openPaywall();
+      if (selectedCustomer) {
+        setLocalCustomer({
+          id: selectedCustomer.id,
+          name: selectedCustomer.name || '',
+          company: selectedCustomer.company || '',
+          email: selectedCustomer.email || '',
+          phone: selectedCustomer.phone || '',
+          address: selectedCustomer.address || '',
+          tax_id: selectedCustomer.tax_id || '',
+          tier: selectedCustomer.tier || 'Silver',
+          industry: selectedCustomer.industry || '',
+          notes: selectedCustomer.notes || '',
+        });
+      }
+      return;
+    }
     if (updateCustomerMutation.isPending) return;
     try {
       await updateCustomerMutation.mutateAsync(localCustomer);
@@ -126,6 +147,10 @@ export default function CustomersPage() {
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
     if (createCustomerMutation.isPending) return;
     setFormError(null);
     try {
@@ -139,6 +164,10 @@ export default function CustomersPage() {
 
   const handleConvertSynthetic = async (customer) => {
     if (!customer._fromDeals) return;
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
     try {
       await createCustomerMutation.mutateAsync({
         name: customer.name,
@@ -259,7 +288,15 @@ export default function CustomersPage() {
         </div>
         <div className="flex items-center gap-4">
           <Button
-            onClick={() => { setNewCustomer(EMPTY_FORM); setFormError(null); setIsAddModalOpen(true); }}
+            onClick={() => {
+              if (isGuest) {
+                openPaywall();
+              } else {
+                setNewCustomer(EMPTY_FORM);
+                setFormError(null);
+                setIsAddModalOpen(true);
+              }
+            }}
             className="h-10 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold shadow-md shadow-violet-500/20 border-0"
           >
             <Plus size={14} className="mr-2" /> เพิ่มลูกค้าใหม่
@@ -515,7 +552,15 @@ export default function CustomersPage() {
               <p className="text-sm text-slate-300 mt-1">ลองปรับตัวกรองหรือเพิ่มลูกค้าใหม่ได้เลย</p>
             </div>
             <button
-              onClick={() => { setNewCustomer(EMPTY_FORM); setFormError(null); setIsAddModalOpen(true); }}
+              onClick={() => {
+                if (isGuest) {
+                  openPaywall();
+                } else {
+                  setNewCustomer(EMPTY_FORM);
+                  setFormError(null);
+                  setIsAddModalOpen(true);
+                }
+              }}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-600 text-white text-sm font-semibold rounded-xl hover:bg-violet-700 transition-colors shadow-md shadow-violet-200"
             >
               <Plus size={14} /> เพิ่มลูกค้าใหม่
@@ -726,7 +771,13 @@ export default function CustomersPage() {
                                 type="button"
                                 variant="ghost"
                                 className="flex-1 h-12 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2"
-                                onClick={() => setConfirmDelete({ open: true, customerId: selectedCustomer.id })}
+                                onClick={() => {
+                                  if (isGuest) {
+                                    openPaywall();
+                                  } else {
+                                    setConfirmDelete({ open: true, customerId: selectedCustomer.id });
+                                  }
+                                }}
                               >
                                 <Trash2 size={14} /> ลบลูกค้า
                               </Button>

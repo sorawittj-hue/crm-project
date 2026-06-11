@@ -5,11 +5,16 @@ import { Input } from '../ui/Input';
 import { useToast } from '../ui/Toast';
 import { Pencil, Save, Loader2 } from 'lucide-react';
 import { useSettings, useUpdateSettings } from '../../hooks/useSettings';
+import { useAuth } from '../../hooks/useAuth';
+import { useAppStore } from '../../store/useAppStore';
 
 export function CompanySection() {
   const { data: settings } = useSettings();
   const updateSettings = useUpdateSettings();
   const { success, error } = useToast();
+  const { user } = useAuth();
+  const { openPaywall } = useAppStore();
+  const isGuest = user?.email === 'demo@novapipeline.com';
 
   const [companyForm, setCompanyForm] = useState(null);
   const [savingCompany, setSavingCompany] = useState(false);
@@ -22,6 +27,11 @@ export function CompanySection() {
 
   const handleSaveCompany = async (e) => {
     e.preventDefault();
+    if (isGuest) {
+      openPaywall();
+      setCompanyForm(null);
+      return;
+    }
     setSavingCompany(true);
     try {
       await updateSettings.mutateAsync(companyForm);

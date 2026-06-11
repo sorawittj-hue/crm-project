@@ -20,6 +20,8 @@ import { callGeminiAPI } from '../../services/ai';
 import { useDealActivities, useAddActivity } from '../../hooks/useActivities';
 import { useEmailTemplates } from '../../hooks/useEmailTemplates';
 import { createPortal } from 'react-dom';
+import { useAuth } from '../../hooks/useAuth';
+import { useAppStore } from '../../store/useAppStore';
 
 const STAGE_WORKFLOW = {
   lead: {
@@ -134,6 +136,10 @@ const TABS = [
 ];
 
 export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, onClose, onRequestDelete, onRequestCloseStage }) {
+  const { user } = useAuth();
+  const { openPaywall } = useAppStore();
+  const isGuest = user?.email === 'demo@novapipeline.com';
+
   const [activeTab, setActiveTab] = useState('overview');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState(null);
@@ -155,6 +161,11 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
 
   const setField = (field, value) => setLocalEdit(p => ({ ...p, [field]: value }));
   const saveField = (field, raw) => {
+    if (isGuest) {
+      openPaywall();
+      setLocalEdit(p => ({ ...p, [field]: deal[field] || '' }));
+      return;
+    }
     const value = field === 'value' || field === 'probability' ? Number(raw) : raw;
     if (deal[field] != value) onUpdate(deal.id, { [field]: value });
   };
@@ -221,6 +232,10 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
   }, [deal?.id]);
 
   const handleScheduleFollowUp = async () => {
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
     if (!deal || !followUpDate) return;
     const scheduledAt = new Date(`${followUpDate}T09:00:00`).toISOString();
     await addActivityMutation.mutateAsync({
@@ -233,6 +248,10 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
   };
 
   const handleLogActivity = async () => {
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
     if (!deal) return;
     const typeConfig = ACTIVITY_TYPES.find(t => t.id === activeType);
     const title = noteText.trim() ? `${typeConfig.label}: ${noteText.trim()}` : typeConfig.label;
@@ -348,7 +367,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
               <div className="flex gap-2 mt-4">
                 <Button
                   className="flex-1 h-10 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white border-0 shadow-md shadow-emerald-500/20 flex items-center justify-center gap-1.5"
-                  onClick={() => onRequestCloseStage?.('won')}
+                  onClick={() => isGuest ? openPaywall() : onRequestCloseStage?.('won')}
                   disabled={deal.stage === 'won'}
                 >
                   <CheckCircle2 size={14} /> ปิดได้!
@@ -356,13 +375,13 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                 <Button
                   variant="outline"
                   className="flex-1 h-10 rounded-xl text-xs font-bold border-rose-200 text-rose-600 hover:bg-rose-50 flex items-center justify-center gap-1.5"
-                  onClick={() => onRequestCloseStage?.('lost')}
+                  onClick={() => isGuest ? openPaywall() : onRequestCloseStage?.('lost')}
                   disabled={deal.stage === 'lost'}
                 >
                   <XCircle size={14} /> ปิดไม่ได้
                 </Button>
                 <button
-                  onClick={() => onRequestDelete?.(deal.id)}
+                  onClick={() => isGuest ? openPaywall() : onRequestDelete?.(deal.id)}
                   className="w-10 h-10 rounded-xl bg-rose-50 text-rose-400 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center shrink-0"
                 >
                   <Trash2 size={16} />
@@ -408,7 +427,14 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                           {deal.contact_phone && (
                             <a
                               href={`tel:${deal.contact_phone}`}
-                              onClick={() => addActivityMutation.mutate({ deal_id: deal.id, type: 'call', title: `โทรหา ${deal.contact || deal.contact_phone}`, completed_at: new Date().toISOString() })}
+                              onClick={(e) => {
+                                if (isGuest) {
+                                  e.preventDefault();
+                                  openPaywall();
+                                } else {
+                                  addActivityMutation.mutate({ deal_id: deal.id, type: 'call', title: `โทรหา ${deal.contact || deal.contact_phone}`, completed_at: new Date().toISOString() });
+                                }
+                              }}
                               className="flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold transition-colors border border-blue-100"
                             >
                               <Phone size={14} /> {deal.contact_phone}
@@ -468,12 +494,28 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                                     <p className="text-[9px] font-bold text-slate-400 uppercase">Subject: <span className="text-slate-800 normal-case font-bold text-xs">{subject}</span></p>
                                     <pre className="text-xs text-slate-600 font-sans whitespace-pre-wrap leading-relaxed max-h-32 overflow-y-auto bg-slate-50 p-2.5 rounded-lg border border-slate-100">{body}</pre>
                                     <div className="flex gap-2">
-                                      <button onClick={() => { navigator.clipboard.writeText(body); setCopiedTemplate(true); setTimeout(() => setCopiedTemplate(false), 2000); addActivityMutation.mutate({ deal_id: deal.id, type: 'note', title: `คัดลอกอีเมล: ${template.name}`, completed_at: new Date().toISOString() }); }}
+                                      <button onClick={() => {
+                                        if (isGuest) {
+                                          openPaywall();
+                                          return;
+                                        }
+                                        navigator.clipboard.writeText(body);
+                                        setCopiedTemplate(true);
+                                        setTimeout(() => setCopiedTemplate(false), 2000);
+                                        addActivityMutation.mutate({ deal_id: deal.id, type: 'note', title: `คัดลอกอีเมล: ${template.name}`, completed_at: new Date().toISOString() });
+                                      }}
                                         className="flex-1 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5">
                                         {copiedTemplate ? <CheckCircle2 size={13} className="text-emerald-600" /> : <FileText size={13} />}
                                         {copiedTemplate ? 'คัดลอกแล้ว!' : 'คัดลอก'}
                                       </button>
-                                      <button onClick={() => { window.open(`mailto:${deal.contact_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank'); onUpdate(deal.id, { last_activity: new Date().toISOString() }); }}
+                                      <button onClick={() => {
+                                        if (isGuest) {
+                                          openPaywall();
+                                          return;
+                                        }
+                                        window.open(`mailto:${deal.contact_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+                                        onUpdate(deal.id, { last_activity: new Date().toISOString() });
+                                      }}
                                         className="flex-1 h-9 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5">
                                         <Send size={13} /> เปิดแอปเมล
                                       </button>
@@ -750,6 +792,10 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                           <select
                             value={localEdit.stage}
                             onChange={e => {
+                              if (isGuest) {
+                                openPaywall();
+                                return;
+                              }
                               const s = e.target.value;
                               if (s === 'won' || s === 'lost') { onRequestCloseStage?.(s); }
                               else { setField('stage', s); onUpdate(deal.id, { stage: s }); }

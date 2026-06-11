@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { useEmailTemplates, useAddEmailTemplate, useUpdateEmailTemplate, useDeleteEmailTemplate } from '../hooks/useEmailTemplates';
 import UPSCalculator from '../components/tools/UPSCalculator';
+import { useAuth } from '../hooks/useAuth';
+import { useAppStore } from '../store/useAppStore';
 import RaidCalculator from '../components/tools/RaidCalculator';
 import HardwareGuide from '../components/tools/HardwareGuide';
 import { Card } from '../components/ui/Card';
@@ -19,6 +21,10 @@ import { formatCurrency } from '../lib/formatters';
 // ─── Email Templates ───────────────────────────────────────────────────────────
 function EmailTemplates() {
   const { data: templates = [], isLoading } = useEmailTemplates();
+  const { user } = useAuth();
+  const { openPaywall } = useAppStore();
+  const isGuest = user?.email === 'demo@novapipeline.com';
+
   const addMutation = useAddEmailTemplate();
   const updateMutation = useUpdateEmailTemplate();
   const deleteMutation = useDeleteEmailTemplate();
@@ -51,6 +57,10 @@ function EmailTemplates() {
 
   const handleAdd = async (e) => {
     e.preventDefault();
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
     if (!form.name || !form.body) return;
     await addMutation.mutateAsync(form);
     setForm({ name: '', subject: '', body: '', category: 'follow_up' });
@@ -58,6 +68,10 @@ function EmailTemplates() {
   };
 
   const handleUpdate = async (id) => {
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
     await updateMutation.mutateAsync({ id, ...editForm });
     setEditingId(null);
   };
@@ -88,7 +102,7 @@ function EmailTemplates() {
           />
         </div>
         <Button
-          onClick={() => setIsAdding(true)}
+          onClick={() => isGuest ? openPaywall() : setIsAdding(true)}
           className="h-9 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold border-0 shadow-md shadow-violet-500/20 shrink-0"
         >
           <Plus size={14} className="mr-2" /> เพิ่ม Template
@@ -192,11 +206,19 @@ function EmailTemplates() {
                         className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
                         {copiedId === t.id ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                       </button>
-                      <button onClick={() => { setEditingId(t.id); setEditForm({ name: t.name, subject: t.subject || '', body: t.body, category: t.category || 'other' }); setExpandedId(null); }}
+                      <button onClick={() => {
+                        if (isGuest) {
+                          openPaywall();
+                        } else {
+                          setEditingId(t.id);
+                          setEditForm({ name: t.name, subject: t.subject || '', body: t.body, category: t.category || 'other' });
+                          setExpandedId(null);
+                        }
+                      }}
                         className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
                         <Pencil size={14} />
                       </button>
-                      <button onClick={() => deleteMutation.mutate(t.id)}
+                      <button onClick={() => isGuest ? openPaywall() : deleteMutation.mutate(t.id)}
                         className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors">
                         <Trash2 size={14} />
                       </button>

@@ -28,10 +28,15 @@ export default function PipelinePage() {
   const addMultipleDealsMutation = useAddMultipleDeals();
   const deleteDealsMutation = useDeleteDeals();
   const addActivityMutation = useAddActivity();
-  const { pendingOpenDeal, clearPendingOpenDeal, pendingNewDealCustomer, clearPendingNewDealCustomer } = useAppStore();
+  const { pendingOpenDeal, clearPendingOpenDeal, pendingNewDealCustomer, clearPendingNewDealCustomer, openPaywall } = useAppStore();
   const { user } = useAuth();
+  const isGuest = user?.email === 'demo@novapipeline.com';
 
   const handleUpdateDeal = async (id, updates) => {
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
     const originalDeal = (deals || []).find(d => d.id === id);
     if (originalDeal && updates.stage && updates.stage !== originalDeal.stage) {
       const nextStage = updates.stage;
@@ -177,6 +182,10 @@ export default function PipelinePage() {
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
     if (addDealMutation.isPending) return;
     setFormError(null);
     try {
@@ -198,6 +207,10 @@ export default function PipelinePage() {
 
   const handleQuickAdd = async (e) => {
     e.preventDefault();
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
     if (!quickDeal.title && !quickDeal.company) { setQuickError('ใส่ชื่อดีลหรือบริษัทอย่างน้อย 1 อย่าง'); return; }
     setQuickError(null);
     try {
@@ -314,8 +327,12 @@ export default function PipelinePage() {
                     <button
                       onClick={() => {
                         setIsToolsOpen(false);
-                        setIsQuickAddOpen(true);
-                        setQuickError(null);
+                        if (isGuest) {
+                          openPaywall();
+                        } else {
+                          setIsQuickAddOpen(true);
+                          setQuickError(null);
+                        }
                       }}
                       className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-2"
                     >
@@ -325,7 +342,11 @@ export default function PipelinePage() {
                     <button
                       onClick={() => {
                         setIsToolsOpen(false);
-                        setIsScanOpen(true);
+                        if (isGuest) {
+                          openPaywall();
+                        } else {
+                          setIsScanOpen(true);
+                        }
                       }}
                       className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-2"
                     >
@@ -339,7 +360,7 @@ export default function PipelinePage() {
           </div>
 
           <Button
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={() => isGuest ? openPaywall() : setIsAddModalOpen(true)}
             className="h-9 px-4 rounded-xl text-xs bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20 flex items-center gap-1.5 font-bold"
           >
             <Plus size={13} /> เพิ่มดีลใหม่
@@ -423,11 +444,21 @@ export default function PipelinePage() {
       <MonthlyPipeline
         deals={filteredDeals}
         onAddDeal={(data) => {
+          if (isGuest) {
+            openPaywall();
+            return;
+          }
           if (data) addDealMutation.mutate(data);
           else setIsAddModalOpen(true);
         }}
         onUpdateDeal={handleUpdateDeal}
-        onDeleteDeal={(id) => deleteDealsMutation.mutate([id])}
+        onDeleteDeal={(id) => {
+          if (isGuest) {
+            openPaywall();
+            return;
+          }
+          deleteDealsMutation.mutate([id]);
+        }}
         pendingOpenDeal={pendingOpenDeal}
         onPendingOpenDealHandled={clearPendingOpenDeal}
       />

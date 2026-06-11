@@ -6,11 +6,16 @@ import { formatFullCurrency } from '../../lib/formatters';
 import { useToast } from '../ui/Toast';
 import { Pencil, Save, Loader2, Target } from 'lucide-react';
 import { useSettings, useUpdateSettings } from '../../hooks/useSettings';
+import { useAuth } from '../../hooks/useAuth';
+import { useAppStore } from '../../store/useAppStore';
 
 export function TargetsSection() {
   const { data: settings } = useSettings();
   const updateSettings = useUpdateSettings();
   const { success, error } = useToast();
+  const { user } = useAuth();
+  const { openPaywall } = useAppStore();
+  const isGuest = user?.email === 'demo@novapipeline.com';
 
   const [targetForm, setTargetForm] = useState(null);
   const [savingTargets, setSavingTargets] = useState(false);
@@ -21,6 +26,11 @@ export function TargetsSection() {
 
   const handleSaveTargets = async (e) => {
     e.preventDefault();
+    if (isGuest) {
+      openPaywall();
+      setTargetForm(null);
+      return;
+    }
     setSavingTargets(true);
     try {
       await updateSettings.mutateAsync({

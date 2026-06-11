@@ -4,14 +4,21 @@ import { ShieldCheck, Clock } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useAllProfiles, useUpdateProfileRole } from '../../hooks/useUserProfiles';
 import { useToast } from '../ui/Toast';
+import { useAppStore } from '../../store/useAppStore';
 
 export function UsersSection() {
   const { user } = useAuth();
+  const { openPaywall } = useAppStore();
+  const isGuest = user?.email === 'demo@novapipeline.com';
   const { data: allProfiles = [] } = useAllProfiles();
   const updateRole = useUpdateProfileRole();
   const { success, error } = useToast();
 
   const handleUpdateRole = async (id, newRole) => {
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
     try {
       await updateRole.mutateAsync({ id, role: newRole });
       success('อัปเดตสิทธิ์ผู้ใช้งานสำเร็จ');

@@ -26,6 +26,11 @@ export const useAppStore = create(
       pendingNewDealCustomer: null,
       setPendingNewDealCustomer: (customer) => set({ pendingNewDealCustomer: customer }),
       clearPendingNewDealCustomer: () => set({ pendingNewDealCustomer: null }),
+
+      // Paywall Modal
+      isPaywallOpen: false,
+      openPaywall: () => set({ isPaywallOpen: true }),
+      closePaywall: () => set({ isPaywallOpen: false }),
     }),
     {
       name: 'nova-pipeline-store',
