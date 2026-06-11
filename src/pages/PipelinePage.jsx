@@ -527,9 +527,9 @@ export default function PipelinePage() {
               </button>
             </div>
 
-            <form onSubmit={handleAddSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <form onSubmit={handleAddSubmit} className="grid grid-cols-1 xl:grid-cols-12 gap-8">
               {/* Left Column: Interactive Form Steps (7 cols) */}
-              <div className="lg:col-span-7 flex flex-col justify-between min-h-[420px]">
+              <div className="xl:col-span-7 flex flex-col justify-between min-h-[420px]">
                 <AnimatePresence mode="wait">
                   {formTab === 'details' ? (
                     <motion.div
@@ -676,7 +676,7 @@ export default function PipelinePage() {
                       </div>
 
                       {/* Company & Value */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <label className="text-xs font-bold text-slate-500">ชื่อบริษัท / องค์กร *</label>
                           <div className="relative">
@@ -724,7 +724,7 @@ export default function PipelinePage() {
                       {/* Stage Selector Grid */}
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-slate-500">ขั้นตอนปัจจุบัน</label>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                           {[
                             { id: 'lead', label: 'ลูกค้าใหม่', color: 'bg-slate-400', activeBg: 'bg-slate-100 border-slate-400 text-slate-900' },
                             { id: 'contact', label: 'นัดเจอ', color: 'bg-amber-500', activeBg: 'bg-amber-50 border-amber-500 text-amber-900' },
@@ -757,7 +757,7 @@ export default function PipelinePage() {
                                   });
                                 }}
                                 className={cn(
-                                  "flex items-center justify-center gap-1.5 h-10 px-2 rounded-xl border text-center transition-all duration-200 text-xs font-semibold relative overflow-hidden",
+                                  "flex items-center justify-center gap-1.5 min-h-[2.5rem] py-1.5 px-2 h-auto flex-wrap rounded-xl border text-center transition-all duration-200 text-xs font-semibold relative overflow-hidden",
                                   isActive
                                     ? cn("border-2 shadow-sm", stage.activeBg)
                                     : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
@@ -780,7 +780,7 @@ export default function PipelinePage() {
                       </div>
 
                       {/* Probability & expected close date */}
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <label className="text-xs font-bold text-slate-500">โอกาสปิด (%)</label>
                           <div className="relative">
@@ -872,7 +872,7 @@ export default function PipelinePage() {
                         <div className="border-b border-slate-100 pb-2">
                           <h4 className="text-xs font-black uppercase tracking-wider text-violet-600">ข้อมูลผู้ติดต่อประสานงาน</h4>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div className="space-y-1">
                             <label className="text-xs font-bold text-slate-500">ชื่อผู้ติดต่อ</label>
                             <div className="relative">
@@ -950,7 +950,7 @@ export default function PipelinePage() {
               </div>
 
               {/* Right Column: Live Card Preview & AI Guidance (5 cols) */}
-              <div className="lg:col-span-5 bg-gradient-to-br from-slate-50 to-slate-100/50 p-6 rounded-3xl border border-slate-200/60 flex flex-col justify-between space-y-6 max-h-[78vh] overflow-y-auto">
+              <div className="xl:col-span-5 bg-gradient-to-br from-slate-50 to-slate-100/50 p-6 rounded-3xl border border-slate-200/60 flex flex-col justify-between space-y-6 max-h-[78vh] overflow-y-auto">
                 <div className="space-y-6">
                   <div>
                     <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
@@ -979,7 +979,7 @@ export default function PipelinePage() {
                         {(newDeal.company || 'C').charAt(0)}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-[9px] leading-none">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none truncate">
                           {newDeal.company || 'ยังไม่ระบุชื่อบริษัท'}
                         </p>
                         <p className="text-sm font-extrabold text-slate-900 truncate mt-1 leading-tight">
