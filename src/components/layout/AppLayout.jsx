@@ -408,7 +408,7 @@ export default function AppLayout() {
             <div className="px-2 pb-6 pt-2 text-center relative">
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-3">
-                Nova <span className="text-slate-300">v2.1</span>
+                พัฒนาโดย <span className="text-slate-500">Sorawit Thunthakij</span>
               </p>
             </div>
           </motion.aside>
