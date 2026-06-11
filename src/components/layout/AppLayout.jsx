@@ -301,28 +301,29 @@ export default function AppLayout() {
             {...mobileSidebarMotion}
             variants={sidebarVariants}
             className={cn(
-              "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-100 px-4 flex flex-col shadow-2xl shadow-slate-900/10",
+              "fixed inset-y-0 left-0 z-50 w-72 bg-white/90 backdrop-blur-2xl border-r border-slate-100/50 px-5 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)]",
               "lg:static lg:translate-x-0 lg:opacity-100",
             )}
           >
             {/* Logo */}
-            <div className="h-16 flex items-center justify-between px-2 border-b border-slate-100">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-violet-600 flex items-center justify-center shadow-md shadow-violet-500/30">
-                  <Target size={16} className="text-white" />
+            <div className="h-20 flex items-center justify-between px-2 mb-2 relative">
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
+                  <Target size={20} className="text-white" />
                 </div>
                 <div>
-                  <span className="font-bold text-slate-900 text-base leading-none">Nova</span>
-                  <p className="text-[10px] text-violet-605 font-bold leading-none mt-0.5 uppercase tracking-wider">Pipeline</p>
+                  <span className="font-black text-slate-900 text-lg tracking-tight leading-none">Nova</span>
+                  <p className="text-[10px] text-violet-600 font-bold leading-none mt-1 uppercase tracking-[0.2em]">Pipeline</p>
                 </div>
               </div>
-              <button onClick={closeSidebar} aria-label="ปิดเมนู" className="lg:hidden p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all">
+              <button onClick={closeSidebar} aria-label="ปิดเมนู" className="lg:hidden p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100/50 rounded-xl transition-all">
                 <X size={18} />
               </button>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 py-4 space-y-0.5">
+            <nav className="flex-1 py-4 space-y-1 overflow-y-auto overflow-x-hidden no-scrollbar">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.to;
                 return (
@@ -331,36 +332,38 @@ export default function AppLayout() {
                     to={item.to}
                     onClick={() => !isDesktop && closeSidebar()}
                     className={cn(
-                      "group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 relative",
+                      "group flex items-center gap-3.5 px-3.5 py-3 rounded-[14px] text-sm transition-all duration-300 relative",
                       isActive
-                        ? "bg-violet-50 text-violet-700"
-                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+                        ? "text-white shadow-sm"
+                        : "text-slate-500 hover:text-violet-700 hover:bg-violet-50/50"
                     )}
                   >
                     {isActive && (
                       <>
                         <motion.span
                           layoutId="activeNavBackground"
-                          className="absolute inset-0 rounded-xl bg-violet-50"
-                          transition={springSmooth}
+                          className="absolute inset-0 rounded-[14px] bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/20"
+                          transition={{ type: "spring", stiffness: 350, damping: 30 }}
                         />
                         <motion.span
                           layoutId="activeNavRail"
-                          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-violet-600 rounded-r-full"
-                          transition={springSmooth}
+                          className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-white rounded-r-full z-20"
+                          transition={{ type: "spring", stiffness: 350, damping: 30 }}
                         />
                       </>
                     )}
                     <item.icon
                       size={18}
                       strokeWidth={isActive ? 2.5 : 2}
-                      className={cn('relative z-10', isActive ? 'text-violet-600' : 'text-slate-400 group-hover:text-slate-600')}
+                      className={cn('relative z-10 transition-colors', isActive ? 'text-white' : 'text-slate-400 group-hover:text-violet-600')}
                     />
-                    <span className={cn('relative z-10 font-medium', isActive && 'font-semibold text-violet-700')}>
-                      {item.label}
-                    </span>
+                    <div className="relative z-10 flex flex-col">
+                      <span className={cn('font-bold tracking-tight', isActive ? 'text-white' : 'text-slate-700 group-hover:text-violet-700')}>
+                        {item.label}
+                      </span>
+                    </div>
                     {!isActive && (
-                      <ChevronRight size={14} className="relative z-10 ml-auto opacity-0 group-hover:opacity-40 transition-opacity" />
+                      <ChevronRight size={14} className="relative z-10 ml-auto opacity-0 -translate-x-2 group-hover:translate-x-0 group-hover:opacity-40 transition-all duration-300" />
                     )}
                   </NavLink>
                 );
@@ -368,26 +371,28 @@ export default function AppLayout() {
             </nav>
 
             {/* Monthly Goal */}
-            <div className="pb-4 space-y-3 border-t border-slate-100 pt-4">
-              <div className="bg-violet-50 rounded-2xl p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold text-slate-500">เป้าหมายส่วนตัว</p>
-                  <span className="text-xs font-bold text-violet-600">{goalProgress}%</span>
+            <div className="pb-5 pt-5 relative">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
+              <div className="bg-gradient-to-br from-violet-50/80 to-indigo-50/50 border border-violet-100/60 rounded-[1.25rem] p-4 space-y-3 relative overflow-hidden group">
+                <div className="absolute -top-10 -right-10 w-24 h-24 bg-violet-400/10 rounded-full blur-xl transition-all group-hover:bg-violet-400/20" />
+                <div className="flex items-center justify-between relative z-10">
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">เป้าหมายส่วนตัว</p>
+                  <span className="text-[11px] font-black text-violet-600 bg-white px-2 py-0.5 rounded-full shadow-sm">{goalProgress}%</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <p className="text-base font-bold text-slate-800">{hasPersonalTarget ? formatCurrency(effectiveTarget) : 'ยังไม่ได้ตั้ง'}</p>
-                  <TrendingUp size={15} className={goalProgress >= 75 ? 'text-emerald-500' : 'text-slate-300'} />
+                <div className="flex justify-between items-center relative z-10">
+                  <p className="text-lg font-black text-slate-800 tracking-tight">{hasPersonalTarget ? formatCurrency(effectiveTarget) : 'ยังไม่ได้ตั้ง'}</p>
+                  <TrendingUp size={16} className={goalProgress >= 75 ? 'text-emerald-500' : 'text-slate-300'} strokeWidth={2.5} />
                 </div>
-                <div className="h-1.5 w-full bg-violet-100 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-white/60 rounded-full overflow-hidden shadow-inner relative z-10">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${goalProgress}%` }}
                     transition={{ duration: 1, ease: [0.19, 1, 0.22, 1] }}
                     className={cn(
-                      "h-full rounded-full",
-                      goalProgress >= 100 ? "bg-emerald-500" :
-                      goalProgress >= 75  ? "bg-emerald-500" :
-                      goalProgress >= 50  ? "bg-violet-500"  : "bg-violet-400"
+                      "h-full rounded-full shadow-sm",
+                      goalProgress >= 100 ? "bg-gradient-to-r from-emerald-400 to-emerald-500" :
+                      goalProgress >= 75  ? "bg-gradient-to-r from-emerald-400 to-emerald-500" :
+                      goalProgress >= 50  ? "bg-gradient-to-r from-violet-500 to-indigo-500"  : "bg-gradient-to-r from-violet-400 to-indigo-400"
                     )}
                   />
                 </div>
@@ -395,12 +400,10 @@ export default function AppLayout() {
             </div>
 
             {/* Developer credit */}
-            <div className="px-4 pb-4 pt-2 border-t border-slate-100 mt-2">
-              <p className="text-[10px] text-slate-300 font-semibold leading-relaxed">
-                Nova Pipeline <span className="text-slate-200">v2.1</span>
-              </p>
-              <p className="text-[10px] text-slate-300 mt-0.5">
-                Dev by <span className="font-semibold text-slate-400">Sorawit Thunthakij</span>
+            <div className="px-2 pb-6 pt-2 text-center relative">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-3">
+                Nova <span className="text-slate-300">v2.1</span>
               </p>
             </div>
           </motion.aside>
