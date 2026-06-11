@@ -1,8 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell
 } from 'recharts';
+import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
+import { buildPipelineIntelligence } from '../utils/salesIntelligence';
 import { 
   BadgeDollarSign, TrendingUp, Target, Save, Loader2, Calendar, 
   BarChart3, Plus, ArrowUpRight, ArrowDownRight, Edit2
@@ -65,14 +67,9 @@ export default function SalesTrackingPage() {
 
   // Calculate won deals for current month
   const currentMonthPipelineSales = useMemo(() => {
-    return deals
-      .filter(d => d.stage === 'won' && d.actual_close_date)
-      .filter(d => {
-        const dDate = new Date(d.actual_close_date);
-        return dDate.getFullYear() === currentYear && (dDate.getMonth() + 1) === currentMonth;
-      })
-      .reduce((sum, d) => sum + (Number(d.value) || 0), 0);
-  }, [deals, currentYear, currentMonth]);
+    const intelligence = buildPipelineIntelligence(deals, { monthlyGoal: monthlyTarget, now: new Date() });
+    return intelligence.currentMonthWonValue;
+  }, [deals, monthlyTarget]);
 
   // Merge DB manual sales with Pipeline live sales
   const mergedSalesData = useMemo(() => {
@@ -225,7 +222,7 @@ export default function SalesTrackingPage() {
             </div>
           </div>
           <div className="h-[380px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <SafeResponsiveContainer width="100%" height="100%">
               <BarChart data={mergedSalesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
@@ -258,7 +255,7 @@ export default function SalesTrackingPage() {
                   ))}
                 </Bar>
               </BarChart>
-            </ResponsiveContainer>
+            </SafeResponsiveContainer>
           </div>
         </div>
 
