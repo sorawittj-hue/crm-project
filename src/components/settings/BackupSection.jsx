@@ -6,7 +6,7 @@ import { Database, DownloadCloud, UploadCloud, AlertTriangle, Loader2, RefreshCc
 import { useAuth } from '../../hooks/useAuth';
 import { exportWorkspaceData, restoreWorkspaceData, factoryResetWorkspace } from '../../services/apiBackup';
 import { getAutoBackupHistory } from '../../hooks/useAutoBackup';
-import { ConfirmDialog } from '../ui/ConfirmDialog';
+import ConfirmDialog from '../ui/ConfirmDialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -253,14 +253,13 @@ export function BackupSection() {
       </Card>
 
       <ConfirmDialog
-        isOpen={showResetConfirm}
-        onClose={() => setShowResetConfirm(false)}
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
         onConfirm={handleFactoryReset}
         title="ยืนยันการล้างข้อมูลทั้งหมด"
         description="การกระทำนี้จะไม่สามารถย้อนกลับได้ ข้อมูลลูกค้า ดีล และกิจกรรมทั้งหมดของคุณจะถูกลบออกจากฐานข้อมูลอย่างถาวร (ยกเว้นในกรณีที่คุณมีไฟล์ Backup เก็บไว้) คุณแน่ใจหรือไม่?"
-        confirmText="ใช่, ลบข้อมูลทั้งหมด"
-        cancelText="ยกเลิก"
-        confirmButtonClass="bg-rose-600 hover:bg-rose-700 focus:ring-rose-500"
+        confirmLabel="ใช่, ลบข้อมูลทั้งหมด"
+        cancelLabel="ยกเลิก"
       />
     </div>
   );
