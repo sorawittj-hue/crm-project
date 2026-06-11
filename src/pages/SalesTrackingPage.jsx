@@ -104,6 +104,19 @@ export default function SalesTrackingPage() {
   const totalYearlySales = mergedSalesData[mergedSalesData.length - 1].cumulative;
   const annualProgress = annualTarget > 0 ? Math.min(100, Math.round((totalYearlySales / annualTarget) * 100)) : 0;
 
+  const quarterlySales = useMemo(() => {
+    const q1 = mergedSalesData.slice(0, 3).reduce((sum, item) => sum + item.amount, 0);
+    const q2 = mergedSalesData.slice(3, 6).reduce((sum, item) => sum + item.amount, 0);
+    const q3 = mergedSalesData.slice(6, 9).reduce((sum, item) => sum + item.amount, 0);
+    const q4 = mergedSalesData.slice(9, 12).reduce((sum, item) => sum + item.amount, 0);
+    return [
+      { id: 'Q1', label: 'ไตรมาส 1 (ม.ค. - มี.ค.)', amount: q1 },
+      { id: 'Q2', label: 'ไตรมาส 2 (เม.ย. - มิ.ย.)', amount: q2 },
+      { id: 'Q3', label: 'ไตรมาส 3 (ก.ค. - ก.ย.)', amount: q3 },
+      { id: 'Q4', label: 'ไตรมาส 4 (ต.ค. - ธ.ค.)', amount: q4 },
+    ];
+  }, [mergedSalesData]);
+
   const handleEditChange = (month, value) => {
     // Remove non-numeric characters except dot
     const cleanValue = value.replace(/[^0-9.]/g, '');
@@ -207,6 +220,29 @@ export default function SalesTrackingPage() {
             เป้าหมายรายปี: {formatCurrency(annualTarget)}
           </p>
         </div>
+      </div>
+
+      {/* Quarterly Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {quarterlySales.map(q => {
+          const currentQ = Math.floor((currentMonth - 1) / 3) + 1;
+          const isCurrentQ = q.id === `Q${currentQ}`;
+          return (
+            <div key={q.id} className={cn(
+              "p-4 rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.02)] border flex flex-col justify-center relative overflow-hidden transition-all",
+              isCurrentQ ? "bg-violet-50/50 border-violet-100" : "bg-white border-slate-100"
+            )}>
+              {isCurrentQ && <div className="absolute top-0 right-0 w-16 h-16 bg-violet-500/10 rounded-full -mr-8 -mt-8 blur-xl" />}
+              <div className="flex items-center justify-between mb-1 relative z-10">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{q.label}</span>
+                {isCurrentQ && <span className="text-[9px] font-black bg-violet-600 text-white px-1.5 py-0.5 rounded-md">NOW</span>}
+              </div>
+              <h4 className={cn("text-xl font-black tracking-tight relative z-10", isCurrentQ ? "text-violet-700" : "text-slate-800")}>
+                {formatCurrency(q.amount)}
+              </h4>
+            </div>
+          );
+        })}
       </div>
 
       {/* Main Content Area */}
