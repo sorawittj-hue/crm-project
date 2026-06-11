@@ -27,6 +27,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "framer-motion": "^12.38.0",
+    "localforage": "^1.10.0",
     "lucide-react": "^0.303.0",
     "pdfjs-dist": "^5.7.284",
     "react": "^18.2.0",
