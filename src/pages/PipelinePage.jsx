@@ -137,8 +137,8 @@ export default function PipelinePage() {
     if (!customerSearch) return customers;
     const q = customerSearch.toLowerCase();
     return customers.filter(c =>
-      c.name?.toLowerCase().includes(q) ||
-      c.company?.toLowerCase().includes(q)
+      (c.name || '').toLowerCase().includes(q) ||
+      (c.company || '').toLowerCase().includes(q)
     );
   }, [customers, customerSearch]);
 
@@ -164,9 +164,9 @@ export default function PipelinePage() {
     if (searchTerm) {
       const s = searchTerm.toLowerCase();
       result = result.filter(d =>
-        d.title?.toLowerCase().includes(s) ||
-        d.company?.toLowerCase().includes(s) ||
-        d.contact?.toLowerCase().includes(s)
+        (d.title || '').toLowerCase().includes(s) ||
+        (d.company || '').toLowerCase().includes(s) ||
+        (d.contact || '').toLowerCase().includes(s)
       );
     }
     if (myDealsOnly && user?.id) result = result.filter(d => d.assigned_to === user.id);
@@ -203,8 +203,8 @@ export default function PipelinePage() {
     try {
       // Auto-match customer if existing
       const matched = customers.find(c =>
-        c.company?.toLowerCase() === quickDeal.company.toLowerCase() ||
-        c.name?.toLowerCase() === quickDeal.company.toLowerCase()
+        (c.company || '').toLowerCase() === quickDeal.company.toLowerCase() ||
+        (c.name || '').toLowerCase() === quickDeal.company.toLowerCase()
       );
 
       await addDealMutation.mutateAsync({
@@ -548,8 +548,8 @@ export default function PipelinePage() {
                              onChange={(e) => {
                                const company = e.target.value;
                                const matched = customers.find(c =>
-                                 c.company?.toLowerCase() === company.toLowerCase() ||
-                                 c.name?.toLowerCase() === company.toLowerCase()
+                                 (c.company || '').toLowerCase() === company.toLowerCase() ||
+                                 (c.name || '').toLowerCase() === company.toLowerCase()
                                );
                                setNewDeal({
                                  ...newDeal,

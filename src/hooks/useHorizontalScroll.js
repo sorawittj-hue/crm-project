@@ -27,21 +27,19 @@ export function useHorizontalScroll() {
       startX = e.pageX - element.offsetLeft;
       scrollLeft = element.scrollLeft;
       element.style.cursor = 'grabbing';
-      element.style.scrollBehavior = 'auto'; // Disable smooth scroll during drag
+      element.style.scrollBehavior = 'auto';
     };
 
     // Mouse leave - stop dragging
     const handleMouseLeave = () => {
       isDown = false;
       element.style.cursor = 'grab';
-      element.style.scrollBehavior = 'smooth';
     };
 
     // Mouse up - stop dragging
     const handleMouseUp = () => {
       isDown = false;
       element.style.cursor = 'grab';
-      element.style.scrollBehavior = 'smooth';
     };
 
     // Mouse move - drag scroll
@@ -56,6 +54,7 @@ export function useHorizontalScroll() {
     // Wheel — always scroll horizontally on the kanban board
     const handleWheel = (e) => {
       e.preventDefault();
+      element.style.scrollBehavior = 'auto';
       element.scrollLeft += e.deltaY + e.deltaX;
     };
 
@@ -71,6 +70,7 @@ export function useHorizontalScroll() {
     const handleTouchMove = (e) => {
       const x = e.touches[0].pageX - element.offsetLeft;
       const walk = (x - touchStartX) * 1.5;
+      element.style.scrollBehavior = 'auto';
       element.scrollLeft = touchScrollLeft - walk;
     };
 
@@ -87,7 +87,7 @@ export function useHorizontalScroll() {
     element.style.cursor = 'grab';
     element.style.overflowX = 'auto';
     element.style.overflowY = 'hidden';
-    element.style.scrollBehavior = 'smooth';
+    element.style.scrollBehavior = 'auto';
     element.style.scrollbarWidth = 'thin'; // Firefox
 
     // Cleanup

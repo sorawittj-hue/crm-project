@@ -43,9 +43,10 @@ function EmailTemplates() {
   const getCatConfig = (id) => CATEGORIES.find(c => c.id === id) || CATEGORIES[5];
 
   const filtered = templates.filter(t =>
-    !search || t.name?.toLowerCase().includes(search.toLowerCase()) ||
-    t.subject?.toLowerCase().includes(search.toLowerCase()) ||
-    t.category?.toLowerCase().includes(search.toLowerCase())
+    !search || 
+    (t.name || '').toLowerCase().includes(search.toLowerCase()) ||
+    (t.subject || '').toLowerCase().includes(search.toLowerCase()) ||
+    (t.category || '').toLowerCase().includes(search.toLowerCase())
   );
 
   const handleAdd = async (e) => {

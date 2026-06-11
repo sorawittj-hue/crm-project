@@ -181,10 +181,10 @@ export default function CustomersPage() {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(c =>
-        c.name?.toLowerCase().includes(term) ||
-        c.company?.toLowerCase().includes(term) ||
-        c.email?.toLowerCase().includes(term) ||
-        c.industry?.toLowerCase().includes(term)
+        (c.name || '').toLowerCase().includes(term) ||
+        (c.company || '').toLowerCase().includes(term) ||
+        (c.email || '').toLowerCase().includes(term) ||
+        (c.industry || '').toLowerCase().includes(term)
       );
     }
     if (tierFilter === 'at_risk') {

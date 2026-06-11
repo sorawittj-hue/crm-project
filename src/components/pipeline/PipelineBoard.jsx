@@ -1,4 +1,4 @@
-import { useState, useMemo, forwardRef, useRef, useEffect } from 'react';
+import { useState, useMemo, forwardRef, useRef, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
@@ -588,192 +588,211 @@ export default function PipelineBoard({
   );
 }
 
-const DealCard = forwardRef(
-  (
-    {
-      deal,
-      isSelected,
-      isPinned,
-      isDragging,
-      canMoveLeft,
-      canMoveRight,
-      onSelect,
-      onClick,
-      onPin,
-      onMove,
-      draggableProps,
-      dragHandleProps,
-      stageColor,
-    },
-    ref
-  ) => {
-    const isStagnant = deal.agingDays > 7 && !['won', 'lost'].includes(deal.stage);
-    const isHighValue = Number(deal.value) >= 1000000;
+const DealCard = memo(
+  forwardRef(
+    (
+      {
+        deal,
+        isSelected,
+        isPinned,
+        isDragging,
+        canMoveLeft,
+        canMoveRight,
+        onSelect,
+        onClick,
+        onPin,
+        onMove,
+        draggableProps,
+        dragHandleProps,
+        stageColor,
+      },
+      ref
+    ) => {
+      const isStagnant = deal.agingDays > 7 && !['won', 'lost'].includes(deal.stage);
+      const isHighValue = Number(deal.value) >= 1000000;
 
-    // Generate a consistent color from the company name
-    const getAvatarColor = (name) => {
-      const colors = [
-        '#6366f1', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b',
-        '#ef4444', '#ec4899', '#3b82f6', '#14b8a6', '#f97316',
-      ];
-      const hash = (name || 'D').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-      return colors[hash % colors.length];
-    };
+      // Generate a consistent color from the company name
+      const getAvatarColor = (name) => {
+        const colors = [
+          '#6366f1', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b',
+          '#ef4444', '#ec4899', '#3b82f6', '#14b8a6', '#f97316',
+        ];
+        const hash = (name || 'D').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+        return colors[hash % colors.length];
+      };
 
-    const avatarColor = getAvatarColor(deal.company);
+      const avatarColor = getAvatarColor(deal.company);
 
-    return (
-      <div
-        ref={ref}
-        {...draggableProps}
-        {...dragHandleProps}
-      >
-        <motion.div
-          initial={false}
-          animate={isDragging ? { scale: 1.04, rotate: 1.5, boxShadow: '0 20px 40px rgba(139, 92, 246, 0.25)' } : { scale: 1, rotate: 0, boxShadow: 'none' }}
-          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-          className={cn(
-            'group relative rounded-2xl border transition-all duration-200 cursor-grab active:cursor-grabbing overflow-hidden',
-            isDragging ? 'border-violet-400 ring-2 ring-violet-500/30 z-50 bg-white' 
-              : isSelected ? 'border-violet-400 ring-2 ring-violet-500/15 bg-white shadow-md'
-              : isPinned ? 'border-amber-300 bg-amber-50/50 shadow-sm hover:shadow-md'
-              : isStagnant ? 'border-rose-200 bg-rose-50/30 shadow-sm hover:shadow-md'
-              : 'border-slate-200/80 bg-white shadow-sm hover:shadow-lg hover:border-violet-200 hover:-translate-y-0.5'
-          )}
-          style={{ transition: 'all 0.2s ease' }}
+      return (
+        <div
+          ref={ref}
+          {...draggableProps}
+          {...dragHandleProps}
         >
-          {/* Colored top accent bar */}
-          <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: stageColor }} />
-
-          {/* Main content (clickable) */}
-          <div
-            className="p-3.5 space-y-3"
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect();
-              onClick(deal);
-            }}
+          <motion.div
+            initial={false}
+            animate={isDragging ? { scale: 1.04, rotate: 1.5, boxShadow: '0 20px 40px rgba(139, 92, 246, 0.25)' } : { scale: 1, rotate: 0, boxShadow: 'none' }}
+            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            className={cn(
+              'group relative rounded-2xl border transition-all duration-200 cursor-grab active:cursor-grabbing overflow-hidden',
+              isDragging ? 'border-violet-400 ring-2 ring-violet-500/30 z-50 bg-white' 
+                : isSelected ? 'border-violet-400 ring-2 ring-violet-500/15 bg-white shadow-md'
+                : isPinned ? 'border-amber-300 bg-amber-50/50 shadow-sm hover:shadow-md'
+                : isStagnant ? 'border-rose-200 bg-rose-50/30 shadow-sm hover:shadow-md'
+                : 'border-slate-200/80 bg-white shadow-sm hover:shadow-lg hover:border-violet-200 hover:-translate-y-0.5'
+            )}
+            style={{ transition: 'all 0.2s ease' }}
           >
-            {/* Top row: company + indicators */}
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black text-white shrink-0 shadow-sm"
-                  style={{ backgroundColor: avatarColor }}
-                >
-                  {(deal.company || 'D').charAt(0).toUpperCase()}
+            {/* Colored top accent bar */}
+            <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: stageColor }} />
+
+            {/* Main content (clickable) */}
+            <div
+              className="p-3.5 space-y-3"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect();
+                onClick(deal);
+              }}
+            >
+              {/* Top row: company + indicators */}
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div
+                    className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black text-white shrink-0 shadow-sm"
+                    style={{ backgroundColor: avatarColor }}
+                  >
+                    {(deal.company || 'D').charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-800 truncate leading-tight">
+                      {deal.company || 'ไม่ระบุบริษัท'}
+                    </p>
+                    <p className="text-xs text-slate-400 line-clamp-2 mt-0.5 leading-snug">
+                      {deal.title || 'ไม่มีชื่อดีล'}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-800 truncate leading-tight">
-                    {deal.company || 'ไม่ระบุบริษัท'}
-                  </p>
-                  <p className="text-xs text-slate-400 line-clamp-2 mt-0.5 leading-snug">
-                    {deal.title || 'ไม่มีชื่อดีล'}
-                  </p>
+                <div className="flex items-center gap-1 shrink-0">
+                  {isPinned && <Star size={11} className="text-amber-500 fill-current" />}
+                  {isStagnant && (
+                    <span
+                      className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded-md"
+                      title="ไม่มีความเคลื่อนไหวเกิน 7 วัน"
+                    >
+                      <Clock size={9} />
+                      {deal.agingDays}ว
+                    </span>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-1 shrink-0">
-                {isPinned && <Star size={11} className="text-amber-500 fill-current" />}
-                {isStagnant && (
+
+              {/* Value + probability */}
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-black text-slate-900 tabular-nums leading-none tracking-tight">
+                  {formatCurrency(deal.value)}
+                </span>
+                {deal.probability !== undefined && deal.probability !== null && (
                   <span
-                    className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded-md"
-                    title="ไม่มีความเคลื่อนไหวเกิน 7 วัน"
+                    className="text-[11px] font-bold tabular-nums px-2 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor: deal.probability >= 70 ? '#dcfce7' : deal.probability >= 40 ? '#ede9fe' : '#f1f5f9',
+                      color: deal.probability >= 70 ? '#16a34a' : deal.probability >= 40 ? '#7c3aed' : '#94a3b8',
+                    }}
                   >
-                    <Clock size={9} />
-                    {deal.agingDays}ว
+                    {deal.probability}%
                   </span>
                 )}
               </div>
-            </div>
 
-            {/* Value + probability */}
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-sm font-black text-slate-900 tabular-nums leading-none tracking-tight">
-                {formatCurrency(deal.value)}
-              </span>
-              {deal.probability !== undefined && deal.probability !== null && (
-                <span
-                  className="text-[11px] font-bold tabular-nums px-2 py-0.5 rounded-full"
+              {/* Progress bar */}
+              <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.max(0, Math.min(100, deal.probability || 0))}%` }}
+                  transition={{ duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
+                  className="h-full rounded-full"
                   style={{
-                    backgroundColor: deal.probability >= 70 ? '#dcfce7' : deal.probability >= 40 ? '#ede9fe' : '#f1f5f9',
-                    color: deal.probability >= 70 ? '#16a34a' : deal.probability >= 40 ? '#7c3aed' : '#94a3b8',
+                    background: deal.probability >= 70
+                      ? 'linear-gradient(to right, #34d399, #10b981)'
+                      : deal.probability >= 40
+                      ? 'linear-gradient(to right, #a78bfa, #8b5cf6)'
+                      : '#cbd5e1',
                   }}
-                >
-                  {deal.probability}%
-                </span>
-              )}
+                />
+              </div>
             </div>
 
-            {/* Progress bar */}
-            <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.max(0, Math.min(100, deal.probability || 0))}%` }}
-                transition={{ duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
-                className="h-full rounded-full"
-                style={{
-                  background: deal.probability >= 70
-                    ? 'linear-gradient(to right, #34d399, #10b981)'
-                    : deal.probability >= 40
-                    ? 'linear-gradient(to right, #a78bfa, #8b5cf6)'
-                    : '#cbd5e1',
+            {/* Action row — smooth hover reveal */}
+            <div className="grid grid-cols-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-all duration-200 max-h-0 group-hover:max-h-12 overflow-hidden bg-slate-50/80">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMove('left');
                 }}
-              />
+                disabled={!canMoveLeft}
+                className={cn(
+                  'h-10 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-medium',
+                  canMoveLeft
+                    ? 'hover:bg-slate-100 hover:text-slate-700'
+                    : 'opacity-20 cursor-not-allowed'
+                )}
+                title="ย้อนขั้นตอน"
+              >
+                <ArrowLeft size={13} />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPin();
+                }}
+                className={cn(
+                  'h-10 flex items-center justify-center text-xs gap-1 transition-all border-x border-slate-100',
+                  isPinned
+                    ? 'text-amber-500 hover:bg-amber-50'
+                    : 'text-slate-400 hover:bg-slate-100 hover:text-amber-500'
+                )}
+                title={isPinned ? 'เลิกปักหมุด' : 'ปักหมุด'}
+              >
+                <Star size={13} fill={isPinned ? 'currentColor' : 'none'} />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMove('right');
+                }}
+                disabled={!canMoveRight}
+                className={cn(
+                  'h-10 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-medium',
+                  canMoveRight
+                    ? 'hover:bg-violet-50 hover:text-violet-600'
+                    : 'opacity-20 cursor-not-allowed'
+                )}
+                title="ไปขั้นตอนถัดไป"
+              >
+                <ChevronRight size={14} />
+              </button>
             </div>
-          </div>
-
-          {/* Action row — smooth hover reveal */}
-          <div className="grid grid-cols-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-all duration-200 max-h-0 group-hover:max-h-12 overflow-hidden bg-slate-50/80">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onMove('left');
-              }}
-              disabled={!canMoveLeft}
-              className={cn(
-                'h-10 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-medium',
-                canMoveLeft
-                  ? 'hover:bg-slate-100 hover:text-slate-700'
-                  : 'opacity-20 cursor-not-allowed'
-              )}
-              title="ย้อนขั้นตอน"
-            >
-              <ArrowLeft size={13} />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onPin();
-              }}
-              className={cn(
-                'h-10 flex items-center justify-center text-xs gap-1 transition-all border-x border-slate-100',
-                isPinned
-                  ? 'text-amber-500 hover:bg-amber-50'
-                  : 'text-slate-400 hover:bg-slate-100 hover:text-amber-500'
-              )}
-              title={isPinned ? 'เลิกปักหมุด' : 'ปักหมุด'}
-            >
-              <Star size={13} fill={isPinned ? 'currentColor' : 'none'} />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onMove('right');
-              }}
-              disabled={!canMoveRight}
-              className={cn(
-                'h-10 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-medium',
-                canMoveRight
-                  ? 'hover:bg-violet-50 hover:text-violet-600'
-                  : 'opacity-20 cursor-not-allowed'
-              )}
-              title="ไปขั้นตอนถัดไป"
-            >
-              <ChevronRight size={14} />
-            </button>
-          </div>
-        </motion.div>
-      </div>
+          </motion.div>
+        </div>
+      );
+    }
+  ),
+  (prev, next) => {
+    return (
+      prev.isSelected === next.isSelected &&
+      prev.isPinned === next.isPinned &&
+      prev.isDragging === next.isDragging &&
+      prev.canMoveLeft === next.canMoveLeft &&
+      prev.canMoveRight === next.canMoveRight &&
+      prev.stageColor === next.stageColor &&
+      prev.deal.id === next.deal.id &&
+      prev.deal.value === next.deal.value &&
+      prev.deal.stage === next.deal.stage &&
+      prev.deal.title === next.deal.title &&
+      prev.deal.company === next.deal.company &&
+      prev.deal.probability === next.deal.probability &&
+      prev.deal.agingDays === next.deal.agingDays
     );
   }
 );
