@@ -1198,6 +1198,16 @@ export default function CommandCenterPage() {
                     <p className="text-[9px] text-slate-400 font-semibold">Active</p>
                   </div>
                 </div>
+
+                {/* ACTION BUTTONS */}
+                <div className="flex gap-2 pt-3 mt-3 border-t border-slate-100/60">
+                  <Button size="sm" variant="outline" className="flex-1 h-8 text-[10px] font-bold" onClick={(e) => { e.stopPropagation(); window.location.href = `mailto:${m.email || 'team@novapipeline.com'}`; }}>
+                    <Mail size={12} className="mr-1.5" /> Message
+                  </Button>
+                  <Button size="sm" className="flex-1 h-8 text-[10px] font-bold bg-violet-50 text-violet-700 hover:bg-violet-100 border-0" onClick={(e) => { e.stopPropagation(); navigate('/pipeline'); }}>
+                    <BarChart3 size={12} className="mr-1.5" /> Review
+                  </Button>
+                </div>
               </motion.div>
             ))}
           </div>

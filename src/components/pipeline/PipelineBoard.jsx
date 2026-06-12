@@ -372,9 +372,9 @@ export default function PipelineBoard({
         </div>
       </div>
 
-      {/* LIST VIEW */}
+      {/* LIST VIEW (Desktop Only) */}
       {viewMode === 'list' && (
-        <div className="overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="hidden md:block overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           {processedDeals.length === 0 ? (
             <div className="py-20 text-center">
               <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -483,9 +483,10 @@ export default function PipelineBoard({
         </div>
       )}
 
-      {/* KANBAN BOARD */}
+      {/* KANBAN BOARD (Desktop Only) */}
       {viewMode === 'kanban' && (
-        <DragDropContext onDragEnd={handleDragEnd}>
+        <div className="hidden md:block">
+          <DragDropContext onDragEnd={handleDragEnd}>
           <div
             ref={scrollRef}
             className="flex-1 min-h-[560px] relative overflow-x-auto overflow-y-hidden custom-scrollbar-horizontal"
@@ -575,7 +576,62 @@ export default function PipelineBoard({
             </div>
           </div>
         </DragDropContext>
+        </div>
       )}
+
+      {/* MOBILE LIST VIEW (Always visible on mobile, ignores viewMode) */}
+      <div className="block md:hidden space-y-4">
+        {STAGES.map((stageId) => {
+          const stage = STAGE_CONFIG[stageId];
+          const stageDeals = dealsByStage[stageId] || [];
+          if (stageDeals.length === 0) return null;
+
+          return (
+            <div key={stageId} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+              <div className={cn('px-4 py-3 border-b border-slate-100 flex items-center justify-between', stage.headerBg)}>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-xl flex items-center justify-center text-white shadow-sm shrink-0" style={{ backgroundColor: stage.dotColor }}>
+                    <span className="text-[10px]">{stage.icon}</span>
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-800">{stage.label}</h3>
+                </div>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white/50 text-slate-700 shadow-sm border border-white/20">
+                  {stageDeals.length} ดีล
+                </span>
+              </div>
+              <div className="divide-y divide-slate-50">
+                {stageDeals.map((deal) => (
+                  <div key={deal.id} onClick={() => onDealClick(deal)} className="p-4 hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer relative overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: stage.dotColor }} />
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-slate-900 truncate">{deal.company || '—'}</p>
+                        <p className="text-xs text-slate-500 truncate mt-0.5">{deal.title}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-sm font-black text-slate-900 tabular-nums">{formatCurrency(deal.value)}</p>
+                        {deal.probability !== undefined && deal.probability !== null && (
+                          <p className={cn("text-[11px] font-bold mt-1 tabular-nums", deal.probability >= 70 ? "text-emerald-600" : deal.probability >= 40 ? "text-violet-600" : "text-slate-400")}>
+                            {deal.probability}% โอกาส
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        {processedDeals.length === 0 && (
+          <div className="py-12 text-center bg-white rounded-2xl border border-slate-200">
+            <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <Filter size={20} className="text-slate-300" />
+            </div>
+            <p className="text-slate-400 text-sm font-medium">ไม่พบดีลที่ตรงกับเงื่อนไข</p>
+          </div>
+        )}
+      </div>
 
       {/* WIN/LOSS REASON MODAL — shared component */}
       <WinLossModal

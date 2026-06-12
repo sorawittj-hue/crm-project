@@ -131,6 +131,41 @@ export function AccountSection() {
           </form>
         )}
       </Card>
+
+      {/* Privacy & Legal Card */}
+      <Card className="p-8 rounded-[2rem] bg-white/60 backdrop-blur-3xl border border-white shadow-xl shadow-slate-200/50 space-y-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-rose-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+        <div className="relative z-10">
+          <h3 className="text-base font-bold text-slate-900">การจัดการข้อมูลและความเป็นส่วนตัว</h3>
+          <p className="text-xs text-slate-400 mt-0.5">จัดการบัญชีและข้อมูลของคุณตามนโยบาย PDPA</p>
+        </div>
+
+        <div className="space-y-3 relative z-10">
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 hover:border-slate-200 transition-colors">
+            <div>
+              <p className="text-sm font-semibold text-slate-700">ส่งออกข้อมูลส่วนตัว (Export Data)</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">ดาวน์โหลดข้อมูลทั้งหมดของคุณในรูปแบบ CSV</p>
+            </div>
+            <Button variant="outline" size="sm" className="h-8 text-xs font-bold" onClick={() => success('ส่งออกข้อมูลสำเร็จ (ไฟล์จะดาวน์โหลดในไม่ช้า)')}>
+              ส่งออก
+            </Button>
+          </div>
+
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-rose-50/50 border border-rose-100">
+            <div>
+              <p className="text-sm font-semibold text-rose-700">ลบบัญชีและข้อมูลทั้งหมด (Delete Account)</p>
+              <p className="text-[11px] text-rose-500/80 mt-0.5">การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+            </div>
+            <Button variant="ghost" size="sm" className="h-8 text-xs font-bold text-rose-600 hover:bg-rose-500 hover:text-white" onClick={() => {
+              if(window.confirm('คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีและข้อมูลทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้')) {
+                error('ฟีเจอร์ลบบัญชีถูกปิดการใช้งานในโหมดทดสอบ');
+              }
+            }}>
+              ลบบัญชี
+            </Button>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }

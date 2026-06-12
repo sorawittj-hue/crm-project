@@ -7,6 +7,7 @@ import AppLayout from './components/layout/AppLayout';
 import ErrorBoundary from './components/layout/ErrorBoundary';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import SkeletonLoader from './components/ui/SkeletonLoader';
+import { CookieBanner } from './components/ui/CookieBanner';
 
 // Pages — lazy-loaded so each page only loads when visited
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -88,6 +89,7 @@ function App() {
             <DevTools initialIsOpen={false} />
           </Suspense>
         )}
+        <CookieBanner />
       </QueryClientProvider>
     </ErrorBoundary>
   );

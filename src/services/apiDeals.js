@@ -12,7 +12,11 @@ import {
 /**
  * Fetch all deals with error handling
  */
-export async function fetchDeals() {
+export async function fetchDeals(options = {}) {
+  const { page = 1, limit = 2000 } = options;
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
   try {
     const userId = await getRequiredUserId();
     await ensureOwnerTeamMember();
@@ -20,7 +24,7 @@ export async function fetchDeals() {
       .from('deals')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(2000);
+      .range(from, to);
 
     if (error) throw error;
     return filterRowsByOwner('deals', data, userId);
@@ -30,7 +34,7 @@ export async function fetchDeals() {
         .from('deals')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(2000);
+        .range(from, to);
 
       if (!legacyError) return data || [];
     }

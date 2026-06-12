@@ -11,14 +11,18 @@ import {
 /**
  * Fetch all customers with their stats
  */
-export async function fetchCustomers() {
+export async function fetchCustomers(options = {}) {
+  const { page = 1, limit = 2000 } = options;
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
   try {
     const userId = await getRequiredUserId();
     const { data, error } = await supabase
       .from('customers')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(2000);
+      .range(from, to);
     
     if (error) throw error;
     return filterRowsByOwner('customers', data, userId);
@@ -28,7 +32,7 @@ export async function fetchCustomers() {
         .from('customers')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(2000);
+        .range(from, to);
 
       if (!legacyError) return data || [];
     }

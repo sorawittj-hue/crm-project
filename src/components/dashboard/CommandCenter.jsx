@@ -35,7 +35,7 @@ const WarCard = ({ children, className, delay = 0, gradient = false }) => (
 );
 
 // Team Unit Status Component
-const TeamUnitStatus = ({ name, role, won, target, color, icon_type, activeNow }) => {
+const TeamUnitStatus = ({ member = {}, won, target, color, icon_type, activeNow, onReview }) => {
   const pct = Math.round((won / target) * 100);
   const gap = Math.max(0, target - won);
   const Icon = icon_type === 'ShieldCheck' ? ShieldCheck : UserCheck;
@@ -57,8 +57,8 @@ const TeamUnitStatus = ({ name, role, won, target, color, icon_type, activeNow }
             <Icon size={22} className="text-white" />
           </div>
           <div>
-            <h4 className="text-sm font-black uppercase tracking-tight">{name}</h4>
-            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em]">{role}</p>
+            <h4 className="text-sm font-black uppercase tracking-tight">{member.name}</h4>
+            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em]">{member.role}</p>
           </div>
         </div>
         <div className="text-right">
@@ -84,10 +84,10 @@ const TeamUnitStatus = ({ name, role, won, target, color, icon_type, activeNow }
       </div>
 
       <div className="flex gap-2 pt-2">
-        <Button size="sm" variant="outline" className="flex-1 h-8 text-[8px] font-black uppercase tracking-widest border-white/10">
+        <Button size="sm" variant="outline" onClick={() => window.location.href = `mailto:${member.email || 'team@novapipeline.com'}`} className="flex-1 h-8 text-[8px] font-black uppercase tracking-widest border-white/10 hover:bg-white/10">
           <MessageCircle size={12} className="mr-1" /> Message
         </Button>
-        <Button size="sm" className="flex-1 h-8 bg-primary/20 text-primary border border-primary/30 text-[8px] font-black uppercase tracking-widest">
+        <Button size="sm" onClick={() => onReview && onReview(member)} className="flex-1 h-8 bg-primary/20 text-primary border border-primary/30 text-[8px] font-black uppercase tracking-widest hover:bg-primary/30">
           <BarChart3 size={12} className="mr-1" /> Review
         </Button>
       </div>
@@ -386,13 +386,13 @@ const CommandCenter = ({
                 return (
                   <TeamUnitStatus
                     key={m.id}
-                    name={m.name}
-                    role={m.role}
+                    member={m}
                     won={mWon}
                     target={m.goal}
                     color={m.color}
                     icon_type={m.icon_type}
                     activeNow={true}
+                    onReview={(member) => window.location.href = '/pipeline'}
                   />
                 );
               })}

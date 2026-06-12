@@ -245,6 +245,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
       scheduled_at: scheduledAt,
     });
     setFollowUpDate(''); setFollowUpNote('');
+    onUpdate(deal.id, { last_activity: new Date().toISOString() });
   };
 
   const handleLogActivity = async () => {
@@ -433,6 +434,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                                   openPaywall();
                                 } else {
                                   addActivityMutation.mutate({ deal_id: deal.id, type: 'call', title: `โทรหา ${deal.contact || deal.contact_phone}`, completed_at: new Date().toISOString() });
+                                  onUpdate(deal.id, { last_activity: new Date().toISOString() });
                                 }
                               }}
                               className="flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold transition-colors border border-blue-100"
@@ -503,6 +505,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                                         setCopiedTemplate(true);
                                         setTimeout(() => setCopiedTemplate(false), 2000);
                                         addActivityMutation.mutate({ deal_id: deal.id, type: 'note', title: `คัดลอกอีเมล: ${template.name}`, completed_at: new Date().toISOString() });
+                                        onUpdate(deal.id, { last_activity: new Date().toISOString() });
                                       }}
                                         className="flex-1 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5">
                                         {copiedTemplate ? <CheckCircle2 size={13} className="text-emerald-600" /> : <FileText size={13} />}
