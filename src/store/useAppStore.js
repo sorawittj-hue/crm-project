@@ -29,7 +29,8 @@ export const useAppStore = create(
 
       // Paywall Modal
       isPaywallOpen: false,
-      openPaywall: () => set({ isPaywallOpen: true }),
+      paywallReason: 'default', // 'default', 'trial_ended', 'premium_only'
+      openPaywall: (reason = 'default') => set({ isPaywallOpen: true, paywallReason: reason }),
       closePaywall: () => set({ isPaywallOpen: false }),
     }),
     {

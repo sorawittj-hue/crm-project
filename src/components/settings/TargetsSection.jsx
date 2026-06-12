@@ -6,7 +6,8 @@ import { formatFullCurrency } from '../../lib/formatters';
 import { useToast } from '../ui/Toast';
 import { Pencil, Save, Loader2, Target } from 'lucide-react';
 import { useSettings, useUpdateSettings } from '../../hooks/useSettings';
-import { useAuth } from '../../hooks/useAuth';
+import { useMyProfile } from '../../hooks/useUserProfiles';
+import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 
 export function TargetsSection() {
@@ -15,7 +16,7 @@ export function TargetsSection() {
   const { success, error } = useToast();
   const { user } = useAuth();
   const { openPaywall } = useAppStore();
-  const isGuest = user?.email === 'demo@novapipeline.com';
+  const { shouldBlockBasic, isGuestAccount } = useSubscription();
 
   const [targetForm, setTargetForm] = useState(null);
   const [savingTargets, setSavingTargets] = useState(false);
@@ -26,8 +27,8 @@ export function TargetsSection() {
 
   const handleSaveTargets = async (e) => {
     e.preventDefault();
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       setTargetForm(null);
       return;
     }

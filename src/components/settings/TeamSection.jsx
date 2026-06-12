@@ -9,7 +9,8 @@ import { Plus, Check, X, Pencil, Trash2, Users, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTeam, useAddTeamMember, useUpdateTeamMember, useDeleteTeamMember } from '../../hooks/useTeam';
 import ConfirmDialog from '../ui/ConfirmDialog';
-import { useAuth } from '../../hooks/useAuth';
+import { supabase } from '../../utils/supabase';
+import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 
 const MEMBER_COLORS = [
@@ -34,7 +35,7 @@ export function TeamSection() {
   const { success, error } = useToast();
   const { user } = useAuth();
   const { openPaywall } = useAppStore();
-  const isGuest = user?.email === 'demo@novapipeline.com';
+  const { shouldBlockBasic, isGuestAccount } = useSubscription();
 
   const [addingMember, setAddingMember] = useState(false);
   const [newMember, setNewMember] = useState(EMPTY_MEMBER);
@@ -44,8 +45,8 @@ export function TeamSection() {
 
   const handleAddMember = async (e) => {
     e.preventDefault();
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
     }
     if (!newMember.name.trim()) return;
@@ -63,8 +64,8 @@ export function TeamSection() {
   };
 
   const handleUpdateMember = async (id) => {
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
     }
     try {
@@ -91,8 +92,8 @@ export function TeamSection() {
           </div>
           <Button
             onClick={() => {
-              if (isGuest) {
-                openPaywall();
+              if (shouldBlockBasic) {
+                openPaywall(isGuestAccount ? 'default' : 'trial_ended');
               } else {
                 setAddingMember(true);
                 setNewMember(EMPTY_MEMBER);
@@ -170,8 +171,8 @@ export function TeamSection() {
                   <div className="flex gap-1.5 shrink-0">
                     <button
                       onClick={() => {
-                        if (isGuest) {
-                          openPaywall();
+                        if (shouldBlockBasic) {
+                          openPaywall(isGuestAccount ? 'default' : 'trial_ended');
                         } else {
                           setEditingMemberId(m.id);
                           setEditMemberForm({ name: m.name, role: m.role, goal: m.goal, color: m.color });
@@ -183,8 +184,8 @@ export function TeamSection() {
                     </button>
                     <button
                       onClick={() => {
-                        if (isGuest) {
-                          openPaywall();
+                        if (shouldBlockBasic) {
+                          openPaywall(isGuestAccount ? 'default' : 'trial_ended');
                         } else {
                           setConfirmDeleteMember({ open: true, id: m.id, name: m.name });
                         }
@@ -298,8 +299,8 @@ export function TeamSection() {
         description="การดำเนินการนี้จะลบสมาชิกออกจากทีมถาวร"
         confirmLabel="ลบ"
         onConfirm={() => {
-          if (isGuest) {
-            openPaywall();
+          if (shouldBlockBasic) {
+            openPaywall(isGuestAccount ? 'default' : 'trial_ended');
             setConfirmDeleteMember({ open: false, id: null, name: '' });
             return;
           }

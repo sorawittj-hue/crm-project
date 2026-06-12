@@ -10,12 +10,13 @@ import ConfirmDialog from '../ui/ConfirmDialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 
 export function BackupSection() {
   const { user } = useAuth();
   const { openPaywall } = useAppStore();
-  const isGuest = user?.email === 'demo@novapipeline.com';
+  const { canUsePremiumFeatures, isGuestAccount } = useSubscription();
   const { success, error } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
@@ -38,8 +39,8 @@ export function BackupSection() {
   }, [user?.id]);
 
   const handleExport = async () => {
-    if (isGuest) {
-      openPaywall();
+    if (!canUsePremiumFeatures) {
+      openPaywall(isGuestAccount ? 'default' : 'premium_only');
       return;
     }
     if (!user?.id) return;
@@ -64,8 +65,8 @@ export function BackupSection() {
   };
 
   const handleExportCSV = async () => {
-    if (isGuest) {
-      openPaywall();
+    if (!canUsePremiumFeatures) {
+      openPaywall(isGuestAccount ? 'default' : 'premium_only');
       return;
     }
     if (!user?.id) return;
@@ -116,8 +117,8 @@ export function BackupSection() {
   };
 
   const handleRestoreAutoBackup = async (backupData) => {
-    if (isGuest) {
-      openPaywall();
+    if (!canUsePremiumFeatures) {
+      openPaywall(isGuestAccount ? 'default' : 'premium_only');
       return;
     }
     if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการกู้คืนข้อมูลจากวันที่นี้? (ข้อมูลที่มีอยู่จะถูกเขียนทับด้วย ID เดิม)')) return;
@@ -227,8 +228,8 @@ export function BackupSection() {
               />
               <Button
                 onClick={() => {
-                  if (isGuest) {
-                    openPaywall();
+                  if (!canUsePremiumFeatures) {
+                    openPaywall(isGuestAccount ? 'default' : 'premium_only');
                   } else {
                     fileInputRef.current?.click();
                   }
@@ -307,8 +308,8 @@ export function BackupSection() {
           </div>
           <Button
             onClick={() => {
-              if (isGuest) {
-                openPaywall();
+              if (!canUsePremiumFeatures) {
+                openPaywall(isGuestAccount ? 'default' : 'premium_only');
               } else {
                 setShowResetConfirm(true);
               }

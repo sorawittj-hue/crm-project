@@ -3,6 +3,7 @@ import { useDeals, useUpdateDeal, useAddDeal, useAddMultipleDeals, useDeleteDeal
 import { useCustomers } from '../hooks/useCustomers';
 import { useTeam } from '../hooks/useTeam';
 import { useAuth } from '../hooks/useAuth';
+import { useSubscription } from '../hooks/useSubscription';
 import { useAppStore } from '../store/useAppStore';
 import { useAddActivity } from '../hooks/useActivities';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
@@ -30,11 +31,11 @@ export default function PipelinePage() {
   const addActivityMutation = useAddActivity();
   const { pendingOpenDeal, clearPendingOpenDeal, pendingNewDealCustomer, clearPendingNewDealCustomer, openPaywall } = useAppStore();
   const { user } = useAuth();
-  const isGuest = user?.email === 'demo@novapipeline.com';
+  const { shouldBlockBasic, isGuestAccount } = useSubscription();
 
   const handleUpdateDeal = async (id, updates) => {
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
     }
     const originalDeal = (deals || []).find(d => d.id === id);
@@ -184,8 +185,8 @@ export default function PipelinePage() {
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
     }
     if (addDealMutation.isPending) return;
@@ -209,8 +210,8 @@ export default function PipelinePage() {
 
   const handleQuickAdd = async (e) => {
     e.preventDefault();
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
     }
     if (!quickDeal.title && !quickDeal.company) { setQuickError('ใส่ชื่อดีลหรือบริษัทอย่างน้อย 1 อย่าง'); return; }
@@ -329,8 +330,8 @@ export default function PipelinePage() {
                     <button
                       onClick={() => {
                         setIsToolsOpen(false);
-                        if (isGuest) {
-                          openPaywall();
+                        if (shouldBlockBasic) {
+                          openPaywall(isGuestAccount ? 'default' : 'trial_ended');
                         } else {
                           setIsQuickAddOpen(true);
                           setQuickError(null);
@@ -344,8 +345,8 @@ export default function PipelinePage() {
                     <button
                       onClick={() => {
                         setIsToolsOpen(false);
-                        if (isGuest) {
-                          openPaywall();
+                        if (shouldBlockBasic) {
+                          openPaywall(isGuestAccount ? 'default' : 'trial_ended');
                         } else {
                           setIsScanOpen(true);
                         }
@@ -362,7 +363,7 @@ export default function PipelinePage() {
           </div>
 
           <Button
-            onClick={() => isGuest ? openPaywall() : setIsAddModalOpen(true)}
+            onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsAddModalOpen(true)}
             className="h-9 px-4 rounded-xl text-xs bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20 flex items-center gap-1.5 font-bold"
           >
             <Plus size={13} /> เพิ่มดีลใหม่
@@ -446,8 +447,8 @@ export default function PipelinePage() {
       <MonthlyPipeline
         deals={filteredDeals}
         onAddDeal={(data) => {
-          if (isGuest) {
-            openPaywall();
+          if (shouldBlockBasic) {
+            openPaywall(isGuestAccount ? 'default' : 'trial_ended');
             return;
           }
           if (data) addDealMutation.mutate(data);
@@ -455,8 +456,8 @@ export default function PipelinePage() {
         }}
         onUpdateDeal={handleUpdateDeal}
         onDeleteDeal={(id) => {
-          if (isGuest) {
-            openPaywall();
+          if (shouldBlockBasic) {
+            openPaywall(isGuestAccount ? 'default' : 'trial_ended');
             return;
           }
           deleteDealsMutation.mutate([id]);

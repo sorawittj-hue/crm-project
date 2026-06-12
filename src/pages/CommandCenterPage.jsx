@@ -5,6 +5,7 @@ import { useTeam } from '../hooks/useTeam';
 import { useSettings } from '../hooks/useSettings';
 import { useActivities } from '../hooks/useActivities';
 import { useCustomers } from '../hooks/useCustomers';
+import { useSubscription } from '../hooks/useSubscription';
 import { useAppStore } from '../store/useAppStore';
 import { useAuth } from '../hooks/useAuth';
 import { useMyProfile } from '../hooks/useUserProfiles';
@@ -87,7 +88,7 @@ export default function CommandCenterPage() {
   const { data: activities = [] } = useActivities();
   const { data: customers = [] } = useCustomers();
   const { setPendingOpenDeal, openPaywall } = useAppStore();
-  const isGuest = user?.email === 'demo@novapipeline.com';
+  const { shouldBlockBasic, isGuestAccount } = useSubscription();
 
   const [isQuickWinOpen, setIsQuickWinOpen] = useState(false);
 
@@ -364,7 +365,7 @@ export default function CommandCenterPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Button onClick={() => isGuest ? openPaywall() : setIsQuickWinOpen(true)}
+          <Button onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsQuickWinOpen(true)}
             className="h-9 px-4 rounded-xl text-xs font-bold border shadow-sm transition-all hover:shadow-md bg-emerald-500 text-white shadow-emerald-500/20 border-emerald-400 hover:bg-emerald-600 active:scale-95">
             <Zap size={14} className="mr-1.5" />
             บันทึกยอดด่วน

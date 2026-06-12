@@ -16,6 +16,7 @@ import { useSettings } from '../../hooks/useSettings';
 import { useActivities } from '../../hooks/useActivities';
 import { useAuth } from '../../hooks/useAuth';
 import { useMyProfile } from '../../hooks/useUserProfiles';
+import { useSubscription } from '../../hooks/useSubscription';
 import {
   useNotifications,
   useProactiveEngine,
@@ -185,8 +186,8 @@ export default function AppLayout() {
 
   const { data: myProfile } = useMyProfile(userId);
   // Use personal target if set; otherwise default to 0
-  const isGuestMode = user?.email === 'demo@novapipeline.com';
-  const hasPersonalTarget = myProfile?.personal_target > 0 && !isGuestMode;
+  const { shouldBlockBasic, isGuestAccount } = useSubscription();
+  const hasPersonalTarget = myProfile?.personal_target > 0 && !isGuestAccount;
   const effectiveTarget = hasPersonalTarget ? myProfile.personal_target : 0;
 
   // DB-backed notifications

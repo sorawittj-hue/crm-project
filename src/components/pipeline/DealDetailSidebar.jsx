@@ -20,6 +20,8 @@ import { callGeminiAPI } from '../../services/ai';
 import { useDealActivities, useAddActivity } from '../../hooks/useActivities';
 import { useEmailTemplates } from '../../hooks/useEmailTemplates';
 import { createPortal } from 'react-dom';
+import { supabase } from '../../utils/supabase';
+import { useSubscription } from '../../hooks/useSubscription';
 import { useAuth } from '../../hooks/useAuth';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -138,7 +140,7 @@ const TABS = [
 export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, onClose, onRequestDelete, onRequestCloseStage }) {
   const { user } = useAuth();
   const { openPaywall } = useAppStore();
-  const isGuest = user?.email === 'demo@novapipeline.com';
+  const { shouldBlockBasic, isGuestAccount } = useSubscription();
 
   const [activeTab, setActiveTab] = useState('overview');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -161,8 +163,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
 
   const setField = (field, value) => setLocalEdit(p => ({ ...p, [field]: value }));
   const saveField = (field, raw) => {
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       setLocalEdit(p => ({ ...p, [field]: deal[field] || '' }));
       return;
     }
@@ -232,8 +234,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
   }, [deal?.id]);
 
   const handleScheduleFollowUp = async () => {
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
     }
     if (!deal || !followUpDate) return;
@@ -249,8 +251,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
   };
 
   const handleLogActivity = async () => {
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
     }
     if (!deal) return;
@@ -368,7 +370,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
               <div className="flex gap-2 mt-4">
                 <Button
                   className="flex-1 h-10 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white border-0 shadow-md shadow-emerald-500/20 flex items-center justify-center gap-1.5"
-                  onClick={() => isGuest ? openPaywall() : onRequestCloseStage?.('won')}
+                  onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : onRequestCloseStage?.('won')}
                   disabled={deal.stage === 'won'}
                 >
                   <CheckCircle2 size={14} /> ปิดได้!
@@ -376,13 +378,13 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                 <Button
                   variant="outline"
                   className="flex-1 h-10 rounded-xl text-xs font-bold border-rose-200 text-rose-600 hover:bg-rose-50 flex items-center justify-center gap-1.5"
-                  onClick={() => isGuest ? openPaywall() : onRequestCloseStage?.('lost')}
+                  onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : onRequestCloseStage?.('lost')}
                   disabled={deal.stage === 'lost'}
                 >
                   <XCircle size={14} /> ปิดไม่ได้
                 </Button>
                 <button
-                  onClick={() => isGuest ? openPaywall() : onRequestDelete?.(deal.id)}
+                  onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : onRequestDelete?.(deal.id)}
                   className="w-10 h-10 rounded-xl bg-rose-50 text-rose-400 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center shrink-0"
                 >
                   <Trash2 size={16} />
@@ -429,9 +431,9 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                             <a
                               href={`tel:${deal.contact_phone}`}
                               onClick={(e) => {
-                                if (isGuest) {
+                                if (shouldBlockBasic) {
                                   e.preventDefault();
-                                  openPaywall();
+                                  openPaywall(isGuestAccount ? 'default' : 'trial_ended');
                                 } else {
                                   addActivityMutation.mutate({ deal_id: deal.id, type: 'call', title: `โทรหา ${deal.contact || deal.contact_phone}`, completed_at: new Date().toISOString() });
                                   onUpdate(deal.id, { last_activity: new Date().toISOString() });
@@ -497,8 +499,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                                     <pre className="text-xs text-slate-600 font-sans whitespace-pre-wrap leading-relaxed max-h-32 overflow-y-auto bg-slate-50 p-2.5 rounded-lg border border-slate-100">{body}</pre>
                                     <div className="flex gap-2">
                                       <button onClick={() => {
-                                        if (isGuest) {
-                                          openPaywall();
+                                        if (shouldBlockBasic) {
+                                          openPaywall(isGuestAccount ? 'default' : 'trial_ended');
                                           return;
                                         }
                                         navigator.clipboard.writeText(body);
@@ -512,8 +514,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                                         {copiedTemplate ? 'คัดลอกแล้ว!' : 'คัดลอก'}
                                       </button>
                                       <button onClick={() => {
-                                        if (isGuest) {
-                                          openPaywall();
+                                        if (shouldBlockBasic) {
+                                          openPaywall(isGuestAccount ? 'default' : 'trial_ended');
                                           return;
                                         }
                                         window.open(`mailto:${deal.contact_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
@@ -795,8 +797,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                           <select
                             value={localEdit.stage}
                             onChange={e => {
-                              if (isGuest) {
-                                openPaywall();
+                              if (shouldBlockBasic) {
+                                openPaywall(isGuestAccount ? 'default' : 'trial_ended');
                                 return;
                               }
                               const s = e.target.value;

@@ -4,6 +4,7 @@ import { useDeals } from '../hooks/useDeals';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { useAuth } from '../hooks/useAuth';
+import { useSubscription } from '../hooks/useSubscription';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -74,7 +75,7 @@ export default function CustomersPage() {
   const navigate = useNavigate();
   const { setPendingNewDealCustomer, openPaywall } = useAppStore();
   const { user } = useAuth();
-  const isGuest = user?.email === 'demo@novapipeline.com';
+  const { shouldBlockBasic, isGuestAccount } = useSubscription();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState('all');
@@ -111,8 +112,8 @@ export default function CustomersPage() {
 
   const handleSaveCustomer = async (e) => {
     e.preventDefault();
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       if (selectedCustomer) {
         setLocalCustomer({
           id: selectedCustomer.id,
@@ -147,8 +148,8 @@ export default function CustomersPage() {
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
     }
     if (createCustomerMutation.isPending) return;
@@ -164,8 +165,8 @@ export default function CustomersPage() {
 
   const handleConvertSynthetic = async (customer) => {
     if (!customer._fromDeals) return;
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
     }
     try {
@@ -289,8 +290,8 @@ export default function CustomersPage() {
         <div className="flex items-center gap-4">
           <Button
             onClick={() => {
-              if (isGuest) {
-                openPaywall();
+              if (shouldBlockBasic) {
+                openPaywall(isGuestAccount ? 'default' : 'trial_ended');
               } else {
                 setNewCustomer(EMPTY_FORM);
                 setFormError(null);
@@ -553,8 +554,8 @@ export default function CustomersPage() {
             </div>
             <button
               onClick={() => {
-                if (isGuest) {
-                  openPaywall();
+                if (shouldBlockBasic) {
+                  openPaywall(isGuestAccount ? 'default' : 'trial_ended');
                 } else {
                   setNewCustomer(EMPTY_FORM);
                   setFormError(null);
@@ -772,8 +773,8 @@ export default function CustomersPage() {
                                 variant="ghost"
                                 className="flex-1 h-12 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2"
                                 onClick={() => {
-                                  if (isGuest) {
-                                    openPaywall();
+                                  if (shouldBlockBasic) {
+                                    openPaywall(isGuestAccount ? 'default' : 'trial_ended');
                                   } else {
                                     setConfirmDelete({ open: true, customerId: selectedCustomer.id });
                                   }

@@ -5,7 +5,8 @@ import { Input } from '../ui/Input';
 import { useToast } from '../ui/Toast';
 import { Pencil, Save, Loader2 } from 'lucide-react';
 import { useSettings, useUpdateSettings } from '../../hooks/useSettings';
-import { useAuth } from '../../hooks/useAuth';
+import { useMyProfile } from '../../hooks/useUserProfiles';
+import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 
 export function CompanySection() {
@@ -14,7 +15,7 @@ export function CompanySection() {
   const { success, error } = useToast();
   const { user } = useAuth();
   const { openPaywall } = useAppStore();
-  const isGuest = user?.email === 'demo@novapipeline.com';
+  const { shouldBlockBasic, isGuestAccount } = useSubscription();
 
   const [companyForm, setCompanyForm] = useState(null);
   const [savingCompany, setSavingCompany] = useState(false);
@@ -27,8 +28,8 @@ export function CompanySection() {
 
   const handleSaveCompany = async (e) => {
     e.preventDefault();
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       setCompanyForm(null);
       return;
     }

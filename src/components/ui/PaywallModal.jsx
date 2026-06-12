@@ -5,7 +5,7 @@ import { Crown, Sparkles, CheckCircle2, AlertCircle, Shield, Zap, Users, ShieldC
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PaywallModal() {
-  const { isPaywallOpen, closePaywall } = useAppStore();
+  const { isPaywallOpen, closePaywall, paywallReason } = useAppStore();
   const [confirming, setConfirming] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -47,9 +47,25 @@ export default function PaywallModal() {
                 <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center shadow-md shadow-amber-500/10 mb-3 animate-bounce">
                   <Crown size={24} className="text-amber-500 fill-amber-400/20" />
                 </div>
-                <span className="text-[10px] font-bold text-violet-600 uppercase tracking-[0.2em] mb-1">Nova CRM Premium</span>
-                <h3 className="text-2xl font-black text-slate-900 tracking-tight">ปลดล็อคพลังการขายเต็มรูปแบบ</h3>
-                <p className="text-xs text-slate-400 font-semibold mt-1">เริ่มต้นเพียง 300 บาท/ตลอดชีพ</p>
+                <span className="text-[10px] font-bold text-violet-600 uppercase tracking-[0.2em] mb-1">
+                  {paywallReason === 'trial_ended' ? 'Trial Expired' : 'Nova CRM Premium'}
+                </span>
+                <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+                  {paywallReason === 'trial_ended' 
+                    ? 'หมดเวลาทดลองใช้แล้ว' 
+                    : paywallReason === 'premium_only' 
+                      ? 'ฟีเจอร์พิเศษเฉพาะ PRO'
+                      : 'ปลดล็อคพลังการขายเต็มรูปแบบ'
+                  }
+                </h3>
+                <p className="text-xs text-slate-400 font-semibold mt-1">
+                  {paywallReason === 'trial_ended' 
+                    ? 'อัปเกรดเป็น Premium เพื่อเข้าถึงข้อมูลและการทำงานต่อ' 
+                    : paywallReason === 'premium_only'
+                      ? 'อัปเกรดเป็น Premium เพื่อใช้งานฟีเจอร์นี้'
+                      : 'เริ่มต้นเพียง 300 บาท/ตลอดชีพ'
+                  }
+                </p>
               </div>
 
               {/* Benefits list */}

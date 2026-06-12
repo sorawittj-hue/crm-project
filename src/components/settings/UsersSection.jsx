@@ -2,6 +2,7 @@ import { Card } from '../ui/Card';
 import { cn } from '../../lib/utils';
 import { ShieldCheck, Clock } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useSubscription } from '../../hooks/useSubscription';
 import { useAllProfiles, useUpdateProfileRole } from '../../hooks/useUserProfiles';
 import { useToast } from '../ui/Toast';
 import { useAppStore } from '../../store/useAppStore';
@@ -9,14 +10,14 @@ import { useAppStore } from '../../store/useAppStore';
 export function UsersSection() {
   const { user } = useAuth();
   const { openPaywall } = useAppStore();
-  const isGuest = user?.email === 'demo@novapipeline.com';
+  const { shouldBlockBasic, isGuestAccount } = useSubscription();
   const { data: allProfiles = [] } = useAllProfiles();
   const updateRole = useUpdateProfileRole();
   const { success, error } = useToast();
 
   const handleUpdateRole = async (id, newRole) => {
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
     }
     try {

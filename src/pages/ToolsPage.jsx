@@ -8,6 +8,7 @@ import {
 import { useEmailTemplates, useAddEmailTemplate, useUpdateEmailTemplate, useDeleteEmailTemplate } from '../hooks/useEmailTemplates';
 import UPSCalculator from '../components/tools/UPSCalculator';
 import { useAuth } from '../hooks/useAuth';
+import { useSubscription } from '../hooks/useSubscription';
 import { useAppStore } from '../store/useAppStore';
 import RaidCalculator from '../components/tools/RaidCalculator';
 import HardwareGuide from '../components/tools/HardwareGuide';
@@ -22,8 +23,8 @@ import { formatCurrency } from '../lib/formatters';
 function EmailTemplates() {
   const { data: templates = [], isLoading } = useEmailTemplates();
   const { user } = useAuth();
+  const { shouldBlockBasic, isGuestAccount } = useSubscription();
   const { openPaywall } = useAppStore();
-  const isGuest = user?.email === 'demo@novapipeline.com';
 
   const addMutation = useAddEmailTemplate();
   const updateMutation = useUpdateEmailTemplate();
@@ -57,8 +58,8 @@ function EmailTemplates() {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
     }
     if (!form.name || !form.body) return;
@@ -68,8 +69,8 @@ function EmailTemplates() {
   };
 
   const handleUpdate = async (id) => {
-    if (isGuest) {
-      openPaywall();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
     }
     await updateMutation.mutateAsync({ id, ...editForm });
@@ -102,7 +103,7 @@ function EmailTemplates() {
           />
         </div>
         <Button
-          onClick={() => isGuest ? openPaywall() : setIsAdding(true)}
+          onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsAdding(true)}
           className="h-9 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold border-0 shadow-md shadow-violet-500/20 shrink-0"
         >
           <Plus size={14} className="mr-2" /> เพิ่ม Template
@@ -207,8 +208,8 @@ function EmailTemplates() {
                         {copiedId === t.id ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                       </button>
                       <button onClick={() => {
-                        if (isGuest) {
-                          openPaywall();
+                        if (shouldBlockBasic) {
+                          openPaywall(isGuestAccount ? 'default' : 'trial_ended');
                         } else {
                           setEditingId(t.id);
                           setEditForm({ name: t.name, subject: t.subject || '', body: t.body, category: t.category || 'other' });
@@ -218,7 +219,7 @@ function EmailTemplates() {
                         className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
                         <Pencil size={14} />
                       </button>
-                      <button onClick={() => isGuest ? openPaywall() : deleteMutation.mutate(t.id)}
+                      <button onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : deleteMutation.mutate(t.id)}
                         className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors">
                         <Trash2 size={14} />
                       </button>
