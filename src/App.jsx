@@ -18,6 +18,8 @@ const ToolsPage = lazy(() => import('./pages/ToolsPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const SalesTrackingPage = lazy(() => import('./pages/SalesTrackingPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
+const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
 
 // DevTools — only imported in development, excluded from production bundle by Vite
 const DevTools = import.meta.env.DEV
@@ -52,8 +54,10 @@ function App() {
         <Router>
           <Suspense fallback={<PageFallback />}>
             <Routes>
-              {/* Public route */}
+              {/* Public routes */}
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/privacy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms" element={<TermsOfServicePage />} />
 
               {/* Protected routes */}
               <Route

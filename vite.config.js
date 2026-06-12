@@ -43,6 +43,7 @@ export default defineConfig({
     strictPort: false, // ถ้า port ซ้ำจะหา port ถัดไปอัตโนมัติ
   },
   build: {
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: getManualChunk,

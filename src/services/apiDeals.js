@@ -19,7 +19,8 @@ export async function fetchDeals() {
     const { data, error } = await supabase
       .from('deals')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(2000);
 
     if (error) throw error;
     return filterRowsByOwner('deals', data, userId);
@@ -28,7 +29,8 @@ export async function fetchDeals() {
       const { data, error: legacyError } = await supabase
         .from('deals')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(2000);
 
       if (!legacyError) return data || [];
     }

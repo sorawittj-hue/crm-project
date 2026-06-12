@@ -63,6 +63,41 @@ export function BackupSection() {
     }
   };
 
+  const handleExportCSV = async () => {
+    if (isGuest) {
+      openPaywall();
+      return;
+    }
+    if (!user?.id) return;
+    setIsExporting(true);
+    try {
+      const data = await exportWorkspaceData(user.id);
+      
+      // Convert Deals to CSV
+      if (data.deals && data.deals.length > 0) {
+        const dealsHeaders = Object.keys(data.deals[0]).join(',');
+        const dealsRows = data.deals.map(d => Object.values(d).map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+        const dealsCSV = [dealsHeaders, ...dealsRows].join('\n');
+        
+        const blob = new Blob(['\ufeff' + dealsCSV], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `nova-pipeline-deals-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      success('ดาวน์โหลดไฟล์ CSV สำเร็จ (PDPA Data Export)');
+    } catch (err) {
+      error('เกิดข้อผิดพลาดในการส่งออกข้อมูล: ' + err.message);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -148,14 +183,25 @@ export function BackupSection() {
                 ดาวน์โหลดข้อมูล ลูกค้า, ดีล, และกิจกรรมทั้งหมดออกมาเป็นไฟล์ <span className="font-bold text-slate-700">.json</span> เก็บไว้ในเครื่องของคุณ
               </p>
             </div>
-            <Button
-              onClick={handleExport}
-              disabled={isExporting}
-              className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md text-sm font-semibold mt-4"
-            >
-              {isExporting ? <Loader2 size={16} className="animate-spin mr-2" /> : <HardDriveDownload size={16} className="mr-2" />}
-              ดาวน์โหลดไฟล์สำรอง
-            </Button>
+            <div className="flex gap-2 mt-4">
+              <Button
+                onClick={handleExport}
+                disabled={isExporting}
+                className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md text-xs font-semibold"
+              >
+                {isExporting ? <Loader2 size={16} className="animate-spin mr-2" /> : <HardDriveDownload size={16} className="mr-2" />}
+                ดาวน์โหลด JSON
+              </Button>
+              <Button
+                onClick={handleExportCSV}
+                disabled={isExporting}
+                variant="outline"
+                className="w-full h-11 bg-white hover:bg-slate-50 text-slate-700 border-slate-200 rounded-xl shadow-sm text-xs font-semibold"
+              >
+                {isExporting ? <Loader2 size={16} className="animate-spin mr-2" /> : <HardDriveDownload size={16} className="mr-2" />}
+                ส่งออก CSV (PDPA)
+              </Button>
+            </div>
           </div>
 
           {/* Import Box */}
