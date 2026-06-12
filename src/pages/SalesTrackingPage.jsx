@@ -256,9 +256,9 @@ export default function SalesTrackingPage() {
               <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-md bg-emerald-400" /> เดือนปัจจุบัน (Live)</div>
             </div>
           </div>
-          <div className="h-[380px] w-full">
+          <div className="h-[380px] w-full min-w-0">
             {showChart ? (
-              <ResponsiveContainer width="100%" height="100%" debounce={50}>
+              <ResponsiveContainer width="100%" height="100%" debounce={50} minWidth={0}>
                 <BarChart data={mergedSalesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
