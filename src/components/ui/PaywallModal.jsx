@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Dialog, DialogContent } from './Dialog';
 import { useAppStore } from '../../store/useAppStore';
-import { Crown, Sparkles, CheckCircle2, AlertCircle, Shield, Zap, Users, ShieldCheck, Loader2 } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import { Crown, Sparkles, CheckCircle2, AlertCircle, Shield, Zap, Users, ShieldCheck, Loader2, LogIn } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PaywallModal() {
   const { isPaywallOpen, closePaywall, paywallReason } = useAppStore();
+  const { signOut } = useAuth();
   const [confirming, setConfirming] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -48,14 +50,16 @@ export default function PaywallModal() {
                   <Crown size={24} className="text-amber-500 fill-amber-400/20" />
                 </div>
                 <span className="text-[10px] font-bold text-violet-600 uppercase tracking-[0.2em] mb-1">
-                  {paywallReason === 'trial_ended' ? 'Trial Expired' : 'Nova CRM Premium'}
+                  {paywallReason === 'trial_ended' ? 'Trial Expired' : paywallReason === 'default' ? 'Free Trial Available' : 'Nova CRM Premium'}
                 </span>
                 <h3 className="text-2xl font-black text-slate-900 tracking-tight">
                   {paywallReason === 'trial_ended' 
                     ? 'หมดเวลาทดลองใช้แล้ว' 
                     : paywallReason === 'premium_only' 
                       ? 'ฟีเจอร์พิเศษเฉพาะ PRO'
-                      : 'ปลดล็อคพลังการขายเต็มรูปแบบ'
+                      : paywallReason === 'default'
+                        ? 'อยากใช้งานฟีเจอร์นี้?'
+                        : 'ปลดล็อคพลังการขายเต็มรูปแบบ'
                   }
                 </h3>
                 <p className="text-xs text-slate-400 font-semibold mt-1">
@@ -63,7 +67,9 @@ export default function PaywallModal() {
                     ? 'อัปเกรดเป็น Premium เพื่อเข้าถึงข้อมูลและการทำงานต่อ' 
                     : paywallReason === 'premium_only'
                       ? 'อัปเกรดเป็น Premium เพื่อใช้งานฟีเจอร์นี้'
-                      : 'เริ่มต้นเพียง 300 บาท/ตลอดชีพ'
+                      : paywallReason === 'default'
+                        ? 'สมัครสมาชิกวันนี้ ทดลองใช้ฟรีเต็มรูปแบบ 3 วัน!'
+                        : 'เริ่มต้นเพียง 300 บาท/ตลอดชีพ'
                   }
                 </p>
               </div>
@@ -89,42 +95,57 @@ export default function PaywallModal() {
               </div>
 
               {/* Payment Info */}
-              <div className="flex flex-col items-center p-4 rounded-2xl border-2 border-dashed border-violet-100 bg-violet-50/20 mb-6 text-center">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">สแกนชำระเงินเพื่อปลดล็อค</p>
-                <div className="w-48 border border-slate-100 rounded-xl overflow-hidden mt-3 shadow-md bg-white p-1">
-                  <img src="/promptpay_qr.png" alt="PromptPay QR Code" className="w-full h-auto object-contain rounded-lg" />
+              {paywallReason !== 'default' && (
+                <div className="flex flex-col items-center p-4 rounded-2xl border-2 border-dashed border-violet-100 bg-violet-50/20 mb-6 text-center">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">สแกนชำระเงินเพื่อปลดล็อค</p>
+                  <div className="w-48 border border-slate-100 rounded-xl overflow-hidden mt-3 shadow-md bg-white p-1">
+                    <img src="/promptpay_qr.png" alt="PromptPay QR Code" className="w-full h-auto object-contain rounded-lg" />
+                  </div>
+                  <div className="mt-3 flex flex-col items-center">
+                    <p className="text-xs font-bold text-slate-500">บัญชีพร้อมเพย์ (PromptPay)</p>
+                    <p className="text-sm font-black text-violet-700 tracking-tight leading-none mt-1">ยอดโอน: 300.00 บาท</p>
+                  </div>
                 </div>
-                <div className="mt-3 flex flex-col items-center">
-                  <p className="text-xs font-bold text-slate-500">บัญชีพร้อมเพย์ (PromptPay)</p>
-                  <p className="text-sm font-black text-violet-700 tracking-tight leading-none mt-1">ยอดโอน: 300.00 บาท</p>
-                </div>
-              </div>
+              )}
 
               {/* Action Buttons */}
               <div className="space-y-2.5">
-                <button
-                  onClick={handleConfirmPayment}
-                  disabled={confirming}
-                  className="w-full h-11 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-violet-500/20 disabled:opacity-50 text-xs active:scale-95"
-                >
-                  {confirming ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      กำลังตรวจสอบการทำรายการ...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 size={16} />
-                      ฉันโอนเงินแล้ว (ยืนยันสิทธิ์)
-                    </>
-                  )}
-                </button>
+                {paywallReason === 'default' ? (
+                  <button
+                    onClick={() => {
+                      closePaywall();
+                      signOut();
+                    }}
+                    className="w-full h-11 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-violet-500/20 text-xs active:scale-95"
+                  >
+                    <LogIn size={16} />
+                    สมัครสมาชิก / เข้าสู่ระบบ เพื่อทดลองใช้ฟรี
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleConfirmPayment}
+                    disabled={confirming}
+                    className="w-full h-11 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-violet-500/20 disabled:opacity-50 text-xs active:scale-95"
+                  >
+                    {confirming ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        กำลังตรวจสอบการทำรายการ...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 size={16} />
+                        ฉันโอนเงินแล้ว (ยืนยันสิทธิ์)
+                      </>
+                    )}
+                  </button>
+                )}
                 <button
                   onClick={handleClose}
                   disabled={confirming}
                   className="w-full h-10 border border-slate-200 hover:bg-slate-50 text-slate-500 font-bold rounded-xl flex items-center justify-center text-xs transition-colors active:scale-95"
                 >
-                  ไว้ทีหลัง
+                  {paywallReason === 'default' ? 'ใช้งานแบบผู้เยี่ยมชมต่อ (อ่านอย่างเดียว)' : 'ไว้ทีหลัง'}
                 </button>
               </div>
             </motion.div>
