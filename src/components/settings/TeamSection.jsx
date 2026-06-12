@@ -9,6 +9,7 @@ import { Plus, Check, X, Pencil, Trash2, Users, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTeam, useAddTeamMember, useUpdateTeamMember, useDeleteTeamMember } from '../../hooks/useTeam';
 import ConfirmDialog from '../ui/ConfirmDialog';
+import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../utils/supabase';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';

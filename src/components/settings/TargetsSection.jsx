@@ -6,6 +6,7 @@ import { formatFullCurrency } from '../../lib/formatters';
 import { useToast } from '../ui/Toast';
 import { Pencil, Save, Loader2, Target } from 'lucide-react';
 import { useSettings, useUpdateSettings } from '../../hooks/useSettings';
+import { useAuth } from '../../hooks/useAuth';
 import { useMyProfile } from '../../hooks/useUserProfiles';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
