@@ -1,35 +1,37 @@
-# Zenith CRM
+# Zenith CRM (Nova Pipeline)
 
-**Modern Sales Management System** — built for high-performance sales teams.
+**Modern Sales Management System** — Built for high-performance sales teams.
+**Developed by:** Sorawit Thunthakij
 
-Zenith CRM helps you manage your entire sales pipeline, track customer relationships, and close more deals with AI-powered insights.
+Zenith CRM helps you manage your entire sales pipeline, track customer relationships, and close more deals with AI-powered insights. This platform has been hardened for production SaaS use.
 
 ---
 
-## Features
+## 🚀 Features
 
 | Category | Capabilities |
 |---|---|
-| **Pipeline** | Kanban board, list view, deal filtering, stage management |
+| **Pipeline** | Kanban board, list view, smooth drag-and-drop, deal filtering, stage management |
 | **Customers** | CRM database, health scoring, grade system (A–D), deal history |
-| **Command Center** | Daily action plan, revenue forecast, team performance |
-| **Analytics** | Monthly revenue trends, win rates, stage conversion |
-| **Settings** | Sales targets, team member management, company profile |
+| **Command Center** | Daily action plan, revenue forecast, team performance, hot deals |
+| **Analytics** | Monthly revenue trends, win rates, stage conversion, detailed reporting |
+| **Settings** | Sales targets, team member management, company profile, automated backups |
 | **AI Tools** | PDF deal scanner, AI email generator, strategic analysis |
+| **Legal & Compliance** | Terms of Service, Privacy Policy, PDPA-compliant CSV Data Export |
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 - **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion
 - **Backend**: Supabase (PostgreSQL + Auth + RLS)
-- **State**: Zustand + React Query
+- **State Management**: Zustand + React Query
 - **Charts**: Recharts
-- **AI**: Google Gemini API
+- **AI Integration**: Google Gemini API
 
 ---
 
-## Getting Started
+## 🏁 Getting Started
 
 ### 1. Clone & Install
 
@@ -42,15 +44,15 @@ npm install
 ### 2. Configure Environment
 
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 
-Edit `.env`:
+Edit `.env.local`:
 
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_KEY=your-supabase-anon-key
-VITE_GEMINI_API_KEY=your-gemini-api-key   # optional — for AI features
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_GEMINI_API_KEY=your-gemini-api-key   # Optional — for AI features
 ```
 
 Get your keys from:
@@ -76,7 +78,7 @@ This creates:
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173)
+Open [http://localhost:7777](http://localhost:7777)
 
 ### 5. Build for Production
 
@@ -86,38 +88,41 @@ npm run build
 
 ---
 
-## Deployment
+## 🔒 Security & SaaS Readiness
 
-### Vercel
+This application has been hardened for production:
+- **Authentication Required** — all CRM data is protected by Supabase RLS. Data is strictly isolated by `owner_id`.
+- **API Scalability** — API queries implement `limit(2000)` to prevent browser memory crashes on massive datasets while retaining analytics capabilities.
+- **PDPA Compliance** — Built-in `Privacy Policy`, `Terms of Service`, and one-click **CSV Data Export** to fulfill the "Right to Portability" for users.
+- **Vercel Security Headers** — Configured in `vercel.json` to prevent Clickjacking (X-Frame-Options) and XSS attacks.
+- **Audit Logging** — Customer, deal, and activity mutations are automatically tracked via database triggers.
+
+---
+
+## ⚙️ Deployment
+
+### Vercel (Recommended)
+
+The project includes a `vercel.json` configuration for strict security headers and Vite-compatible routing.
 
 ```bash
 npm install -g vercel
 vercel
 ```
 
-Add environment variables in Vercel Dashboard → Project Settings → Environment Variables.
-
-### Netlify
-
-```bash
-npm run build
-# Deploy the dist/ folder
-```
+Add your environment variables in Vercel Dashboard → Project Settings → Environment Variables.
 
 ---
 
-## Configuration
+## 📝 Configuration
 
 ### Sales Targets
-
 Go to **Settings → เป้าหมายยอดขาย** to set monthly, leader, and member targets.
 
 ### Team Members
-
 Go to **Settings → ทีมงาน** to add/edit/delete sales team members and their individual goals.
 
 ### Pipeline Stages
-
 Default stages (in order):
 
 | Stage | Thai | Description |
@@ -131,31 +136,20 @@ Default stages (in order):
 
 ---
 
-## Security
-
-- **Authentication required** — all CRM data is protected by Supabase RLS
-- **Audit log** — customer, deal, and activity mutations are tracked
-- **Environment variables** — never commit `.env` to version control
-
----
-
-## Troubleshooting
+## 🐛 Troubleshooting
 
 **"Failed to load deals"**
-→ Check Supabase credentials in `.env` and verify the database schema is complete.
+→ Check Supabase credentials in `.env.local` and verify the database schema is complete.
 
 **AI features not working**
 → Verify `VITE_GEMINI_API_KEY` is set. AI features are optional — the app works without them.
 
-**Build errors**
-```bash
-rm -rf node_modules package-lock.json
-npm install
-npm run build
-```
+**Recharts `width(-1)` Warnings**
+→ This has been patched using a custom `SafeResponsiveContainer`. If modifying the codebase, ensure charts are wrapped in this container to prevent dimension warnings during `framer-motion` page transitions.
 
 ---
 
-## License
+## 📜 License
 
 Proprietary. All rights reserved.
+Developed by Sorawit Thunthakij.
