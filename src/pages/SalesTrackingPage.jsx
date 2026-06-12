@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, ResponsiveContainer
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell
 } from 'recharts';
+import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
 import { buildPipelineIntelligence } from '../utils/salesIntelligence';
 import { 
   BadgeDollarSign, TrendingUp, Target, Save, Loader2, Calendar, 
@@ -258,7 +259,7 @@ export default function SalesTrackingPage() {
           </div>
           <div className="h-[380px] w-full min-w-0">
             {showChart ? (
-              <ResponsiveContainer width="100%" height="100%" debounce={50} minWidth={0}>
+              <SafeResponsiveContainer width="100%" height="100%">
                 <BarChart data={mergedSalesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
@@ -291,7 +292,7 @@ export default function SalesTrackingPage() {
                     ))}
                   </Bar>
                 </BarChart>
-              </ResponsiveContainer>
+              </SafeResponsiveContainer>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50/50 rounded-2xl border border-slate-100 border-dashed">
                 <Loader2 className="w-6 h-6 text-violet-300 animate-spin mb-2" />
