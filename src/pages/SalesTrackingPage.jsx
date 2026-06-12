@@ -1,9 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, ResponsiveContainer
 } from 'recharts';
-import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
 import { buildPipelineIntelligence } from '../utils/salesIntelligence';
 import { 
   BadgeDollarSign, TrendingUp, Target, Save, Loader2, Calendar, 
@@ -64,6 +63,13 @@ export default function SalesTrackingPage() {
 
   const [editValues, setEditValues] = useState({});
   const [editingMonth, setEditingMonth] = useState(null);
+  const [showChart, setShowChart] = useState(false);
+
+  // Delay heavy chart rendering until page transition finishes (fixes lag and data redraw bugs)
+  useEffect(() => {
+    const timer = setTimeout(() => setShowChart(true), 350);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Calculate won deals for current month
   const currentMonthPipelineSales = useMemo(() => {
@@ -251,40 +257,47 @@ export default function SalesTrackingPage() {
             </div>
           </div>
           <div className="h-[380px] w-full">
-            <SafeResponsiveContainer width="100%" height="100%">
-              <BarChart data={mergedSalesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#7c3aed" stopOpacity={0.9}/>
-                    <stop offset="100%" stopColor="#4f46e5" stopOpacity={0.6}/>
-                  </linearGradient>
-                  <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#34d399" stopOpacity={0.9}/>
-                    <stop offset="100%" stopColor="#059669" stopOpacity={0.6}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="shortMonth" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }} 
-                  dy={10}
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }}
-                  tickFormatter={(val) => `${val >= 1000000 ? (val/1000000).toFixed(1) + 'M' : val >= 1000 ? (val/1000).toFixed(0) + 'k' : val}`}
-                />
-                <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
-                <Bar dataKey="amount" radius={[6, 6, 6, 6]} maxBarSize={40}>
-                  {mergedSalesData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.isCurrentMonth ? "url(#colorCurrent)" : "url(#colorSales)"} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </SafeResponsiveContainer>
+            {showChart ? (
+              <ResponsiveContainer width="100%" height="100%" debounce={50}>
+                <BarChart data={mergedSalesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#7c3aed" stopOpacity={0.9}/>
+                      <stop offset="100%" stopColor="#4f46e5" stopOpacity={0.6}/>
+                    </linearGradient>
+                    <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#34d399" stopOpacity={0.9}/>
+                      <stop offset="100%" stopColor="#059669" stopOpacity={0.6}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis 
+                    dataKey="shortMonth" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }} 
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }}
+                    tickFormatter={(val) => `${val >= 1000000 ? (val/1000000).toFixed(1) + 'M' : val >= 1000 ? (val/1000).toFixed(0) + 'k' : val}`}
+                  />
+                  <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
+                  <Bar dataKey="amount" radius={[6, 6, 6, 6]} maxBarSize={40} isAnimationActive={true} animationDuration={800}>
+                    {mergedSalesData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.isCurrentMonth ? "url(#colorCurrent)" : "url(#colorSales)"} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50/50 rounded-2xl border border-slate-100 border-dashed">
+                <Loader2 className="w-6 h-6 text-violet-300 animate-spin mb-2" />
+                <p className="text-xs font-semibold text-slate-400">กำลังโหลดกราฟข้อมูล...</p>
+              </div>
+            )}
           </div>
         </div>
 
