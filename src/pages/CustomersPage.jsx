@@ -943,20 +943,23 @@ export default function CustomersPage() {
                             };
 
                             return (
-                              <div className="space-y-4">
-                                <div className={cn("p-4 rounded-xl border", playbookData.cardColor)}>
-                                  <h4 className="text-xs font-bold uppercase tracking-wider">{playbookData.strategy}</h4>
-                                  <p className="text-xs opacity-90 mt-1 leading-relaxed">{playbookData.detail}</p>
+                              <div className="space-y-5">
+                                <div className={cn("p-5 rounded-2xl border shadow-sm", playbookData.cardColor)}>
+                                  <h4 className="text-[11px] font-black uppercase tracking-widest mb-1.5">{playbookData.strategy}</h4>
+                                  <p className="text-xs opacity-90 leading-relaxed font-semibold">{playbookData.detail}</p>
                                 </div>
-                                <div className="space-y-2.5">
-                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">เช็คลิสต์แนะนำ (AI Directives Checklist)</p>
-                                  <ul className="space-y-2">
+                                <div className="space-y-3 pt-2">
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-violet-400"></span>
+                                    เช็คลิสต์แนะนำ (AI Directives Checklist)
+                                  </p>
+                                  <ul className="space-y-3">
                                     {playbookData.actionList.map((action, idx) => (
-                                      <li key={idx} className="flex items-start gap-2.5 text-xs">
-                                        <span className={cn("w-5 h-5 rounded-full bg-white border flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 shadow-sm", playbookData.iconColor)}>
+                                      <li key={idx} className="flex items-start gap-3 text-xs group">
+                                        <span className={cn("w-6 h-6 rounded-full bg-white border flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm group-hover:scale-110 group-hover:shadow-md transition-all duration-300", playbookData.iconColor)}>
                                           {idx + 1}
                                         </span>
-                                        <span className="text-slate-700 leading-relaxed font-semibold mt-0.5">{action}</span>
+                                        <span className="text-slate-700 leading-relaxed font-semibold mt-0.5 group-hover:text-slate-900 transition-colors">{action}</span>
                                       </li>
                                     ))}
                                   </ul>
@@ -1010,23 +1013,26 @@ export default function CustomersPage() {
 
                       {/* Deal List */}
                       <div className="space-y-3">
-                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
                           ประวัติรายการดีล ({selectedCustomer.dealStats.deals.length})
                         </h3>
                         <div className="space-y-2.5 max-h-[40vh] overflow-y-auto no-scrollbar pr-1">
                           {selectedCustomer.dealStats.deals.map(deal => (
-                            <Card key={deal.id} className="rounded-2xl bg-slate-50 border-slate-100 p-4 border hover:border-slate-200 transition-colors">
+                            <Card key={deal.id} className="rounded-2xl bg-white border-slate-100 p-4 border hover:border-violet-200 hover:shadow-md hover:shadow-violet-500/5 transition-all duration-300 group cursor-pointer">
                               <div className="flex justify-between items-center gap-3">
                                 <div className="min-w-0">
-                                  <p className="text-sm font-semibold text-slate-900 truncate leading-snug">{deal.title}</p>
-                                  <p className="text-xs text-slate-500 mt-1 font-semibold">
-                                    {formatCurrency(deal.value)} • โอกาสสำเร็จ {deal.probability}%
+                                  <p className="text-sm font-bold text-slate-900 truncate leading-snug group-hover:text-violet-700 transition-colors">{deal.title}</p>
+                                  <p className="text-xs text-slate-500 mt-1 font-semibold flex items-center gap-2">
+                                    <span className="text-slate-700 font-black">{formatCurrency(deal.value)}</span>
+                                    <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                    โอกาสสำเร็จ {deal.probability}%
                                   </p>
                                 </div>
-                                <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold uppercase shrink-0",
-                                  deal.stage === 'won' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                                  deal.stage === 'lost' ? 'bg-rose-50 text-rose-500 border border-rose-100' :
-                                  'bg-slate-100 text-slate-600 border border-slate-200'
+                                <div className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase shrink-0 shadow-sm",
+                                  deal.stage === 'won' ? 'bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-600 border border-emerald-200/50' :
+                                  deal.stage === 'lost' ? 'bg-gradient-to-r from-rose-50 to-red-50 text-rose-600 border border-rose-200/50' :
+                                  'bg-gradient-to-r from-slate-50 to-gray-50 text-slate-600 border border-slate-200/50 group-hover:border-violet-200 group-hover:text-violet-600 group-hover:from-violet-50 group-hover:to-purple-50 transition-colors'
                                 )}>
                                   {STAGE_LABELS[deal.stage] || deal.stage}
                                 </div>
@@ -1034,7 +1040,12 @@ export default function CustomersPage() {
                             </Card>
                           ))}
                           {selectedCustomer.dealStats.deals.length === 0 && (
-                            <p className="text-xs text-slate-350 text-center py-10 font-semibold">ยังไม่มีดีลที่เชื่อมโยงกับลูกค้ารายนี้</p>
+                            <div className="flex flex-col items-center justify-center py-10 bg-slate-50/50 rounded-3xl border border-slate-100 border-dashed">
+                              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+                                <Target size={20} />
+                              </div>
+                              <p className="text-xs text-slate-400 font-semibold">ยังไม่มีดีลที่เชื่อมโยงกับลูกค้ารายนี้</p>
+                            </div>
                           )}
                         </div>
                       </div>
