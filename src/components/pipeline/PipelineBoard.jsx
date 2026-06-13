@@ -31,6 +31,7 @@ const STAGE_CONFIG = {
     headerBg: 'bg-gradient-to-br from-slate-50 to-slate-100/80',
     dotColor: '#94a3b8',
     columnBorder: 'border-slate-200',
+    dragOverClass: 'bg-slate-50/70 border-slate-350 shadow-slate-100/50 ring-slate-400/20',
   },
   contact: {
     label: 'นัดเจอ',
@@ -43,6 +44,7 @@ const STAGE_CONFIG = {
     headerBg: 'bg-gradient-to-br from-amber-50 to-orange-50/80',
     dotColor: '#f59e0b',
     columnBorder: 'border-amber-200',
+    dragOverClass: 'bg-amber-50/40 border-amber-350 shadow-amber-100/50 ring-amber-400/20',
   },
   proposal: {
     label: 'เสนอราคา',
@@ -55,6 +57,7 @@ const STAGE_CONFIG = {
     headerBg: 'bg-gradient-to-br from-sky-50 to-blue-50/80',
     dotColor: '#0ea5e9',
     columnBorder: 'border-sky-200',
+    dragOverClass: 'bg-sky-50/60 border-sky-350 shadow-sky-100/50 ring-sky-400/20',
   },
   negotiation: {
     label: 'กำลังปิด',
@@ -67,6 +70,7 @@ const STAGE_CONFIG = {
     headerBg: 'bg-gradient-to-br from-violet-50 to-purple-50/80',
     dotColor: '#8b5cf6',
     columnBorder: 'border-violet-200',
+    dragOverClass: 'bg-violet-50/60 border-violet-350 shadow-violet-100/50 ring-violet-400/20',
   },
   won: {
     label: 'ปิดได้ ✓',
@@ -79,6 +83,7 @@ const STAGE_CONFIG = {
     headerBg: 'bg-gradient-to-br from-emerald-50 to-green-50/80',
     dotColor: '#10b981',
     columnBorder: 'border-emerald-200',
+    dragOverClass: 'bg-emerald-50/60 border-emerald-350 shadow-emerald-100/50 ring-emerald-400/20',
   },
   lost: {
     label: 'ปิดไม่ได้',
@@ -91,6 +96,7 @@ const STAGE_CONFIG = {
     headerBg: 'bg-gradient-to-br from-rose-50 to-red-50/80',
     dotColor: '#f43f5e',
     columnBorder: 'border-rose-200',
+    dragOverClass: 'bg-rose-50/60 border-rose-350 shadow-rose-100/50 ring-rose-400/20',
   },
 };
 
@@ -537,7 +543,7 @@ export default function PipelineBoard({
                         className={cn(
                           'flex-shrink-0 flex flex-col w-[290px] h-full rounded-2xl transition-all duration-300 border overflow-hidden',
                           snapshot.isDraggingOver
-                            ? 'bg-violet-50 border-violet-300 ring-2 ring-violet-400/30 shadow-lg shadow-violet-100'
+                            ? `ring-2 shadow-lg ${stage.dragOverClass}`
                             : 'bg-white/70 backdrop-blur-sm border-slate-200/80 shadow-sm hover:shadow-md'
                         )}
                       >
@@ -733,24 +739,25 @@ const DealCard = memo(
         >
           <motion.div
             initial={false}
-            animate={isDragging ? { scale: 1.04, rotate: 1.5, boxShadow: '0 20px 40px rgba(139, 92, 246, 0.25)' } : { scale: 1, rotate: 0, boxShadow: 'none' }}
-            whileHover={{ y: -2, borderColor: 'rgba(124, 58, 237, 0.4)', boxShadow: '0 10px 20px rgba(0, 0, 0, 0.04)' }}
-            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            animate={isDragging ? { scale: 1.03, rotate: 1.2, boxShadow: '0 15px 30px rgba(124, 58, 237, 0.15)' } : { scale: 1, rotate: 0, boxShadow: 'none' }}
+            whileHover={{ y: -3, borderColor: isHighValue ? '#fbbf24' : 'rgba(124, 58, 237, 0.4)', boxShadow: '0 8px 16px rgba(0, 0, 0, 0.04)' }}
+            transition={{ type: 'spring', stiffness: 500, damping: 32 }}
             className={cn(
-              'group relative rounded-2xl border cursor-grab active:cursor-grabbing overflow-hidden',
-              isDragging ? 'border-violet-400 ring-2 ring-violet-500/30 z-50 bg-white' 
-                : isSelected ? 'border-violet-400 ring-2 ring-violet-500/15 bg-white shadow-md'
-                : isPinned ? 'border-amber-300 bg-amber-50/50 shadow-sm'
+              'group relative rounded-2xl border cursor-grab active:cursor-grabbing overflow-hidden transition-colors duration-200 bg-white/95 backdrop-blur-sm',
+              isDragging ? 'border-violet-400 ring-2 ring-violet-500/20 z-50 shadow-lg' 
+                : isSelected ? 'border-violet-500 ring-2 ring-violet-500/15 shadow-md'
+                : isPinned ? 'border-blue-200 bg-blue-50/20 shadow-sm'
+                : isHighValue ? 'border-amber-300/80 bg-gradient-to-br from-white via-white to-amber-50/20 shadow-sm'
                 : isStagnant ? 'border-rose-200 bg-rose-50/30 shadow-sm'
-                : 'border-slate-200/80 bg-white shadow-sm'
+                : 'border-slate-200/70 shadow-sm'
             )}
           >
             {/* Colored top accent bar */}
-            <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: stageColor }} />
+            <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: isHighValue ? '#f59e0b' : stageColor }} />
 
             {/* Main content (clickable) */}
             <div
-              className="p-3.5 space-y-3"
+              className="p-4 space-y-3"
               onClick={(e) => {
                 e.stopPropagation();
                 onSelect();
@@ -761,16 +768,29 @@ const DealCard = memo(
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                   <div
-                    className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black text-white shrink-0 shadow-sm"
-                    style={{ backgroundColor: avatarColor }}
+                    className={cn(
+                      "w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black text-white shrink-0 shadow-sm",
+                      isHighValue ? "bg-gradient-to-br from-amber-400 to-yellow-500" : ""
+                    )}
+                    style={isHighValue ? {} : { backgroundColor: avatarColor }}
                   >
-                    {(deal.company || 'D').charAt(0).toUpperCase()}
+                    {isHighValue ? '👑' : (deal.company || 'D').charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-slate-800 truncate leading-tight">
-                      {deal.company || 'ไม่ระบุบริษัท'}
-                    </p>
-                    <p className="text-xs text-slate-400 line-clamp-2 mt-0.5 leading-snug">
+                    <div className="flex items-center gap-1.5">
+                      <p className={cn(
+                        "text-xs font-bold truncate leading-tight",
+                        isHighValue ? "text-amber-800" : "text-slate-800"
+                      )}>
+                        {deal.company || 'ไม่ระบุบริษัท'}
+                      </p>
+                      {isHighValue && (
+                        <span className="text-[8px] font-black bg-amber-100 text-amber-700 px-1 py-0.5 rounded uppercase tracking-wider scale-95 origin-left">
+                          VIP
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-400 line-clamp-2 mt-0.5 leading-snug font-medium">
                       {deal.title || 'ไม่มีชื่อดีล'}
                     </p>
                   </div>
@@ -779,10 +799,10 @@ const DealCard = memo(
                   {isPinned && <Star size={11} className="text-amber-500 fill-current" />}
                   {isStagnant && (
                     <span
-                      className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded-md"
+                      className="inline-flex items-center gap-0.5 text-[9px] font-black bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded border border-rose-100"
                       title="ไม่มีความเคลื่อนไหวเกิน 7 วัน"
                     >
-                      <Clock size={9} />
+                      <Clock size={8} />
                       {deal.agingDays}ว
                     </span>
                   )}
@@ -790,16 +810,20 @@ const DealCard = memo(
               </div>
 
               {/* Value + probability */}
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-black text-slate-900 tabular-nums leading-none tracking-tight">
+              <div className="flex items-center justify-between gap-2 pt-1">
+                <span className={cn(
+                  "text-sm font-black tabular-nums leading-none tracking-tight",
+                  isHighValue ? "text-amber-700 text-base" : "text-slate-900"
+                )}>
                   {formatCurrency(deal.value)}
                 </span>
                 {deal.probability !== undefined && deal.probability !== null && (
                   <span
-                    className="text-xs font-bold tabular-nums px-2 py-0.5 rounded-full"
+                    className="text-[10px] font-bold tabular-nums px-2 py-0.5 rounded-full border"
                     style={{
                       backgroundColor: deal.probability >= 70 ? '#dcfce7' : deal.probability >= 40 ? '#ede9fe' : '#f1f5f9',
                       color: deal.probability >= 70 ? '#16a34a' : deal.probability >= 40 ? '#7c3aed' : '#94a3b8',
+                      borderColor: deal.probability >= 70 ? '#bbf7d0' : deal.probability >= 40 ? '#ddd6fe' : '#e2e8f0',
                     }}
                   >
                     {deal.probability}%
@@ -808,7 +832,7 @@ const DealCard = memo(
               </div>
 
               {/* Progress bar */}
-              <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.max(0, Math.min(100, deal.probability || 0))}%` }}
@@ -816,9 +840,9 @@ const DealCard = memo(
                   className="h-full rounded-full"
                   style={{
                     background: deal.probability >= 70
-                      ? 'linear-gradient(to right, #34d399, #10b981)'
+                      ? 'linear-gradient(to right, #10b981, #059669)'
                       : deal.probability >= 40
-                      ? 'linear-gradient(to right, #a78bfa, #8b5cf6)'
+                      ? 'linear-gradient(to right, #8b5cf6, #7c3aed)'
                       : '#cbd5e1',
                   }}
                 />
@@ -826,7 +850,7 @@ const DealCard = memo(
             </div>
 
             {/* Action row — smooth hover reveal */}
-            <div className="grid grid-cols-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-all duration-200 max-h-0 group-hover:max-h-12 overflow-hidden bg-slate-50/80">
+            <div className="grid grid-cols-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-all duration-200 max-h-0 group-hover:max-h-12 overflow-hidden bg-slate-50/90 backdrop-blur-xs">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -834,14 +858,14 @@ const DealCard = memo(
                 }}
                 disabled={!canMoveLeft}
                 className={cn(
-                  'h-10 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-medium',
+                  'h-10 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-bold',
                   canMoveLeft
                     ? 'hover:bg-slate-100 hover:text-slate-700'
-                    : 'opacity-20 cursor-not-allowed'
+                    : 'opacity-10 cursor-not-allowed'
                 )}
                 title="ย้อนขั้นตอน"
               >
-                <ArrowLeft size={13} />
+                <ArrowLeft size={13} strokeWidth={2.5} />
               </button>
               <button
                 onClick={(e) => {
@@ -849,14 +873,14 @@ const DealCard = memo(
                   onPin();
                 }}
                 className={cn(
-                  'h-10 flex items-center justify-center text-xs gap-1 transition-all border-x border-slate-100',
+                  'h-10 flex items-center justify-center text-xs gap-1 transition-all border-x border-slate-100 font-bold',
                   isPinned
-                    ? 'text-amber-500 hover:bg-amber-50'
+                    ? 'text-amber-500 hover:bg-amber-50/50'
                     : 'text-slate-400 hover:bg-slate-100 hover:text-amber-500'
                 )}
                 title={isPinned ? 'เลิกปักหมุด' : 'ปักหมุด'}
               >
-                <Star size={13} fill={isPinned ? 'currentColor' : 'none'} />
+                <Star size={13} strokeWidth={2.5} fill={isPinned ? 'currentColor' : 'none'} />
               </button>
               <button
                 onClick={(e) => {
@@ -865,14 +889,14 @@ const DealCard = memo(
                 }}
                 disabled={!canMoveRight}
                 className={cn(
-                  'h-10 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-medium',
+                  'h-10 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-bold',
                   canMoveRight
                     ? 'hover:bg-violet-50 hover:text-violet-600'
-                    : 'opacity-20 cursor-not-allowed'
+                    : 'opacity-10 cursor-not-allowed'
                 )}
                 title="ไปขั้นตอนถัดไป"
               >
-                <ChevronRight size={14} />
+                <ChevronRight size={14} strokeWidth={2.5} />
               </button>
             </div>
           </motion.div>

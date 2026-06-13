@@ -122,9 +122,9 @@ export default function PipelineHeader({
       </div>
 
       {/* KPI STRIP */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {/* Target progress — prominent */}
-        <div className="lg:col-span-2 p-5 rounded-2xl bg-gradient-to-br from-violet-600 via-violet-700 to-purple-700 text-white shadow-lg shadow-violet-500/25 relative overflow-hidden">
+        <div className="col-span-2 p-5 rounded-2xl bg-gradient-to-br from-violet-600 via-violet-700 to-purple-700 text-white shadow-lg shadow-violet-500/25 relative overflow-hidden">
           <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/5" />
           <div className="absolute -bottom-12 -left-6 w-28 h-28 rounded-full bg-white/5" />
           <div className="relative z-10 space-y-3">
@@ -214,6 +214,25 @@ export default function PipelineHeader({
               <span className="text-sm font-semibold text-amber-400 ml-1">ดีล</span>
             </h3>
             <p className="text-xs text-amber-400 mt-1.5">ทั้งหมดในระบบ {totalDeals} ดีล</p>
+          </div>
+        </div>
+
+        {/* At risk count / value */}
+        <div className="col-span-2 lg:col-span-1 p-5 rounded-2xl bg-gradient-to-br from-rose-50 via-rose-50/50 to-orange-50/30 border border-rose-100 shadow-sm flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-rose-200/25" />
+          <div className="flex justify-between items-start relative z-10">
+            <p className="text-xs text-rose-800 font-semibold tracking-wide uppercase">ดีลค้าง/เสี่ยงสูง</p>
+            <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-500 flex items-center justify-center shadow-sm">
+              <AlertTriangle size={17} className="animate-pulse" />
+            </div>
+          </div>
+          <div className="mt-3 relative z-10">
+            <h3 className="text-2xl font-black text-rose-800 tabular-nums leading-none">
+              <AnimatedNumber value={formatValue(atRiskValue)} />
+            </h3>
+            <p className="text-xs text-rose-500 mt-1.5 font-semibold">
+              จำนวน {atRiskCount} ดีล (&gt;7 วัน)
+            </p>
           </div>
         </div>
       </div>

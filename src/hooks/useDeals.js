@@ -24,25 +24,31 @@ export function useUpdateDeal() {
     mutationFn: updateDeal,
     // Optimistic update for instant UI feedback
     onMutate: async (updatedDeal) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
       await queryClient.cancelQueries({ queryKey: ['deals'] });
-      const previousDeals = queryClient.getQueryData(['deals']);
 
-      queryClient.setQueryData(['deals'], (old) => {
+      // Snapshot the previous values for all deals queries
+      const previousDealsQueries = queryClient.getQueriesData({ queryKey: ['deals'] });
+
+      // Optimistically update all deals queries
+      queryClient.setQueriesData({ queryKey: ['deals'] }, (old) => {
         if (!old) return old;
         return old.map(deal =>
           deal.id === updatedDeal.id ? { ...deal, ...updatedDeal } : deal
         );
       });
 
-      return { previousDeals };
+      return { previousDealsQueries };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
     },
     onError: (error, _, context) => {
       // Rollback on error
-      if (context?.previousDeals) {
-        queryClient.setQueryData(['deals'], context.previousDeals);
+      if (context?.previousDealsQueries) {
+        context.previousDealsQueries.forEach(([queryKey, oldData]) => {
+          queryClient.setQueryData(queryKey, oldData);
+        });
       }
       toast.error(error.message || 'Failed to update deal');
     },

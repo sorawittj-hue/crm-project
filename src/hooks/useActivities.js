@@ -37,7 +37,15 @@ export function useAddActivity() {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
       if (variables.deal_id) {
         queryClient.invalidateQueries({ queryKey: ['activities', 'deal', variables.deal_id] });
-        queryClient.invalidateQueries({ queryKey: ['deals'] });
+        // Instead of invalidating deals and triggering refetch, update the last_activity of the specific deal in the cache directly
+        queryClient.setQueriesData({ queryKey: ['deals'] }, (old) => {
+          if (!old) return old;
+          return old.map(deal =>
+            deal.id === variables.deal_id
+              ? { ...deal, last_activity: new Date().toISOString() }
+              : deal
+          );
+        });
       }
       toast.success('Activity logged successfully');
     },

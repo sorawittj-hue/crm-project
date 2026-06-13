@@ -95,8 +95,9 @@ export default function MonthlyPipeline({
   // ── KPI stats ──────────────────────────────────────────────────────────────
   // Use actual_close_date for won deals to measure monthly revenue correctly.
   // Active deal count is total in-flight deals (regardless of creation month).
-  const { monthlyTotal, monthlyCount, lastMonthTotal } = useMemo(() => {
+  const { monthlyTotal, monthlyCount, lastMonthTotal, atRiskValue, atRiskCount } = useMemo(() => {
     const allDeals = deals || [];
+    const nowMs = Date.now();
 
     const isInMonth = (raw, m, y) => {
       const parsed = parseYearMonth(raw);
@@ -115,10 +116,21 @@ export default function MonthlyPipeline({
       isInMonth(d.actual_close_date || d.updated_at || d.created_at, lm, ly)
     );
 
+    // Calculate at risk deals: agingDays > 7 and stage is not won/lost
+    const atRiskDeals = allDeals.filter(d => {
+      if (['won', 'lost'].includes(d.stage)) return false;
+      const createdRaw = d.createdAt || d.created_at;
+      const createdMs = createdRaw ? new Date(createdRaw).getTime() : nowMs;
+      const agingDays = Math.floor((nowMs - createdMs) / 86_400_000);
+      return agingDays > 7;
+    });
+
     return {
       monthlyTotal: wonThisMonth.reduce((s, d) => s + (Number(d.value) || 0), 0),
       monthlyCount: wonThisMonth.length,
       lastMonthTotal: wonPrevMonth.reduce((s, d) => s + (Number(d.value) || 0), 0),
+      atRiskValue: atRiskDeals.reduce((s, d) => s + (Number(d.value) || 0), 0),
+      atRiskCount: atRiskDeals.length,
     };
   }, [deals, selectedMonth, selectedYear]);
 
@@ -178,6 +190,8 @@ export default function MonthlyPipeline({
         totalDeals={totalDeals}
         monthlyTarget={monthlyTarget || 0}
         lastMonthTotal={lastMonthTotal}
+        atRiskValue={atRiskValue}
+        atRiskCount={atRiskCount}
         onAddDeal={onAddDeal}
       />
 

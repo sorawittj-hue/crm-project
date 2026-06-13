@@ -402,13 +402,13 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      'flex items-center gap-1.5 px-4 py-3 text-xs font-semibold whitespace-nowrap border-b-2 transition-all',
+                      'flex items-center gap-1.5 px-5 py-3.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-all relative',
                       isActive
-                        ? 'border-violet-600 text-violet-700 bg-violet-50/50'
-                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                        ? 'border-violet-600 text-violet-700 bg-gradient-to-t from-violet-50/50 to-transparent'
+                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50/50'
                     )}
                   >
-                    <Icon size={13} />
+                    <Icon size={13} className={isActive ? 'text-violet-600' : 'text-slate-400'} />
                     {tab.label}
                   </button>
                 );
