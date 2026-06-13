@@ -734,16 +734,16 @@ const DealCard = memo(
           <motion.div
             initial={false}
             animate={isDragging ? { scale: 1.04, rotate: 1.5, boxShadow: '0 20px 40px rgba(139, 92, 246, 0.25)' } : { scale: 1, rotate: 0, boxShadow: 'none' }}
+            whileHover={{ y: -2, borderColor: 'rgba(124, 58, 237, 0.4)', boxShadow: '0 10px 20px rgba(0, 0, 0, 0.04)' }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             className={cn(
-              'group relative rounded-2xl border transition-all duration-200 cursor-grab active:cursor-grabbing overflow-hidden',
+              'group relative rounded-2xl border cursor-grab active:cursor-grabbing overflow-hidden',
               isDragging ? 'border-violet-400 ring-2 ring-violet-500/30 z-50 bg-white' 
                 : isSelected ? 'border-violet-400 ring-2 ring-violet-500/15 bg-white shadow-md'
-                : isPinned ? 'border-amber-300 bg-amber-50/50 shadow-sm hover:shadow-md'
-                : isStagnant ? 'border-rose-200 bg-rose-50/30 shadow-sm hover:shadow-md'
-                : 'border-slate-200/80 bg-white shadow-sm hover:shadow-lg hover:border-violet-200 hover:-translate-y-0.5'
+                : isPinned ? 'border-amber-300 bg-amber-50/50 shadow-sm'
+                : isStagnant ? 'border-rose-200 bg-rose-50/30 shadow-sm'
+                : 'border-slate-200/80 bg-white shadow-sm'
             )}
-            style={{ transition: 'all 0.2s ease' }}
           >
             {/* Colored top accent bar */}
             <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: stageColor }} />
