@@ -34,7 +34,7 @@ export default function PipelinePage() {
   const { user } = useAuth();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
 
-  const handleUpdateDeal = async (id, updates) => {
+  const handleUpdateDeal = (id, updates) => {
     if (shouldBlockBasic) {
       openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
@@ -70,7 +70,7 @@ export default function PipelinePage() {
           scheduledAt.setDate(scheduledAt.getDate() + daysAhead);
           scheduledAt.setHours(9, 0, 0, 0);
 
-          await addActivityMutation.mutateAsync({
+          addActivityMutation.mutate({
             deal_id: id,
             type: 'task',
             title: taskTitle,
