@@ -1033,8 +1033,8 @@ export default function CommandCenterPage() {
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} dy={15} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
                 <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }} />
-                <Area type="monotone" dataKey="actual" name="ยอดขายจริง" stroke="#7c3aed" strokeWidth={3} fill="url(#colorActualCmd)" filter="url(#glowCmd)" animationDuration={1500} />
-                <Area type="monotone" dataKey="forecast" name="คาดการณ์" stroke="#cbd5e1" strokeWidth={2} strokeDasharray="5 5" fill="url(#colorForecastCmd)" />
+                <Area type="monotone" dataKey="actual" name="ยอดขายจริง" stroke="#7c3aed" strokeWidth={3} fill="url(#colorActualCmd)" filter="url(#glowCmd)" isAnimationActive={false} />
+                <Area type="monotone" dataKey="forecast" name="คาดการณ์" stroke="#cbd5e1" strokeWidth={2} strokeDasharray="5 5" fill="url(#colorForecastCmd)" isAnimationActive={false} />
               </AreaChart>
             </SafeResponsiveContainer>
           </div>

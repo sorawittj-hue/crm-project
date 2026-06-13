@@ -286,7 +286,7 @@ export default function SalesTrackingPage() {
                     tickFormatter={(val) => `${val >= 1000000 ? (val/1000000).toFixed(1) + 'M' : val >= 1000 ? (val/1000).toFixed(0) + 'k' : val}`}
                   />
                   <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
-                  <Bar dataKey="amount" radius={[6, 6, 6, 6]} maxBarSize={40} isAnimationActive={true} animationDuration={800}>
+                  <Bar dataKey="amount" radius={[6, 6, 6, 6]} maxBarSize={40} isAnimationActive={false}>
                     {mergedSalesData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.isCurrentMonth ? "url(#colorCurrent)" : "url(#colorSales)"} />
                     ))}

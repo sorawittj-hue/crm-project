@@ -697,11 +697,11 @@ export default function AnalyticsPage() {
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} dy={15} />
                         <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
                         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }} />
-                        <Bar dataKey="unweighted" name="Pipeline Volume" fill="url(#colorPipeline)" radius={[8, 8, 0, 0]} barSize={40} />
-                        <Area type="monotone" dataKey="actual" name="Actual Revenue" stroke="#10b981" strokeWidth={4} fill="url(#colorActualAnalytics)" animationDuration={1500} />
-                        <Area type="monotone" dataKey="weighted" name="Weighted Forecast" stroke="#8b5cf6" strokeWidth={3} fill="url(#colorWeightedAnalytics)" animationDuration={1500} />
-                        <Line type="monotone" dataKey="weighted" name="Weighted Forecast Line" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} />
-                        <Line type="monotone" dataKey="target" name="Goal" stroke="#cbd5e1" strokeWidth={2} strokeDasharray="8 8" dot={false} />
+                        <Bar dataKey="unweighted" name="Pipeline Volume" fill="url(#colorPipeline)" radius={[8, 8, 0, 0]} barSize={40} isAnimationActive={false} />
+                        <Area type="monotone" dataKey="actual" name="Actual Revenue" stroke="#10b981" strokeWidth={4} fill="url(#colorActualAnalytics)" isAnimationActive={false} />
+                        <Area type="monotone" dataKey="weighted" name="Weighted Forecast" stroke="#8b5cf6" strokeWidth={3} fill="url(#colorWeightedAnalytics)" isAnimationActive={false} />
+                        <Line type="monotone" dataKey="weighted" name="Weighted Forecast Line" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} isAnimationActive={false} />
+                        <Line type="monotone" dataKey="target" name="Goal" stroke="#cbd5e1" strokeWidth={2} strokeDasharray="8 8" dot={false} isAnimationActive={false} />
                       </ComposedChart>
                     </SafeResponsiveContainer>
                   </div>
@@ -715,7 +715,7 @@ export default function AnalyticsPage() {
                   <div className="relative w-full aspect-square max-w-[260px] min-w-0 min-h-0">
                     <SafeResponsiveContainer>
                       <PieChart>
-                        <Pie data={analytics?.stageData} innerRadius={85} outerRadius={120} paddingAngle={4} dataKey="value" stroke="none">
+                        <Pie data={analytics?.stageData} innerRadius={85} outerRadius={120} paddingAngle={4} dataKey="value" stroke="none" isAnimationActive={false}>
                           {analytics?.stageData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
@@ -1051,6 +1051,7 @@ export default function AnalyticsPage() {
                           stroke={memberColors[idx % memberColors.length]}
                           fill={memberColors[idx % memberColors.length]}
                           fillOpacity={0.4}
+                          isAnimationActive={false}
                         />
                       ))}
                     </ComposedChart>
@@ -1193,7 +1194,7 @@ export default function AnalyticsPage() {
                       <>
                         <SafeResponsiveContainer>
                           <PieChart>
-                            <Pie data={analytics.gradeData} innerRadius={70} outerRadius={100} paddingAngle={4} dataKey="value" stroke="none">
+                            <Pie data={analytics.gradeData} innerRadius={70} outerRadius={100} paddingAngle={4} dataKey="value" stroke="none" isAnimationActive={false}>
                               {analytics.gradeData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.color} />
                               ))}
@@ -1249,8 +1250,8 @@ export default function AnalyticsPage() {
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} />
                         <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Bar dataKey="revenue" name="Closed Won Revenue" fill="url(#colorTierRevenue)" radius={[6, 6, 0, 0]} barSize={25} />
-                        <Bar dataKey="pipeline" name="Active Pipeline" fill="url(#colorTierPipeline)" radius={[6, 6, 0, 0]} barSize={25} />
+                        <Bar dataKey="revenue" name="Closed Won Revenue" fill="url(#colorTierRevenue)" radius={[6, 6, 0, 0]} barSize={25} isAnimationActive={false} />
+                        <Bar dataKey="pipeline" name="Active Pipeline" fill="url(#colorTierPipeline)" radius={[6, 6, 0, 0]} barSize={25} isAnimationActive={false} />
                       </BarChart>
                     </SafeResponsiveContainer>
                   </div>
@@ -1278,7 +1279,7 @@ export default function AnalyticsPage() {
                           <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: '705' }} tickFormatter={(v) => `${v / 1000}k`} />
                           <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: '705' }} width={80} />
                           <Tooltip content={<CustomTooltip />} />
-                          <Bar dataKey="revenue" name="Revenue" fill="url(#colorIndustryRevenue)" radius={[0, 6, 6, 0]} barSize={16} />
+                          <Bar dataKey="revenue" name="Revenue" fill="url(#colorIndustryRevenue)" radius={[0, 6, 6, 0]} barSize={16} isAnimationActive={false} />
                         </BarChart>
                       </SafeResponsiveContainer>
                     ) : (

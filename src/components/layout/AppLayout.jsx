@@ -618,24 +618,18 @@ export default function AppLayout() {
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto bg-slate-50">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              {...routeMotionProps}
-              className="p-6 min-h-full"
-            >
-              <SystemStatusBanner
-                deals={deals}
-                customers={customers}
-                activities={activities}
-                effectiveTarget={effectiveTarget}
-                navigate={navigate}
-              />
-              <Suspense fallback={<div className="flex-1 flex items-center justify-center min-h-[400px]"><Loader2 className="animate-spin text-violet-500" size={32} /></div>}>
-                <Outlet />
-              </Suspense>
-            </motion.div>
-          </AnimatePresence>
+          <div className="p-6 min-h-full">
+            <SystemStatusBanner
+              deals={deals}
+              customers={customers}
+              activities={activities}
+              effectiveTarget={effectiveTarget}
+              navigate={navigate}
+            />
+            <Suspense fallback={<div className="flex-1 flex items-center justify-center min-h-[400px]"><Loader2 className="animate-spin text-violet-500" size={32} /></div>}>
+              <Outlet />
+            </Suspense>
+          </div>
         </main>
       </div>
 
