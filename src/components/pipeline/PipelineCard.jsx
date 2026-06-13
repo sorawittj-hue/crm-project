@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, PhoneCall, CheckCircle2, Clock, TrendingUp } from 'lucide-react';
+import { AlertTriangle, PhoneCall, CheckCircle2, Clock, TrendingUp, PlusCircle } from 'lucide-react';
 import { Card, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { cn } from '../../lib/utils';
+import QuickLogModal from './QuickLogModal';
 
 const formatCurrency = (n) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(n || 0);
 
@@ -25,6 +26,8 @@ export const PipelineCard = React.memo(React.forwardRef(({
   onUpdateDeal,
   teamMembers
 }, ref) => {
+  const [isQuickLogOpen, setIsQuickLogOpen] = React.useState(false);
+  
   const daysInStage = daysSince(deal.last_activity || deal.lastActivity || deal.createdAt || deal.created_at);
   const isStale = daysInStage >= STAGE_AGING_THRESHOLD.warning;
   const isCritical = daysInStage >= STAGE_AGING_THRESHOLD.critical;
@@ -142,12 +145,23 @@ export const PipelineCard = React.memo(React.forwardRef(({
           <div className="absolute inset-0 bg-white/95 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm">
             <Button
               size="xs"
+              className="h-8 w-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsQuickLogOpen(true);
+              }}
+              title="Quick Log (บันทึกกิจกรรม)"
+            >
+              <PlusCircle size={12} />
+            </Button>
+            <Button
+              size="xs"
               className="h-8 w-8 rounded-full bg-violet-600 hover:bg-violet-750 text-white flex items-center justify-center shadow-sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onUpdateDeal(deal.id, { last_activity: new Date().toISOString() });
               }}
-              title="บันทึกกิจกรรม"
+              title="อัปเดต Last Activity"
             >
               <PhoneCall size={12} />
             </Button>
@@ -158,7 +172,7 @@ export const PipelineCard = React.memo(React.forwardRef(({
                 e.stopPropagation();
                 onUpdateDeal(deal.id, { stage: 'won' });
               }}
-              title="ทำเครื่องหมายว่าชนะ"
+              title="ปิดการขาย (Won)"
             >
               <CheckCircle2 size={12} />
             </Button>
@@ -173,6 +187,12 @@ export const PipelineCard = React.memo(React.forwardRef(({
           )} />
         )}
       </Card>
+
+      <QuickLogModal 
+        open={isQuickLogOpen} 
+        onOpenChange={setIsQuickLogOpen} 
+        deal={deal} 
+      />
     </motion.div>
   );
 }));

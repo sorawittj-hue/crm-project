@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDeals } from '../hooks/useDeals';
 import { useTeam } from '../hooks/useTeam';
 import { useSettings } from '../hooks/useSettings';
-import { useActivities } from '../hooks/useActivities';
+import { useActivities, useUpdateActivity } from '../hooks/useActivities';
 import { useCustomers } from '../hooks/useCustomers';
 import { useSubscription } from '../hooks/useSubscription';
 import { useAppStore } from '../store/useAppStore';
@@ -27,7 +27,7 @@ import {
   Phone, Mail, FileText, MessageSquare, Activity, Trophy,
   Star, Flame, BarChart3, Sparkles, Shield, Zap,
   PieChart as PieChartIcon, Wrench, Settings, ShieldCheck,
-  Crown
+  Crown, Loader2
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis,
@@ -87,6 +87,7 @@ export default function CommandCenterPage() {
   const { data: teamMembers, isLoading: teamLoading } = useTeam();
   const { data: settings, isLoading: settingsLoading } = useSettings();
   const { data: activities = [] } = useActivities();
+  const updateActivityMutation = useUpdateActivity();
   const { data: customers = [] } = useCustomers();
   const { setPendingOpenDeal, openPaywall } = useAppStore();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
@@ -326,6 +327,14 @@ export default function CommandCenterPage() {
     if (!deal) return;
     setPendingOpenDeal(deal);
     navigate('/pipeline');
+  };
+
+  const handleCompleteTask = (e, activityId) => {
+    e.stopPropagation();
+    updateActivityMutation.mutate({
+      id: activityId,
+      updates: { completed_at: new Date().toISOString() }
+    });
   };
 
   const isLoading = dealsLoading || teamLoading || settingsLoading;
@@ -890,36 +899,47 @@ export default function CommandCenterPage() {
             </div>
           )}
 
-          {/* Follow-ups */}
+          {/* My Agenda (Follow-ups) */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">นัดติดตามถึงกำหนด</p>
+              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">My Agenda</p>
               <span className="text-xs text-slate-400 font-bold">{actionPlan.followUps.length}</span>
             </div>
             {actionPlan.followUps.length === 0 ? (
               <div className="p-4 rounded-2xl bg-white border border-slate-100 text-center shadow-sm">
                 <CheckCircle2 size={18} className="text-emerald-400 mx-auto mb-1 animate-pulse" />
-                <p className="text-xs text-slate-400 font-semibold">ไม่มีนัดวันนี้</p>
+                <p className="text-xs text-slate-400 font-semibold">ไม่มีงานค้าง หรือสิ่งที่ต้องติดตาม</p>
               </div>
-            ) : actionPlan.followUps.slice(0, 4).map((a, i) => (
-              <motion.button key={a.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-                onClick={() => openDeal(a.deal)}
+            ) : actionPlan.followUps.slice(0, 4).map((a, i) => {
+              const isCompleting = updateActivityMutation.isPending && updateActivityMutation.variables?.id === a.id;
+              return (
+              <motion.div key={a.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
                 className={cn('w-full text-left p-3.5 rounded-2xl border transition-all flex items-start gap-3 hover:shadow-md group/follow',
-                  a.overdue ? 'bg-rose-50/70 border-rose-100 hover:border-rose-200' : 'bg-amber-50/70 border-amber-100 hover:border-amber-200')}>
-                <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover/follow:scale-105',
-                  a.overdue ? 'bg-rose-100 text-rose-500 shadow-sm' : 'bg-amber-100 text-amber-600 shadow-sm shadow-amber-500/10')}>
-                  <CalendarClock size={15} />
+                  a.overdue ? 'bg-rose-50/70 border-rose-100 hover:border-rose-200' : 'bg-amber-50/70 border-amber-100 hover:border-amber-200',
+                  isCompleting && 'opacity-50 pointer-events-none scale-95')}
+              >
+                <div 
+                  onClick={(e) => handleCompleteTask(e, a.id)}
+                  className={cn('w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover/follow:scale-105 cursor-pointer hover:bg-emerald-500 hover:text-white',
+                  a.overdue ? 'bg-rose-100 text-rose-500 shadow-sm hover:shadow-emerald-500/30' : 'bg-amber-100 text-amber-600 shadow-sm shadow-amber-500/10 hover:shadow-emerald-500/30',
+                  isCompleting && 'bg-emerald-500 text-white')}
+                  title="Mark as complete"
+                >
+                  {isCompleting ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
                 </div>
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 cursor-pointer" onClick={() => openDeal(a.deal)}>
                   <div className="flex items-center gap-2">
-                    {a.overdue && <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-rose-100 text-rose-700 shadow-sm animate-pulse">เลยกำหนด</span>}
-                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{a.deal?.company || a.deal?.title}</span>
+                    {a.overdue && !isCompleting && <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-rose-100 text-rose-700 shadow-sm animate-pulse">เกินกำหนด</span>}
+                    <span className={cn("text-[10px] text-slate-500 font-bold uppercase tracking-wider", isCompleting && "line-through")}>{a.deal?.company || a.deal?.title}</span>
                   </div>
-                  <p className="text-sm font-bold text-slate-800 truncate mt-0.5 group-hover/follow:text-violet-700 transition-colors">{a.title}</p>
+                  <p className={cn("text-sm font-bold text-slate-800 truncate mt-0.5 group-hover/follow:text-violet-700 transition-colors", isCompleting && "line-through text-slate-400")}>{a.title}</p>
                 </div>
-                <ChevronRight size={14} className="text-slate-300 mt-1 transition-transform group-hover/follow:translate-x-0.5" />
-              </motion.button>
-            ))}
+                <button onClick={() => openDeal(a.deal)} className="p-1 rounded-full hover:bg-slate-100 transition-colors">
+                  <ChevronRight size={14} className="text-slate-300 mt-1 transition-transform group-hover/follow:translate-x-0.5" />
+                </button>
+              </motion.div>
+              );
+            })}
           </div>
 
           {/* Closing this week */}

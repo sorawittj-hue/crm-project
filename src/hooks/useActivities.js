@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchActivitiesByDeal, fetchActivities, addActivity, deleteActivity } from '../services/apiActivities';
+import { fetchActivitiesByDeal, fetchActivities, addActivity, deleteActivity, updateActivity } from '../services/apiActivities';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from './useAuth';
 
@@ -59,6 +59,25 @@ export function useDeleteActivity() {
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to delete activity');
+    },
+  });
+}
+
+export function useUpdateActivity() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, updates }) => updateActivity(id, updates),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['activities'] });
+      if (variables.updates.deal_id || variables.deal_id) {
+        queryClient.invalidateQueries({ queryKey: ['activities', 'deal', variables.updates.deal_id || variables.deal_id] });
+      }
+      toast.success('Activity updated');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update activity');
     },
   });
 }

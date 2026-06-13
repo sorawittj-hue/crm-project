@@ -27,6 +27,11 @@ export const useAppStore = create(
       setPendingNewDealCustomer: (customer) => set({ pendingNewDealCustomer: customer }),
       clearPendingNewDealCustomer: () => set({ pendingNewDealCustomer: null }),
 
+      // Global Quick Add Modal
+      isQuickAddOpen: false,
+      openQuickAdd: () => set({ isQuickAddOpen: true }),
+      closeQuickAdd: () => set({ isQuickAddOpen: false }),
+
       // Paywall Modal
       isPaywallOpen: false,
       paywallReason: 'default', // 'default', 'trial_ended', 'premium_only'

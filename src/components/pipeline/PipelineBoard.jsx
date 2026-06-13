@@ -7,7 +7,7 @@ import {
   ArrowLeft,
   Clock, GripVertical, ChevronRight,
   LayoutGrid, List, ThumbsUp, ThumbsDown,
-  Eye, Plus, ChevronDown
+  Eye, Plus, ChevronDown, Briefcase
 } from 'lucide-react';
 import { cn, parseYearMonth } from '../../lib/utils';
 import { formatFullCurrency as formatCurrency } from '../../lib/formatters';
@@ -16,6 +16,8 @@ import { calculateRiskScore } from '../../services/aiDeals';
 import { STAGE_IDS } from '../../lib/constants';
 import WinLossModal from './WinLossModal';
 import { useAuth } from '../../hooks/useAuth';
+import { useAppStore } from '../../store/useAppStore';
+import { Button } from '../ui/Button';
 
 const STAGE_CONFIG = {
   lead: {
@@ -306,6 +308,31 @@ export default function PipelineBoard({
     emerald: { active: 'bg-emerald-600 text-white border-emerald-600 shadow-emerald-200', inactive: 'bg-white text-slate-600 border-slate-200 hover:border-emerald-300 hover:text-emerald-600' },
     rose: { active: 'bg-rose-500 text-white border-rose-500 shadow-rose-200', inactive: 'bg-white text-slate-600 border-slate-200 hover:border-rose-300 hover:text-rose-600' },
   };
+
+  if (deals.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center bg-white/50 backdrop-blur-sm rounded-3xl border border-slate-200/60 shadow-sm mx-4 my-8 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-white/50 to-violet-50/50" />
+        <div className="relative z-10 max-w-md mx-auto flex flex-col items-center">
+          <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-violet-100 rounded-3xl flex items-center justify-center mb-6 shadow-inner rotate-3 hover:rotate-6 transition-transform duration-500">
+            <Briefcase size={40} className="text-violet-600 drop-shadow-md" />
+          </div>
+          <h2 className="text-2xl font-black text-slate-800 tracking-tight mb-3">ยินดีต้อนรับสู่ Nova Pipeline</h2>
+          <p className="text-slate-500 text-sm mb-8 leading-relaxed font-medium">
+            พื้นที่ทำงานหลักสำหรับบริหารจัดการการขายของคุณ เริ่มต้นสร้างดีลแรกของคุณเพื่อติดตามความคืบหน้าและปิดการขายอย่างมืออาชีพ
+          </p>
+          <Button 
+            size="lg" 
+            onClick={() => useAppStore.getState().setIsQuickAddOpen(true)}
+            className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20 px-8 py-6 rounded-2xl text-base font-bold transition-all hover:scale-105"
+          >
+            <Plus className="mr-2" size={20} />
+            สร้างดีลแรกของคุณ
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col space-y-4">

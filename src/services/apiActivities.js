@@ -140,3 +140,33 @@ export async function deleteActivity(id) {
     throw new Error('Failed to delete activity: ' + error.message);
   }
 }
+
+/**
+ * Update an activity
+ */
+export async function updateActivity(id, updates) {
+  try {
+    await getRequiredUserId();
+    const { data, error } = await supabase
+      .from('activities')
+      .update(updates)
+      .eq('id', id)
+      .select();
+
+    if (error) throw error;
+    return data?.[0];
+  } catch (error) {
+    if (isMissingColumnError(error)) {
+      const { data, error: legacyError } = await supabase
+        .from('activities')
+        .update(updates)
+        .eq('id', id)
+        .select();
+
+      if (!legacyError) return data?.[0];
+    }
+
+    console.error('Error updating activity:', error);
+    throw new Error('Failed to update activity: ' + error.message);
+  }
+}

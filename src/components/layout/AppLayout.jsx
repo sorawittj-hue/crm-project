@@ -7,7 +7,7 @@ import {
   Search, Settings, Bell,
   ChevronRight, Target, TrendingUp,
   AlertCircle, Clock, CheckCircle2, CalendarClock, Briefcase,
-  BarChart2, Trash2, CheckCheck,
+  BarChart2, Trash2, CheckCheck, Plus,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useDeals } from '../../hooks/useDeals';
@@ -31,6 +31,7 @@ import { pageMotion, reduceMotionProps, springSmooth } from '../../lib/motion';
 import CommandPalette from '../ui/CommandPalette';
 import MandateAIOrbs from './MandateAIOrbs';
 import PaywallModal from '../ui/PaywallModal';
+import GlobalAddDealModal from '../pipeline/GlobalAddDealModal';
 
 const sidebarVariants = {
   open: { x: 0, opacity: 1, transition: springSmooth },
@@ -169,7 +170,7 @@ function SystemStatusBanner({ deals, customers, activities, effectiveTarget, nav
 
 export default function AppLayout() {
   const shouldReduceMotion = useReducedMotion();
-  const { isSidebarOpen, closeSidebar, toggleSidebar, monthlyTarget, setMonthlyTarget, setPendingOpenDeal } = useAppStore();
+  const { isSidebarOpen, closeSidebar, toggleSidebar, monthlyTarget, setMonthlyTarget, setPendingOpenDeal, openQuickAdd } = useAppStore();
   const { data: deals = [] } = useDeals();
   const { data: customers = [] } = useCustomers();
   const { data: settings } = useSettings();
@@ -185,34 +186,27 @@ export default function AppLayout() {
   const userId = user?.id;
 
   const { data: myProfile } = useMyProfile(userId);
-  // Use personal target if set; otherwise default to 0
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
   const hasPersonalTarget = myProfile?.personal_target > 0 && !isGuestAccount;
   const effectiveTarget = hasPersonalTarget ? myProfile.personal_target : 0;
 
-  // DB-backed notifications
   const { data: notifications = [] } = useNotifications(userId);
   const markAllRead = useMarkAllNotificationsRead();
   const dismiss = useDismissNotification();
   const dismissAll = useDismissAllNotifications();
 
-  // Proactive engine — runs on load and every 5 min; uses personal target
   useProactiveEngine({ userId, deals, activities, monthlyTarget: effectiveTarget });
-
-  // Auto-backup engine — runs silently once a day
   useAutoBackup();
 
   const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications]);
   const totalCount = notifications.length;
 
-  // Group notifications by type, respecting TYPE_ORDER
   const grouped = useMemo(() => {
     const map = {};
     for (const n of notifications) {
       if (!map[n.type]) map[n.type] = [];
       map[n.type].push(n);
     }
-    // Sort each group by priority then created_at
     const PRIO = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
     for (const type of Object.keys(map)) {
       map[type].sort((a, b) => (PRIO[a.priority] ?? 5) - (PRIO[b.priority] ?? 5) || new Date(b.created_at) - new Date(a.created_at));
@@ -227,7 +221,6 @@ export default function AppLayout() {
 
   const displayInitial = displayName.charAt(0).toUpperCase();
 
-  // Mark all read when panel opens
   useEffect(() => {
     if (isNotifOpen && unreadCount > 0 && userId) {
       markAllRead.mutate(userId);
@@ -241,10 +234,14 @@ export default function AppLayout() {
         e.preventDefault();
         setIsCommandPaletteOpen(true);
       }
+      if (e.key.toLowerCase() === 'c' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+        e.preventDefault();
+        openQuickAdd();
+      }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [openQuickAdd]);
 
   useEffect(() => {
     if (settings?.monthly_target && settings.monthly_target !== monthlyTarget) {
@@ -434,6 +431,16 @@ export default function AppLayout() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Global Quick Add Button */}
+            <button
+              onClick={() => openQuickAdd()}
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl shadow-sm hover:shadow-md shadow-violet-500/20 transition-all font-semibold text-xs"
+              title="สร้างดีลใหม่ (กด C)"
+            >
+              <Plus size={14} />
+              <span>สร้างดีล</span>
+            </button>
+
             {/* Notification Bell */}
             <div className="relative" ref={notifRef}>
               <button
@@ -626,13 +633,14 @@ export default function AppLayout() {
         </main>
       </div>
 
-      {/* Command Palette */}
+      {/* Global Modals */}
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
         deals={deals}
         customers={customers}
       />
+      <GlobalAddDealModal />
 
       <MandateAIOrbs deals={deals} activities={activities} />
       

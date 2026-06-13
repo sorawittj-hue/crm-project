@@ -403,7 +403,7 @@ export default function CustomersPage() {
       </div>
 
       {/* CUSTOMER GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         <AnimatePresence mode="popLayout">
           {filteredCustomers.map((customer, i) => {
             return (
@@ -544,28 +544,40 @@ export default function CustomersPage() {
         </AnimatePresence>
 
         {filteredCustomers.length === 0 && (
-          <div className="col-span-full text-center py-24 space-y-4">
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-50 to-purple-100 flex items-center justify-center mx-auto shadow-sm">
-              <Users size={32} className="text-violet-300" />
+          <div className="col-span-full flex flex-col items-center justify-center py-24 text-center bg-white/50 backdrop-blur-sm rounded-3xl border border-slate-200/60 shadow-sm relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-violet-50/50 via-white/50 to-purple-50/50" />
+            <div className="relative z-10 max-w-md mx-auto flex flex-col items-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-violet-100 to-purple-100 rounded-3xl flex items-center justify-center mb-6 shadow-inner rotate-3 hover:rotate-6 transition-transform duration-500">
+                <Users size={40} className="text-violet-600 drop-shadow-md" />
+              </div>
+              <h3 className="text-2xl font-black text-slate-800 tracking-tight mb-3">
+                {searchTerm ? 'ไม่พบข้อมูลลูกค้าที่ค้นหา' : 'ยังไม่มีฐานลูกค้า'}
+              </h3>
+              <p className="text-sm text-slate-500 mb-8 leading-relaxed font-medium">
+                {searchTerm 
+                  ? 'ลองเปลี่ยนคำค้นหา หรือล้างตัวกรองเพื่อดูลูกค้าทั้งหมด'
+                  : 'เริ่มต้นสร้างฐานลูกค้าของคุณ เพื่อติดตามสถานะและวิเคราะห์สุขภาพของลูกค้าอย่างมืออาชีพ'}
+              </p>
+              <button
+                onClick={() => {
+                  if (shouldBlockBasic) {
+                    openPaywall(isGuestAccount ? 'default' : 'trial_ended');
+                  } else {
+                    if (searchTerm) {
+                      setSearchTerm('');
+                    } else {
+                      setNewCustomer(EMPTY_FORM);
+                      setFormError(null);
+                      setIsAddModalOpen(true);
+                    }
+                  }
+                }}
+                className="inline-flex items-center gap-2 px-8 py-4 bg-violet-600 text-white text-base font-bold rounded-2xl hover:bg-violet-700 hover:scale-105 transition-all shadow-lg shadow-violet-500/20"
+              >
+                {searchTerm ? <Filter size={18} /> : <Plus size={18} />}
+                {searchTerm ? 'ล้างการค้นหา' : 'เพิ่มลูกค้าใหม่'}
+              </button>
             </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-500">ไม่พบข้อมูลลูกค้า</h3>
-              <p className="text-sm text-slate-300 mt-1">ลองปรับตัวกรองหรือเพิ่มลูกค้าใหม่ได้เลย</p>
-            </div>
-            <button
-              onClick={() => {
-                if (shouldBlockBasic) {
-                  openPaywall(isGuestAccount ? 'default' : 'trial_ended');
-                } else {
-                  setNewCustomer(EMPTY_FORM);
-                  setFormError(null);
-                  setIsAddModalOpen(true);
-                }
-              }}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-600 text-white text-sm font-semibold rounded-xl hover:bg-violet-700 transition-colors shadow-md shadow-violet-200"
-            >
-              <Plus size={14} /> เพิ่มลูกค้าใหม่
-            </button>
           </div>
         )}
       </div>
