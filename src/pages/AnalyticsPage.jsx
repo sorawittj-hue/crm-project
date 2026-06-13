@@ -104,7 +104,7 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
             </div>
             {trend !== undefined && (
               <div className={cn(
-                "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide",
+                "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold tracking-wide",
                 trend >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
               )}>
                 {trend >= 0 ? <ArrowUpRight size={13} strokeWidth={3} /> : <ArrowDownRight size={13} strokeWidth={3} />}
@@ -814,7 +814,7 @@ export default function AnalyticsPage() {
                           <div className="flex gap-2 mt-4 flex-wrap">
                             <button
                               onClick={() => navigate('/pipeline')}
-                              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-[11px] font-black transition-all shadow-md shadow-rose-600/20 flex items-center gap-1.5 border-0 cursor-pointer animate-[fadeIn_0.5s_ease]"
+                              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black transition-all shadow-md shadow-rose-600/20 flex items-center gap-1.5 border-0 cursor-pointer animate-[fadeIn_0.5s_ease]"
                             >
                               <Briefcase size={12} /> ไปหน้าบอร์ดดีลการขาย เพื่อตั้งกิจกรรมด่วน
                             </button>
@@ -824,7 +824,7 @@ export default function AnalyticsPage() {
                           <div className="flex gap-2 mt-4 flex-wrap">
                             <button
                               onClick={() => navigate('/settings')}
-                              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-black transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5 border-0 cursor-pointer animate-[fadeIn_0.5s_ease]"
+                              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5 border-0 cursor-pointer animate-[fadeIn_0.5s_ease]"
                             >
                               <Target size={12} /> ไปหน้าการตั้งค่า เพื่อปรับเป้าหมายเปรียบเทียบ
                             </button>
@@ -834,7 +834,7 @@ export default function AnalyticsPage() {
                           <div className="flex gap-2 mt-4 flex-wrap">
                             <button
                               onClick={() => navigate('/tools')}
-                              className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-[11px] font-black transition-all shadow-md shadow-violet-500/20 flex items-center gap-1.5 border-0 cursor-pointer animate-[fadeIn_0.5s_ease]"
+                              className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-black transition-all shadow-md shadow-violet-500/20 flex items-center gap-1.5 border-0 cursor-pointer animate-[fadeIn_0.5s_ease]"
                             >
                               <Sparkles size={12} /> ไปหน้าเครื่องมือ AI เพื่อเขียนอีเมลแก้คอขวด
                             </button>
@@ -889,7 +889,7 @@ export default function AnalyticsPage() {
                             }}
                           >
                             <span className="text-xs font-black text-white">{item.count} Deals</span>
-                            <span className="text-[11px] font-bold text-white bg-white/25 px-2 py-0.5 rounded-lg">{formatCurrency(item.value)}</span>
+                            <span className="text-xs font-bold text-white bg-white/25 px-2 py-0.5 rounded-lg">{formatCurrency(item.value)}</span>
                           </motion.div>
                         </div>
                         <div className="w-28 shrink-0 text-right">
@@ -1088,7 +1088,7 @@ export default function AnalyticsPage() {
                       {/* Ranking Medals */}
                       <div className="absolute top-4 right-4 flex items-center gap-1.5">
                         {i === 0 && (
-                          <span className="text-[9px] font-black text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-md tracking-wider">
+                          <span className="text-[10px] font-black text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-md tracking-wider">
                             👑 CHAMPION
                           </span>
                         )}
@@ -1169,7 +1169,7 @@ export default function AnalyticsPage() {
                             <div className="absolute inset-0 bg-white/20 w-1/2 skew-x-12 -translate-x-full animate-[shimmer_2s_infinite]" />
                           </motion.div>
                         </div>
-                        <p className="text-[11px] font-semibold text-slate-400 mt-2">Active Pipeline: <span className="text-slate-600">{formatCurrency(m.activePipelineValue)}</span></p>
+                        <p className="text-xs font-semibold text-slate-400 mt-2">Active Pipeline: <span className="text-slate-600">{formatCurrency(m.activePipelineValue)}</span></p>
                       </div>
                     </motion.div>
                   ))}
@@ -1402,7 +1402,7 @@ export default function AnalyticsPage() {
                         )}>
                           {simQuotaAttainment}%
                         </span>
-                        <span className="text-[8px] font-bold text-slate-400 uppercase mt-1 tracking-wider">Quota</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-wider">Quota</span>
                       </div>
                     </div>
                   </div>

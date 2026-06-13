@@ -611,7 +611,7 @@ export default function PipelineBoard({
                       <div className="text-right shrink-0">
                         <p className="text-sm font-black text-slate-900 tabular-nums">{formatCurrency(deal.value)}</p>
                         {deal.probability !== undefined && deal.probability !== null && (
-                          <p className={cn("text-[11px] font-bold mt-1 tabular-nums", deal.probability >= 70 ? "text-emerald-600" : deal.probability >= 40 ? "text-violet-600" : "text-slate-400")}>
+                          <p className={cn("text-xs font-bold mt-1 tabular-nums", deal.probability >= 70 ? "text-emerald-600" : deal.probability >= 40 ? "text-violet-600" : "text-slate-400")}>
                             {deal.probability}% โอกาส
                           </p>
                         )}
@@ -750,7 +750,7 @@ const DealCard = memo(
                 </span>
                 {deal.probability !== undefined && deal.probability !== null && (
                   <span
-                    className="text-[11px] font-bold tabular-nums px-2 py-0.5 rounded-full"
+                    className="text-xs font-bold tabular-nums px-2 py-0.5 rounded-full"
                     style={{
                       backgroundColor: deal.probability >= 70 ? '#dcfce7' : deal.probability >= 40 ? '#ede9fe' : '#f1f5f9',
                       color: deal.probability >= 70 ? '#16a34a' : deal.probability >= 40 ? '#7c3aed' : '#94a3b8',

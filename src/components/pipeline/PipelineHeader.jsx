@@ -11,6 +11,7 @@ function AnimatedNumber({ value, prefix = '', suffix = '' }) {
   return (
     <motion.span
       key={value}
+      className="font-display"
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -129,7 +130,7 @@ export default function PipelineHeader({
           <div className="relative z-10 space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-xs text-violet-200 font-semibold tracking-wide uppercase">ยอดขายเดือนนี้</p>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 text-[11px] font-bold backdrop-blur-sm">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 text-xs font-bold backdrop-blur-sm">
                 <Target size={11} />
                 <AnimatedNumber value={Math.round(progress)} suffix="%" />
               </div>
@@ -192,7 +193,7 @@ export default function PipelineHeader({
               {trend > 0 ? '+' : ''}
               <AnimatedNumber value={trend.toFixed(1)} suffix="%" />
             </h3>
-            <p className="text-[11px] mt-1.5" style={{ color: isPositiveTrend ? '#6ee7b7' : '#fca5a5' }}>
+            <p className="text-xs mt-1.5" style={{ color: isPositiveTrend ? '#6ee7b7' : '#fca5a5' }}>
               เทียบกับเดือนก่อน
             </p>
           </div>
@@ -212,7 +213,7 @@ export default function PipelineHeader({
               <AnimatedNumber value={monthlyCount} />
               <span className="text-sm font-semibold text-amber-400 ml-1">ดีล</span>
             </h3>
-            <p className="text-[11px] text-amber-400 mt-1.5">ทั้งหมดในระบบ {totalDeals} ดีล</p>
+            <p className="text-xs text-amber-400 mt-1.5">ทั้งหมดในระบบ {totalDeals} ดีล</p>
           </div>
         </div>
       </div>

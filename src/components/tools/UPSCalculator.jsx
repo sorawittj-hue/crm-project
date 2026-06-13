@@ -50,7 +50,7 @@ export default function UPSCalculator() {
     "border-slate-200 focus:border-slate-900 focus:ring-4 focus:ring-slate-900/10"
   );
 
-  const labelClasses = "text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2";
+  const labelClasses = "text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2";
 
   return (
     <div className="space-y-8">
@@ -151,7 +151,7 @@ export default function UPSCalculator() {
         <Button
           onClick={calculate}
           className={cn(
-            "w-full h-14 md:h-16 rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.25em] shadow-xl transition-all duration-300",
+            "w-full h-14 md:h-16 rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-[0.25em] shadow-xl transition-all duration-300",
             "bg-gradient-to-r from-slate-900 to-slate-700 text-white hover:scale-[1.02] hover:shadow-2xl active:scale-95"
           )}
         >
@@ -177,7 +177,7 @@ export default function UPSCalculator() {
                   <Zap size={28} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-2">Recommended UPS Size</p>
+                  <p className="text-[10px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-2">Recommended UPS Size</p>
                   <div className="flex items-baseline gap-2">
                     <p className="text-3xl md:text-5xl font-black text-slate-900 leading-none tabular-nums">
                       {results.requiredVA.toLocaleString()}
@@ -189,11 +189,11 @@ export default function UPSCalculator() {
 
               <div className="space-y-2 md:space-y-3">
                 <div className="flex items-center justify-between p-3 md:p-4 bg-white rounded-xl md:rounded-2xl border border-slate-100">
-                  <span className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase tracking-wider">With Safety Margin</span>
+                  <span className="text-[10px] md:text-[10px] font-bold text-slate-500 uppercase tracking-wider">With Safety Margin</span>
                   <span className="text-xs md:text-sm font-black text-emerald-600">+25%</span>
                 </div>
                 <div className="flex items-center justify-between p-3 md:p-4 bg-white rounded-xl md:rounded-2xl border border-slate-100">
-                  <span className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase tracking-wider">Base Load</span>
+                  <span className="text-[10px] md:text-[10px] font-bold text-slate-500 uppercase tracking-wider">Base Load</span>
                   <span className="text-xs md:text-sm font-black text-slate-700">{(results.requiredVA / 1.25).toFixed(0)} VA</span>
                 </div>
               </div>
@@ -209,7 +209,7 @@ export default function UPSCalculator() {
                   <Battery size={28} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <p className="text-[8px] md:text-[9px] font-black text-amber-600/70 uppercase tracking-[0.2em] leading-none mb-2">Battery Configuration</p>
+                  <p className="text-[10px] md:text-[10px] font-black text-amber-600/70 uppercase tracking-[0.2em] leading-none mb-2">Battery Configuration</p>
                   <div className="flex items-baseline gap-2">
                     <p className="text-3xl md:text-5xl font-black text-slate-900 leading-none tabular-nums">
                       {results.requiredAh.toLocaleString()}
@@ -221,11 +221,11 @@ export default function UPSCalculator() {
 
               <div className="space-y-2 md:space-y-3">
                 <div className="flex items-center justify-between p-3 md:p-4 bg-white/80 backdrop-blur-sm rounded-xl md:rounded-2xl border border-amber-100">
-                  <span className="text-[8px] md:text-[9px] font-bold text-amber-700/70 uppercase tracking-wider">Battery Count</span>
+                  <span className="text-[10px] md:text-[10px] font-bold text-amber-700/70 uppercase tracking-wider">Battery Count</span>
                   <span className="text-base md:text-lg font-black text-slate-900">{results.numBatteries}x 12V</span>
                 </div>
                 <div className="flex items-center justify-between p-3 md:p-4 bg-white/80 backdrop-blur-sm rounded-xl md:rounded-2xl border border-amber-100">
-                  <span className="text-[8px] md:text-[9px] font-bold text-amber-700/70 uppercase tracking-wider">Per Battery</span>
+                  <span className="text-[10px] md:text-[10px] font-bold text-amber-700/70 uppercase tracking-wider">Per Battery</span>
                   <span className="text-base md:text-lg font-black text-slate-900">{results.ahPerBattery} Ah</span>
                 </div>
               </div>

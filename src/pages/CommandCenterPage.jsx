@@ -35,7 +35,7 @@ import {
 } from 'recharts';
 
 // --- Animated Number Component ---
-function AnimatedNumber({ value, formatter, duration = 1.2 }) {
+function AnimatedNumber({ value, formatter, duration = 1.2, className = '' }) {
   const ref = useRef(null);
   useEffect(() => {
     const numericValue = typeof value === 'number' ? value : parseFloat(value?.toString().replace(/[^0-9.-]+/g, "") || 0);
@@ -50,8 +50,9 @@ function AnimatedNumber({ value, formatter, duration = 1.2 }) {
       }
     });
     return () => controls.stop();
-  }, [value, duration, formatter]);
-  return <span ref={ref}>{formatter ? formatter(0) : 0}</span>;
+  }, [value, formatter, duration]);
+
+  return <span ref={ref} className={cn("font-display", className)}>{formatter ? formatter(value) : Math.round(value || 0).toLocaleString()}</span>;
 }
 
 const ACTIVITY_ICON = {
@@ -477,7 +478,7 @@ export default function CommandCenterPage() {
                   <span className="text-2xl font-black text-white tabular-nums leading-none tracking-tight">
                     <AnimatedNumber value={stats?.achievementPercent || 0} />%
                   </span>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase mt-1 tracking-wider">Achieved</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-wider">Achieved</span>
                 </div>
               </div>
               <div className="flex-1 space-y-3.5">
@@ -805,8 +806,8 @@ export default function CommandCenterPage() {
                     <p className="text-xs text-slate-400 font-semibold truncate mt-0.5">{d.company}</p>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    {d.closingSoon && <span className="text-[9px] font-black px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 tracking-tight uppercase shadow-sm">ใกล้ปิด</span>}
-                    <div className={cn("px-2 py-0.5 rounded-md text-[9px] font-black shadow-sm",
+                    {d.closingSoon && <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 tracking-tight uppercase shadow-sm">ใกล้ปิด</span>}
+                    <div className={cn("px-2 py-0.5 rounded-md text-[10px] font-black shadow-sm",
                       d.healthScore >= 70 ? "bg-emerald-100 text-emerald-700" :
                       d.healthScore >= 45 ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700"
                     )}>
@@ -911,7 +912,7 @@ export default function CommandCenterPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    {a.overdue && <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-rose-100 text-rose-700 shadow-sm animate-pulse">เลยกำหนด</span>}
+                    {a.overdue && <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-rose-100 text-rose-700 shadow-sm animate-pulse">เลยกำหนด</span>}
                     <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{a.deal?.company || a.deal?.title}</span>
                   </div>
                   <p className="text-sm font-bold text-slate-800 truncate mt-0.5 group-hover/follow:text-violet-700 transition-colors">{a.title}</p>
@@ -1179,24 +1180,24 @@ export default function CommandCenterPage() {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">ยอดเดือนนี้</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">ยอดเดือนนี้</p>
                     <p className="text-lg font-black text-slate-900 tabular-nums leading-tight truncate mt-0.5">{formatCurrency(m.wonThisMonthValue)}</p>
-                    <p className="text-[9px] text-slate-400 font-semibold mt-0.5">เป้า {formatCurrency(m.goal || 0)}</p>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-0.5">เป้า {formatCurrency(m.goal || 0)}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-1.5 pt-3 border-t border-slate-100/60 text-center">
                   <div>
                     <p className="text-sm font-black text-slate-800 tabular-nums">{m.wonThisMonthCount}</p>
-                    <p className="text-[9px] text-slate-400 font-semibold">ปิดได้</p>
+                    <p className="text-[10px] text-slate-400 font-semibold">ปิดได้</p>
                   </div>
                   <div>
                     <p className={cn("text-sm font-black tabular-nums", m.winRate >= 50 ? "text-emerald-600" : m.winRate >= 30 ? "text-amber-500" : "text-rose-500")}>{m.winRate}%</p>
-                    <p className="text-[9px] text-slate-400 font-semibold">Win Rate</p>
+                    <p className="text-[10px] text-slate-400 font-semibold">Win Rate</p>
                   </div>
                   <div>
                     <p className="text-sm font-black text-blue-600 tabular-nums">{m.activeCount}</p>
-                    <p className="text-[9px] text-slate-400 font-semibold">Active</p>
+                    <p className="text-[10px] text-slate-400 font-semibold">Active</p>
                   </div>
                 </div>
 

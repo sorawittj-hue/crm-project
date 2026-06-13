@@ -45,7 +45,7 @@ export const PipelineCard = React.memo(React.forwardRef(({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      whileHover={{ scale: 1.02, y: -2 }}
+      whileHover={{ scale: 1.01, y: -2 }}
       whileTap={{ scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       className="mb-3"
@@ -61,20 +61,20 @@ export const PipelineCard = React.memo(React.forwardRef(({
           isStale && !isCritical && "border-amber-200 bg-amber-50/10"
         )}
       >
-        <CardContent className="p-4 space-y-3">
+        <CardContent className="p-5 space-y-3">
           {/* HEADER: Company + Owner + Stale Indicator */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <div
                 className={cn(
-                  "w-6 h-6 rounded-lg flex items-center justify-center text-[8px] font-black text-white flex-shrink-0",
+                  "w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black text-white flex-shrink-0",
                   deal.assigned_to === 'leader' ? 'bg-indigo-600' : 'bg-orange-600'
                 )}
                 title={owner?.name || deal.assigned_to}
               >
                 {(owner?.name || deal.assigned_to || 'U').slice(0, 2).toUpperCase()}
               </div>
-              <p className="text-[10px] font-bold text-foreground truncate flex-1" title={normalizeText(deal.company)}>
+              <p className="text-xs font-bold text-foreground truncate flex-1" title={normalizeText(deal.company)}>
                 {normalizeText(deal.company) || 'ENTITY'}
               </p>
             </div>
@@ -89,7 +89,7 @@ export const PipelineCard = React.memo(React.forwardRef(({
 
           {/* TITLE */}
           <h4
-            className="text-xs font-bold leading-tight line-clamp-2 tracking-tight text-foreground/90 min-h-[2.5rem]"
+            className="text-sm font-bold leading-tight line-clamp-2 tracking-tight text-foreground/90 min-h-[2.5rem]"
             title={normalizeText(deal.title)}
           >
             {normalizeText(deal.title)}
@@ -98,12 +98,12 @@ export const PipelineCard = React.memo(React.forwardRef(({
           {/* FOOTER: Value + Probability + Days */}
           <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
             <div className="flex flex-col">
-              <span className="text-[11px] font-black tabular-nums tracking-tighter text-foreground">
+              <span className="text-sm font-bold tabular-nums tracking-tighter text-foreground">
                 {formatCurrency(deal.value)}
               </span>
               {probability > 0 && (
-                <div className="flex items-center gap-1 text-[8px] font-black text-muted-foreground uppercase tracking-wider">
-                  <TrendingUp size={8} className={cn(
+                <div className="flex items-center gap-1 text-[10px] font-black text-muted-foreground uppercase tracking-wider">
+                  <TrendingUp size={10} className={cn(
                     probability >= 70 ? "text-emerald-500" : probability >= 40 ? "text-amber-500" : "text-red-500"
                   )} />
                   {probability}% win
@@ -113,7 +113,7 @@ export const PipelineCard = React.memo(React.forwardRef(({
 
             <div className="flex items-center gap-1.5">
               <div className={cn(
-                "px-1.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider tabular-nums",
+                "px-1.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider tabular-nums",
                 isCritical ? "bg-red-500/20 text-red-400" :
                   isStale ? "bg-amber-500/20 text-amber-400" :
                     "bg-emerald-500/20 text-emerald-400"

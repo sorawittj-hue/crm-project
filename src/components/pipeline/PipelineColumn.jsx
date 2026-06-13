@@ -98,7 +98,7 @@ const PipelineColumn = ({ stage, deals, onDealClick, onUpdateDeal, selectedDeals
               {stageInfo.label}
             </h3>
             <span className={cn(
-              "text-[9px] font-black px-2 py-0.5 rounded-full",
+              "text-[10px] font-black px-2 py-0.5 rounded-full",
               isLost ? "bg-red-500/20 text-red-400" : "bg-white/10 text-muted-foreground"
             )}>
               {dealCount}
@@ -117,18 +117,18 @@ const PipelineColumn = ({ stage, deals, onDealClick, onUpdateDeal, selectedDeals
         </div>
 
         {/* Description */}
-        <p className="text-[8px] font-medium text-muted-foreground leading-tight">
+        <p className="text-[10px] font-medium text-muted-foreground leading-tight">
           {stageInfo.description}
         </p>
 
         {/* Summary Stats */}
         {!isCollapsed && dealCount > 0 && (
           <div className="flex items-center gap-3 pt-2 border-t border-white/5 mt-1">
-            <span className="text-[8px] font-black uppercase tracking-wider text-muted-foreground">
+            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
               {dealCount} {dealCount === 1 ? 'deal' : 'deals'}
             </span>
             {isLost && (
-              <div className="flex items-center gap-1 text-[8px] font-black text-red-400">
+              <div className="flex items-center gap-1 text-[10px] font-black text-red-400">
                 <AlertCircle size={10} />
                 <span>Review reasons</span>
               </div>
@@ -152,7 +152,7 @@ const PipelineColumn = ({ stage, deals, onDealClick, onUpdateDeal, selectedDeals
                 <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center mb-2", isLost ? "bg-red-500/10" : "bg-white/5")}>
                   <span className="text-2xl">{stageInfo.icon}</span>
                 </div>
-                <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+                <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
                   No deals in {stageInfo.label}
                 </p>
               </div>

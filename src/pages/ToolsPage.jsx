@@ -332,7 +332,7 @@ function DealCalculator() {
               { label: 'ต้นทุน (Cost/COGS)', value: cost, setter: setCost, placeholder: '600,000', prefix: '฿' },
             ].map(f => (
               <div key={f.label} className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{f.label}</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{f.label}</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">{f.prefix}</span>
                   <Input type="number" value={f.value} onChange={e => f.setter(e.target.value)}
@@ -342,7 +342,7 @@ function DealCalculator() {
             ))}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">โอกาสปิด (%)</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">โอกาสปิด (%)</label>
                 <div className="relative">
                   <Input type="number" min="0" max="100" value={probability} onChange={e => setProbability(e.target.value)}
                     className="h-12 pr-8 rounded-xl text-base font-bold bg-white/80 border-slate-200 focus:border-amber-400 focus:ring-amber-400/20" />
@@ -350,7 +350,7 @@ function DealCalculator() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">ระยะเวลา (ด.)</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">ระยะเวลา (ด.)</label>
                 <Input type="number" min="1" value={months} onChange={e => setMonths(e.target.value)}
                   className="h-12 rounded-xl text-base font-bold bg-white/80 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20" />
               </div>
@@ -545,7 +545,7 @@ export default function ToolsPage() {
               </div>
               <div className="flex flex-wrap gap-2 shrink-0">
                 {activeTool.badges.map(b => (
-                  <span key={b.label} className={cn('px-3.5 py-1.5 rounded-xl border text-[11px] font-bold tracking-wide uppercase', b.color)}>{b.label}</span>
+                  <span key={b.label} className={cn('px-3.5 py-1.5 rounded-xl border text-xs font-bold tracking-wide uppercase', b.color)}>{b.label}</span>
                 ))}
               </div>
             </div>

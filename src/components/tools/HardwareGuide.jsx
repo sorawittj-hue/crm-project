@@ -213,7 +213,7 @@ export default function HardwareGuide() {
             </div>
             <div>
               <h3 className="text-base md:text-xl font-black text-slate-900 uppercase tracking-tight">{currentCategoryDb.title}</h3>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Select Configuration</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Select Configuration</p>
             </div>
           </div>
 
@@ -247,7 +247,7 @@ export default function HardwareGuide() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-[13px] md:text-sm font-black text-slate-900 mb-1 leading-snug">{profile.label}</h3>
-                      <p className="text-[10px] md:text-[11px] font-bold text-slate-500 leading-relaxed line-clamp-2 md:line-clamp-none">{profile.desc}</p>
+                      <p className="text-[10px] md:text-xs font-bold text-slate-500 leading-relaxed line-clamp-2 md:line-clamp-none">{profile.desc}</p>
                     </div>
                   </div>
                 </motion.button>
@@ -285,7 +285,7 @@ export default function HardwareGuide() {
                     </div>
                     <div className="flex items-center gap-3 mb-3 md:mb-4">
                       <span className={cn(
-                        "px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-[0.15em]",
+                        "px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[10px] md:text-[10px] font-black uppercase tracking-[0.15em]",
                         `bg-gradient-to-r ${currentCategoryDb.gradient} text-white shadow-sm`
                       )}>
                         2026 Recommended Benchmark
@@ -312,7 +312,7 @@ export default function HardwareGuide() {
                           : "bg-slate-50 border-slate-100 hover:border-slate-200"
                       )}
                     >
-                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.15em] mb-2 md:mb-2.5">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-2 md:mb-2.5">
                         {specKey.replace(/_/g, ' ')}
                       </p>
                       <p className={cn(
@@ -336,7 +336,7 @@ export default function HardwareGuide() {
                     <Shield size={18} className="text-slate-400" />
                   </div>
                   <div>
-                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">Procurement Note</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">Procurement Note</p>
                     <p className="text-[10px] md:text-xs font-bold text-slate-500 leading-relaxed">
                       Prices are estimated street prices in Thailand (THB). Actual pricing may vary based on vendor, volume, and warranty terms. Contact authorized distributors for enterprise quotes.
                     </p>

@@ -58,7 +58,7 @@ const TeamUnitStatus = ({ member = {}, won, target, color, icon_type, activeNow,
           </div>
           <div>
             <h4 className="text-sm font-black uppercase tracking-tight">{member.name}</h4>
-            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em]">{member.role}</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{member.role}</p>
           </div>
         </div>
         <div className="text-right">
@@ -69,7 +69,7 @@ const TeamUnitStatus = ({ member = {}, won, target, color, icon_type, activeNow,
       </div>
 
       <div className="space-y-2">
-        <div className="flex justify-between text-[8px] font-black uppercase tracking-widest opacity-60">
+        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest opacity-60">
           <span>Gap: {formatCurrency(gap)}</span>
           <span>{formatCurrency(won)} / {formatCurrency(target)}</span>
         </div>
@@ -84,10 +84,10 @@ const TeamUnitStatus = ({ member = {}, won, target, color, icon_type, activeNow,
       </div>
 
       <div className="flex gap-2 pt-2">
-        <Button size="sm" variant="outline" onClick={() => window.location.href = `mailto:${member.email || 'team@novapipeline.com'}`} className="flex-1 h-8 text-[8px] font-black uppercase tracking-widest border-white/10 hover:bg-white/10">
+        <Button size="sm" variant="outline" onClick={() => window.location.href = `mailto:${member.email || 'team@novapipeline.com'}`} className="flex-1 h-8 text-[10px] font-black uppercase tracking-widest border-white/10 hover:bg-white/10">
           <MessageCircle size={12} className="mr-1" /> Message
         </Button>
-        <Button size="sm" onClick={() => onReview && onReview(member)} className="flex-1 h-8 bg-primary/20 text-primary border border-primary/30 text-[8px] font-black uppercase tracking-widest hover:bg-primary/30">
+        <Button size="sm" onClick={() => onReview && onReview(member)} className="flex-1 h-8 bg-primary/20 text-primary border border-primary/30 text-[10px] font-black uppercase tracking-widest hover:bg-primary/30">
           <BarChart3 size={12} className="mr-1" /> Review
         </Button>
       </div>
@@ -117,7 +117,7 @@ const UrgentDealNode = React.memo(({ deal, onClick }) => {
         )} />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-black tracking-tight truncate uppercase group-hover:text-primary transition-colors">{deal.title}</p>
-          <div className="flex items-center gap-2 text-[8px] font-black text-muted-foreground uppercase mt-1">
+          <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase mt-1">
             <span className="truncate">{deal.company}</span>
             <span className="text-primary font-black">{formatFullCurrency(deal.value)}</span>
           </div>
@@ -125,7 +125,7 @@ const UrgentDealNode = React.memo(({ deal, onClick }) => {
       </div>
       <div className="flex items-center gap-2">
         <Badge variant="outline" className={cn(
-          "text-[8px] font-black border-white/10 shrink-0",
+          "text-[10px] font-black border-white/10 shrink-0",
           isCritical ? "bg-red-500/20 text-red-400" :
             isUrgent ? "bg-amber-500/20 text-amber-400" :
               "bg-emerald-500/20 text-emerald-400"
@@ -161,7 +161,7 @@ const ActivityFeedItem = ({ activity, index }) => (
     </div>
     <div className="flex-1 min-w-0">
       <p className="text-xs font-medium truncate">{activity.title}</p>
-      <p className="text-[8px] text-muted-foreground mt-0.5">{activity.time}</p>
+      <p className="text-[10px] text-muted-foreground mt-0.5">{activity.time}</p>
     </div>
   </motion.div>
 );
@@ -181,7 +181,7 @@ const QuickAction = ({ icon: Icon, label, onClick, color = "primary" }) => (
     )}
   >
     <Icon size={20} className="mb-2" />
-    <span className="text-[8px] font-black uppercase tracking-widest">{label}</span>
+    <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
   </motion.button>
 );
 
@@ -193,7 +193,7 @@ const NotificationBell = ({ count, onClick }) => (
   >
     <Bell size={18} />
     {count > 0 && (
-      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[9px] font-black flex items-center justify-center text-white">
+      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[10px] font-black flex items-center justify-center text-white">
         {count > 9 ? '9+' : count}
       </span>
     )}
@@ -275,7 +275,7 @@ const CommandCenter = ({
           </div>
           <div>
             <h1 className="text-4xl font-black tracking-tighter uppercase italic">Sales War Room</h1>
-            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-1">Real-time Battle Command Center</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-1">Real-time Battle Command Center</p>
           </div>
         </div>
 
@@ -283,7 +283,7 @@ const CommandCenter = ({
           <NotificationBell count={0} onClick={() => setShowNotifications(!showNotifications)} />
           <Button
             onClick={onAddDeal}
-            className="h-12 px-6 rounded-xl bg-primary font-black uppercase tracking-widest text-[9px] shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+            className="h-12 px-6 rounded-xl bg-primary font-black uppercase tracking-widest text-[10px] shadow-xl shadow-primary/20 hover:scale-105 transition-all"
           >
             <Briefcase size={16} className="mr-2" /> New Deal
           </Button>
@@ -296,24 +296,24 @@ const CommandCenter = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="text-center">
-                <p className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">Captured</p>
+                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Captured</p>
                 <p className="text-2xl font-black text-primary">{formatCurrency(stats.totalWonValue)}</p>
               </div>
               <div className="h-12 w-px bg-white/10" />
               <div className="text-center">
-                <p className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">Target</p>
+                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Target</p>
                 <p className="text-2xl font-black">{formatCurrency(monthlyGoal)}</p>
               </div>
               <div className="h-12 w-px bg-white/10" />
               <div className="text-center">
-                <p className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">Remaining</p>
+                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Remaining</p>
                 <p className="text-2xl font-black text-amber-500">{formatCurrency(stats.remaining)}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">Pace</p>
+                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Pace</p>
                 <p className={cn("text-2xl font-black", stats.pace >= 100 ? "text-emerald-500" : stats.pace >= 80 ? "text-amber-500" : "text-red-500")}>
                   {stats.pace}%
                 </p>
@@ -349,13 +349,13 @@ const CommandCenter = ({
               className="absolute top-0 w-0.5 h-4 bg-white/50"
               style={{ left: `${stats.expectedPace}%` }}
             >
-              <div className="absolute -top-6 -translate-x-1/2 text-[8px] font-black uppercase text-muted-foreground whitespace-nowrap">
+              <div className="absolute -top-6 -translate-x-1/2 text-[10px] font-black uppercase text-muted-foreground whitespace-nowrap">
                 Expected
               </div>
             </div>
           </div>
 
-          <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-muted-foreground">
+          <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
             <span>Daily Target: {formatCurrency(stats.dailyTarget)}</span>
             <span>Need Daily: {formatCurrency(stats.dailyNeeded)}</span>
             <span>Active Pipeline: {stats.activeCount} deals</span>
@@ -374,9 +374,9 @@ const CommandCenter = ({
                 <CardTitle className="text-base font-black uppercase tracking-widest flex items-center gap-2">
                   <Users size={18} className="text-primary" /> Team Deployment Status
                 </CardTitle>
-                <p className="text-[8px] text-muted-foreground font-black uppercase tracking-widest mt-1">Real-time performance tracking</p>
+                <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">Real-time performance tracking</p>
               </div>
-              <Badge className="bg-primary/20 text-primary border-primary/30 font-black text-[8px]">
+              <Badge className="bg-primary/20 text-primary border-primary/30 font-black text-[10px]">
                 {teamMembers.length} UNITS ACTIVE
               </Badge>
             </CardHeader>
@@ -406,9 +406,9 @@ const CommandCenter = ({
                 <CardTitle className="text-base font-black uppercase tracking-widest flex items-center gap-2 text-red-400">
                   <AlertCircle size={18} className="text-red-500" /> Follow-up Matrix
                 </CardTitle>
-                <p className="text-[8px] text-muted-foreground font-black uppercase tracking-widest mt-1">Stagnant signals requiring immediate action</p>
+                <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">Stagnant signals requiring immediate action</p>
               </div>
-              <Badge className="bg-red-500/20 text-red-400 border border-red-500/30 font-black text-[8px] animate-pulse">
+              <Badge className="bg-red-500/20 text-red-400 border border-red-500/30 font-black text-[10px] animate-pulse">
                 {stats.urgentDeals.length} LEAK ALERTS
               </Badge>
             </CardHeader>
@@ -441,14 +441,14 @@ const CommandCenter = ({
                   </div>
                   <div>
                     <CardTitle className="text-sm font-black uppercase tracking-widest">Battle Directives</CardTitle>
-                    <p className="text-[8px] text-muted-foreground font-black uppercase tracking-widest mt-0.5">AI-Generated Strategy</p>
+                    <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-0.5">AI-Generated Strategy</p>
                   </div>
                 </div>
                 <Button
                   onClick={onGeneratePlan}
                   disabled={isGeneratingPlan}
                   size="sm"
-                  className="h-8 bg-white/20 text-white border border-white/30 text-[8px] font-black uppercase tracking-widest"
+                  className="h-8 bg-white/20 text-white border border-white/30 text-[10px] font-black uppercase tracking-widest"
                 >
                   {isGeneratingPlan ? <RotateCcw className="animate-spin" size={12} /> : <RotateCcw size={12} />}
                   Regenerate
@@ -486,14 +486,14 @@ const CommandCenter = ({
                   <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
                     <Target size={16} className="text-amber-500" /> Strategic Mandates
                   </CardTitle>
-                  <p className="text-[8px] text-muted-foreground font-black uppercase tracking-widest mt-1">High-impact action items</p>
+                  <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">High-impact action items</p>
                 </div>
                 <Button
                   onClick={onGenerateMandates}
                   disabled={isGeneratingMandates}
                   size="sm"
                   variant="outline"
-                  className="h-8 border-white/10 text-[8px] font-black uppercase tracking-widest"
+                  className="h-8 border-white/10 text-[10px] font-black uppercase tracking-widest"
                 >
                   {isGeneratingMandates ? <Cpu className="animate-spin" size={12} /> : <Sparkles size={12} />}
                   Generate
@@ -523,7 +523,7 @@ const CommandCenter = ({
                     <Target size={16} />
                   </div>
                   <div className="flex-1">
-                    <h4 className="text-[9px] font-black uppercase text-white leading-tight">{m.mandate}</h4>
+                    <h4 className="text-[10px] font-black uppercase text-white leading-tight">{m.mandate}</h4>
                     <p className="text-[10px] text-muted-foreground font-medium mt-1">{m.desc}</p>
                   </div>
                   {m.urgency === 'high' && (
@@ -584,7 +584,7 @@ const CommandCenter = ({
               {[1, 2, 3].map((i) => (
                 <div key={i} className="p-3 hover:bg-white/5 rounded-xl cursor-pointer">
                   <p className="text-xs font-medium">Deal updated: Enterprise Deal #{i}</p>
-                  <p className="text-[8px] text-muted-foreground mt-1">{i} hour ago</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{i} hour ago</p>
                 </div>
               ))}
             </div>

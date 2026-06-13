@@ -122,7 +122,7 @@ export default function MandateAIOrbs({ deals = [], activities = [] }) {
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping" />
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full" />
             </div>
-            <span className="text-[11px] font-black tracking-wider uppercase">
+            <span className="text-xs font-black tracking-wider uppercase">
               Mandate AI: <span className="text-rose-400">{staleHighValueDeals.length} ดีลเสี่ยง</span>
             </span>
           </motion.button>

@@ -90,7 +90,7 @@ const MemberCard = ({ member, deals, formatCurrency, onDealClick }) => {
             <CircleGauge value={wonRevenue} max={member.goal} size={110} strokeWidth={10} color={member.color} />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-2xl font-black text-text-main">{pct}%</span>
-              <span className="text-[9px] font-bold text-text-muted uppercase">Won</span>
+              <span className="text-[10px] font-bold text-text-muted uppercase">Won</span>
             </div>
           </div>
 
@@ -356,12 +356,12 @@ const TeamDashboard = ({ deals = [], teamMembers = [], onDealClick, formatCurren
               const isCurrentMonth = i === 5;
               return (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <p className="text-[9px] font-bold text-text-muted">{m.value > 0 ? formatShort(m.value) : '-'}</p>
+                  <p className="text-[10px] font-bold text-text-muted">{m.value > 0 ? formatShort(m.value) : '-'}</p>
                   <div className="w-full rounded-t-xl transition-all duration-700 relative overflow-hidden" style={{ height: `${Math.max(h, 4)}%`, minHeight: 6 }}>
                     <div className={`absolute inset-0 ${isCurrentMonth ? 'bg-accent' : 'bg-gray-200 dark:bg-gray-700'}`} />
                     {isCurrentMonth && <div className="absolute inset-0 bg-white/20 animate-pulse" />}
                   </div>
-                  <p className={`text-[9px] font-black uppercase ${isCurrentMonth ? 'text-accent' : 'text-text-muted'}`}>{m.label}</p>
+                  <p className={`text-[10px] font-black uppercase ${isCurrentMonth ? 'text-accent' : 'text-text-muted'}`}>{m.label}</p>
                 </div>
               );
             })}

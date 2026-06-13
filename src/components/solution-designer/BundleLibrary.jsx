@@ -88,7 +88,7 @@ const BundleLibrary = ({ onApplyRackTemplate, onExportBOM }) => {
                                             bundle.items.map((item, idx) => (
                                                 <div key={idx} className="space-y-1.5 pt-2 first:pt-0 border-t border-gray-100 dark:border-gray-800 first:border-none">
                                                     <div className="flex justify-between items-center">
-                                                        <span className="text-[11px] font-black text-text-main">{item.name} <span className="text-accent">x{item.qty}</span></span>
+                                                        <span className="text-xs font-black text-text-main">{item.name} <span className="text-accent">x{item.qty}</span></span>
                                                     </div>
 
                                                     {typeof item.specs === 'object' ? (

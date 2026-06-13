@@ -145,7 +145,7 @@ export function AccountSection() {
           <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 hover:border-slate-200 transition-colors">
             <div>
               <p className="text-sm font-semibold text-slate-700">ส่งออกข้อมูลส่วนตัว (Export Data)</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">ดาวน์โหลดข้อมูลทั้งหมดของคุณในรูปแบบ CSV</p>
+              <p className="text-xs text-slate-500 mt-0.5">ดาวน์โหลดข้อมูลทั้งหมดของคุณในรูปแบบ CSV</p>
             </div>
             <Button variant="outline" size="sm" className="h-8 text-xs font-bold" onClick={() => success('ส่งออกข้อมูลสำเร็จ (ไฟล์จะดาวน์โหลดในไม่ช้า)')}>
               ส่งออก
@@ -155,7 +155,7 @@ export function AccountSection() {
           <div className="flex items-center justify-between p-4 rounded-2xl bg-rose-50/50 border border-rose-100">
             <div>
               <p className="text-sm font-semibold text-rose-700">ลบบัญชีและข้อมูลทั้งหมด (Delete Account)</p>
-              <p className="text-[11px] text-rose-500/80 mt-0.5">การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+              <p className="text-xs text-rose-500/80 mt-0.5">การกระทำนี้ไม่สามารถย้อนกลับได้</p>
             </div>
             <Button variant="ghost" size="sm" className="h-8 text-xs font-bold text-rose-600 hover:bg-rose-500 hover:text-white" onClick={() => {
               if(window.confirm('คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีและข้อมูลทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้')) {

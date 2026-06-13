@@ -235,7 +235,7 @@ export default function SalesTrackingPage() {
               {isCurrentQ && <div className="absolute top-0 right-0 w-16 h-16 bg-violet-500/10 rounded-full -mr-8 -mt-8 blur-xl" />}
               <div className="flex items-center justify-between mb-1 relative z-10">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{q.label}</span>
-                {isCurrentQ && <span className="text-[9px] font-black bg-violet-600 text-white px-1.5 py-0.5 rounded-md">NOW</span>}
+                {isCurrentQ && <span className="text-[10px] font-black bg-violet-600 text-white px-1.5 py-0.5 rounded-md">NOW</span>}
               </div>
               <h4 className={cn("text-xl font-black tracking-tight relative z-10", isCurrentQ ? "text-violet-700" : "text-slate-800")}>
                 {formatCurrency(q.amount)}

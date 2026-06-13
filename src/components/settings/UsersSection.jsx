@@ -55,7 +55,7 @@ export function UsersSection() {
                   <p className="text-sm font-semibold text-slate-800 truncate">
                     {profile.full_name || profile.email}
                   </p>
-                  {isSelf && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-600">คุณ</span>}
+                  {isSelf && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-600">คุณ</span>}
                 </div>
                 <p className="text-xs text-slate-400 truncate">{profile.email}</p>
                 <div className="flex items-center gap-3 mt-1">

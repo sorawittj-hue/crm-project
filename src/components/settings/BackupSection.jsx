@@ -275,7 +275,7 @@ export function BackupSection() {
                         </div>
                         <div>
                           <p className="text-sm font-bold text-slate-800">{dateObj.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })}</p>
-                          <p className="text-[11px] text-slate-500 mt-0.5">
+                          <p className="text-xs text-slate-500 mt-0.5">
                             {bkp.dealsCount} ดีล • {bkp.customersCount} ลูกค้า • {bkp.activitiesCount} กิจกรรม
                           </p>
                         </div>

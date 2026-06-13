@@ -550,7 +550,7 @@ export default function PipelinePage() {
                                 {(customers.find(c => c.id === newDeal.customer_id)?.name || 'C').charAt(0).toUpperCase()}
                               </div>
                               <div>
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">ลูกค้าที่เชื่อมโยง</p>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">ลูกค้าที่เชื่อมโยง</p>
                                 <p className="text-sm font-extrabold text-slate-900 leading-tight mt-1">
                                   {customers.find(c => c.id === newDeal.customer_id)?.name || 'ไม่พบบัญชีลูกค้า'}
                                 </p>
@@ -646,7 +646,7 @@ export default function PipelinePage() {
                                           </div>
                                           <div>
                                             <span className="text-slate-900 font-bold text-sm block leading-none">{c.name}</span>
-                                            {c.company && <span className="text-slate-500 text-[11px] block mt-1 leading-none">{c.company}</span>}
+                                            {c.company && <span className="text-slate-500 text-xs block mt-1 leading-none">{c.company}</span>}
                                           </div>
                                         </div>
                                       </button>
@@ -980,7 +980,7 @@ export default function PipelinePage() {
                         {(newDeal.company || 'C').charAt(0)}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none truncate">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none truncate">
                           {newDeal.company || 'ยังไม่ระบุชื่อบริษัท'}
                         </p>
                         <p className="text-sm font-extrabold text-slate-900 truncate mt-1 leading-tight">
@@ -991,13 +991,13 @@ export default function PipelinePage() {
 
                     <div className="flex items-baseline justify-between gap-2 pt-2 border-t border-slate-50">
                       <div>
-                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">มูลค่าดีล</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">มูลค่าดีล</p>
                         <span className="text-lg font-black text-slate-900 tabular-nums leading-none block mt-1">
                           {new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(Number(newDeal.value) || 0)}
                         </span>
                       </div>
                       <div className="text-right">
-                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">โอกาสปิด</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">โอกาสปิด</p>
                         <span className="text-sm font-black text-violet-600 block mt-1">
                           {newDeal.probability || '50'}%
                         </span>
@@ -1005,7 +1005,7 @@ export default function PipelinePage() {
                     </div>
 
                     <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-[9px] font-black text-white shrink-0 shadow-sm shadow-violet-500/10">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-[10px] font-black text-white shrink-0 shadow-sm shadow-violet-500/10">
                         {newDeal.assigned_to ? (teamMembers.find(t => t.id === newDeal.assigned_to)?.name?.charAt(0).toUpperCase() || 'U') : 'U'}
                       </div>
                       <div className="flex-1">
@@ -1044,19 +1044,19 @@ export default function PipelinePage() {
                       let priorityChip = null;
                       if (val >= 1000000) {
                         priorityChip = (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-[9px] font-black text-amber-400 tracking-wider uppercase">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-black text-amber-400 tracking-wider uppercase">
                             👑 VIP Deal (มูลค่าสูง)
                           </span>
                         );
                       } else if (val > 0 && val < 50000) {
                         priorityChip = (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[9px] font-black text-cyan-400 tracking-wider uppercase">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[10px] font-black text-cyan-400 tracking-wider uppercase">
                             ⚡ Fast Run (ดีลปิดด่วน)
                           </span>
                         );
                       } else if (val > 0) {
                         priorityChip = (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-[9px] font-black text-violet-400 tracking-wider uppercase">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-[10px] font-black text-violet-400 tracking-wider uppercase">
                             💼 Standard Deal
                           </span>
                         );
@@ -1086,9 +1086,9 @@ export default function PipelinePage() {
                         <div className="space-y-3">
                           {priorityChip && <div className="flex gap-1.5">{priorityChip}</div>}
                           {tips.length === 0 ? (
-                            <p className="text-slate-400 font-medium text-[11px] leading-snug">กรอกข้อมูลดีลทางด้านซ้ายเพื่อรับการพยากรณ์และกลยุทธ์ปิดการขายจาก AI ทันที</p>
+                            <p className="text-slate-400 font-medium text-xs leading-snug">กรอกข้อมูลดีลทางด้านซ้ายเพื่อรับการพยากรณ์และกลยุทธ์ปิดการขายจาก AI ทันที</p>
                           ) : (
-                            <ul className="space-y-2 text-slate-350 font-medium text-[11px] leading-snug">
+                            <ul className="space-y-2 text-slate-350 font-medium text-xs leading-snug">
                               {tips.map((tip, idx) => (
                                 <li key={idx} className="flex items-start gap-1.5">
                                   <span className="text-violet-400 mt-0.5 shrink-0">•</span>

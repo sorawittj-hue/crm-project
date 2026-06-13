@@ -138,7 +138,7 @@ function SystemStatusBanner({ deals, customers, activities, effectiveTarget, nav
             <span
               key={item.label}
               className={cn(
-                'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold',
+                'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold',
                 item.done
                   ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
                   : 'border-slate-200 bg-white text-slate-500'
@@ -331,7 +331,7 @@ export default function AppLayout() {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 py-4 space-y-1 overflow-y-auto overflow-x-hidden no-scrollbar">
+            <nav className="flex-1 py-4 space-y-0.5 overflow-y-auto overflow-x-hidden no-scrollbar">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.to;
                 return (
@@ -340,7 +340,7 @@ export default function AppLayout() {
                     to={item.to}
                     onClick={() => !isDesktop && closeSidebar()}
                     className={cn(
-                      "group flex items-center gap-3.5 px-3.5 py-3 rounded-[14px] text-sm transition-all duration-300 relative",
+                      "group flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm transition-all duration-300 relative",
                       isActive
                         ? "text-white shadow-sm"
                         : "text-slate-500 hover:text-violet-700 hover:bg-violet-50/50"
@@ -350,7 +350,7 @@ export default function AppLayout() {
                       <>
                         <motion.span
                           layoutId="activeNavBackground"
-                          className="absolute inset-0 rounded-[14px] bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/20"
+                          className="absolute inset-0 bg-violet-600 shadow-sm rounded-xl"
                           transition={springSmooth}
                         />
                         <motion.span
@@ -379,13 +379,13 @@ export default function AppLayout() {
             </nav>
 
             {/* Monthly Goal */}
-            <div className="pb-5 pt-5 relative">
+            <div className="pb-5 pt-5 relative mt-2 mb-1">
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
-              <div className="bg-gradient-to-br from-violet-50 to-indigo-50/50 border border-violet-100/60 rounded-[1.25rem] p-4 space-y-3 relative overflow-hidden group">
+              <div className="bg-gradient-to-br from-violet-50 to-indigo-50/50 border border-violet-100/60 rounded-2xl p-3.5 space-y-3 relative overflow-hidden group">
                 <div className="absolute -top-10 -right-10 w-24 h-24 bg-gradient-to-br from-violet-300/20 to-indigo-300/20 rounded-full transition-all group-hover:scale-110 duration-500" />
                 <div className="flex items-center justify-between relative z-10">
-                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">เป้าหมายส่วนตัว</p>
-                  <span className="text-[11px] font-black text-violet-600 bg-white px-2 py-0.5 rounded-full shadow-sm">{goalProgress}%</span>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">เป้าหมายส่วนตัว</p>
+                  <span className="text-xs font-black text-violet-600 bg-white px-2 py-0.5 rounded-full shadow-sm">{goalProgress}%</span>
                 </div>
                 <div className="flex justify-between items-center relative z-10">
                   <p className="text-lg font-black text-slate-800 tracking-tight">{hasPersonalTarget ? formatCurrency(effectiveTarget) : 'ยังไม่ได้ตั้ง'}</p>
@@ -410,9 +410,6 @@ export default function AppLayout() {
             {/* Developer credit */}
             <div className="px-2 pb-6 pt-2 text-center relative">
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-3">
-                พัฒนาโดย <span className="text-slate-500">Sorawit Thunthakij</span>
-              </p>
             </div>
           </motion.aside>
         )}
@@ -421,7 +418,7 @@ export default function AppLayout() {
       {/* MAIN AREA */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="h-14 flex items-center justify-between px-6 bg-white border-b border-slate-100 z-20 shrink-0">
+        <header className="h-16 flex items-center justify-between px-8 bg-white/95 backdrop-blur-sm border-b border-slate-100/80 z-20 shrink-0">
           <div className="flex items-center gap-3">
             <button onClick={toggleSidebar} aria-label="เปิด/ปิดเมนู" className="lg:hidden p-1.5 text-slate-400 hover:bg-slate-100 rounded-lg">
               <Menu size={20} />
@@ -450,7 +447,7 @@ export default function AppLayout() {
                     key={unreadCount}
                     initial={{ scale: 1.4 }}
                     animate={{ scale: 1 }}
-                    className="absolute top-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center"
+                    className="absolute top-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center"
                   >
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </motion.span>
@@ -464,7 +461,7 @@ export default function AppLayout() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={shouldReduceMotion ? undefined : { opacity: 0, y: 4, scale: 0.98 }}
                     transition={{ duration: 0.16, ease: [0.19, 1, 0.22, 1] }}
-                    className="absolute right-0 top-10 w-[420px] bg-white rounded-2xl border border-slate-100 shadow-2xl z-50 overflow-hidden"
+                    className="absolute right-0 top-10 w-[420px] max-w-[400px] bg-white rounded-2xl border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.12)] z-50 overflow-hidden"
                   >
                     {/* Panel header */}
                     <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">

@@ -336,12 +336,12 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
               <div className="grid grid-cols-3 gap-3">
                 {/* Value */}
                 <div className="bg-white/80 backdrop-blur rounded-xl p-3 border border-slate-100 shadow-sm">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">มูลค่า</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">มูลค่า</p>
                   <p className="text-base font-black text-slate-900 tabular-nums leading-tight">{formatCurrency(deal.value)}</p>
                 </div>
                 {/* Probability */}
                 <div className="bg-white/80 backdrop-blur rounded-xl p-3 border border-slate-100 shadow-sm">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">โอกาส</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">โอกาส</p>
                   <div className="flex items-center gap-1.5">
                     <p className="text-base font-black text-slate-900 tabular-nums">{deal.probability}%</p>
                   </div>
@@ -358,7 +358,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                 </div>
                 {/* Stage position */}
                 <div className="bg-white/80 backdrop-blur rounded-xl p-3 border border-slate-100 shadow-sm">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">ขั้นตอน</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ขั้นตอน</p>
                   <div className="flex items-center gap-1.5">
                     <span className={cn('w-2 h-2 rounded-full shrink-0', wf?.dot || 'bg-slate-400')} />
                     <p className="text-xs font-bold text-slate-700 truncate">{stageBadge.label.replace('🎉 ', '')}</p>
@@ -495,7 +495,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                                 const body = fmt(template.body || '');
                                 return (
                                   <div className="space-y-2 bg-white p-3 rounded-xl border border-slate-100">
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase">Subject: <span className="text-slate-800 normal-case font-bold text-xs">{subject}</span></p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Subject: <span className="text-slate-800 normal-case font-bold text-xs">{subject}</span></p>
                                     <pre className="text-xs text-slate-600 font-sans whitespace-pre-wrap leading-relaxed max-h-32 overflow-y-auto bg-slate-50 p-2.5 rounded-lg border border-slate-100">{body}</pre>
                                     <div className="flex gap-2">
                                       <button onClick={() => {
@@ -626,7 +626,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                                   <div className="flex items-start justify-between gap-2">
                                     <p className="text-sm font-semibold text-slate-800 leading-tight">{act.title}</p>
                                     {act.scheduled_at && !act.completed_at && (
-                                      <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 shrink-0">รอดำเนินการ</span>
+                                      <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 shrink-0">รอดำเนินการ</span>
                                     )}
                                   </div>
                                   {act.description && <p className="text-xs text-slate-500 mt-1 leading-relaxed">{act.description}</p>}
@@ -652,7 +652,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                       <div className={cn('space-y-4 p-5 rounded-2xl border', wf.color)}>
                         <div className="flex items-center gap-2">
                           <ListTodo size={14} className={wf.headerColor} />
-                          <h3 className={cn('text-[11px] font-black uppercase tracking-widest', wf.headerColor)}>
+                          <h3 className={cn('text-xs font-black uppercase tracking-widest', wf.headerColor)}>
                             ขั้นตอน: {wf.label}
                           </h3>
                         </div>
@@ -715,22 +715,22 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
                             <div className="grid grid-cols-2 gap-3">
                               <div className="bg-white rounded-xl p-4 border border-violet-100 shadow-sm text-center">
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Win Likelihood</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Win Likelihood</p>
                                 <span className="text-3xl font-black text-slate-900">{aiAnalysis.win_likelihood}%</span>
                               </div>
                               <div className="bg-white rounded-xl p-4 border border-violet-100 shadow-sm text-center">
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">ความเสี่ยง</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ความเสี่ยง</p>
                                 <span className={cn('text-sm font-black', aiAnalysis.risk_level === 'high' ? 'text-rose-600' : aiAnalysis.risk_level === 'medium' ? 'text-amber-600' : 'text-emerald-600')}>
                                   {aiAnalysis.risk_level === 'high' ? '🔴 สูง' : aiAnalysis.risk_level === 'medium' ? '🟡 ปานกลาง' : '🟢 ต่ำ'}
                                 </span>
                               </div>
                             </div>
                             <div className="bg-white rounded-xl p-4 border border-violet-100 shadow-sm space-y-2">
-                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">กลยุทธ์แนะนำ</p>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">กลยุทธ์แนะนำ</p>
                               <p className="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-line">{aiAnalysis.strategy}</p>
                             </div>
                             <div className="bg-violet-600 rounded-xl p-4 text-white shadow-lg shadow-violet-500/20">
-                              <p className="text-[9px] font-bold uppercase tracking-widest opacity-70 mb-1">Next Step สำคัญ</p>
+                              <p className="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-1">Next Step สำคัญ</p>
                               <p className="text-sm font-bold">{aiAnalysis.next_step}</p>
                             </div>
                           </motion.div>

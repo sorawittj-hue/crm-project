@@ -442,7 +442,7 @@ export default function CustomersPage() {
                       </div>
                       <div className="flex flex-col items-end gap-1.5 shrink-0">
                         {customer._fromDeals && (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold border border-blue-200 bg-blue-50 text-blue-600">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border border-blue-200 bg-blue-50 text-blue-600">
                             จากดีล
                           </span>
                         )}
@@ -592,19 +592,19 @@ export default function CustomersPage() {
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   {selectedCustomer.grade ? (
-                    <span className={cn("px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border", GRADE_CONFIG[selectedCustomer.grade]?.color)}>
+                    <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", GRADE_CONFIG[selectedCustomer.grade]?.color)}>
                       เกรด {selectedCustomer.grade} — {GRADE_CONFIG[selectedCustomer.grade]?.label?.split('—')[1]?.trim()}
                     </span>
                   ) : (
-                    <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-slate-100 text-slate-400 border border-slate-200">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-100 text-slate-400 border border-slate-200">
                       ไม่มีเกรดดีล
                     </span>
                   )}
-                  <span className={cn("px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border", TIER_CONFIG[selectedCustomer.tier]?.color || 'bg-slate-100 text-slate-500 border-slate-200')}>
+                  <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", TIER_CONFIG[selectedCustomer.tier]?.color || 'bg-slate-100 text-slate-500 border-slate-200')}>
                     {TIER_CONFIG[selectedCustomer.tier]?.icon || '🥈'} {selectedCustomer.tier || 'Silver'}
                   </span>
                   {selectedCustomer.industry && (
-                    <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-slate-50 text-slate-500 border border-slate-100">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-50 text-slate-500 border border-slate-100">
                       {selectedCustomer.industry}
                     </span>
                   )}
@@ -830,22 +830,22 @@ export default function CustomersPage() {
                           </div>
                           <div className="grid grid-cols-3 gap-3 pt-2">
                             <div className="rounded-2xl bg-slate-50 p-3">
-                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Win rate</p>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Win rate</p>
                               <p className="text-base font-black text-slate-900 tabular-nums">{selectedCustomer.health?.winRate || 0}%</p>
                             </div>
                             <div className="rounded-2xl bg-slate-50 p-3">
-                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Risks</p>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Risks</p>
                               <p className="text-base font-black text-rose-500 tabular-nums">{selectedCustomer.health?.riskCount || 0}</p>
                             </div>
                             <div className="rounded-2xl bg-slate-50 p-3">
-                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Idle Days</p>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Idle Days</p>
                               <p className="text-base font-black text-slate-900 tabular-nums">
                                 {selectedCustomer.health?.inactiveDays ?? 0} วัน
                               </p>
                             </div>
                           </div>
                           <div className="rounded-2xl bg-blue-50/50 border border-blue-100 p-4">
-                            <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1">ก้าวสำคัญถัดไป (Next Best Action)</p>
+                            <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">ก้าวสำคัญถัดไป (Next Best Action)</p>
                             <p className="text-xs font-semibold text-slate-700 leading-relaxed">{selectedCustomer.health?.nextAction}</p>
                           </div>
                         </div>
@@ -860,7 +860,7 @@ export default function CustomersPage() {
                             </div>
                             <div>
                               <h3 className="text-xs font-black uppercase tracking-widest text-violet-750">AI Customer Care Playbook</h3>
-                              <p className="text-[9px] font-bold text-violet-400 uppercase tracking-widest">การดูแลแบบแบ่งเกรดอัจฉริยะ</p>
+                              <p className="text-[10px] font-bold text-violet-400 uppercase tracking-widest">การดูแลแบบแบ่งเกรดอัจฉริยะ</p>
                             </div>
                           </div>
 
@@ -984,11 +984,11 @@ export default function CustomersPage() {
                       {/* Deal Values Summary */}
                       <div className="grid grid-cols-2 gap-4">
                         <Card className="rounded-[2rem] bg-slate-50 border-none p-6">
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">มูลค่ารวมที่ปิดได้</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">มูลค่ารวมที่ปิดได้</p>
                           <p className="text-xl font-black text-emerald-600 tabular-nums">{formatFullCurrency(selectedCustomer.dealStats.wonValue)}</p>
                         </Card>
                         <Card className="rounded-[2rem] bg-slate-50 border-none p-6">
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">ดีลที่กำลังดำเนินการ</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">ดีลที่กำลังดำเนินการ</p>
                           <p className="text-xl font-black text-violet-750 tabular-nums">{formatFullCurrency(selectedCustomer.dealStats.activeValue)}</p>
                         </Card>
                       </div>
