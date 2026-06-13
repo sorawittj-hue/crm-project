@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { useAuth } from '../hooks/useAuth';
 import { useSubscription } from '../hooks/useSubscription';
+import { useDebounce } from '../hooks/useDebounce';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -89,6 +90,8 @@ export default function CustomersPage() {
 
   const [activeDetailTab, setActiveDetailTab] = useState('profile'); // profile, playbook, deals
   const [localCustomer, setLocalCustomer] = useState(null);
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   useEffect(() => {
     if (selectedCustomer) {
@@ -208,8 +211,8 @@ export default function CustomersPage() {
 
   const filteredCustomers = useMemo(() => {
     let result = enrichedCustomers;
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
+    if (debouncedSearchTerm) {
+      const term = debouncedSearchTerm.toLowerCase();
       result = result.filter(c =>
         (c.name || '').toLowerCase().includes(term) ||
         (c.company || '').toLowerCase().includes(term) ||
@@ -404,12 +407,12 @@ export default function CustomersPage() {
 
       {/* CUSTOMER GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode={filteredCustomers.length > 20 ? "sync" : "popLayout"}>
           {filteredCustomers.map((customer, i) => {
             return (
               <motion.div
                 key={customer.id}
-                layout
+                layout={filteredCustomers.length <= 20}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}

@@ -1,0 +1,29 @@
+import { useState, useEffect } from 'react';
+
+/**
+ * A hook that returns a debounced version of the provided value.
+ * Useful for delaying search filtering to avoid excessive re-renders.
+ * 
+ * @param {any} value The value to debounce
+ * @param {number} delay The delay in milliseconds
+ * @returns {any} The debounced value
+ */
+export function useDebounce(value, delay = 300) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    // Update debounced value after delay
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    // Cancel the timeout if value changes (also on delay change or unmount)
+    // This is how we prevent debounced value from updating if value is changed ...
+    // .. within the delay period. Timeout gets cleared and restarted.
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}

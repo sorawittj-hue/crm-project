@@ -563,28 +563,17 @@ export default function PipelineBoard({
 
                         {/* Cards */}
                         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2.5 custom-scrollbar-thin">
-                          {stageDeals.map((deal, index) => (
-                            <Draggable key={deal.id} draggableId={deal.id} index={index}>
-                              {(dragProvided, dragSnapshot) => (
-                                <DealCard
-                                  ref={dragProvided.innerRef}
-                                  draggableProps={dragProvided.draggableProps}
-                                  dragHandleProps={dragProvided.dragHandleProps}
-                                  isDragging={dragSnapshot.isDragging}
-                                  deal={deal}
-                                  isSelected={selectedDealId === deal.id}
-                                  isPinned={pinnedDealIds.includes(deal.id)}
-                                  canMoveLeft={STAGES.indexOf(deal.stage) > 0}
-                                  canMoveRight={STAGES.indexOf(deal.stage) < STAGES.length - 1}
-                                  onSelect={() => setSelectedDealId(deal.id)}
-                                  onClick={() => onDealClick(deal)}
-                                  onPin={() => togglePin(deal.id)}
-                                  onMove={(dir) => handleMoveDeal(deal.id, dir)}
-                                  stageColor={stage.dotColor}
-                                />
-                              )}
-                            </Draggable>
-                          ))}
+                          <InnerList 
+                            deals={stageDeals} 
+                            stageColor={stage.dotColor}
+                            selectedDealId={selectedDealId}
+                            pinnedDealIds={pinnedDealIds}
+                            STAGES={STAGES}
+                            setSelectedDealId={setSelectedDealId}
+                            onDealClick={onDealClick}
+                            togglePin={togglePin}
+                            handleMoveDeal={handleMoveDeal}
+                          />
                           {provided.placeholder}
                           {stageDeals.length === 0 && !snapshot.isDraggingOver && (
                             <div className="h-32 border-2 border-dashed border-slate-200/60 rounded-xl flex flex-col items-center justify-center text-slate-300 gap-2 bg-slate-50/30">
@@ -670,6 +659,36 @@ export default function PipelineBoard({
     </div>
   );
 }
+
+const InnerList = memo(({ deals, stageColor, selectedDealId, pinnedDealIds, STAGES, setSelectedDealId, onDealClick, togglePin, handleMoveDeal }) => {
+  return (
+    <>
+      {deals.map((deal, index) => (
+        <Draggable key={deal.id} draggableId={deal.id} index={index}>
+          {(dragProvided, dragSnapshot) => (
+            <DealCard
+              ref={dragProvided.innerRef}
+              draggableProps={dragProvided.draggableProps}
+              dragHandleProps={dragProvided.dragHandleProps}
+              isDragging={dragSnapshot.isDragging}
+              deal={deal}
+              isSelected={selectedDealId === deal.id}
+              isPinned={pinnedDealIds.includes(deal.id)}
+              canMoveLeft={STAGES.indexOf(deal.stage) > 0}
+              canMoveRight={STAGES.indexOf(deal.stage) < STAGES.length - 1}
+              onSelect={() => setSelectedDealId(deal.id)}
+              onClick={() => onDealClick(deal)}
+              onPin={() => togglePin(deal.id)}
+              onMove={(dir) => handleMoveDeal(deal.id, dir)}
+              stageColor={stageColor}
+            />
+          )}
+        </Draggable>
+      ))}
+    </>
+  );
+});
+InnerList.displayName = 'InnerList';
 
 const DealCard = memo(
   forwardRef(

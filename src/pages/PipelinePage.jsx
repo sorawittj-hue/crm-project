@@ -4,6 +4,7 @@ import { useCustomers } from '../hooks/useCustomers';
 import { useTeam } from '../hooks/useTeam';
 import { useAuth } from '../hooks/useAuth';
 import { useSubscription } from '../hooks/useSubscription';
+import { useDebounce } from '../hooks/useDebounce';
 import { useAppStore } from '../store/useAppStore';
 import { useAddActivity } from '../hooks/useActivities';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
@@ -95,6 +96,7 @@ export default function PipelinePage() {
   const [quickError, setQuickError] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const [newDeal, setNewDeal] = useState({
     title: '', company: '', value: '', stage: 'lead', customer_id: '',
@@ -169,8 +171,8 @@ export default function PipelinePage() {
   // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const filteredDeals = useMemo(() => {
     let result = deals || [];
-    if (searchTerm) {
-      const s = searchTerm.toLowerCase();
+    if (debouncedSearchTerm) {
+      const s = debouncedSearchTerm.toLowerCase();
       result = result.filter(d =>
         (d.title || '').toLowerCase().includes(s) ||
         (d.company || '').toLowerCase().includes(s) ||
@@ -179,7 +181,7 @@ export default function PipelinePage() {
     }
     if (myDealsOnly && user?.id) result = result.filter(d => d.assigned_to === user.id);
     return result;
-  }, [deals, searchTerm, myDealsOnly, user?.id]);
+  }, [deals, debouncedSearchTerm, myDealsOnly, user?.id]);
 
   const [formError, setFormError] = useState(null);
 
