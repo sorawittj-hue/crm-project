@@ -416,7 +416,7 @@ export default function CustomersPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ delay: Math.min(i * 0.05, 0.3) }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
               >
                 <div
                   className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm cursor-pointer group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-violet-200"
@@ -496,7 +496,7 @@ export default function CustomersPage() {
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${Math.max(0, Math.min(100, customer.health?.score || 0))}%` }}
-                          transition={{ duration: 1, ease: [0.19, 1, 0.22, 1], delay: i * 0.04 }}
+                          transition={{ duration: 0.5, ease: 'easeOut' }}
                           className="h-full rounded-full"
                           style={{ 
                             background: customer.health?.status === 'at_risk' ? 'linear-gradient(to right, #fda4af, #f43f5e)'

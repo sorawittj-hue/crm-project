@@ -11,7 +11,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useMyProfile } from '../hooks/useUserProfiles';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { motion, animate, AnimatePresence } from 'framer-motion';
+import { motion, animate, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { formatCurrency, formatFullCurrency, daysSince } from '../lib/formatters';
 import { buildPipelineIntelligence, buildCustomerHealth, DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
@@ -35,9 +35,11 @@ import {
 } from 'recharts';
 
 // --- Animated Number Component ---
-function AnimatedNumber({ value, formatter, duration = 1.2, className = '' }) {
+function AnimatedNumber({ value, formatter, duration = 0.4, className = '', animate: shouldAnimate = true }) {
   const ref = useRef(null);
+  const isReduced = useReducedMotion();
   useEffect(() => {
+    if (!shouldAnimate || isReduced) return;
     const numericValue = typeof value === 'number' ? value : parseFloat(value?.toString().replace(/[^0-9.-]+/g, "") || 0);
     if (isNaN(numericValue)) return;
     const controls = animate(0, numericValue, {
@@ -50,7 +52,7 @@ function AnimatedNumber({ value, formatter, duration = 1.2, className = '' }) {
       }
     });
     return () => controls.stop();
-  }, [value, formatter, duration]);
+  }, [value, formatter, duration, shouldAnimate, isReduced]);
 
   return <span ref={ref} className={cn("font-display", className)}>{formatter ? formatter(value) : Math.round(value || 0).toLocaleString()}</span>;
 }
@@ -643,7 +645,7 @@ export default function CommandCenterPage() {
                   <span className="text-xs font-bold text-slate-50 group-hover:text-slate-800 transition-colors uppercase tracking-wider">{item.label}</span>
                 </div>
                 <p className="text-3xl font-black text-slate-900 tabular-nums tracking-tighter leading-none">
-                  <AnimatedNumber value={item.count} />
+                  {item.count}
                 </p>
                 <p className="text-xs font-semibold text-slate-400 mt-1.5 tabular-nums">{formatCurrency(item.value)}</p>
                 <div className="mt-3.5 h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -691,7 +693,7 @@ export default function CommandCenterPage() {
                   <span className="text-xs font-bold uppercase tracking-wider">เกรด {g.grade}</span>
                 </div>
                 <p className="text-3xl font-black tabular-nums leading-none group-hover:scale-105 transition-transform duration-300 origin-left">
-                  <AnimatedNumber value={customerStats.gradeCount[g.grade] || 0} />
+                  {customerStats.gradeCount[g.grade] || 0}
                 </p>
                 <p className="text-xs font-semibold mt-1 opacity-70">{g.label}</p>
               </motion.div>

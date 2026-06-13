@@ -170,7 +170,13 @@ function SystemStatusBanner({ deals, customers, activities, effectiveTarget, nav
 
 export default function AppLayout() {
   const shouldReduceMotion = useReducedMotion();
-  const { isSidebarOpen, closeSidebar, toggleSidebar, monthlyTarget, setMonthlyTarget, setPendingOpenDeal, openQuickAdd } = useAppStore();
+  const isSidebarOpen = useAppStore(state => state.isSidebarOpen);
+  const closeSidebar = useAppStore(state => state.closeSidebar);
+  const toggleSidebar = useAppStore(state => state.toggleSidebar);
+  const monthlyTarget = useAppStore(state => state.monthlyTarget);
+  const setMonthlyTarget = useAppStore(state => state.setMonthlyTarget);
+  const setPendingOpenDeal = useAppStore(state => state.setPendingOpenDeal);
+  const openQuickAdd = useAppStore(state => state.openQuickAdd);
   const { data: deals = [] } = useDeals();
   const { data: customers = [] } = useCustomers();
   const { data: settings } = useSettings();
@@ -306,7 +312,7 @@ export default function AppLayout() {
             {...mobileSidebarMotion}
             variants={sidebarVariants}
             className={cn(
-              "fixed inset-y-0 left-0 z-50 w-72 bg-white/95 backdrop-blur-md border-r border-slate-100/80 px-5 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)]",
+              "fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-100/80 px-5 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)]",
               "lg:static lg:translate-x-0 lg:opacity-100",
             )}
           >
@@ -415,7 +421,7 @@ export default function AppLayout() {
       {/* MAIN AREA */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="h-16 flex items-center justify-between px-8 bg-white/95 backdrop-blur-sm border-b border-slate-100/80 z-20 shrink-0">
+        <header className="h-16 flex items-center justify-between px-8 bg-white border-b border-slate-100/80 z-20 shrink-0">
           <div className="flex items-center gap-3">
             <button onClick={toggleSidebar} aria-label="เปิด/ปิดเมนู" className="lg:hidden p-1.5 text-slate-400 hover:bg-slate-100 rounded-lg">
               <Menu size={20} />
