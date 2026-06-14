@@ -1,6 +1,6 @@
 # 🌌 Nova Pipeline (Zenith CRM)
 
-> **Next-Generation Sales Management System** designed for high-performance sales teams.
+> **Next-Generation Sales Management System & SaaS Platform** designed for high-performance sales teams.
 > Transform your sales process from chaotic spreadsheets into a streamlined, AI-assisted revenue engine.
 
 ![Nova Pipeline Banner](./public/og-image.png)
@@ -15,10 +15,11 @@ Developed by: **Sorawit Thunthakij**
 
 Unlike traditional, clunky CRMs, Nova Pipeline is designed with the end-user in mind. We prioritize speed, clarity, and actionable insights.
 
-*   **⚡ Lightning Fast:** Built on React 18 & Vite with optimistic UI updates for zero-latency interactions.
+*   **⚡ Lightning Fast:** Built on React 18, Vite, and tailwindcss with optimistic UI updates for zero-latency interactions.
 *   **🧠 AI-Powered:** Let Gemini AI analyze your deals, write your follow-up emails, and extract data from PDF contracts.
-*   **🔒 Secure by Design:** Row-Level Security (RLS) ensures absolute data privacy across team members.
-*   **🇹🇭 Localized for Thailand:** Full Thai language support, PromptPay integration, and PDPA compliance built-in.
+*   **🔒 Secure by Design:** Strict Row-Level Security (RLS) policies in PostgreSQL ensure absolute data privacy across team members.
+*   **🇹🇭 Localized for Thailand:** Full Thai language support, PromptPay payment visual flows, and PDPA compliance built-in.
+*   **👑 SaaS Ready & Managed:** Fully functional administrative console allowing owners to manage users, plans, and access states dynamically.
 
 ---
 
@@ -42,6 +43,14 @@ Unlike traditional, clunky CRMs, Nova Pipeline is designed with the end-user in 
 ### 4. 🔌 Integration Hub
 *   **LINE OA & Telegram:** Get real-time push notifications straight to your phone when a new lead arrives or a deal is won.
 *   **Custom Webhooks:** Connect Nova Pipeline to Zapier or Make.com to trigger thousands of external workflows.
+
+### 5. 👑 Backoffice Admin Console (Console Center)
+*   *Accessible exclusively to `sorawittj@gmail.com`.*
+*   **User Provisioning:** Invite and register new user accounts (linked with Supabase Auth) directly from the dashboard without logging out the current admin.
+*   **Subscription Control:** Switch plans between `Pro`, `Trial`, `Free`, and `Suspended` in real-time.
+*   **Expiry Manager:** Quick-extend trial periods (+3, +7, +30 days) or select specific dates using a custom calendar.
+*   **Suspension Lockout:** Instantly lock suspended accounts with a full-screen lockout interface blocking all CRM interactions.
+*   **Role Management:** Change user permissions between `Member` and `Admin`.
 
 ---
 
@@ -84,8 +93,8 @@ VITE_GEMINI_API_KEY=your-gemini-api-key
 ### 3. Database Setup
 1. Open your Supabase project dashboard.
 2. Navigate to the **SQL Editor**.
-3. Copy and paste the contents of `supabase_schema_complete.sql`.
-4. Run the script. This will provision your tables, RLS policies, and triggers automatically.
+3. Copy and paste the contents of `supabase_schema_complete.sql` and `supabase_user_isolation_migration.sql`.
+4. Run the script. This will provision your tables, RLS policies, views, and triggers automatically.
 
 ### 4. Run Development Server
 ```bash
@@ -101,7 +110,7 @@ Nova Pipeline isn't just a prototype; it's architected for production:
 *   **Data Isolation:** Every row in the database is strictly tied to an `owner_id`. Sales reps cannot see each other's deals unless explicitly permitted.
 *   **PDPA/GDPR Compliance:** Features a one-click **CSV Data Export** to fulfill user data portability requests.
 *   **Protection:** `vercel.json` applies strict HTTP security headers (X-Frame-Options, X-Content-Type-Options) to prevent clickjacking and XSS.
-*   **Paywall & Trials:** Built-in subscription logic supporting 3-day free trials and premium gated features.
+*   **SaaS Paywalls & Trials:** Built-in subscription logic supporting 3-day free trials, premium gated features, and real-time backend verification.
 
 ---
 
