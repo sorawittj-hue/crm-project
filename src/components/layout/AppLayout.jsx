@@ -341,7 +341,7 @@ export default function AppLayout() {
           <h2 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">หมดเวลาทดลองใช้งาน</h2>
           <p className="text-slate-500 mb-8 leading-relaxed font-medium">ระยะเวลาทดลองใช้งาน 3 วันของคุณสิ้นสุดลงแล้ว กรุณาอัปเกรดเป็น <strong className="text-violet-600">Nova Pro</strong> เพื่อเก็บรักษาข้อมูลทั้งหมดและย้ายขึ้นสู่ระบบ Cloud ทันที</p>
           <button 
-            onClick={() => openPaywall()}
+            onClick={() => openPaywall('trial_ended')}
             className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-lg shadow-xl shadow-violet-500/25 transition-all hover:-translate-y-1 active:translate-y-0"
           >
             อัปเกรดแบบรายเดือน (299฿)
@@ -445,7 +445,7 @@ export default function AppLayout() {
             {!isPro && (
               <div className="px-3 mt-4 mb-2">
                 <button
-                  onClick={() => openPaywall()}
+                  onClick={() => openPaywall(isGuestAccount ? 'upgrade' : 'default')}
                   className="w-full relative overflow-hidden bg-gradient-to-br from-amber-400 to-orange-500 p-[1px] rounded-2xl group shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5 active:scale-95"
                 >
                   <div className="bg-gradient-to-br from-amber-50 to-orange-50/90 w-full rounded-2xl py-3 px-3 flex items-center justify-between relative z-10">
