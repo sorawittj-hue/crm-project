@@ -414,9 +414,11 @@ export default function AppLayout() {
             <div className="h-20 flex items-center justify-between px-2 mb-2 relative">
               <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
-                  <Target size={20} className="text-white" />
-                </div>
+                <img 
+                  src="/icon.svg" 
+                  className="w-10 h-10 rounded-[14px] shadow-lg shadow-violet-500/15 object-cover shrink-0 select-none pointer-events-none" 
+                  alt="Nova Pipeline Logo" 
+                />
                 <div>
                   <div className="flex items-center gap-1.5">
                     <span className="font-black text-slate-900 text-lg tracking-tight leading-none">Nova</span>

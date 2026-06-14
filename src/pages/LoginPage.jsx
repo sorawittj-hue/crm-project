@@ -72,9 +72,11 @@ export default function LoginPage() {
 
         <div className="relative z-10">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">
-              <Target size={22} className="text-white" />
-            </div>
+            <img 
+              src="/icon.svg" 
+              className="w-11 h-11 rounded-2xl shadow-xl shadow-black/10 object-cover shrink-0 select-none pointer-events-none" 
+              alt="Nova Pipeline Logo" 
+            />
             <div>
               <span className="text-white font-bold text-xl tracking-tight">Nova Pipeline</span>
               <p className="text-violet-200 text-xs font-medium">Sales Intelligence Platform</p>
@@ -141,9 +143,11 @@ export default function LoginPage() {
         >
           {/* Mobile logo */}
           <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div className="w-10 h-10 rounded-2xl bg-violet-600 flex items-center justify-center">
-              <Target size={20} className="text-white" />
-            </div>
+            <img 
+              src="/icon.svg" 
+              className="w-10 h-10 rounded-2xl shadow-lg shadow-violet-500/10 object-cover shrink-0 select-none pointer-events-none" 
+              alt="Nova Pipeline Logo" 
+            />
             <span className="font-bold text-xl text-slate-900">Nova Pipeline</span>
           </div>
 
