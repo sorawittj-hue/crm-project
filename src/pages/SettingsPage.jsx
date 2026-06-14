@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useMyProfile } from '../hooks/useUserProfiles';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
-import { Target, Users, ListTree, User, Building2, ShieldCheck, Loader2, Sparkles, Settings2 } from 'lucide-react';
+import { Target, Users, ListTree, User, Building2, ShieldCheck, Loader2, Sparkles, Settings2, Plug } from 'lucide-react';
 
 import { TargetsSection } from '../components/settings/TargetsSection';
 import { TeamSection } from '../components/settings/TeamSection';
@@ -14,6 +14,7 @@ import { CompanySection } from '../components/settings/CompanySection';
 import { AccountSection } from '../components/settings/AccountSection';
 import { UsersSection } from '../components/settings/UsersSection';
 import { BackupSection } from '../components/settings/BackupSection';
+import { IntegrationSection } from '../components/settings/IntegrationSection';
 import { Database } from 'lucide-react';
 
 const BASE_SECTIONS = [
@@ -23,6 +24,7 @@ const BASE_SECTIONS = [
   { id: 'company',  label: 'บริษัท',            icon: Building2 },
   { id: 'account',  label: 'บัญชีผู้ใช้',        icon: User },
   { id: 'data',     label: 'จัดการข้อมูล',       icon: Database },
+  { id: 'plugins',  label: 'การเชื่อมต่อ',       icon: Plug },
 ];
 
 export default function SettingsPage() {
@@ -109,6 +111,7 @@ export default function SettingsPage() {
               {activeSection === 'company' && <CompanySection />}
               {activeSection === 'account' && <AccountSection />}
               {activeSection === 'data' && <BackupSection />}
+              {activeSection === 'plugins' && <IntegrationSection />}
               {activeSection === 'users' && isAdmin && <UsersSection />}
             </motion.div>
           </AnimatePresence>
