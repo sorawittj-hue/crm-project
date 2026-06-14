@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { useDeals, useUpdateDeal, useAddDeal, useAddMultipleDeals, useDeleteDeals } from '../hooks/useDeals';
-import { useCustomers } from '../hooks/useCustomers';
+import { useCustomers, useUpdateCustomer } from '../hooks/useCustomers';
 import { useTeam } from '../hooks/useTeam';
 import { useAuth } from '../hooks/useAuth';
 import { useSubscription } from '../hooks/useSubscription';
@@ -29,6 +29,7 @@ export default function PipelinePage() {
   const addDealMutation = useAddDeal();
   const addMultipleDealsMutation = useAddMultipleDeals();
   const deleteDealsMutation = useDeleteDeals();
+  const updateCustomerMutation = useUpdateCustomer();
   const addActivityMutation = useAddActivity();
   const { pendingOpenDeal, clearPendingOpenDeal, pendingNewDealCustomer, clearPendingNewDealCustomer, openPaywall } = useAppStore();
   const { user } = useAuth();
@@ -42,6 +43,32 @@ export default function PipelinePage() {
     const originalDeal = (deals || []).find(d => d.id === id);
     if (originalDeal && updates.stage && updates.stage !== originalDeal.stage) {
       const nextStage = updates.stage;
+      
+      // AUTO-PROBABILITY MAP
+      const probabilityMap = {
+        lead: 10,
+        contact: 30,
+        proposal: 50,
+        negotiation: 80,
+        won: 100,
+        lost: 0
+      };
+      if (probabilityMap[nextStage] !== undefined && updates.probability === undefined) {
+        updates.probability = probabilityMap[nextStage];
+      }
+
+      // DATA INTEGRITY & LTV SYNC
+      if (nextStage === 'won' && originalDeal.customer_id) {
+        const customer = customers.find(c => c.id === originalDeal.customer_id);
+        if (customer) {
+          const currentTotal = Number(customer.total_spent) || 0;
+          const dealValue = Number(originalDeal.value) || 0;
+          updateCustomerMutation.mutate({
+            id: customer.id,
+            total_spent: currentTotal + dealValue
+          });
+        }
+      }
       try {
         let taskTitle = '';
         let taskDesc = '';
