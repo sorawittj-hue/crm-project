@@ -12,6 +12,7 @@ import { useSubscription } from '../hooks/useSubscription';
 import { useAppStore } from '../store/useAppStore';
 import RaidCalculator from '../components/tools/RaidCalculator';
 import HardwareGuide from '../components/tools/HardwareGuide';
+import SoftwareCloudGuide from '../components/tools/SoftwareCloudGuide';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -467,6 +468,20 @@ const TOOLS = [
     ],
     desc: 'สเปกฮาร์ดแวร์ระดับองค์กร — Laptops, Servers และ Network equipment สำหรับใช้ประกอบการขาย',
     component: HardwareGuide,
+  },
+  {
+    key: 'software',
+    icon: Cloud,
+    title: 'คู่มือ Software & Cloud 2026',
+    subtitle: 'AWS, Azure, Backup, EDR และ VM',
+    gradient: 'from-orange-500 to-rose-500',
+    badges: [
+      { label: 'Cloud/VM', color: 'bg-orange-50 border-orange-100 text-orange-700' },
+      { label: 'Security', color: 'bg-rose-50 border-rose-100 text-rose-700' },
+      { label: 'Backup', color: 'bg-blue-50 border-blue-100 text-blue-700' },
+    ],
+    desc: 'ข้อมูลเทรนด์และสเปก Software ระดับ Enterprise ปี 2026 — Cloud Architecture, Zero Trust, EDR, Immutable Backup',
+    component: SoftwareCloudGuide,
   },
 ];
 
