@@ -1,155 +1,112 @@
-# Zenith CRM (Nova Pipeline)
+# 🌌 Nova Pipeline (Zenith CRM)
 
-**Modern Sales Management System** — Built for high-performance sales teams.
-**Developed by:** Sorawit Thunthakij
+> **Next-Generation Sales Management System** designed for high-performance sales teams.
+> Transform your sales process from chaotic spreadsheets into a streamlined, AI-assisted revenue engine.
 
-Zenith CRM helps you manage your entire sales pipeline, track customer relationships, and close more deals with AI-powered insights. This platform has been hardened for production SaaS use.
+![Nova Pipeline Banner](./public/og-image.png)
 
----
+**Nova Pipeline** is a state-of-the-art Customer Relationship Management (CRM) platform built to empower sales teams. It combines a beautiful, frictionless user interface with powerful automation, AI capabilities, and enterprise-grade security.
 
-## 🚀 Features
-
-| Category | Capabilities |
-|---|---|
-| **Pipeline** | Kanban board, list view, smooth drag-and-drop, deal filtering, stage management |
-| **Customers** | CRM database, health scoring, grade system (A–D), deal history |
-| **Command Center** | Daily action plan, revenue forecast, team performance, hot deals |
-| **Analytics** | Monthly revenue trends, win rates, stage conversion, detailed reporting |
-| **Settings** | Sales targets, team member management, company profile, automated backups |
-| **AI Tools** | PDF deal scanner, AI email generator, strategic analysis |
-| **Legal & Compliance** | Terms of Service, Privacy Policy, PDPA-compliant CSV Data Export |
+Developed by: **Sorawit Thunthakij**
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ Why Nova Pipeline?
 
-- **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion
-- **Backend**: Supabase (PostgreSQL + Auth + RLS)
-- **State Management**: Zustand + React Query
-- **Charts**: Recharts
-- **AI Integration**: Google Gemini API
+Unlike traditional, clunky CRMs, Nova Pipeline is designed with the end-user in mind. We prioritize speed, clarity, and actionable insights.
+
+*   **⚡ Lightning Fast:** Built on React 18 & Vite with optimistic UI updates for zero-latency interactions.
+*   **🧠 AI-Powered:** Let Gemini AI analyze your deals, write your follow-up emails, and extract data from PDF contracts.
+*   **🔒 Secure by Design:** Row-Level Security (RLS) ensures absolute data privacy across team members.
+*   **🇹🇭 Localized for Thailand:** Full Thai language support, PromptPay integration, and PDPA compliance built-in.
 
 ---
 
-## 🏁 Getting Started
+## 🚀 Core Features
+
+### 1. 🎯 Visual Sales Pipeline
+*   **Kanban Board:** Drag-and-drop deals across customizable stages effortlessly.
+*   **Smart Indicators:** Deals automatically flag themselves if they are at risk, stale, or overdue for follow-up.
+*   **Quick Actions:** Log calls, meetings, and notes without leaving the board.
+
+### 2. 📊 Advanced Analytics & Command Center
+*   **Executive Dashboard:** Real-time pulse on monthly revenue, win rates, and team performance.
+*   **Forecasting:** AI-assisted revenue projections (Worst Case, Commit, Best Case).
+*   **Leaderboard:** Gamified sales tracking to motivate your team.
+
+### 3. 🤖 AI Copilot (Sales Intelligence)
+*   **PDF Deal Scanner:** Upload contracts or POs and let AI instantly create structured deals.
+*   **Email Generator:** Draft perfectly-toned follow-up emails based on the deal's context.
+*   **Deal Strategy:** Ask the AI for advice on how to close a specific high-value account.
+
+### 4. 🔌 Integration Hub
+*   **LINE OA & Telegram:** Get real-time push notifications straight to your phone when a new lead arrives or a deal is won.
+*   **Custom Webhooks:** Connect Nova Pipeline to Zapier or Make.com to trigger thousands of external workflows.
+
+---
+
+## 💻 Tech Stack
+
+We utilize a modern, scalable architecture to ensure reliability and performance.
+
+| Category | Technology | Description |
+| :--- | :--- | :--- |
+| **Frontend** | React 18, Vite | For a blazing fast Single Page Application (SPA). |
+| **Styling** | Tailwind CSS, Framer Motion | Providing a premium, glassmorphism UI with fluid animations. |
+| **State & Fetching**| Zustand, React Query | Robust client-side state management and caching. |
+| **Backend & DB** | Supabase (PostgreSQL) | Serverless backend with strict Row-Level Security (RLS). |
+| **AI Engine** | Google Gemini API | Powers the natural language and document processing features. |
+
+---
+
+## 🛠️ Getting Started
+
+### Prerequisites
+*   Node.js (v18+)
+*   A Supabase Account (Free tier works perfectly)
+*   Google Gemini API Key (For AI features)
 
 ### 1. Clone & Install
-
 ```bash
-git clone <repository-url>
+git clone https://github.com/sorawittj-hue/crm-project.git
 cd crm-project
 npm install
 ```
 
-### 2. Configure Environment
-
-```bash
-cp .env.example .env.local
-```
-
-Edit `.env.local`:
-
+### 2. Environment Variables
+Create a `.env.local` file in the root directory:
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
-VITE_GEMINI_API_KEY=your-gemini-api-key   # Optional — for AI features
+VITE_GEMINI_API_KEY=your-gemini-api-key 
 ```
 
-Get your keys from:
-- **Supabase**: Project Settings → API
-- **Gemini**: [Google AI Studio](https://makersuite.google.com/app/apikey)
+### 3. Database Setup
+1. Open your Supabase project dashboard.
+2. Navigate to the **SQL Editor**.
+3. Copy and paste the contents of `supabase_schema_complete.sql`.
+4. Run the script. This will provision your tables, RLS policies, and triggers automatically.
 
-### 3. Set Up Database
-
-In your Supabase project, go to **SQL Editor** and run `supabase_schema_complete.sql`.
-
-This creates:
-- `deals` — opportunity tracking
-- `customers` — contact database
-- `activities` — calls, emails, meetings, notes
-- `team_members` — sales team configuration
-- `app_settings` — targets and company profile
-- `notifications` — in-app alerts
-- `email_templates` — reusable email templates
-
-### 4. Run Locally
-
+### 4. Run Development Server
 ```bash
 npm run dev
 ```
-
-Open [http://localhost:7777](http://localhost:7777)
-
-### 5. Build for Production
-
-```bash
-npm run build
-```
+Open [http://localhost:7777](http://localhost:7777) in your browser.
 
 ---
 
-## 🔒 Security & SaaS Readiness
+## 🛡️ Enterprise Security & SaaS Readiness
 
-This application has been hardened for production:
-- **Authentication Required** — all CRM data is protected by Supabase RLS. Data is strictly isolated by `owner_id`.
-- **API Scalability** — API queries implement `limit(2000)` to prevent browser memory crashes on massive datasets while retaining analytics capabilities.
-- **PDPA Compliance** — Built-in `Privacy Policy`, `Terms of Service`, and one-click **CSV Data Export** to fulfill the "Right to Portability" for users.
-- **Vercel Security Headers** — Configured in `vercel.json` to prevent Clickjacking (X-Frame-Options) and XSS attacks.
-- **Audit Logging** — Customer, deal, and activity mutations are automatically tracked via database triggers.
-
----
-
-## ⚙️ Deployment
-
-### Vercel (Recommended)
-
-The project includes a `vercel.json` configuration for strict security headers and Vite-compatible routing.
-
-```bash
-npm install -g vercel
-vercel
-```
-
-Add your environment variables in Vercel Dashboard → Project Settings → Environment Variables.
+Nova Pipeline isn't just a prototype; it's architected for production:
+*   **Data Isolation:** Every row in the database is strictly tied to an `owner_id`. Sales reps cannot see each other's deals unless explicitly permitted.
+*   **PDPA/GDPR Compliance:** Features a one-click **CSV Data Export** to fulfill user data portability requests.
+*   **Protection:** `vercel.json` applies strict HTTP security headers (X-Frame-Options, X-Content-Type-Options) to prevent clickjacking and XSS.
+*   **Paywall & Trials:** Built-in subscription logic supporting 3-day free trials and premium gated features.
 
 ---
 
-## 📝 Configuration
+## 📜 License & Copyright
 
-### Sales Targets
-Go to **Settings → เป้าหมายยอดขาย** to set monthly, leader, and member targets.
-
-### Team Members
-Go to **Settings → ทีมงาน** to add/edit/delete sales team members and their individual goals.
-
-### Pipeline Stages
-Default stages (in order):
-
-| Stage | Thai | Description |
-|---|---|---|
-| `lead` | ลูกค้าใหม่ | New lead |
-| `contact` | นัดเจอ | In contact |
-| `proposal` | เสนอราคา | Proposal sent |
-| `negotiation` | กำลังปิด | Closing |
-| `won` | ปิดได้ | Deal won |
-| `lost` | ปิดไม่ได้ | Deal lost |
-
----
-
-## 🐛 Troubleshooting
-
-**"Failed to load deals"**
-→ Check Supabase credentials in `.env.local` and verify the database schema is complete.
-
-**AI features not working**
-→ Verify `VITE_GEMINI_API_KEY` is set. AI features are optional — the app works without them.
-
-**Recharts `width(-1)` Warnings**
-→ This has been patched using a custom `SafeResponsiveContainer`. If modifying the codebase, ensure charts are wrapped in this container to prevent dimension warnings during `framer-motion` page transitions.
-
----
-
-## 📜 License
-
-Proprietary. All rights reserved.
-Developed by Sorawit Thunthakij.
+**Proprietary Software.** All rights reserved.
+Developed by **Sorawit Thunthakij**. 
+Unauthorized copying, modification, or distribution is strictly prohibited.

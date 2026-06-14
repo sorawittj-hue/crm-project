@@ -168,11 +168,50 @@ function SystemStatusBanner({ deals, customers, activities, effectiveTarget, nav
   );
 }
 
+function TrialBanner({ isTrialActive, isExpired, trialDaysLeft, isGuestAccount, openPaywall }) {
+  if (!isTrialActive && !isExpired && !isGuestAccount) return null;
+  
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mb-6 rounded-2xl bg-gradient-to-r from-indigo-900 to-violet-900 p-5 shadow-lg relative overflow-hidden"
+    >
+      <div className="absolute -top-24 -right-24 w-64 h-64 bg-violet-500/30 blur-[80px] rounded-full pointer-events-none" />
+      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
+            <Sparkles className="text-amber-400" size={24} />
+          </div>
+          <div>
+            <h3 className="text-white font-black text-lg tracking-tight">
+              {isExpired ? 'หมดเวลาทดลองใช้งาน' : isGuestAccount ? 'โหมดผู้เยี่ยมชม' : `เหลือเวลาทดลองใช้ ${trialDaysLeft} วัน`}
+            </h3>
+            <p className="text-indigo-200 text-sm font-medium mt-0.5">
+              {isExpired 
+                ? 'อัปเกรดเพื่อใช้งานฐานข้อมูลส่วนตัวและฟีเจอร์ระดับ Pro ต่อเนื่อง' 
+                : 'ทดลองใช้ 3 วันฟรี! ปลดล็อคระบบ Premium เพียง 3,000 บาท/ตลอดชีพ'}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => openPaywall(isExpired ? 'trial_ended' : 'default')}
+          className="whitespace-nowrap px-6 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-amber-950 font-black rounded-xl shadow-lg transition-all active:scale-95 text-sm"
+        >
+          อัปเกรดเป็น Premium
+        </button>
+      </div>
+    </motion.section>
+  );
+}
+
+
 export default function AppLayout() {
   const shouldReduceMotion = useReducedMotion();
   const isSidebarOpen = useAppStore(state => state.isSidebarOpen);
   const closeSidebar = useAppStore(state => state.closeSidebar);
   const toggleSidebar = useAppStore(state => state.toggleSidebar);
+  const openPaywall = useAppStore(state => state.openPaywall);
   const monthlyTarget = useAppStore(state => state.monthlyTarget);
   const setMonthlyTarget = useAppStore(state => state.setMonthlyTarget);
   const setPendingOpenDeal = useAppStore(state => state.setPendingOpenDeal);
@@ -192,7 +231,7 @@ export default function AppLayout() {
   const userId = user?.id;
 
   const { data: myProfile } = useMyProfile(userId);
-  const { shouldBlockBasic, isGuestAccount } = useSubscription();
+  const { shouldBlockBasic, isGuestAccount, isTrialActive, isExpired, trialDaysLeft } = useSubscription();
   const hasPersonalTarget = myProfile?.personal_target > 0 && !isGuestAccount;
   const effectiveTarget = hasPersonalTarget ? myProfile.personal_target : 0;
 
@@ -626,6 +665,13 @@ export default function AppLayout() {
         {/* Content */}
         <main className="flex-1 overflow-y-auto bg-slate-50">
           <div className="p-6 min-h-full">
+            <TrialBanner 
+              isTrialActive={isTrialActive} 
+              isExpired={isExpired} 
+              trialDaysLeft={trialDaysLeft} 
+              isGuestAccount={isGuestAccount} 
+              openPaywall={openPaywall} 
+            />
             <SystemStatusBanner
               deals={deals}
               customers={customers}
