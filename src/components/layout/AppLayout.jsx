@@ -7,7 +7,7 @@ import {
   Search, Settings, Bell,
   ChevronRight, Target, TrendingUp,
   AlertCircle, Clock, CheckCircle2, CalendarClock, Briefcase,
-  BarChart2, Trash2, CheckCheck, Plus, Sparkles, Lock,
+  BarChart2, Trash2, CheckCheck, Plus, Sparkles, Lock, Crown,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useDeals } from '../../hooks/useDeals';
@@ -387,8 +387,19 @@ export default function AppLayout() {
                   <Target size={20} className="text-white" />
                 </div>
                 <div>
-                  <span className="font-black text-slate-900 text-lg tracking-tight leading-none">Nova</span>
-                  <p className="text-[10px] text-violet-600 font-bold leading-none mt-1 uppercase tracking-[0.2em]">Pipeline</p>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-black text-slate-900 text-lg tracking-tight leading-none">Nova</span>
+                    {isPro ? (
+                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-gradient-to-br from-amber-500 to-orange-500 text-white leading-none shadow-sm uppercase tracking-wider flex items-center gap-0.5">
+                        <Crown size={8} className="fill-current" /> PRO
+                      </span>
+                    ) : (isGuestAccount || isTrialActive) ? (
+                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200 leading-none shadow-sm uppercase tracking-wider">
+                        ทดลอง
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="text-[10px] text-violet-600 font-bold leading-none mt-1.5 uppercase tracking-[0.2em]">Pipeline</p>
                 </div>
               </div>
               <button onClick={closeSidebar} aria-label="ปิดเมนู" className="lg:hidden p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100/50 rounded-xl transition-all">
