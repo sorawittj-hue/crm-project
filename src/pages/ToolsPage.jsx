@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mail, Calculator, Plus, Pencil, Trash2,
   Copy, Check, Loader2, FileText,
-  ChevronDown, ChevronUp, Search, Battery, HardDrive, Laptop, Sparkles
+  ChevronDown, ChevronUp, Search, Battery, HardDrive, Laptop, Sparkles, Cloud
 } from 'lucide-react';
 import { useEmailTemplates, useAddEmailTemplate, useUpdateEmailTemplate, useDeleteEmailTemplate } from '../hooks/useEmailTemplates';
 import UPSCalculator from '../components/tools/UPSCalculator';
