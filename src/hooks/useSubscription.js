@@ -24,9 +24,9 @@ export function useSubscription() {
   let trialDaysLeft = 0;
 
   if (isGuestAccount) {
-    trialDaysLeft = getLocalTrialDaysLeft();
-    isTrialActive = trialDaysLeft > 0;
-    isExpired = trialDaysLeft <= 0;
+    trialDaysLeft = 3;
+    isTrialActive = false; // Guest is read-only
+    isExpired = false;
   } else if (myProfile?.plan_type === 'trial' || (!isPro && user)) {
     // Registered users trial logic
     const startDate = myProfile?.created_at ? new Date(myProfile.created_at) : new Date();
@@ -46,15 +46,15 @@ export function useSubscription() {
   }
 
   // Final access checks
-  // Can they perform normal actions? (Pro, Trial active, or Guest Local Trial active)
+  // Can they perform normal actions? (Pro or Registered Trial active. Guests are read-only)
   const canUseBasicFeatures = isPro || isTrialActive;
   
   // Can they perform premium actions? (Export, Backup)
   const canUsePremiumFeatures = isPro;
 
   // Should we show the paywall for normal actions?
-  // Guests are no longer blocked from basic actions (they use local mock data - Showcase Mode)
-  const shouldBlockBasic = !canUseBasicFeatures;
+  // Guests are blocked from basic actions (read-only showcase mode)
+  const shouldBlockBasic = isGuestAccount || !canUseBasicFeatures;
 
   return {
     isLoading,
@@ -70,3 +70,4 @@ export function useSubscription() {
     shouldBlockBasic
   };
 }
+

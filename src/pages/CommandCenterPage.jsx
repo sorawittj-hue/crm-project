@@ -333,6 +333,10 @@ export default function CommandCenterPage() {
 
   const handleCompleteTask = (e, activityId) => {
     e.stopPropagation();
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
+      return;
+    }
     updateActivityMutation.mutate({
       id: activityId,
       updates: { completed_at: new Date().toISOString() }

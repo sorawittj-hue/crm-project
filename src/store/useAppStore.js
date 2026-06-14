@@ -34,8 +34,24 @@ export const useAppStore = create(
 
       // Paywall Modal
       isPaywallOpen: false,
-      paywallReason: 'default', // 'default', 'trial_ended', 'premium_only'
-      openPaywall: (reason = 'default') => set({ isPaywallOpen: true, paywallReason: reason }),
+      paywallReason: 'default', // 'default', 'trial_ended', 'premium_only', 'guest_upgrade'
+      openPaywall: (reason = 'default') => {
+        let finalReason = reason;
+        if (reason === 'default' || reason === 'upgrade') {
+          try {
+            const raw = localStorage.getItem('nova_trial_state');
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              if (parsed.isActive) {
+                finalReason = 'guest_upgrade';
+              }
+            }
+          } catch (e) {
+            // Silently ignore
+          }
+        }
+        set({ isPaywallOpen: true, paywallReason: finalReason });
+      },
       closePaywall: () => set({ isPaywallOpen: false }),
     }),
     {

@@ -16,6 +16,7 @@ import { calculateRiskScore } from '../../services/aiDeals';
 import { STAGE_IDS } from '../../lib/constants';
 import WinLossModal from './WinLossModal';
 import { useAuth } from '../../hooks/useAuth';
+import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 import { Button } from '../ui/Button';
 
@@ -117,6 +118,8 @@ export default function PipelineBoard({
   selectedYear,
 }) {
   const { user } = useAuth();
+  const { shouldBlockBasic, isGuestAccount } = useSubscription();
+  const openPaywall = useAppStore(state => state.openPaywall);
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedDealId, setSelectedDealId] = useState(null);
   const [pinnedDealIds, setPinnedDealIds] = useState([]);
@@ -199,6 +202,11 @@ export default function PipelineBoard({
   }, [processedDeals]);
 
   const handleDragEnd = (result) => {
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'guest_upgrade' : 'trial_ended');
+      return;
+    }
+
     const { destination, source, draggableId } = result;
 
     if (!destination) return;

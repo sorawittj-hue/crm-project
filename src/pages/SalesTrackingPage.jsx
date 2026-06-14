@@ -12,6 +12,7 @@ import {
 import { useDeals } from '../hooks/useDeals';
 import { useMonthlySales, useUpsertMonthlySale } from '../hooks/useSales';
 import { useAppStore } from '../store/useAppStore';
+import { useSubscription } from '../hooks/useSubscription';
 import { formatCurrency } from '../lib/formatters';
 import { cn } from '../lib/utils';
 import { Input } from '../components/ui/Input';
@@ -55,7 +56,8 @@ const CustomTooltip = ({ active, payload, label }) => {
 export default function SalesTrackingPage() {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
-  const { monthlyTarget } = useAppStore();
+  const { monthlyTarget, openPaywall } = useAppStore();
+  const { shouldBlockBasic, isGuestAccount } = useSubscription();
   const annualTarget = monthlyTarget * 12;
 
   const { data: deals = [], isLoading: loadingDeals } = useDeals();
@@ -131,6 +133,10 @@ export default function SalesTrackingPage() {
   };
 
   const handleSave = async (month) => {
+    if (shouldBlockBasic) {
+      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
+      return;
+    }
     const value = editValues[month];
     if (value !== undefined) {
       const amount = Number(value) || 0;
@@ -365,6 +371,10 @@ export default function SalesTrackingPage() {
                     ) : (
                       <button 
                         onClick={() => {
+                          if (shouldBlockBasic) {
+                            openPaywall(isGuestAccount ? 'default' : 'trial_ended');
+                            return;
+                          }
                           setEditValues({ ...editValues, [data.month]: data.amount });
                           setEditingMonth(data.month);
                         }}
