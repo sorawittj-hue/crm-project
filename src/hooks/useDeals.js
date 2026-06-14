@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchDeals, updateDeal, addDeal, addMultipleDeals, deleteDeals } from '../services/apiDeals';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from './useAuth';
+import { dispatchNotification } from '../services/integrationService';
 
 export function useDeals() {
   const { user } = useAuth();
@@ -40,8 +41,32 @@ export function useUpdateDeal() {
 
       return { previousDealsQueries };
     },
-    onSuccess: () => {
+    onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
+      
+      // Trigger integration notification if deal is moved to 'won'
+      if (variables.stage === 'won') {
+        let wasAlreadyWon = false;
+        if (context?.previousDealsQueries) {
+          for (const [_, oldData] of context.previousDealsQueries) {
+            const oldDeal = oldData?.find(d => d.id === variables.id);
+            if (oldDeal && oldDeal.stage === 'won') {
+              wasAlreadyWon = true;
+              break;
+            }
+          }
+        }
+        if (!wasAlreadyWon) {
+          // We pass whatever data we have. variables contains what was updated.
+          // Fallback to data if the backend returned the full row.
+          const mergedData = { ...(data || {}), ...variables };
+          dispatchNotification('DEAL_WON', {
+            customerName: mergedData.company_name || 'ไม่ระบุชื่อบริษัท',
+            value: mergedData.value || 0,
+            userEmail: mergedData.contact_name || 'เซลส์'
+          });
+        }
+      }
     },
     onError: (error, _, context) => {
       // Rollback on error
@@ -61,9 +86,15 @@ export function useAddDeal() {
 
   return useMutation({
     mutationFn: addDeal,
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
       toast.success('Deal created successfully');
+      
+      const mergedData = { ...(data?.[0] || data || {}), ...variables };
+      dispatchNotification('DEAL_CREATED', {
+        customerName: mergedData.company_name || 'ไม่ระบุชื่อบริษัท',
+        value: mergedData.value || 0
+      });
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to create deal');
