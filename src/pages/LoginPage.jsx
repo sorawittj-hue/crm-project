@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Eye, EyeOff, ArrowRight, Loader2, UserPlus, LogIn } from 'lucide-react';
+import { Target, Eye, EyeOff, ArrowRight, Loader2, UserPlus, LogIn, Sparkles } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -103,6 +103,26 @@ export default function LoginPage() {
               </div>
             ))}
           </div>
+
+          {/* New Showcase Card for Desktop */}
+          <div className="mt-8 bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur-md relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-150" />
+            <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-2 relative z-10">
+              <Sparkles className="text-amber-300" size={20} />
+              ทดลองใช้งานระบบ (Showcase Mode)
+            </h3>
+            <p className="text-violet-200 text-sm mb-6 leading-relaxed relative z-10">
+              สัมผัสประสบการณ์ใช้งานแบบจัดเต็มด้วยข้อมูลจำลอง (Mock Data) โดยไม่ต้องสมัครสมาชิก หรือใช้รหัสผ่านใดๆ
+            </p>
+            <button
+              type="button"
+              onClick={handleGuestLogin}
+              disabled={loading}
+              className="w-full bg-white hover:bg-violet-50 text-violet-700 font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-black/10 active:scale-95 disabled:opacity-60 relative z-10"
+            >
+              เข้าสู่โหมดทดลองเล่น <ArrowRight size={18} />
+            </button>
+          </div>
         </div>
 
         <div className="relative z-10 text-violet-300 text-xs">
@@ -119,11 +139,30 @@ export default function LoginPage() {
           className="w-full max-w-md"
         >
           {/* Mobile logo */}
-          <div className="flex items-center gap-3 mb-10 lg:hidden">
+          <div className="flex items-center gap-3 mb-8 lg:hidden">
             <div className="w-10 h-10 rounded-2xl bg-violet-600 flex items-center justify-center">
               <Target size={20} className="text-white" />
             </div>
             <span className="font-bold text-xl text-slate-900">Nova Pipeline</span>
+          </div>
+
+          {/* Mobile Showcase Card */}
+          <div className="lg:hidden bg-gradient-to-br from-violet-600 to-indigo-800 rounded-3xl p-5 mb-8 shadow-xl shadow-violet-500/20 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-400/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+            <h3 className="font-bold flex items-center gap-2 mb-1.5 relative z-10">
+              <Sparkles className="text-amber-300" size={16} /> Showcase Mode
+            </h3>
+            <p className="text-xs text-violet-200 mb-4 opacity-90 leading-relaxed relative z-10">
+              ทดลองเล่นระบบด้วยข้อมูลจำลอง ไม่ต้องสมัครสมาชิก
+            </p>
+            <button
+              type="button"
+              onClick={handleGuestLogin}
+              disabled={loading}
+              className="w-full bg-white text-violet-700 font-bold py-3 rounded-xl text-sm transition-all active:scale-95 shadow-md relative z-10 flex items-center justify-center gap-2"
+            >
+              ทดลองเล่นเลย <ArrowRight size={14} />
+            </button>
           </div>
 
           {/* Mode toggle */}
@@ -265,21 +304,6 @@ export default function LoginPage() {
               </motion.button>
             </motion.form>
           </AnimatePresence>
-
-          <div className="mt-6 flex items-center gap-4 before:h-px before:flex-1 before:bg-slate-200 after:h-px after:flex-1 after:bg-slate-200">
-            <span className="text-xs font-semibold text-slate-400">หรือ</span>
-          </div>
-
-          <motion.button
-            type="button"
-            onClick={handleGuestLogin}
-            disabled={loading}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full h-12 mt-6 bg-white border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 font-semibold rounded-2xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            ทดลองใช้งาน (Guest Mode)
-          </motion.button>
 
           {isLogin && (
             <p className="text-center text-slate-400 text-xs mt-8">
