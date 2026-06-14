@@ -232,7 +232,7 @@ export default function AppLayout() {
   const userId = user?.id;
 
   const { data: myProfile } = useMyProfile(userId);
-  const { shouldBlockBasic, isGuestAccount, isTrialActive, isExpired, trialDaysLeft } = useSubscription();
+  const { shouldBlockBasic, isGuestAccount, isTrialActive, isExpired, trialDaysLeft, isPro } = useSubscription();
   const hasPersonalTarget = myProfile?.personal_target > 0 && !isGuestAccount;
   const effectiveTarget = hasPersonalTarget ? myProfile.personal_target : 0;
 
@@ -420,6 +420,31 @@ export default function AppLayout() {
                 );
               })}
             </nav>
+
+            {!isPro && (
+              <div className="px-3 mt-4 mb-2">
+                <button
+                  onClick={() => openPaywall()}
+                  className="w-full relative overflow-hidden bg-gradient-to-br from-amber-400 to-orange-500 p-[1px] rounded-2xl group shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5 active:scale-95"
+                >
+                  <div className="bg-gradient-to-br from-amber-50 to-orange-50/90 w-full rounded-2xl py-3 px-3 flex items-center justify-between relative z-10">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-inner">
+                        <Sparkles size={16} className="text-white" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs font-bold text-orange-900 leading-none mb-1">Nova Pro</p>
+                        <p className="text-[10px] font-semibold text-orange-700/70 leading-none">
+                          {isGuestAccount ? 'อัปเกรดเพื่อใช้งานจริง' : (isExpired ? 'ต่ออายุการใช้งาน' : 'อัปเกรดแบบรายเดือน')}
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight size={16} className="text-orange-500 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] z-20" />
+                </button>
+              </div>
+            )}
 
             {/* Monthly Goal */}
             <div className="pb-5 pt-5 relative mt-2 mb-1">
