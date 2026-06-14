@@ -8,13 +8,19 @@ import {
 } from '../services/apiCustomers';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from './useAuth';
+import { useSubscription } from './useSubscription';
+import { mockCustomers } from '../lib/mockData';
 
 export function useCustomers() {
   const { user } = useAuth();
+  const { isGuestAccount } = useSubscription();
 
   return useQuery({
-    queryKey: ['customers', user?.id],
-    queryFn: fetchCustomers,
+    queryKey: ['customers', user?.id, isGuestAccount],
+    queryFn: async () => {
+      if (isGuestAccount) return mockCustomers;
+      return fetchCustomers();
+    },
     enabled: !!user?.id,
     retry: 2,
     staleTime: 30 * 60 * 1000,

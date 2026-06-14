@@ -31,6 +31,7 @@ import { pageMotion, reduceMotionProps, springSmooth } from '../../lib/motion';
 import CommandPalette from '../ui/CommandPalette';
 import MandateAIOrbs from './MandateAIOrbs';
 import PaywallModal from '../ui/PaywallModal';
+import WelcomeModal from '../ui/WelcomeModal';
 import GlobalAddDealModal from '../pipeline/GlobalAddDealModal';
 
 const sidebarVariants = {
@@ -699,6 +700,7 @@ export default function AppLayout() {
       
       {/* Paywall Modal */}
       <PaywallModal />
+      <WelcomeModal />
     </div>
   );
 }

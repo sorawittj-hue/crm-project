@@ -185,6 +185,19 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
   const handleAIAnalysis = useCallback(async () => {
     if (!deal) return;
     setIsAnalyzing(true);
+
+    if (isGuestAccount) {
+      await new Promise(r => setTimeout(r, 1200));
+      setAiAnalysis({
+        win_likelihood: 85,
+        risk_level: "low",
+        strategy: "1. นำเสนอความคุ้มค่าของการลงทุน (ROI) ที่ชัดเจน\n2. เน้นย้ำเรื่องความปลอดภัยและมาตรฐานระดับสากล\n3. เสนอ Use case จริงที่คล้ายกับธุรกิจของลูกค้า",
+        next_step: "จัดประชุมเจรจาต่อรองเงื่อนไขราคาสุดท้าย"
+      });
+      setIsAnalyzing(false);
+      return;
+    }
+
     const prompt = `Analyze this sales deal and provide a high-impact strategy.
     Deal: ${deal.title} at ${deal.company}
     Value: ${formatCurrency(deal.value)}
@@ -712,27 +725,46 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                             <p className="text-xs font-bold text-violet-500 uppercase tracking-widest">กำลังวิเคราะห์...</p>
                           </motion.div>
                         ) : aiAnalysis ? (
-                          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="bg-white rounded-xl p-4 border border-violet-100 shadow-sm text-center">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Win Likelihood</p>
-                                <span className="text-3xl font-black text-slate-900">{aiAnalysis.win_likelihood}%</span>
+                          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="relative">
+                            <div className={cn("space-y-4 transition-all duration-500", isGuestAccount && "blur-[6px] opacity-60 pointer-events-none")}>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-white rounded-xl p-4 border border-violet-100 shadow-sm text-center">
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Win Likelihood</p>
+                                  <span className="text-3xl font-black text-slate-900">{aiAnalysis.win_likelihood}%</span>
+                                </div>
+                                <div className="bg-white rounded-xl p-4 border border-violet-100 shadow-sm text-center">
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ความเสี่ยง</p>
+                                  <span className={cn('text-sm font-black', aiAnalysis.risk_level === 'high' ? 'text-rose-600' : aiAnalysis.risk_level === 'medium' ? 'text-amber-600' : 'text-emerald-600')}>
+                                    {aiAnalysis.risk_level === 'high' ? '🔴 สูง' : aiAnalysis.risk_level === 'medium' ? '🟡 ปานกลาง' : '🟢 ต่ำ'}
+                                  </span>
+                                </div>
                               </div>
-                              <div className="bg-white rounded-xl p-4 border border-violet-100 shadow-sm text-center">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ความเสี่ยง</p>
-                                <span className={cn('text-sm font-black', aiAnalysis.risk_level === 'high' ? 'text-rose-600' : aiAnalysis.risk_level === 'medium' ? 'text-amber-600' : 'text-emerald-600')}>
-                                  {aiAnalysis.risk_level === 'high' ? '🔴 สูง' : aiAnalysis.risk_level === 'medium' ? '🟡 ปานกลาง' : '🟢 ต่ำ'}
-                                </span>
+                              <div className="bg-white rounded-xl p-4 border border-violet-100 shadow-sm space-y-2">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">กลยุทธ์แนะนำ</p>
+                                <p className="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-line">{aiAnalysis.strategy}</p>
+                              </div>
+                              <div className="bg-violet-600 rounded-xl p-4 text-white shadow-lg shadow-violet-500/20">
+                                <p className="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-1">Next Step สำคัญ</p>
+                                <p className="text-sm font-bold">{aiAnalysis.next_step}</p>
                               </div>
                             </div>
-                            <div className="bg-white rounded-xl p-4 border border-violet-100 shadow-sm space-y-2">
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">กลยุทธ์แนะนำ</p>
-                              <p className="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-line">{aiAnalysis.strategy}</p>
-                            </div>
-                            <div className="bg-violet-600 rounded-xl p-4 text-white shadow-lg shadow-violet-500/20">
-                              <p className="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-1">Next Step สำคัญ</p>
-                              <p className="text-sm font-bold">{aiAnalysis.next_step}</p>
-                            </div>
+                            
+                            {/* Blur Overlay for Guests */}
+                            {isGuestAccount && (
+                              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center">
+                                <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-amber-500/30 mb-4 transform -rotate-6">
+                                  <Sparkles size={24} />
+                                </div>
+                                <h4 className="text-lg font-black text-slate-900 mb-2">บทวิเคราะห์พิเศษสำหรับ Pro</h4>
+                                <p className="text-sm text-slate-600 font-medium mb-6">คุณกำลังดูตัวอย่างบทวิเคราะห์ ปลดล็อค Premium เพียง 299 บาท เพื่อดูแผนกลยุทธ์ฉบับเต็ม!</p>
+                                <button 
+                                  onClick={() => openPaywall('default')}
+                                  className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95"
+                                >
+                                  ปลดล็อคบทวิเคราะห์ 🚀
+                                </button>
+                              </div>
+                            )}
                           </motion.div>
                         ) : (
                           <div className="py-10 text-center">

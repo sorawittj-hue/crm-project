@@ -3,13 +3,19 @@ import { fetchDeals, updateDeal, addDeal, addMultipleDeals, deleteDeals } from '
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from './useAuth';
 import { dispatchNotification } from '../services/integrationService';
+import { useSubscription } from './useSubscription';
+import { mockDeals } from '../lib/mockData';
 
 export function useDeals() {
   const { user } = useAuth();
+  const { isGuestAccount } = useSubscription();
 
   return useQuery({
-    queryKey: ['deals', user?.id],
-    queryFn: fetchDeals,
+    queryKey: ['deals', user?.id, isGuestAccount],
+    queryFn: async () => {
+      if (isGuestAccount) return mockDeals;
+      return fetchDeals();
+    },
     enabled: !!user?.id,
     retry: 2,
     staleTime: 30 * 60 * 1000, // 30 minutes
@@ -20,9 +26,16 @@ export function useDeals() {
 export function useUpdateDeal() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { isGuestAccount } = useSubscription();
 
   return useMutation({
-    mutationFn: updateDeal,
+    mutationFn: async (updatedDeal) => {
+      if (isGuestAccount) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        return { ...updatedDeal };
+      }
+      return updateDeal(updatedDeal);
+    },
     // Optimistic update for instant UI feedback
     onMutate: async (updatedDeal) => {
       // Cancel any outgoing refetches so they don't overwrite our optimistic update
@@ -83,9 +96,16 @@ export function useUpdateDeal() {
 export function useAddDeal() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { isGuestAccount } = useSubscription();
 
   return useMutation({
-    mutationFn: addDeal,
+    mutationFn: async (newDeal) => {
+      if (isGuestAccount) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return [{ id: `deal-mock-${Date.now()}`, ...newDeal }];
+      }
+      return addDeal(newDeal);
+    },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
       toast.success('Deal created successfully');
@@ -105,9 +125,16 @@ export function useAddDeal() {
 export function useAddMultipleDeals() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { isGuestAccount } = useSubscription();
 
   return useMutation({
-    mutationFn: addMultipleDeals,
+    mutationFn: async (deals) => {
+      if (isGuestAccount) {
+        await new Promise(resolve => setTimeout(resolve, 800));
+        return deals;
+      }
+      return addMultipleDeals(deals);
+    },
     onSuccess: (_, deals) => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
       toast.success(`Successfully added ${deals.length} deal(s)`);
@@ -121,9 +148,16 @@ export function useAddMultipleDeals() {
 export function useDeleteDeals() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { isGuestAccount } = useSubscription();
 
   return useMutation({
-    mutationFn: deleteDeals,
+    mutationFn: async (ids) => {
+      if (isGuestAccount) {
+        await new Promise(resolve => setTimeout(resolve, 400));
+        return { success: true };
+      }
+      return deleteDeals(ids);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
       toast.success('Deal(s) deleted successfully');

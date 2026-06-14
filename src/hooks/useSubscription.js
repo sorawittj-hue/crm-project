@@ -47,15 +47,15 @@ export function useSubscription() {
   }
 
   // Final access checks
-  // Can they perform normal actions? (Pro or Trial active)
-  const canUseBasicFeatures = isPro || isTrialActive;
+  // Can they perform normal actions? (Pro, Trial active, or Guest Showcase Mode)
+  const canUseBasicFeatures = isPro || isTrialActive || isGuestAccount;
   
   // Can they perform premium actions? (Export, Backup)
   const canUsePremiumFeatures = isPro;
 
   // Should we show the paywall for normal actions?
-  // We show it if they are an expired trial or a guest account
-  const shouldBlockBasic = !canUseBasicFeatures || isGuestAccount;
+  // Guests are no longer blocked from basic actions (they use local mock data - Showcase Mode)
+  const shouldBlockBasic = !canUseBasicFeatures;
 
   return {
     isLoading,

@@ -2,13 +2,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchActivitiesByDeal, fetchActivities, addActivity, deleteActivity, updateActivity } from '../services/apiActivities';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from './useAuth';
+import { useSubscription } from './useSubscription';
+import { mockActivities } from '../lib/mockData';
 
 export function useActivities() {
   const { user } = useAuth();
+  const { isGuestAccount } = useSubscription();
 
   return useQuery({
-    queryKey: ['activities', user?.id],
-    queryFn: fetchActivities,
+    queryKey: ['activities', user?.id, isGuestAccount],
+    queryFn: async () => {
+      if (isGuestAccount) return mockActivities;
+      return fetchActivities();
+    },
     enabled: !!user?.id,
     retry: 2,
     staleTime: 5 * 60 * 1000,
@@ -17,10 +23,14 @@ export function useActivities() {
 
 export function useDealActivities(dealId) {
   const { user } = useAuth();
+  const { isGuestAccount } = useSubscription();
 
   return useQuery({
-    queryKey: ['activities', user?.id, 'deal', dealId],
-    queryFn: () => fetchActivitiesByDeal(dealId),
+    queryKey: ['activities', user?.id, 'deal', dealId, isGuestAccount],
+    queryFn: async () => {
+      if (isGuestAccount) return mockActivities.filter(a => a.deal_id === dealId);
+      return fetchActivitiesByDeal(dealId);
+    },
     enabled: !!user?.id && !!dealId,
     retry: 2,
     staleTime: 2 * 60 * 1000,
