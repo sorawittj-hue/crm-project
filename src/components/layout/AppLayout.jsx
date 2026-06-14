@@ -411,8 +411,15 @@ export default function AppLayout() {
             </div>
 
             {/* Developer credit */}
-            <div className="px-2 pb-6 pt-2 text-center relative">
+            <div className="px-2 pb-6 pt-3 text-center relative mt-auto">
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
+              <div className="flex flex-col items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Developed by</p>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+                  <p className="text-[11px] font-black text-slate-700 tracking-tight">Sorawit Thunthakij</p>
+                </div>
+              </div>
             </div>
           </motion.aside>
         )}
