@@ -480,9 +480,13 @@ export default function ToolsPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="max-w-[1400px] mx-auto pb-20 px-4 md:px-0"
+      className="max-w-[1400px] mx-auto pb-20 px-4 md:px-0 relative"
     >
-      <header className="mb-6 flex items-center gap-3">
+      {/* Global Ambient Glow for Tools Page */}
+      <div className="absolute top-0 right-0 w-full max-w-3xl h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-violet-300/30 via-indigo-100/10 to-transparent -z-10 pointer-events-none blur-3xl" />
+      <div className="absolute top-1/2 left-0 w-full max-w-2xl h-1/2 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-emerald-200/20 via-teal-100/10 to-transparent -z-10 pointer-events-none blur-3xl" />
+
+      <header className="mb-6 flex items-center gap-3 relative z-10">
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20 text-white shrink-0">
           <Sparkles size={24} />
         </div>
