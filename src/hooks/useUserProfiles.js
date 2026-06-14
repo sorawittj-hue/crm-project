@@ -4,7 +4,9 @@ import {
   fetchAllProfiles, 
   updateProfileRole, 
   updateMyPersonalTarget,
-  updateProfileSubscription 
+  updateProfileSubscription,
+  deleteProfile,
+  createProfile
 } from '../services/apiUserProfiles';
 
 import { useToast } from '../components/ui/Toast';
@@ -63,6 +65,32 @@ export function useUpdateProfileSubscription() {
       toast.success('อัปเดตสิทธิ์สมาชิกเรียบร้อยแล้ว');
     },
     onError: (err) => toast.error('ไม่สามารถอัปเดตสิทธิ์ได้: ' + err.message),
+  });
+}
+
+export function useDeleteProfile() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  return useMutation({
+    mutationFn: (id) => deleteProfile(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all_profiles'] });
+      toast.success('ลบบัญชีผู้ใช้งานออกจากระบบสำเร็จ');
+    },
+    onError: (err) => toast.error('ไม่สามารถลบบัญชีผู้ใช้งานได้: ' + err.message),
+  });
+}
+
+export function useCreateProfile() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  return useMutation({
+    mutationFn: (variables) => createProfile(variables),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all_profiles'] });
+      toast.success('เพิ่มผู้ใช้งานเข้าระบบสำเร็จ');
+    },
+    onError: (err) => toast.error('ไม่สามารถเพิ่มผู้ใช้งานได้: ' + err.message),
   });
 }
 

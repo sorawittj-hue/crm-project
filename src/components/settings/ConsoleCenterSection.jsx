@@ -5,12 +5,25 @@ import { Input } from '../ui/Input';
 import { cn } from '../../lib/utils';
 import { 
   ShieldCheck, Crown, Users, Sparkles, Calendar, Search, 
-  UserCheck, ShieldAlert, Mail, Clock, RefreshCw, UserMinus, Plus
+  UserCheck, ShieldAlert, Mail, Clock, RefreshCw, UserMinus, Plus,
+  UserPlus, Trash2, Lock, Unlock, Loader2
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useSubscription } from '../../hooks/useSubscription';
-import { useAllProfiles, useUpdateProfileRole, useUpdateProfileSubscription } from '../../hooks/useUserProfiles';
+import { 
+  useAllProfiles, 
+  useUpdateProfileRole, 
+  useUpdateProfileSubscription,
+  useDeleteProfile,
+  useCreateProfile
+} from '../../hooks/useUserProfiles';
 import { useToast } from '../ui/Toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../ui/Dialog';
+import ConfirmDialog from '../ui/ConfirmDialog';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function ConsoleCenterSection() {
   const { user } = useAuth();
@@ -22,10 +35,32 @@ export function ConsoleCenterSection() {
   const { data: allProfiles = [], isLoading } = useAllProfiles();
   const updateRole = useUpdateProfileRole();
   const updateSubscription = useUpdateProfileSubscription();
+  const deleteProfile = useDeleteProfile();
+  const createProfile = useCreateProfile();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'pro', 'trial', 'free'
   const [customExpiries, setCustomExpiries] = useState({}); // { [userId]: 'YYYY-MM-DD' }
+
+  // Add User State
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addForm, setAddForm] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    planType: 'trial',
+    role: 'member',
+    trialDays: 3
+  });
+  const [isAdding, setIsAdding] = useState(false);
+
+  // Delete State
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [profileToDelete, setProfileToDelete] = useState(null);
+
+  // Suspend State
+  const [suspendConfirmOpen, setSuspendConfirmOpen] = useState(false);
+  const [profileToSuspend, setProfileToSuspend] = useState(null);
 
   // Filter & Search logic
   const filteredProfiles = useMemo(() => {
@@ -39,10 +74,11 @@ export function ConsoleCenterSection() {
 
       // Calculate status for filtering
       const isUserPro = profile.email === 'sorawittj@gmail.com' || profile.plan_type === 'pro';
+      const isSuspended = profile.plan_type === 'suspended';
       let isUserTrial = false;
       let isUserExpired = false;
 
-      if (!isUserPro) {
+      if (!isUserPro && !isSuspended) {
         if (profile.plan_type === 'trial' || (!profile.plan_type && profile.created_at)) {
           const endDate = profile.trial_ends_at 
             ? new Date(profile.trial_ends_at) 
@@ -56,7 +92,7 @@ export function ConsoleCenterSection() {
       // 2. Tab filter
       if (activeTab === 'pro') return isUserPro;
       if (activeTab === 'trial') return isUserTrial;
-      if (activeTab === 'free') return !isUserPro && (isUserExpired || (!isUserTrial && !isUserPro));
+      if (activeTab === 'free') return !isUserPro && !isUserTrial; // Expired, Free, and Suspended users shown under free/expired
       
       return true;
     });
@@ -70,8 +106,11 @@ export function ConsoleCenterSection() {
 
     allProfiles.forEach(profile => {
       const isUserPro = profile.email === 'sorawittj@gmail.com' || profile.plan_type === 'pro';
+      const isSuspended = profile.plan_type === 'suspended';
       if (isUserPro) {
         proCount++;
+      } else if (isSuspended) {
+        freeCount++; // Count suspended as part of free/expired category in overview
       } else {
         const endDate = profile.trial_ends_at 
           ? new Date(profile.trial_ends_at) 
@@ -104,7 +143,6 @@ export function ConsoleCenterSection() {
 
   const handleUpdatePlan = async (id, newPlan) => {
     try {
-      // If setting to trial, we should also default/ensure trial_ends_at is set to 3 days from now if not present
       let trialEndsAt = undefined;
       if (newPlan === 'trial') {
         trialEndsAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
@@ -112,6 +150,8 @@ export function ConsoleCenterSection() {
         trialEndsAt = new Date(Date.now() - 1000).toISOString(); // expired (past date)
       } else if (newPlan === 'pro') {
         trialEndsAt = null; // pro doesn't need trial ends at
+      } else if (newPlan === 'suspended') {
+        trialEndsAt = null;
       }
       
       await updateSubscription.mutateAsync({ id, planType: newPlan, trialEndsAt });
@@ -158,6 +198,112 @@ export function ConsoleCenterSection() {
     }
   };
 
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    if (!addForm.fullName.trim() || !addForm.email.trim() || !addForm.password.trim()) {
+      error('กรุณากรอกข้อมูลให้ครบถ้วน');
+      return;
+    }
+    if (addForm.password.length < 6) {
+      error('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      // 1. Create a non-persistent Supabase client instance so that it does not log the admin out!
+      const tempClient = createClient(supabaseUrl, supabaseKey, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+          detectSessionInUrl: false
+        }
+      });
+
+      // 2. Sign up the user in Supabase auth
+      const { data: authData, error: authError } = await tempClient.auth.signUp({
+        email: addForm.email,
+        password: addForm.password,
+        options: {
+          data: {
+            full_name: addForm.fullName
+          }
+        }
+      });
+
+      if (authError) throw authError;
+      if (!authData?.user?.id) throw new Error('ไม่ได้รับรหัสผู้ใช้จากระบบลงทะเบียน');
+
+      // 3. Calculate trial expiration
+      let trialEndsAt = null;
+      if (addForm.planType === 'trial') {
+        trialEndsAt = new Date(Date.now() + addForm.trialDays * 24 * 60 * 60 * 1000).toISOString();
+      } else if (addForm.planType === 'free') {
+        trialEndsAt = new Date(Date.now() - 1000).toISOString();
+      }
+
+      // 4. Create row in user_profiles
+      await createProfile.mutateAsync({
+        id: authData.user.id,
+        email: addForm.email,
+        fullName: addForm.fullName,
+        role: addForm.role,
+        planType: addForm.planType,
+        trialEndsAt
+      });
+
+      success('เพิ่มผู้ใช้งานและลงทะเบียนบัญชีสำเร็จแล้ว');
+      setIsAddModalOpen(false);
+      setAddForm({
+        fullName: '',
+        email: '',
+        password: '',
+        planType: 'trial',
+        role: 'member',
+        trialDays: 3
+      });
+    } catch (err) {
+      error('เกิดข้อผิดพลาดในการลงทะเบียน: ' + err.message);
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!profileToDelete) return;
+    try {
+      await deleteProfile.mutateAsync(profileToDelete.id);
+      setProfileToDelete(null);
+    } catch (err) {
+      // Toast is handled inside hook
+    }
+  };
+
+  const handleToggleSuspend = async (profile) => {
+    const isSuspended = profile.plan_type === 'suspended';
+    try {
+      if (isSuspended) {
+        // Resume to free (or previous status, free is default safe fallback)
+        await updateSubscription.mutateAsync({
+          id: profile.id,
+          planType: 'free',
+          trialEndsAt: new Date(Date.now() - 1000).toISOString()
+        });
+        success('เปิดใช้งานบัญชีสำเร็จ');
+      } else {
+        // Suspend the user
+        await updateSubscription.mutateAsync({
+          id: profile.id,
+          planType: 'suspended',
+          trialEndsAt: null
+        });
+        success('ระงับการเข้าใช้งานบัญชีนี้เรียบร้อย');
+      }
+    } catch (err) {
+      error('เกิดข้อผิดพลาด: ' + err.message);
+    }
+  };
+
   if (!isOwner) {
     return (
       <Card className="p-8 rounded-[2rem] bg-white border border-slate-100 shadow-xl flex flex-col items-center justify-center text-center">
@@ -180,7 +326,7 @@ export function ConsoleCenterSection() {
           { label: 'ผู้สมัครใช้งานทั้งหมด', value: stats.total, icon: Users, color: 'text-violet-600 bg-violet-50 border-violet-100' },
           { label: 'ผู้ใช้ระดับ PRO', value: stats.pro, icon: Crown, color: 'text-amber-500 bg-amber-50 border-amber-100' },
           { label: 'กำลังทดลองใช้ (Active)', value: stats.trial, icon: Sparkles, color: 'text-emerald-500 bg-emerald-50 border-emerald-100' },
-          { label: 'หมดอายุ / บัญชีฟรี', value: stats.free, icon: Clock, color: 'text-slate-500 bg-slate-50 border-slate-200' },
+          { label: 'หมดอายุ / บัญชีฟรี / ระงับ', value: stats.free, icon: Clock, color: 'text-slate-500 bg-slate-50 border-slate-200' },
         ].map((item, idx) => (
           <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_2px_15px_rgba(0,0,0,0.01)] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
@@ -210,15 +356,26 @@ export function ConsoleCenterSection() {
             </p>
           </div>
           
-          {/* Search Input */}
-          <div className="relative w-full md:w-72">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
-            <Input
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              placeholder="ค้นหาชื่อ หรือ อีเมลสมาชิก..."
-              className="pl-9 pr-4 h-10 rounded-xl text-xs"
-            />
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full md:w-auto">
+            {/* Search Input */}
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+              <Input
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                placeholder="ค้นหาชื่อ หรือ อีเมลสมาชิก..."
+                className="pl-9 pr-4 h-10 rounded-xl text-xs"
+              />
+            </div>
+            
+            {/* Add User Button */}
+            <Button
+              onClick={() => setIsAddModalOpen(true)}
+              className="h-10 px-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-violet-500/20 text-xs shrink-0 border-0"
+            >
+              <UserPlus size={15} />
+              เพิ่มผู้ใช้ใหม่
+            </Button>
           </div>
         </div>
 
@@ -228,7 +385,7 @@ export function ConsoleCenterSection() {
             { id: 'all', label: 'ทั้งหมด' },
             { id: 'pro', label: 'Pro/พรีเมียม' },
             { id: 'trial', label: 'กำลังทดลอง' },
-            { id: 'free', label: 'หมดอายุ/ฟรี' },
+            { id: 'free', label: 'หมดอายุ/ฟรี/ระงับ' },
           ].map(tab => (
             <button
               key={tab.id}
@@ -260,6 +417,7 @@ export function ConsoleCenterSection() {
             filteredProfiles.map(profile => {
               const isUserPro = profile.email === 'sorawittj@gmail.com' || profile.plan_type === 'pro';
               const isOwnerAccount = profile.email === 'sorawittj@gmail.com';
+              const isSuspended = profile.plan_type === 'suspended';
               
               // Calculate trial status
               let trialDaysLeft = 0;
@@ -267,7 +425,7 @@ export function ConsoleCenterSection() {
               let isUserExpired = false;
               let trialEndDateString = '';
 
-              if (!isUserPro) {
+              if (!isUserPro && !isSuspended) {
                 const endDate = profile.trial_ends_at 
                   ? new Date(profile.trial_ends_at) 
                   : new Date(new Date(profile.created_at).getTime() + 3 * 24 * 60 * 60 * 1000);
@@ -286,12 +444,14 @@ export function ConsoleCenterSection() {
                   {/* Left Column: Avatar & User Info */}
                   <div className="flex items-start gap-3.5 min-w-[280px]">
                     <div className={cn(
-                      'w-11 h-11 rounded-xl flex items-center justify-center font-black text-sm shrink-0 shadow-sm',
-                      isUserPro 
-                        ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white' 
-                        : isUserTrial 
-                          ? 'bg-violet-100 text-violet-700' 
-                          : 'bg-slate-200 text-slate-600'
+                      'w-11 h-11 rounded-xl flex items-center justify-center font-black text-sm shrink-0 shadow-sm transition-all',
+                      isSuspended
+                        ? 'bg-rose-50 border border-rose-100 text-rose-505'
+                        : isUserPro 
+                          ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white' 
+                          : isUserTrial 
+                            ? 'bg-violet-100 text-violet-700' 
+                            : 'bg-slate-200 text-slate-600'
                     )}>
                       {(profile.full_name || profile.email || '?').charAt(0).toUpperCase()}
                     </div>
@@ -305,7 +465,11 @@ export function ConsoleCenterSection() {
                             OWNER 👑
                           </span>
                         )}
-                        {isUserPro ? (
+                        {isSuspended ? (
+                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-rose-600 text-white uppercase tracking-wider flex items-center gap-0.5">
+                            <Lock size={8} /> ระงับการใช้งาน
+                          </span>
+                        ) : isUserPro ? (
                           <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-amber-500 text-white uppercase tracking-wider flex items-center gap-0.5">
                             PRO
                           </span>
@@ -357,11 +521,12 @@ export function ConsoleCenterSection() {
                           <option value="pro">Pro (พรีเมียม)</option>
                           <option value="trial">Trial (ทดลองใช้)</option>
                           <option value="free">Free / Expired</option>
+                          <option value="suspended">🔒 ระงับการใช้งาน</option>
                         </select>
                       </div>
 
-                      {/* 2. Quick Extend Trial (Only relevant if not PRO) */}
-                      {profile.plan_type !== 'pro' && (
+                      {/* 2. Quick Extend Trial (Only relevant if not PRO and not Suspended) */}
+                      {profile.plan_type !== 'pro' && !isSuspended && (
                         <div className="flex flex-col gap-1">
                           <span className="text-[9px] font-bold text-slate-400 uppercase">ขยายเวลาทดลองใช้</span>
                           <div className="flex gap-1">
@@ -383,8 +548,8 @@ export function ConsoleCenterSection() {
                         </div>
                       )}
 
-                      {/* 3. Custom Calendar Expiry (Only if not PRO) */}
-                      {profile.plan_type !== 'pro' && (
+                      {/* 3. Custom Calendar Expiry (Only if not PRO and not Suspended) */}
+                      {profile.plan_type !== 'pro' && !isSuspended && (
                         <div className="flex flex-col gap-1">
                           <span className="text-[9px] font-bold text-slate-400 uppercase">กำหนดวันหมดอายุ</span>
                           <div className="flex gap-1 items-center">
@@ -422,6 +587,44 @@ export function ConsoleCenterSection() {
                         </select>
                       </div>
 
+                      {/* 5. Extra Actions (Suspend & Delete) */}
+                      <div className="flex items-center gap-1.5 pt-4 lg:pt-0">
+                        {/* Suspend / Resume Button */}
+                        <button
+                          onClick={() => {
+                            if (isSuspended) {
+                              handleToggleSuspend(profile);
+                            } else {
+                              setProfileToSuspend(profile);
+                              setSuspendConfirmOpen(true);
+                            }
+                          }}
+                          disabled={updateSubscription.isPending}
+                          title={isSuspended ? "เปิดใช้งานบัญชี" : "ระงับบัญชี"}
+                          className={cn(
+                            "w-8 h-8 rounded-lg flex items-center justify-center border transition-all active:scale-95",
+                            isSuspended
+                              ? "bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-600"
+                              : "bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-600"
+                          )}
+                        >
+                          {isSuspended ? <Unlock size={14} /> : <Lock size={14} />}
+                        </button>
+
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => {
+                            setProfileToDelete(profile);
+                            setDeleteConfirmOpen(true);
+                          }}
+                          disabled={deleteProfile.isPending}
+                          title="ลบผู้ใช้งาน"
+                          className="w-8 h-8 rounded-lg flex items-center justify-center bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 transition-all active:scale-95"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+
                     </div>
                   )}
                 </div>
@@ -430,6 +633,153 @@ export function ConsoleCenterSection() {
           )}
         </div>
       </Card>
+
+      {/* 1. Add User Dialog */}
+      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+        <DialogContent className="max-w-md p-8 rounded-[2.5rem] border-0 shadow-2xl relative overflow-hidden bg-white">
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-violet-600 to-indigo-600" />
+          
+          <DialogHeader className="mb-6">
+            <DialogTitle className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <UserPlus className="text-violet-600" size={20} />
+              เพิ่มผู้ใช้งานใหม่
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-400 mt-1 font-medium">
+              ลงทะเบียนบัญชี Supabase Auth และสร้างโปรไฟล์โดยแอดมินจะไม่หลุดออกจากระบบ
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleAddUser} className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">ชื่อ-นามสกุล</label>
+              <Input
+                value={addForm.fullName}
+                onChange={e => setAddForm({ ...addForm, fullName: e.target.value })}
+                placeholder="สมชาย มุ่งมั่น"
+                className="h-10 rounded-xl text-xs"
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">อีเมลเข้าใช้งาน</label>
+              <Input
+                type="email"
+                value={addForm.email}
+                onChange={e => setAddForm({ ...addForm, email: e.target.value })}
+                placeholder="somchai@example.com"
+                className="h-10 rounded-xl text-xs"
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)</label>
+              <Input
+                type="password"
+                value={addForm.password}
+                onChange={e => setAddForm({ ...addForm, password: e.target.value })}
+                placeholder="••••••••"
+                className="h-10 rounded-xl text-xs"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">แผนสมาชิก</label>
+                <select
+                  value={addForm.planType}
+                  onChange={e => setAddForm({ ...addForm, planType: e.target.value })}
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs font-semibold outline-none cursor-pointer text-slate-600"
+                >
+                  <option value="pro">Pro (พรีเมียม)</option>
+                  <option value="trial">Trial (ทดลองใช้)</option>
+                  <option value="free">Free / Expired</option>
+                  <option value="suspended">🔒 ระงับการใช้งาน</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">บทบาท</label>
+                <select
+                  value={addForm.role}
+                  onChange={e => setAddForm({ ...addForm, role: e.target.value })}
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs font-semibold outline-none cursor-pointer text-slate-600"
+                >
+                  <option value="member">Member</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+            </div>
+
+            {addForm.planType === 'trial' && (
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">ระยะเวลาทดลองใช้ (วัน)</label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="365"
+                  value={addForm.trialDays}
+                  onChange={e => setAddForm({ ...addForm, trialDays: parseInt(e.target.value) || 3 })}
+                  className="h-10 rounded-xl text-xs"
+                  required
+                />
+              </div>
+            )}
+
+            <DialogFooter className="flex gap-3 pt-4 border-t border-slate-100 mt-6">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsAddModalOpen(false)}
+                className="flex-1 h-11 rounded-xl text-slate-600 border border-slate-200"
+                disabled={isAdding}
+              >
+                ยกเลิก
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 h-11 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold border-0 shadow-lg shadow-violet-500/20"
+                disabled={isAdding}
+              >
+                {isAdding ? <Loader2 size={16} className="animate-spin mx-auto" /> : 'สร้างผู้ใช้'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* 2. Delete User Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="ยืนยันการลบบัญชีผู้ใช้งาน"
+        description={`คุณแน่ใจหรือไม่ที่จะลบบัญชีของ "${profileToDelete?.full_name || profileToDelete?.email}"? ข้อมูลโปรไฟล์และสิทธิ์สมาชิกทั้งหมดจะถูกลบทันที (การกระทำนี้ไม่สามารถกู้คืนได้)`}
+        confirmLabel="ยืนยันการลบ"
+        cancelLabel="ยกเลิก"
+        variant="danger"
+        isLoading={deleteProfile.isPending}
+        onConfirm={handleDeleteConfirm}
+      />
+
+      {/* 3. Suspend User Confirmation Dialog */}
+      <ConfirmDialog
+        open={suspendConfirmOpen}
+        onOpenChange={setSuspendConfirmOpen}
+        title="ยืนยันการระงับบัญชีผู้ใช้"
+        description={`คุณแน่ใจหรือไม่ที่จะระงับการเข้าใช้งานของ "${profileToSuspend?.full_name || profileToSuspend?.email}"? บัญชีนี้จะไม่สามารถเข้าใช้งานหรือเข้าถึงข้อมูลใดๆ ในระบบ CRM ได้ชั่วคราว`}
+        confirmLabel="ระงับบัญชี"
+        cancelLabel="ยกเลิก"
+        variant="warning"
+        isLoading={updateSubscription.isPending}
+        onConfirm={() => {
+          if (profileToSuspend) {
+            handleToggleSuspend(profileToSuspend);
+            setProfileToSuspend(null);
+          }
+        }}
+      />
     </div>
   );
 }

@@ -56,6 +56,8 @@ export function useSubscription() {
   // Guests are blocked from basic actions (read-only showcase mode)
   const shouldBlockBasic = isGuestAccount || !canUseBasicFeatures;
 
+  const isSuspended = myProfile?.plan_type === 'suspended';
+
   return {
     isLoading,
     isOwner,
@@ -67,7 +69,8 @@ export function useSubscription() {
     isGuestAccount,
     canUseBasicFeatures,
     canUsePremiumFeatures,
-    shouldBlockBasic
+    shouldBlockBasic,
+    isSuspended
   };
 }
 

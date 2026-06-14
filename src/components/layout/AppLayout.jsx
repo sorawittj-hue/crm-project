@@ -223,7 +223,7 @@ export default function AppLayout() {
   const { data: customers = [] } = useCustomers();
   const { data: settings } = useSettings();
   const { data: activities = [] } = useActivities();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
@@ -234,7 +234,7 @@ export default function AppLayout() {
   const userId = user?.id;
 
   const { data: myProfile } = useMyProfile(userId);
-  const { shouldBlockBasic, isGuestAccount, isTrialActive, isExpired, trialDaysLeft, isPro } = useSubscription();
+  const { shouldBlockBasic, isGuestAccount, isTrialActive, isExpired, trialDaysLeft, isPro, isSuspended } = useSubscription();
   const hasPersonalTarget = myProfile?.personal_target > 0 && !isGuestAccount;
   const effectiveTarget = hasPersonalTarget ? myProfile.personal_target : 0;
 
@@ -331,6 +331,37 @@ export default function AppLayout() {
   const mobileSidebarMotion = shouldReduceMotion
     ? { initial: false, animate: 'open', exit: undefined }
     : { initial: 'closed', animate: 'open', exit: 'closed' };
+
+  if (isSuspended) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-slate-950/95 backdrop-blur-2xl flex items-center justify-center p-6 text-center select-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(99,102,241,0.08),transparent)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(244,63,94,0.05),transparent)] pointer-events-none" />
+        <div className="max-w-md w-full bg-slate-900/50 backdrop-blur-2xl border border-slate-800/80 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden space-y-6">
+          <div className="w-20 h-20 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-3xl flex items-center justify-center mx-auto shadow-lg shadow-rose-500/5 animate-pulse">
+            <Lock size={36} />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black text-white tracking-tight">บัญชีของคุณถูกระงับการใช้งาน</h2>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              ขออภัย บัญชีนี้ถูกสั่งระงับการเข้าใช้งานโดยผู้ดูแลระบบสูงสุด กรุณาติดต่อคุณสรวิศ เพื่อขอข้อมูลเพิ่มเติม
+            </p>
+          </div>
+          <div className="pt-4 border-t border-slate-800 flex flex-col gap-3">
+            <div className="text-xs text-slate-500">
+              อีเมลที่เข้าใช้งาน: <span className="font-bold text-slate-400">{user?.email}</span>
+            </div>
+            <button
+              onClick={() => signOut()}
+              className="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-2xl transition-all active:scale-95 text-xs font-bold"
+            >
+              ออกจากระบบ
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isGuestAccount && isExpired) {
     return (

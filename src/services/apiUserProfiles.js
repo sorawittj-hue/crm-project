@@ -62,3 +62,34 @@ export async function updateProfileSubscription(id, planType, trialEndsAt) {
   return data?.[0];
 }
 
+export async function deleteProfile(id) {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .delete()
+    .eq('id', id)
+    .select();
+  if (error) throw new Error('Could not delete profile: ' + error.message);
+  return data?.[0];
+}
+
+export async function createProfile({ id, email, fullName, role, planType, trialEndsAt }) {
+  const newProfile = {
+    id,
+    email,
+    full_name: fullName,
+    role: role || 'member',
+    plan_type: planType || 'free',
+    created_at: new Date().toISOString()
+  };
+  if (trialEndsAt !== undefined) {
+    newProfile.trial_ends_at = trialEndsAt;
+  }
+
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .insert([newProfile])
+    .select();
+  if (error) throw new Error('Could not create profile: ' + error.message);
+  return data?.[0];
+}
+
