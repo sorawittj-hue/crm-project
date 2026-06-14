@@ -190,7 +190,7 @@ function TrialBanner({ isTrialActive, isExpired, trialDaysLeft, isGuestAccount, 
             <p className="text-indigo-200 text-sm font-medium mt-0.5">
               {isExpired 
                 ? 'อัปเกรดเพื่อใช้งานฐานข้อมูลส่วนตัวและฟีเจอร์ระดับ Pro ต่อเนื่อง' 
-                : 'ทดลองใช้ 3 วันฟรี! ปลดล็อคระบบ Premium เพียง 3,000 บาท/ตลอดชีพ'}
+                : 'ทดลองใช้ 3 วันฟรี! ปลดล็อคระบบ Premium เพียง 299 บาท/ตลอดชีพ'}
             </p>
           </div>
         </div>

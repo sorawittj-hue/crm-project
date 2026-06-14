@@ -69,7 +69,7 @@ export default function PaywallModal() {
                       ? 'อัปเกรดเป็น Premium เพื่อใช้งานฟีเจอร์นี้'
                       : paywallReason === 'default'
                         ? 'สมัครสมาชิกวันนี้ ทดลองใช้ฟรีเต็มรูปแบบ 3 วัน!'
-                        : 'เริ่มต้นเพียง 3,000 บาท/ตลอดชีพ'
+                        : 'เริ่มต้นเพียง 299 บาท/ตลอดชีพ'
                   }
                 </p>
               </div>
@@ -103,7 +103,7 @@ export default function PaywallModal() {
                   </div>
                   <div className="mt-3 flex flex-col items-center">
                     <p className="text-xs font-bold text-slate-500">บัญชีพร้อมเพย์ (PromptPay)</p>
-                    <p className="text-sm font-black text-violet-700 tracking-tight leading-none mt-1">ยอดโอน: 3,000.00 บาท</p>
+                    <p className="text-sm font-black text-violet-700 tracking-tight leading-none mt-1">ยอดโอน: 299.00 บาท</p>
                   </div>
                 </div>
               )}
