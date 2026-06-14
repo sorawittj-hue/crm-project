@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useMyProfile } from '../hooks/useUserProfiles';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
-import { Target, Users, ListTree, User, Building2, ShieldCheck, Loader2, Sparkles, Settings2, Plug } from 'lucide-react';
+import { Target, Users, ListTree, User, Building2, ShieldCheck, Loader2, Sparkles, Settings2, Plug, Crown } from 'lucide-react';
 
 import { TargetsSection } from '../components/settings/TargetsSection';
 import { TeamSection } from '../components/settings/TeamSection';
@@ -15,6 +15,7 @@ import { AccountSection } from '../components/settings/AccountSection';
 import { UsersSection } from '../components/settings/UsersSection';
 import { BackupSection } from '../components/settings/BackupSection';
 import { IntegrationSection } from '../components/settings/IntegrationSection';
+import { ConsoleCenterSection } from '../components/settings/ConsoleCenterSection';
 import { Database } from 'lucide-react';
 
 const BASE_SECTIONS = [
@@ -35,10 +36,17 @@ export default function SettingsPage() {
   const { data: myProfile } = useMyProfile(user?.id);
   
   const isAdmin = myProfile?.role === 'admin';
+  const isOwner = user?.email === 'sorawittj@gmail.com';
 
-  const SECTIONS = isAdmin
-    ? [...BASE_SECTIONS, { id: 'users', label: 'ผู้ใช้งาน', icon: ShieldCheck }]
-    : BASE_SECTIONS;
+  const SECTIONS = isOwner
+    ? [
+        ...BASE_SECTIONS,
+        { id: 'users', label: 'ผู้ใช้งาน', icon: ShieldCheck },
+        { id: 'console', label: 'Console Center 👑', icon: Crown }
+      ]
+    : isAdmin
+      ? [...BASE_SECTIONS, { id: 'users', label: 'ผู้ใช้งาน', icon: ShieldCheck }]
+      : BASE_SECTIONS;
 
   if (settingsLoading || teamLoading) return (
     <div className="flex items-center justify-center h-[60vh]">
@@ -112,7 +120,8 @@ export default function SettingsPage() {
               {activeSection === 'account' && <AccountSection />}
               {activeSection === 'data' && <BackupSection />}
               {activeSection === 'plugins' && <IntegrationSection />}
-              {activeSection === 'users' && isAdmin && <UsersSection />}
+              {activeSection === 'users' && (isAdmin || isOwner) && <UsersSection />}
+              {activeSection === 'console' && isOwner && <ConsoleCenterSection />}
             </motion.div>
           </AnimatePresence>
         </div>

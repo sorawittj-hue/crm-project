@@ -47,3 +47,18 @@ export async function touchLastSeen(userId) {
     .update({ last_seen_at: new Date().toISOString() })
     .eq('id', userId);
 }
+
+export async function updateProfileSubscription(id, planType, trialEndsAt) {
+  const updates = {};
+  if (planType !== undefined) updates.plan_type = planType;
+  if (trialEndsAt !== undefined) updates.trial_ends_at = trialEndsAt;
+
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .update(updates)
+    .eq('id', id)
+    .select();
+  if (error) throw new Error('Could not update subscription: ' + error.message);
+  return data?.[0];
+}
+
