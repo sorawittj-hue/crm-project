@@ -3,7 +3,7 @@ import { fetchActivitiesByDeal, fetchActivities, addActivity, deleteActivity, up
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from './useAuth';
 import { useSubscription } from './useSubscription';
-import { mockActivities } from '../lib/mockData';
+import { getLocalActivities, addLocalActivity, updateLocalActivity, deleteLocalActivity } from '../lib/localDb';
 
 export function useActivities() {
   const { user } = useAuth();
@@ -12,7 +12,10 @@ export function useActivities() {
   return useQuery({
     queryKey: ['activities', user?.id, isGuestAccount],
     queryFn: async () => {
-      if (isGuestAccount) return mockActivities;
+      if (isGuestAccount) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        return getLocalActivities();
+      }
       return fetchActivities();
     },
     enabled: !!user?.id,
@@ -28,7 +31,9 @@ export function useDealActivities(dealId) {
   return useQuery({
     queryKey: ['activities', user?.id, 'deal', dealId, isGuestAccount],
     queryFn: async () => {
-      if (isGuestAccount) return mockActivities.filter(a => a.deal_id === dealId);
+      if (isGuestAccount) {
+        return getLocalActivities().filter(a => a.deal_id === dealId);
+      }
       return fetchActivitiesByDeal(dealId);
     },
     enabled: !!user?.id && !!dealId,
@@ -40,9 +45,16 @@ export function useDealActivities(dealId) {
 export function useAddActivity() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { isGuestAccount } = useSubscription();
 
   return useMutation({
-    mutationFn: addActivity,
+    mutationFn: async (newActivity) => {
+      if (isGuestAccount) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        return addLocalActivity(newActivity);
+      }
+      return addActivity(newActivity);
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
       if (variables.deal_id) {
@@ -68,9 +80,17 @@ export function useAddActivity() {
 export function useDeleteActivity() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { isGuestAccount } = useSubscription();
 
   return useMutation({
-    mutationFn: deleteActivity,
+    mutationFn: async (id) => {
+      if (isGuestAccount) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        deleteLocalActivity(id);
+        return { success: true };
+      }
+      return deleteActivity(id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
       toast.success('Activity deleted');
@@ -84,9 +104,16 @@ export function useDeleteActivity() {
 export function useUpdateActivity() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { isGuestAccount } = useSubscription();
 
   return useMutation({
-    mutationFn: ({ id, updates }) => updateActivity(id, updates),
+    mutationFn: async ({ id, updates }) => {
+      if (isGuestAccount) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        return updateLocalActivity(id, updates);
+      }
+      return updateActivity(id, updates);
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
       if (variables.updates.deal_id || variables.deal_id) {

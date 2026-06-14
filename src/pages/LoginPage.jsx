@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { startLocalTrial } from '../lib/localDb';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Eye, EyeOff, ArrowRight, Loader2, UserPlus, LogIn, Sparkles } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { signIn, signUp, signInAsGuest, loading } = useAuth();
+  const { signIn, signUp, loading } = useAuth();
 
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [email, setEmail] = useState('');
@@ -45,12 +46,12 @@ export default function LoginPage() {
   const handleGuestLogin = async () => {
     setFormError('');
     setSuccessMsg('');
-    const { error } = await signInAsGuest();
-    if (error) { 
-      setFormError('ไม่สามารถเข้าสู่ระบบ Guest ได้ กรุณาตรวจสอบว่ามีบัญชี Demo ในระบบแล้วหรือยัง (' + error.message + ')');
-      return; 
+    try {
+      startLocalTrial();
+      navigate('/command');
+    } catch (error) {
+      setFormError('ไม่สามารถเข้าสู่โหมดทดลองใช้งานได้: ' + error.message);
     }
-    navigate('/command');
   };
 
   const isLogin = mode === 'login';

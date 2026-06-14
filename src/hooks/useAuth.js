@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
+import { migrateLocalToSupabase } from '../lib/migration';
+import { isLocalTrialActive } from '../lib/localDb';
 import { touchLastSeen } from '../services/apiUserProfiles';
 
 // Global shared auth state to avoid independent Supabase network calls & state sets across 34 hook instances
@@ -96,6 +98,12 @@ export function useAuth() {
       updateGlobalState(globalUser, globalSession, true, null);
       const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
       if (signInError) throw signInError;
+      
+      if (isLocalTrialActive() && data?.user?.id) {
+        // Fire and forget migration
+        migrateLocalToSupabase(data.user.id).catch(console.error);
+      }
+      
       return { data, error: null };
     } catch (err) {
       updateGlobalState(null, null, false, err.message);
@@ -112,6 +120,12 @@ export function useAuth() {
         options: { data: { full_name: fullName || email.split('@')[0] } },
       });
       if (signUpError) throw signUpError;
+      
+      if (isLocalTrialActive() && data?.user?.id) {
+        // Fire and forget migration
+        migrateLocalToSupabase(data.user.id).catch(console.error);
+      }
+
       return { data, error: null };
     } catch (err) {
       updateGlobalState(null, null, false, err.message);

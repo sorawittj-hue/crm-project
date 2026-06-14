@@ -9,7 +9,7 @@ import {
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from './useAuth';
 import { useSubscription } from './useSubscription';
-import { mockCustomers } from '../lib/mockData';
+import { getLocalCustomers, addLocalCustomer, updateLocalCustomer, deleteLocalCustomer } from '../lib/localDb';
 
 export function useCustomers() {
   const { user } = useAuth();
@@ -18,7 +18,10 @@ export function useCustomers() {
   return useQuery({
     queryKey: ['customers', user?.id, isGuestAccount],
     queryFn: async () => {
-      if (isGuestAccount) return mockCustomers;
+      if (isGuestAccount) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        return getLocalCustomers();
+      }
       return fetchCustomers();
     },
     enabled: !!user?.id,
@@ -30,10 +33,16 @@ export function useCustomers() {
 
 export function useCustomer(id) {
   const { user } = useAuth();
+  const { isGuestAccount } = useSubscription();
 
   return useQuery({
     queryKey: ['customer', user?.id, id],
-    queryFn: () => getCustomerById(id),
+    queryFn: async () => {
+      if (isGuestAccount) {
+        return getLocalCustomers().find(c => c.id === id) || null;
+      }
+      return getCustomerById(id);
+    },
     enabled: !!user?.id && !!id,
     retry: 2,
   });
@@ -42,9 +51,16 @@ export function useCustomer(id) {
 export function useCreateCustomer() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { isGuestAccount } = useSubscription();
 
   return useMutation({
-    mutationFn: createCustomer,
+    mutationFn: async (newCustomer) => {
+      if (isGuestAccount) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        return addLocalCustomer(newCustomer);
+      }
+      return createCustomer(newCustomer);
+    },
     onMutate: async (newCustomer) => {
       await queryClient.cancelQueries({ queryKey: ['customers'] });
       const previousCustomersQueries = queryClient.getQueriesData({ queryKey: ['customers'] });
@@ -75,9 +91,16 @@ export function useCreateCustomer() {
 export function useUpdateCustomer() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { isGuestAccount } = useSubscription();
 
   return useMutation({
-    mutationFn: updateCustomer,
+    mutationFn: async (updatedCustomer) => {
+      if (isGuestAccount) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        return updateLocalCustomer(updatedCustomer.id, updatedCustomer);
+      }
+      return updateCustomer(updatedCustomer);
+    },
     onMutate: async (updatedCustomer) => {
       await queryClient.cancelQueries({ queryKey: ['customers'] });
       const previousCustomersQueries = queryClient.getQueriesData({ queryKey: ['customers'] });
@@ -109,9 +132,17 @@ export function useUpdateCustomer() {
 export function useDeleteCustomer() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { isGuestAccount } = useSubscription();
 
   return useMutation({
-    mutationFn: deleteCustomer,
+    mutationFn: async (id) => {
+      if (isGuestAccount) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        deleteLocalCustomer(id);
+        return { success: true };
+      }
+      return deleteCustomer(id);
+    },
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ['customers'] });
       const previousCustomersQueries = queryClient.getQueriesData({ queryKey: ['customers'] });

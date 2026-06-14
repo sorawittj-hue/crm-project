@@ -7,7 +7,7 @@ import {
   Search, Settings, Bell,
   ChevronRight, Target, TrendingUp,
   AlertCircle, Clock, CheckCircle2, CalendarClock, Briefcase,
-  BarChart2, Trash2, CheckCheck, Plus, Sparkles,
+  BarChart2, Trash2, CheckCheck, Plus, Sparkles, Lock,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useDeals } from '../../hooks/useDeals';
@@ -329,6 +329,27 @@ export default function AppLayout() {
   const mobileSidebarMotion = shouldReduceMotion
     ? { initial: false, animate: 'open', exit: undefined }
     : { initial: 'closed', animate: 'open', exit: 'closed' };
+
+  if (isGuestAccount && isExpired) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xl flex items-center justify-center p-4">
+        <div className="bg-white rounded-[2rem] p-10 max-w-md w-full shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] text-center relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-red-500 to-rose-500" />
+          <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner ring-8 ring-red-50/50">
+            <Lock size={40} strokeWidth={2.5} />
+          </div>
+          <h2 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">หมดเวลาทดลองใช้งาน</h2>
+          <p className="text-slate-500 mb-8 leading-relaxed font-medium">ระยะเวลาทดลองใช้งาน 3 วันของคุณสิ้นสุดลงแล้ว กรุณาอัปเกรดเป็น <strong className="text-violet-600">Nova Pro</strong> เพื่อเก็บรักษาข้อมูลทั้งหมดและย้ายขึ้นสู่ระบบ Cloud ทันที</p>
+          <button 
+            onClick={() => openPaywall()}
+            className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-lg shadow-xl shadow-violet-500/25 transition-all hover:-translate-y-1 active:translate-y-0"
+          >
+            อัปเกรดแบบรายเดือน (299฿)
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen w-screen bg-slate-50 text-slate-900 overflow-hidden font-sans selection:bg-primary/10">

@@ -1,5 +1,6 @@
 import { useAuth } from './useAuth';
 import { useMyProfile } from './useUserProfiles';
+import { isLocalTrialActive as checkLocalTrial, getTrialDaysLeft as getLocalTrialDaysLeft } from '../lib/localDb';
 
 export function useSubscription() {
   const { user } = useAuth();
@@ -8,8 +9,8 @@ export function useSubscription() {
   // 1. Hardcoded VIP / Owner logic
   const isOwner = user?.email === 'sorawittj@gmail.com';
   
-  // 2. Original Guest logic (if someone still uses the demo account)
-  const isGuestAccount = user?.email === 'demo@novapipeline.com';
+  // 2. Local Trial logic
+  const isGuestAccount = checkLocalTrial();
 
   // 3. Admin logic
   const isAdmin = myProfile?.role === 'admin';
@@ -22,17 +23,16 @@ export function useSubscription() {
   let isExpired = false;
   let trialDaysLeft = 0;
 
-  if (myProfile?.plan_type === 'trial' || (!isPro && !isGuestAccount)) {
-    // If no plan_type is set but they are not PRO, we treat them as trial.
-    // If trial_ends_at is null, maybe we give them 3 days from `created_at` 
-    // or just default to expired if we want to be strict.
-    // Let's use `created_at` + 3 days as a fallback if `trial_ends_at` is null.
-    
+  if (isGuestAccount) {
+    trialDaysLeft = getLocalTrialDaysLeft();
+    isTrialActive = trialDaysLeft > 0;
+    isExpired = trialDaysLeft <= 0;
+  } else if (myProfile?.plan_type === 'trial' || (!isPro && user)) {
+    // Registered users trial logic
     const startDate = myProfile?.created_at ? new Date(myProfile.created_at) : new Date();
     let endDate = myProfile?.trial_ends_at ? new Date(myProfile.trial_ends_at) : null;
     
     if (!endDate) {
-      // Fallback: 3 days after account creation
       endDate = new Date(startDate.getTime() + 3 * 24 * 60 * 60 * 1000);
     }
 
@@ -40,15 +40,14 @@ export function useSubscription() {
     isTrialActive = now < endDate;
     isExpired = now >= endDate;
     
-    // Calculate days left
     const diffTime = endDate.getTime() - now.getTime();
     trialDaysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     if (trialDaysLeft < 0) trialDaysLeft = 0;
   }
 
   // Final access checks
-  // Can they perform normal actions? (Pro, Trial active, or Guest Showcase Mode)
-  const canUseBasicFeatures = isPro || isTrialActive || isGuestAccount;
+  // Can they perform normal actions? (Pro, Trial active, or Guest Local Trial active)
+  const canUseBasicFeatures = isPro || isTrialActive;
   
   // Can they perform premium actions? (Export, Backup)
   const canUsePremiumFeatures = isPro;

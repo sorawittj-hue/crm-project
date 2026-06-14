@@ -4,7 +4,7 @@ import { useToast } from '../components/ui/Toast';
 import { useAuth } from './useAuth';
 import { dispatchNotification } from '../services/integrationService';
 import { useSubscription } from './useSubscription';
-import { mockDeals } from '../lib/mockData';
+import { getLocalDeals, addLocalDeal, updateLocalDeal, deleteLocalDeals } from '../lib/localDb';
 
 export function useDeals() {
   const { user } = useAuth();
@@ -13,7 +13,10 @@ export function useDeals() {
   return useQuery({
     queryKey: ['deals', user?.id, isGuestAccount],
     queryFn: async () => {
-      if (isGuestAccount) return mockDeals;
+      if (isGuestAccount) {
+        await new Promise(resolve => setTimeout(resolve, 200)); // Simulate network
+        return getLocalDeals();
+      }
       return fetchDeals();
     },
     enabled: !!user?.id,
@@ -32,7 +35,7 @@ export function useUpdateDeal() {
     mutationFn: async (updatedDeal) => {
       if (isGuestAccount) {
         await new Promise(resolve => setTimeout(resolve, 300));
-        return { ...updatedDeal };
+        return updateLocalDeal(updatedDeal.id, updatedDeal);
       }
       return updateDeal(updatedDeal);
     },
@@ -102,7 +105,8 @@ export function useAddDeal() {
     mutationFn: async (newDeal) => {
       if (isGuestAccount) {
         await new Promise(resolve => setTimeout(resolve, 500));
-        return [{ id: `deal-mock-${Date.now()}`, ...newDeal }];
+        const added = addLocalDeal(newDeal);
+        return [added];
       }
       return addDeal(newDeal);
     },
@@ -131,7 +135,8 @@ export function useAddMultipleDeals() {
     mutationFn: async (deals) => {
       if (isGuestAccount) {
         await new Promise(resolve => setTimeout(resolve, 800));
-        return deals;
+        const addedDeals = deals.map(d => addLocalDeal(d));
+        return addedDeals;
       }
       return addMultipleDeals(deals);
     },
@@ -154,6 +159,7 @@ export function useDeleteDeals() {
     mutationFn: async (ids) => {
       if (isGuestAccount) {
         await new Promise(resolve => setTimeout(resolve, 400));
+        deleteLocalDeals(ids);
         return { success: true };
       }
       return deleteDeals(ids);

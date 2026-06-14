@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { isLocalTrialActive } from '../../lib/localDb';
 
 /**
  * Protected Route wrapper component
@@ -19,8 +20,8 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  // If not authenticated, redirect to login
-  if (!isAuthenticated) {
+  // If not authenticated and not in local trial, redirect to login
+  if (!isAuthenticated && !isLocalTrialActive()) {
     // Redirect to login page and remember where they were trying to go
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
