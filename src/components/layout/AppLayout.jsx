@@ -191,15 +191,17 @@ function TrialBanner({ isTrialActive, isExpired, trialDaysLeft, isGuestAccount, 
             <p className="text-indigo-200 text-sm font-medium mt-0.5">
               {isExpired 
                 ? 'อัปเกรดเพื่อใช้งานฐานข้อมูลส่วนตัวและฟีเจอร์ระดับ Pro ต่อเนื่อง' 
-                : 'ทดลองใช้ 3 วันฟรี! ปลดล็อคระบบ Premium เพียง 299 บาท/ตลอดชีพ'}
+                : isGuestAccount
+                  ? 'ข้อมูลถูกบันทึกบนอุปกรณ์ของคุณเท่านั้น ปลดล็อคเพื่อย้ายขึ้นระบบ Cloud'
+                  : 'ทดลองใช้ 3 วันฟรี! ปลดล็อคระบบ Premium เพียง 299 บาท/รอบบิล'}
             </p>
           </div>
         </div>
         <button
-          onClick={() => openPaywall(isExpired ? 'trial_ended' : 'default')}
+          onClick={() => openPaywall(isExpired ? 'trial_ended' : isGuestAccount ? 'guest_upgrade' : 'default')}
           className="whitespace-nowrap px-6 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-amber-950 font-black rounded-xl shadow-lg transition-all active:scale-95 text-sm"
         >
-          อัปเกรดเป็น Premium
+          {isGuestAccount ? 'ปลดล็อคการใช้งาน' : 'อัปเกรดเป็น Premium'}
         </button>
       </div>
     </motion.section>
@@ -442,7 +444,7 @@ export default function AppLayout() {
               })}
             </nav>
 
-            {!isPro && (
+            {!isPro && !isGuestAccount && (
               <div className="px-3 mt-4 mb-2">
                 <button
                   onClick={() => openPaywall(isGuestAccount ? 'upgrade' : 'default')}
