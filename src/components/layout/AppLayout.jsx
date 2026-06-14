@@ -7,7 +7,7 @@ import {
   Search, Settings, Bell,
   ChevronRight, Target, TrendingUp,
   AlertCircle, Clock, CheckCircle2, CalendarClock, Briefcase,
-  BarChart2, Trash2, CheckCheck, Plus,
+  BarChart2, Trash2, CheckCheck, Plus, Sparkles,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useDeals } from '../../hooks/useDeals';
