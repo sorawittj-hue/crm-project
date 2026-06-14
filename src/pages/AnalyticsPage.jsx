@@ -93,7 +93,7 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
       transition={{ delay, duration: 0.5, ease: "easeOut" }}
       className="group"
     >
-      <Card className={cn("p-5 rounded-3xl bg-white border border-slate-100/60 shadow-sm hover:shadow-xl transition-all duration-500 relative overflow-hidden", glowStyles[color])}>
+      <Card className={cn("p-6 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] ring-1 ring-slate-900/5 hover:-translate-y-1.5 transition-all duration-500 relative overflow-hidden group", glowStyles[color])}>
         {/* Subtle background glow */}
         <div className={cn("absolute -top-10 -right-10 w-32 h-32 blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-full", colorStyles[color].split(' ')[1])} />
         
@@ -497,7 +497,11 @@ export default function AnalyticsPage() {
   const memberColors = ['#8b5cf6', '#0ea5e9', '#f59e0b', '#10b981', '#ec4899', '#f43f5e'];
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-8 pb-24 px-4 md:px-6 mt-4 bg-gradient-to-b from-slate-50 to-white min-h-screen">
+    <div className="max-w-[1600px] mx-auto space-y-8 pb-24 px-4 md:px-6 mt-4 bg-slate-50/50 min-h-screen relative overflow-hidden">
+      {/* Ambient Glowing Orbs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[500px] rounded-full bg-violet-400/20 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[30%] right-[-5%] w-[30%] h-[400px] rounded-full bg-blue-400/10 blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[600px] rounded-full bg-emerald-400/10 blur-[150px] pointer-events-none" />
       
       {/* HEADER */}
       <motion.div 
@@ -542,7 +546,7 @@ export default function AnalyticsPage() {
                 onClick={() => { setActiveTab(tab.id); setSelectedPrompt(null); }}
                 className={cn(
                   'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap',
-                  isActive ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/25' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                  isActive ? 'bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-[0_8px_20px_rgba(139,92,246,0.3)] ring-1 ring-white/20' : 'text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-sm'
                 )}
               >
                 <Icon size={14} strokeWidth={2.5} />
@@ -567,7 +571,8 @@ export default function AnalyticsPage() {
             <>
               {/* AI EXECUTIVE SUMMARY */}
               {analytics?.intelligence?.executiveActions?.length > 0 && (
-                <Card className="p-6 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-2xl relative overflow-hidden">
+                <Card className="p-8 rounded-[2.5rem] bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white border border-white/10 shadow-[0_0_50px_-12px_rgba(139,92,246,0.5)] relative overflow-hidden group hover:shadow-[0_0_80px_-15px_rgba(139,92,246,0.6)] transition-all duration-700">
+                  <div className="absolute -top-32 -right-32 w-96 h-96 bg-violet-500/30 blur-[100px] rounded-full group-hover:bg-violet-500/40 transition-all duration-700 pointer-events-none" />
                   <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
                     <Sparkles size={160} />
                   </div>
@@ -664,7 +669,7 @@ export default function AnalyticsPage() {
 
               {/* REVENUE CHART + STAGE DONUT */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2 p-7 rounded-3xl bg-white border border-slate-100 shadow-sm relative overflow-hidden">
+                <Card className="lg:col-span-2 p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 relative overflow-hidden group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-8">
                     <div>
                       <h3 className="text-base font-bold text-slate-900 tracking-tight">Revenue Trend</h3>
@@ -692,6 +697,13 @@ export default function AnalyticsPage() {
                             <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4} />
                             <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
                           </linearGradient>
+                          <filter id="glow-chart" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="6" result="blur" />
+                            <feMerge>
+                              <feMergeNode in="blur" />
+                              <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                          </filter>
                         </defs>
                         <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} dy={15} />
@@ -700,14 +712,14 @@ export default function AnalyticsPage() {
                         <Bar dataKey="unweighted" name="Pipeline Volume" fill="url(#colorPipeline)" radius={[8, 8, 0, 0]} barSize={40} isAnimationActive={false} />
                         <Area type="monotone" dataKey="actual" name="Actual Revenue" stroke="#10b981" strokeWidth={4} fill="url(#colorActualAnalytics)" isAnimationActive={false} />
                         <Area type="monotone" dataKey="weighted" name="Weighted Forecast" stroke="#8b5cf6" strokeWidth={3} fill="url(#colorWeightedAnalytics)" isAnimationActive={false} />
-                        <Line type="monotone" dataKey="weighted" name="Weighted Forecast Line" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} isAnimationActive={false} />
-                        <Line type="monotone" dataKey="target" name="Goal" stroke="#cbd5e1" strokeWidth={2} strokeDasharray="8 8" dot={false} isAnimationActive={false} />
+                        <Line type="monotone" dataKey="weighted" name="Weighted Forecast Line" stroke="#8b5cf6" strokeWidth={4} filter="url(#glow-chart)" dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 7, strokeWidth: 0, fill: '#fff', stroke: '#8b5cf6' }} isAnimationActive={false} />
+                        <Line type="monotone" dataKey="target" name="Goal" stroke="#94a3b8" strokeWidth={2} strokeDasharray="6 6" dot={false} isAnimationActive={false} opacity={0.6} />
                       </ComposedChart>
                     </SafeResponsiveContainer>
                   </div>
                 </Card>
 
-                <Card className="lg:col-span-1 p-7 rounded-3xl bg-white border border-slate-100 shadow-sm flex flex-col items-center">
+                <Card className="lg:col-span-1 p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 flex flex-col items-center group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
                   <div className="w-full mb-6">
                     <h3 className="text-base font-bold text-slate-900 tracking-tight">Stage Distribution</h3>
                     <p className="text-xs text-slate-400 mt-1 font-medium">Pipeline health by volume</p>
@@ -750,10 +762,12 @@ export default function AnalyticsPage() {
               </div>
 
               {/* AI ANALYTICS CONSULTANT */}
-              <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-[2.5rem] p-8 border border-slate-800 text-white shadow-2xl relative overflow-hidden">
+              <div className="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 rounded-[2.5rem] p-8 border border-white/10 shadow-[0_20px_60px_-15px_rgba(79,70,229,0.4)] relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
                   <Sparkles size={160} />
                 </div>
+                <div className="absolute -top-40 -left-40 w-80 h-80 bg-indigo-500/20 blur-[100px] rounded-full group-hover:bg-indigo-500/30 transition-all duration-700 pointer-events-none" />
+                <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-violet-500/20 blur-[100px] rounded-full group-hover:bg-violet-500/30 transition-all duration-700 pointer-events-none" />
                 
                 <div className="flex items-center gap-3.5 mb-5 relative z-10">
                   <div className="w-11 h-11 rounded-2xl bg-violet-500/20 flex items-center justify-center border border-violet-500/30 text-violet-300">
@@ -850,7 +864,7 @@ export default function AnalyticsPage() {
 
           {/* TAB 2: FUNNEL */}
           {activeTab === 'funnel' && (
-            <Card className="p-8 rounded-3xl bg-white border border-slate-100 shadow-sm space-y-10">
+            <Card className="p-8 rounded-[2.5rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 space-y-10">
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100/50">
@@ -882,12 +896,13 @@ export default function AnalyticsPage() {
                             initial={{ width: 0 }}
                             animate={{ width: `${item.widthPct}%` }}
                             transition={{ duration: 1, delay: i * 0.15, ease: [0.19, 1, 0.22, 1] }}
-                            className="absolute top-0 left-0 h-full rounded-2xl flex items-center px-4 gap-3 shadow-md border-r border-white/20"
+                            className="absolute top-0 left-0 h-full rounded-2xl flex items-center px-4 gap-3 shadow-md border-r border-white/40 overflow-hidden group-hover:brightness-110 transition-all duration-300"
                             style={{ 
                               background: `linear-gradient(135deg, ${item.color}ee, ${item.color})`, 
-                              boxShadow: `0 4px 16px ${item.color}33` 
+                              boxShadow: `0 8px 24px ${item.color}40` 
                             }}
                           >
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2s_infinite] skew-x-12" />
                             <span className="text-xs font-black text-white">{item.count} Deals</span>
                             <span className="text-xs font-bold text-white bg-white/25 px-2 py-0.5 rounded-lg">{formatCurrency(item.value)}</span>
                           </motion.div>
@@ -1029,7 +1044,7 @@ export default function AnalyticsPage() {
           {activeTab === 'performance' && (
             <div className="space-y-8">
               {/* Monthly contribution chart */}
-              <Card className="p-7 rounded-3xl bg-white border border-slate-100 shadow-sm">
+              <Card className="p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
                 <div className="mb-6">
                   <h3 className="text-base font-bold text-slate-900 tracking-tight">Monthly Revenue Contribution</h3>
                   <p className="text-xs text-slate-400 mt-1 font-medium">Monthly won deal values by team member</p>
@@ -1289,7 +1304,7 @@ export default function AnalyticsPage() {
                 </Card>
 
                 {/* AI Sales Quota Simulator */}
-                <Card className="p-7 rounded-3xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between">
+                <Card className="p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 flex flex-col justify-between group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
                   <div>
                     <div className="flex items-center gap-2.5 mb-5">
                       <Sliders size={18} className="text-violet-650" />
@@ -1371,9 +1386,10 @@ export default function AnalyticsPage() {
                           cx="48"
                           cy="48"
                           r="40"
-                          stroke="#f1f5f9"
-                          strokeWidth="8"
+                          stroke="#e2e8f0"
+                          strokeWidth="6"
                           fill="transparent"
+                          strokeDasharray="4 6"
                         />
                         {/* Foreground Circle */}
                         <motion.circle
