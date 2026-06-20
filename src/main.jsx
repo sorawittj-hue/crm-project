@@ -20,11 +20,9 @@ console.error = (...args) => {
 };
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <ErrorBoundary>
-      <ToastProvider>
-        <App />
-      </ToastProvider>
-    </ErrorBoundary>
-  </React.StrictMode>,
+  <ErrorBoundary>
+    <ToastProvider>
+      <App />
+    </ToastProvider>
+  </ErrorBoundary>
 )

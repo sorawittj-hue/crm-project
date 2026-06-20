@@ -531,7 +531,6 @@ export default function PipelineBoard({
           <div
             ref={scrollRef}
             className="flex-1 min-h-[560px] relative overflow-x-auto overflow-y-hidden custom-scrollbar-horizontal"
-            style={{ scrollBehavior: 'smooth' }}
           >
             <div className="flex gap-3.5 h-full pb-4" style={{ minWidth: 'max-content' }}>
               {STAGES.map((stageId) => {
@@ -546,8 +545,6 @@ export default function PipelineBoard({
                   <Droppable droppableId={stageId} key={stageId}>
                     {(provided, snapshot) => (
                       <div
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
                         className={cn(
                           'flex-shrink-0 flex flex-col w-[290px] h-full rounded-2xl transition-all duration-300 border overflow-hidden',
                           snapshot.isDraggingOver
@@ -576,7 +573,11 @@ export default function PipelineBoard({
                         </div>
 
                         {/* Cards */}
-                        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2.5 custom-scrollbar-thin">
+                        <div 
+                          className="flex-1 overflow-y-auto px-3 py-3 custom-scrollbar-thin"
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                        >
                           <InnerList 
                             deals={stageDeals} 
                             stageColor={stage.dotColor}
@@ -742,6 +743,7 @@ const DealCard = memo(
       return (
         <div
           ref={ref}
+          className="mb-2.5 last:mb-0"
           {...draggableProps}
           {...dragHandleProps}
         >
