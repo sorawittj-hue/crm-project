@@ -3,7 +3,8 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { useToast } from '../ui/Toast';
-import { Pencil, Save, Loader2 } from 'lucide-react';
+import { Pencil, Save, Loader2, Building2, Briefcase, Banknote } from 'lucide-react';
+import { cn } from '../../lib/utils';
 import { useSettings, useUpdateSettings } from '../../hooks/useSettings';
 import { useAuth } from '../../hooks/useAuth';
 import { useMyProfile } from '../../hooks/useUserProfiles';
@@ -67,13 +68,18 @@ export function CompanySection() {
       {!companyForm ? (
         <div className="space-y-4">
           {[
-            { label: 'ชื่อบริษัท', value: settings?.company_name || '—' },
-            { label: 'อุตสาหกรรม', value: settings?.company_industry || '—' },
-            { label: 'สกุลเงิน', value: settings?.currency || 'THB' },
+            { label: 'ชื่อบริษัท', value: settings?.company_name || '—', icon: Building2, gradient: 'from-violet-50 to-purple-50', border: 'border-l-violet-400', iconBg: 'bg-violet-100 text-violet-600' },
+            { label: 'อุตสาหกรรม', value: settings?.company_industry || '—', icon: Briefcase, gradient: 'from-blue-50 to-sky-50', border: 'border-l-blue-400', iconBg: 'bg-blue-100 text-blue-600' },
+            { label: 'สกุลเงิน', value: settings?.currency || 'THB', icon: Banknote, gradient: 'from-emerald-50 to-green-50', border: 'border-l-emerald-400', iconBg: 'bg-emerald-100 text-emerald-600' },
           ].map((item) => (
-            <div key={item.label} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50">
-              <p className="text-sm font-medium text-slate-600">{item.label}</p>
-              <p className="text-sm font-semibold text-slate-900">{item.value}</p>
+            <div key={item.label} className={cn('flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r border-l-4 transition-all hover:shadow-md cursor-default', item.gradient, item.border)}>
+              <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center shrink-0', item.iconBg)}>
+                <item.icon size={16} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-slate-500">{item.label}</p>
+                <p className="text-sm font-bold text-slate-900 truncate">{item.value}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -102,7 +108,7 @@ export function CompanySection() {
             <select
               value={companyForm.currency}
               onChange={(e) => setCompanyForm({ ...companyForm, currency: e.target.value })}
-              className="w-full h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-violet-400"
+              className="w-full h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all appearance-none cursor-pointer"
             >
               <option value="THB">THB — บาทไทย</option>
               <option value="USD">USD — ดอลลาร์</option>

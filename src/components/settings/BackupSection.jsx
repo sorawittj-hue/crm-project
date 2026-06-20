@@ -172,7 +172,7 @@ export function BackupSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
           {/* Export Box */}
-          <div className="p-6 rounded-[1.5rem] bg-white border border-slate-100 shadow-sm space-y-4 flex flex-col justify-between">
+          <div className="p-6 rounded-[1.5rem] bg-gradient-to-br from-violet-50/50 to-white border border-violet-100/50 shadow-sm space-y-4 flex flex-col justify-between hover:shadow-md transition-all">
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center">
@@ -206,7 +206,7 @@ export function BackupSection() {
           </div>
 
           {/* Import Box */}
-          <div className="p-6 rounded-[1.5rem] bg-white border border-slate-100 shadow-sm space-y-4 flex flex-col justify-between">
+          <div className="p-6 rounded-[1.5rem] bg-gradient-to-br from-emerald-50/50 to-white border border-emerald-100/50 shadow-sm space-y-4 flex flex-col justify-between hover:shadow-md transition-all">
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">

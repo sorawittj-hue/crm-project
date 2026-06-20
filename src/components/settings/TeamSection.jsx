@@ -88,8 +88,11 @@ export function TeamSection() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
         <div className="flex items-center justify-between mb-8 relative z-10">
           <div>
-            <h2 className="text-xl font-black text-slate-900 tracking-tight relative z-10">ทีมงาน</h2>
-            <p className="text-sm font-medium text-slate-500 mt-1 relative z-10">{teamMembers.length} สมาชิก</p>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight relative z-10 flex items-center gap-2">
+              ทีมงาน
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-violet-100 text-violet-700">{teamMembers.length} คน</span>
+            </h2>
+            <p className="text-sm font-medium text-slate-500 mt-1 relative z-10">จัดการสมาชิกและเป้าหมายรายบุคคล</p>
           </div>
           <Button
             onClick={() => {
@@ -110,7 +113,7 @@ export function TeamSection() {
           {teamMembers.map((m) => (
             <div
               key={m.id}
-              className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100"
+              className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-gradient-to-r hover:from-violet-50/40 hover:to-white hover:border-violet-100 hover:shadow-sm transition-all group"
             >
               {editingMemberId === m.id ? (
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -159,8 +162,10 @@ export function TeamSection() {
                 </div>
               ) : (
                 <>
-                  <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-base shrink-0', m.color || 'bg-violet-600')}>
-                    {m.name.charAt(0)}
+                  <div className={cn('p-0.5 rounded-xl shrink-0', m.color ? m.color.replace('bg-', 'bg-gradient-to-br from-').concat('/80 to-', m.color.replace('bg-', '')) : 'bg-gradient-to-br from-violet-500 to-violet-700')}>
+                    <div className={cn('w-10 h-10 rounded-[10px] flex items-center justify-center text-white font-bold text-base', m.color || 'bg-violet-600')}>
+                      {m.name.charAt(0)}
+                    </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-slate-900">{m.name}</p>
@@ -202,9 +207,12 @@ export function TeamSection() {
           ))}
 
           {teamMembers.length === 0 && (
-            <div className="text-center py-10 text-slate-300">
-              <Users size={32} className="mx-auto mb-2" />
-              <p className="text-sm font-medium">ยังไม่มีสมาชิกในทีม</p>
+            <div className="text-center py-14">
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-100 flex items-center justify-center mx-auto mb-4">
+                <Users size={32} className="text-violet-400" />
+              </div>
+              <p className="text-sm font-bold text-slate-600">ยังไม่มีสมาชิกในทีม</p>
+              <p className="text-xs text-slate-400 mt-1">กดปุ่ม "เพิ่มสมาชิก" เพื่อเริ่มสร้างทีมขาย</p>
             </div>
           )}
         </div>

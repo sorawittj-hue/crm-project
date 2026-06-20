@@ -5,11 +5,12 @@ import { Input } from '../ui/Input';
 import { useToast } from '../ui/Toast';
 import { formatFullCurrency } from '../../lib/formatters';
 import { cn } from '../../lib/utils';
-import { Pencil, Save, Loader2, LogOut } from 'lucide-react';
+import { Pencil, Save, Loader2, LogOut, Target, Download, Trash2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useMyProfile, useUpdateMyPersonalTarget } from '../../hooks/useUserProfiles';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
+import ConfirmDialog from '../ui/ConfirmDialog';
 
 export function AccountSection() {
   const { user, signOut } = useAuth();
@@ -23,6 +24,7 @@ export function AccountSection() {
 
   const [personalTargetForm, setPersonalTargetForm] = useState(null);
   const [savingPersonalTarget, setSavingPersonalTarget] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleSavePersonalTarget = async (e) => {
     e.preventDefault();
@@ -55,19 +57,21 @@ export function AccountSection() {
           </div>
         </div>
         <div className="space-y-4">
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50">
-            <div className="w-12 h-12 rounded-2xl bg-violet-600 flex items-center justify-center text-white text-xl font-black">
-              {user?.email?.charAt(0).toUpperCase() || 'U'}
+          <div className="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-violet-50/80 to-purple-50/50 border border-violet-100/50">
+            <div className="p-0.5 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 shrink-0">
+              <div className="w-12 h-12 rounded-[14px] bg-violet-600 flex items-center justify-center text-white text-xl font-black">
+                {user?.email?.charAt(0).toUpperCase() || 'U'}
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-900">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-slate-900">
                 {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'ผู้ใช้'}
               </p>
-              <p className="text-xs text-slate-400">{user?.email}</p>
-              <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 inline-block',
+              <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+              <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full mt-1.5 inline-flex items-center gap-1',
                 isAdmin ? 'bg-violet-100 text-violet-700' : 'bg-slate-200 text-slate-600'
               )}>
-                {isAdmin ? 'Admin' : 'Member'}
+                {isAdmin ? '⚡ Admin' : 'Member'}
               </span>
             </div>
           </div>
@@ -100,8 +104,13 @@ export function AccountSection() {
         </div>
 
         {personalTargetForm === null ? (
-          <div className="flex items-center justify-between p-4 rounded-2xl bg-violet-50">
-            <p className="text-sm font-medium text-slate-600">เป้าหมายรายเดือน</p>
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-violet-50/60 to-purple-50/30 border border-violet-100/50">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center shrink-0">
+                <Target size={16} />
+              </div>
+              <p className="text-sm font-medium text-slate-600">เป้าหมายรายเดือน</p>
+            </div>
             <p className="text-xl font-black tabular-nums text-violet-600">
               {myProfile?.personal_target > 0 ? formatFullCurrency(myProfile.personal_target) : '—'}
             </p>
@@ -142,31 +151,47 @@ export function AccountSection() {
         </div>
 
         <div className="space-y-3 relative z-10">
-          <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 hover:border-slate-200 transition-colors">
-            <div>
-              <p className="text-sm font-semibold text-slate-700">ส่งออกข้อมูลส่วนตัว (Export Data)</p>
-              <p className="text-xs text-slate-500 mt-0.5">ดาวน์โหลดข้อมูลทั้งหมดของคุณในรูปแบบ CSV</p>
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 hover:border-slate-200 hover:shadow-sm transition-all">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <Download size={16} />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-700">ส่งออกข้อมูลส่วนตัว (Export Data)</p>
+                <p className="text-xs text-slate-500 mt-0.5">ดาวน์โหลดข้อมูลทั้งหมดของคุณในรูปแบบ CSV</p>
+              </div>
             </div>
             <Button variant="outline" size="sm" className="h-8 text-xs font-bold" onClick={() => success('ส่งออกข้อมูลสำเร็จ (ไฟล์จะดาวน์โหลดในไม่ช้า)')}>
               ส่งออก
             </Button>
           </div>
 
-          <div className="flex items-center justify-between p-4 rounded-2xl bg-rose-50/50 border border-rose-100">
-            <div>
-              <p className="text-sm font-semibold text-rose-700">ลบบัญชีและข้อมูลทั้งหมด (Delete Account)</p>
-              <p className="text-xs text-rose-500/80 mt-0.5">การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-rose-50/50 border border-rose-100 hover:border-rose-200 transition-all">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <Trash2 size={16} />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-rose-700">ลบบัญชีและข้อมูลทั้งหมด (Delete Account)</p>
+                <p className="text-xs text-rose-500/80 mt-0.5">การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+              </div>
             </div>
-            <Button variant="ghost" size="sm" className="h-8 text-xs font-bold text-rose-600 hover:bg-rose-500 hover:text-white" onClick={() => {
-              if(window.confirm('คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีและข้อมูลทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้')) {
-                error('ฟีเจอร์ลบบัญชีถูกปิดการใช้งานในโหมดทดสอบ');
-              }
-            }}>
+            <Button variant="ghost" size="sm" className="h-8 text-xs font-bold text-rose-600 hover:bg-rose-500 hover:text-white" onClick={() => setShowDeleteConfirm(true)}>
               ลบบัญชี
             </Button>
           </div>
         </div>
       </Card>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="ลบบัญชีและข้อมูลทั้งหมด"
+        description="การกระทำนี้จะไม่สามารถย้อนกลับได้ บัญชีและข้อมูลทั้งหมดของคุณจะถูกลบอย่างถาวร คุณแน่ใจหรือไม่?"
+        confirmLabel="ใช่, ลบบัญชี"
+        cancelLabel="ยกเลิก"
+        onConfirm={() => error('ฟีเจอร์ลบบัญชีถูกปิดการใช้งานในโหมดทดสอบ')}
+      />
     </div>
   );
 }
