@@ -13,6 +13,7 @@ import { Plus, Sliders, ScanLine, Download, User, Zap, Loader2, ChevronDown, Sea
 // Lazy-load PDFImporter to avoid bundling pdfjs-dist (~5MB) in initial load
 const PDFImporter = lazy(() => import('../components/pipeline/PDFImporter'));
 import { STAGES } from '../lib/constants';
+import { DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
 
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -45,16 +46,8 @@ export default function PipelinePage() {
       const nextStage = updates.stage;
       
       // AUTO-PROBABILITY MAP
-      const probabilityMap = {
-        lead: 10,
-        contact: 30,
-        proposal: 50,
-        negotiation: 80,
-        won: 100,
-        lost: 0
-      };
-      if (probabilityMap[nextStage] !== undefined && updates.probability === undefined) {
-        updates.probability = probabilityMap[nextStage];
+      if (DEFAULT_STAGE_PROBABILITY[nextStage] !== undefined && updates.probability === undefined) {
+        updates.probability = DEFAULT_STAGE_PROBABILITY[nextStage];
       }
 
       // DATA INTEGRITY & LTV SYNC
