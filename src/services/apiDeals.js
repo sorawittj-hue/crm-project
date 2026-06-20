@@ -78,6 +78,18 @@ export async function getDealById(id) {
 }
 
 /**
+ * Known columns for the deals table.
+ * Any extra fields are stripped before the PATCH request.
+ */
+const DEAL_COLUMNS = new Set([
+  'title', 'company', 'customer_id', 'value', 'stage',
+  'probability', 'assigned_to', 'contact', 'contact_email',
+  'contact_phone', 'description', 'source', 'priority',
+  'expected_close_date', 'actual_close_date', 'last_activity',
+  'next_step', 'tags', 'metadata', 'owner_id', 'updated_at'
+]);
+
+/**
  * Update a deal with validation
  */
 export async function updateDeal({ id, ...updates }) {
@@ -103,33 +115,38 @@ export async function updateDeal({ id, ...updates }) {
       updates.actual_close_date = updates.actual_close_date || new Date().toISOString();
     }
 
-    const { data, error } = await supabase
-      .from('deals')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select();
+    // Strip keys that are not real DB columns
+    let payload = Object.fromEntries(
+      Object.entries(updates).filter(([key]) => DEAL_COLUMNS.has(key))
+    );
+    payload.updated_at = new Date().toISOString();
 
-    if (error) throw error;
-    return data?.[0];
-  } catch (error) {
-    if (isMissingColumnError(error)) {
-      const { data, error: legacyError } = await supabase
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const { data, error } = await supabase
         .from('deals')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
+        .update(payload)
         .eq('id', id)
         .select();
 
-      if (!legacyError) return data?.[0];
+      if (!error) return data?.[0];
+
+      if (!isMissingColumnError(error)) {
+        console.error('Error updating deal:', error);
+        throw new Error('Failed to update deal: ' + error.message);
+      }
+
+      const nextPayload = removeMissingColumn(payload, error);
+      if (nextPayload === payload) {
+        console.error('Error updating deal (cannot remove column):', error);
+        throw new Error('Failed to update deal: ' + error.message);
+      }
+      payload = nextPayload;
     }
 
+    return null;
+  } catch (error) {
     console.error('Error updating deal:', error);
-    throw new Error('Failed to update deal: ' + error.message);
+    throw error instanceof Error ? error : new Error('Failed to update deal');
   }
 }
 
