@@ -647,7 +647,7 @@ export default function AppLayout() {
                     </div>
 
                     {/* Notification list */}
-                    <div className="max-h-[560px] overflow-y-auto">
+                    <div className="max-h-[min(560px,calc(100vh-120px))] overflow-y-auto custom-scrollbar-thin">
                       {totalCount === 0 ? (
                         <div className="py-14 text-center space-y-2">
                           <CheckCircle2 size={28} className="text-emerald-400 mx-auto" />

@@ -17,9 +17,10 @@ import { formatCurrency, formatFullCurrency } from '../lib/formatters';
 import { STAGE_LABELS } from '../lib/constants';
 import { buildCustomerHealth } from '../utils/salesIntelligence';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import { downloadCsv } from '../utils/exportUtils';
 import {
   Search, Plus, Users, Building2, Mail, Phone,
-  Star, ChevronRight, Loader2,
+  Star, ChevronRight, Loader2, Download,
   TrendingUp, DollarSign, BarChart3, Trash2, AlertTriangle, HeartPulse,
   Settings, ListTodo, Sparkles, Target
 } from 'lucide-react';
@@ -155,6 +156,16 @@ export default function CustomersPage() {
       openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
     }
+
+    if (!newCustomer.name?.trim() && !newCustomer.company?.trim()) {
+      setFormError('กรุณาระบุชื่อลูกค้า หรือ ชื่อบริษัท อย่างน้อย 1 อย่าง');
+      return;
+    }
+    if (newCustomer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCustomer.email)) {
+      setFormError('รูปแบบอีเมลไม่ถูกต้อง');
+      return;
+    }
+
     if (createCustomerMutation.isPending) return;
     setFormError(null);
     try {
@@ -242,6 +253,22 @@ export default function CustomersPage() {
     return { total, totalWonValue, totalActiveValue, atRiskAccounts };
   }, [filteredCustomers]);
 
+  const exportToCSV = () => {
+    const dataToExport = filteredCustomers.map(c => ({
+      'ชื่อลูกค้า': c.name || '',
+      'บริษัท': c.company || '',
+      'อีเมล': c.email || '',
+      'เบอร์โทร': c.phone || '',
+      'อุตสาหกรรม': c.industry || '',
+      'ระดับ (Tier)': c.tier || '',
+      'เกรด (Grade)': c.grade || '',
+      'สถานะสุขภาพ': HEALTH_CONFIG[c.health?.status]?.label || '',
+      'ยอดซื้อรวม': c.dealStats.wonValue || 0,
+      'ดีลที่กำลังเปิด': c.dealStats.activeCount || 0,
+    }));
+    downloadCsv(dataToExport, `customers_${new Date().toISOString().slice(0, 10)}`);
+  };
+
   const isLoading = customersLoading || dealsLoading;
 
   // Generate gradient avatar color from name
@@ -291,6 +318,13 @@ export default function CustomersPage() {
           <p className="text-sm text-slate-500 mt-1">จัดการข้อมูลลูกค้าครบวงจร พร้อมติดตามมูลค่าดีลและประวัติการขาย</p>
         </div>
         <div className="flex items-center gap-4">
+          <Button
+            onClick={exportToCSV}
+            variant="outline"
+            className="h-10 px-4 rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-semibold flex items-center gap-2"
+          >
+            <Download size={14} /> ส่งออก CSV
+          </Button>
           <Button
             onClick={() => {
               if (shouldBlockBasic) {
@@ -366,6 +400,9 @@ export default function CustomersPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="h-11 pl-11 bg-white border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:ring-violet-500/20 shadow-sm"
           />
+          {searchTerm !== debouncedSearchTerm && (
+            <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 text-violet-500 animate-spin" size={16} />
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">

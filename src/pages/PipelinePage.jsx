@@ -298,6 +298,9 @@ export default function PipelinePage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 h-10 w-full rounded-xl border-slate-200 bg-white shadow-sm text-sm"
             />
+            {searchTerm !== debouncedSearchTerm && (
+              <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-violet-500 animate-spin" size={15} />
+            )}
           </div>
         </div>
 

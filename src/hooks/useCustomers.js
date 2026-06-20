@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { 
   fetchCustomers, 
   getCustomerById, 
@@ -10,10 +11,27 @@ import { useToast } from '../components/ui/Toast';
 import { useAuth } from './useAuth';
 import { useSubscription } from './useSubscription';
 import { getLocalCustomers, addLocalCustomer, updateLocalCustomer, deleteLocalCustomer } from '../lib/localDb';
+import { supabase } from '../utils/supabase';
 
 export function useCustomers() {
   const { user } = useAuth();
   const { isGuestAccount } = useSubscription();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (isGuestAccount || !user?.id) return;
+
+    const channel = supabase
+      .channel('public:customers')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'customers' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['customers'] });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isGuestAccount, user?.id, queryClient]);
 
   return useQuery({
     queryKey: ['customers', user?.id, isGuestAccount],

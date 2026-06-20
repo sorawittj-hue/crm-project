@@ -1,14 +1,32 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { fetchDeals, updateDeal, addDeal, addMultipleDeals, deleteDeals } from '../services/apiDeals';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from './useAuth';
 import { dispatchNotification } from '../services/integrationService';
 import { useSubscription } from './useSubscription';
 import { getLocalDeals, addLocalDeal, updateLocalDeal, deleteLocalDeals } from '../lib/localDb';
+import { supabase } from '../utils/supabase';
 
 export function useDeals() {
   const { user } = useAuth();
   const { isGuestAccount } = useSubscription();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (isGuestAccount || !user?.id) return;
+
+    const channel = supabase
+      .channel('public:deals')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'deals' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['deals'] });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isGuestAccount, user?.id, queryClient]);
 
   return useQuery({
     queryKey: ['deals', user?.id, isGuestAccount],
