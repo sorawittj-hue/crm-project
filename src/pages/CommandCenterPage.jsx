@@ -794,9 +794,9 @@ export default function CommandCenterPage() {
           <div className="space-y-3">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">ยอดสัปดาห์นี้ (Weekly Pulse)</p>
             {[
-              { label: 'ดีลใหม่สัปดาห์นี้', value: stats?.newDealsThisWeek || 0, icon: Flame, iconColor: 'text-violet-600', iconBg: 'bg-violet-50', valueColor: 'text-slate-900', bgClass: 'bg-gradient-to-br from-violet-500/5 to-purple-500/5 border-violet-100 hover:border-violet-200' },
-              { label: 'ปิดได้สัปดาห์นี้', value: stats?.wonThisWeek || 0, icon: Trophy, iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50', valueColor: 'text-emerald-600', bgClass: 'bg-gradient-to-br from-emerald-500/5 to-green-500/5 border-emerald-100 hover:border-emerald-200' },
-              { label: 'มูลค่าปิดสัปดาห์นี้', value: formatCurrency(stats?.wonThisWeekValue), icon: Star, iconColor: 'text-blue-600', iconBg: 'bg-blue-50', valueColor: 'text-blue-600', isText: true, bgClass: 'bg-gradient-to-br from-blue-500/5 to-sky-500/5 border-blue-100 hover:border-blue-200' },
+              { label: 'ดีลใหม่สัปดาห์นี้', value: stats?.newDealsThisWeek || 0, icon: Flame, iconColor: 'text-violet-600', iconBg: 'bg-violet-50', valueColor: 'text-slate-900', bgClass: 'bg-gradient-to-br from-violet-50 to-purple-50 border-violet-100 hover:border-violet-200' },
+              { label: 'ปิดได้สัปดาห์นี้', value: stats?.wonThisWeek || 0, icon: Trophy, iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50', valueColor: 'text-emerald-600', bgClass: 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-100 hover:border-emerald-200' },
+              { label: 'มูลค่าปิดสัปดาห์นี้', value: formatCurrency(stats?.wonThisWeekValue), icon: Star, iconColor: 'text-blue-600', iconBg: 'bg-blue-50', valueColor: 'text-blue-600', isText: true, bgClass: 'bg-gradient-to-br from-blue-50 to-sky-50 border-blue-100 hover:border-blue-200' },
             ].map((item) => (
               <motion.div key={item.label} whileHover={{ y: -1, scale: 1.01 }}>
                 <Card className={cn("p-3.5 rounded-2xl border shadow-xs flex items-center gap-3 transition-all cursor-pointer", item.bgClass || "bg-white border-slate-100")}>
