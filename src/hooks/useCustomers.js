@@ -23,8 +23,27 @@ export function useCustomers() {
 
     const channel = supabase
       .channel('public:customers')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'customers' }, () => {
-        queryClient.invalidateQueries({ queryKey: ['customers'] });
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'customers' }, (payload) => {
+        const { eventType, new: newRecord, old: oldRecord } = payload;
+        queryClient.setQueriesData({ queryKey: ['customers'] }, (old) => {
+          if (!old) return old;
+          const isOwned = (record) => !record.owner_id || record.owner_id === user.id;
+
+          if (eventType === 'INSERT' && isOwned(newRecord)) {
+            if (old.some(c => c.id === newRecord.id)) return old;
+            return [newRecord, ...old];
+          }
+          if (eventType === 'UPDATE') {
+            const existing = old.find(c => c.id === newRecord.id);
+            if (existing && JSON.stringify(existing) === JSON.stringify(newRecord)) return old;
+            if (!isOwned(newRecord)) return old.filter(c => c.id !== newRecord.id);
+            return old.map(c => c.id === newRecord.id ? { ...c, ...newRecord } : c);
+          }
+          if (eventType === 'DELETE') {
+            return old.filter(c => c.id !== oldRecord.id);
+          }
+          return old;
+        });
       })
       .subscribe();
 
@@ -132,8 +151,18 @@ export function useUpdateCustomer() {
 
       return { previousCustomersQueries };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
+    onSuccess: (data, variables) => {
+      if (data) {
+        queryClient.setQueriesData({ queryKey: ['customers'] }, (old) => {
+          if (!old) return [data];
+          return old.map(c => c.id === data.id ? data : c);
+        });
+      } else {
+        queryClient.setQueriesData({ queryKey: ['customers'] }, (old) => {
+          if (!old) return old;
+          return old.map(c => c.id === variables.id ? { ...c, ...variables } : c);
+        });
+      }
       toast.success('อัปเดตลูกค้าสำเร็จ');
     },
     onError: (error, _, context) => {

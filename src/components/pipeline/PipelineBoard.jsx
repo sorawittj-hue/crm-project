@@ -552,7 +552,7 @@ export default function PipelineBoard({
                     {(provided, snapshot) => (
                       <div
                         className={cn(
-                          'flex-shrink-0 flex flex-col w-[290px] h-full rounded-2xl transition-all duration-300 border overflow-hidden',
+                          'flex-shrink-0 flex flex-col w-[290px] h-full rounded-2xl transition-[background-color,border-color,box-shadow,transform] duration-300 border overflow-hidden',
                           snapshot.isDraggingOver
                             ? `ring-2 shadow-lg ${stage.dragOverClass}`
                             : 'bg-white/70 backdrop-blur-sm border-slate-200/80 shadow-sm hover:shadow-md'
@@ -751,104 +751,108 @@ const DealCard = memo(
           ref={ref}
           className="mb-2.5 last:mb-0"
           {...draggableProps}
-          {...dragHandleProps}
         >
           <motion.div
             initial={false}
-            animate={isDragging ? { boxShadow: '0 15px 30px rgba(124, 58, 237, 0.15)' } : { boxShadow: 'none' }}
-            whileHover={{ y: -3, borderColor: isHighValue ? '#fbbf24' : 'rgba(124, 58, 237, 0.4)', boxShadow: '0 8px 16px rgba(0, 0, 0, 0.04)' }}
-            transition={{ type: 'spring', stiffness: 500, damping: 32 }}
+            animate={isDragging ? { boxShadow: '0 20px 40px rgba(124, 58, 237, 0.18)', scale: 1.02, rotate: 1 } : { boxShadow: 'none', scale: 1, rotate: 0 }}
+            whileHover={{ y: -2, boxShadow: '0 8px 20px rgba(0, 0, 0, 0.06)' }}
+            transition={{ type: 'spring', stiffness: 480, damping: 30 }}
             className={cn(
-              'group relative rounded-2xl border cursor-grab active:cursor-grabbing overflow-hidden transition-colors duration-200 bg-white/95 backdrop-blur-sm',
-              isDragging ? 'border-violet-400 ring-2 ring-violet-500/20 z-50 shadow-lg' 
+              'group relative rounded-2xl border overflow-hidden transition-colors duration-200 bg-white/95 backdrop-blur-sm cursor-pointer',
+              isDragging ? 'border-violet-400 ring-2 ring-violet-500/20 z-50 shadow-2xl'
                 : isSelected ? 'border-violet-500 ring-2 ring-violet-500/15 shadow-md'
                 : isPinned ? 'border-blue-200 bg-blue-50/20 shadow-sm'
                 : isHighValue ? 'border-amber-300/80 bg-gradient-to-br from-white via-white to-amber-50/20 shadow-sm'
                 : isStagnant ? 'border-rose-200 bg-rose-50/30 shadow-sm'
-                : 'border-slate-200/70 shadow-sm'
+                : 'border-slate-200/70 shadow-sm hover:border-violet-200/60'
             )}
           >
-            {/* Colored top accent bar */}
-            <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: isHighValue ? '#f59e0b' : stageColor }} />
+            {/* Colored left accent bar */}
+            <div className="absolute top-0 left-0 bottom-0 w-0.5" style={{ backgroundColor: isHighValue ? '#f59e0b' : stageColor }} />
 
-            {/* Main content (clickable) */}
-            <div
-              className="p-4 space-y-3"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelect();
-                onClick(deal);
-              }}
-            >
-              {/* Top row: company + indicators */}
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="relative">
+              {/* === DRAG HANDLE ZONE === */}
+              <div
+                {...dragHandleProps}
+                className="absolute top-0 right-0 w-9 h-full flex items-center justify-center cursor-grab active:cursor-grabbing z-10 bg-slate-50/50 hover:bg-violet-50/80 border-l border-slate-100/70 transition-all text-slate-400 hover:text-violet-600"
+                title="ลากเพื่อย้ายขั้นตอน"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <GripVertical size={14} className="opacity-60 hover:opacity-100 transition-opacity" />
+              </div>
+
+              {/* Main content (clickable) */}
+              <div
+                className="pl-3.5 pr-11 py-3.5 space-y-2.5"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect();
+                  onClick(deal);
+                }}
+              >
+                {/* Top row: avatar + company + badges */}
+                <div className="flex items-start gap-2.5">
                   <div
                     className={cn(
-                      "w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black text-white shrink-0 shadow-sm",
+                      "w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black text-white shrink-0 shadow-sm mt-0.5",
                       isHighValue ? "bg-gradient-to-br from-amber-400 to-yellow-500" : ""
                     )}
                     style={isHighValue ? {} : { backgroundColor: avatarColor }}
                   >
                     {isHighValue ? '👑' : (deal.company || 'D').charAt(0).toUpperCase()}
                   </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className={cn(
-                        "text-xs font-bold truncate leading-tight",
-                        isHighValue ? "text-amber-800" : "text-slate-800"
-                      )}>
-                        {deal.company || 'ไม่ระบุบริษัท'}
-                      </p>
-                      {isHighValue && (
-                        <span className="text-[8px] font-black bg-amber-100 text-amber-700 px-1 py-0.5 rounded uppercase tracking-wider scale-95 origin-left">
-                          VIP
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-400 line-clamp-2 mt-0.5 leading-snug font-medium">
-                      {deal.title || 'ไม่มีชื่อดีล'}
+                  <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <p className={cn(
+                      "text-xs font-bold truncate leading-tight",
+                      isHighValue ? "text-amber-800" : "text-slate-800"
+                    )}>
+                      {deal.company || 'ไม่ระบุบริษัท'}
                     </p>
+                    {isHighValue && (
+                      <span className="text-[8px] font-black bg-amber-100 text-amber-700 px-1 py-0.5 rounded uppercase tracking-wider shrink-0">
+                        VIP
+                      </span>
+                    )}
+                    {isPinned && <Star size={10} className="text-amber-500 fill-current shrink-0" />}
                   </div>
+                  <p className="text-[11px] text-slate-400 truncate mt-0.5 leading-snug font-medium">
+                    {deal.title || 'ไม่มีชื่อดีล'}
+                  </p>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  {isPinned && <Star size={11} className="text-amber-500 fill-current" />}
+              </div>
+
+              {/* Value + probability + aging */}
+              <div className="flex items-center justify-between gap-2">
+                <span className={cn(
+                  "text-sm font-black tabular-nums leading-none tracking-tight",
+                  isHighValue ? "text-amber-700" : "text-slate-900"
+                )}>
+                  {formatCurrency(deal.value)}
+                </span>
+                <div className="flex items-center gap-1.5">
                   {isStagnant && (
+                    <span className="inline-flex items-center gap-0.5 text-[9px] font-black bg-rose-50 text-rose-500 px-1.5 py-0.5 rounded-full border border-rose-100" title="ไม่มีความเคลื่อนไหวเกิน 7 วัน">
+                      <Clock size={8} />{deal.agingDays}ว
+                    </span>
+                  )}
+                  {deal.probability !== undefined && deal.probability !== null && (
                     <span
-                      className="inline-flex items-center gap-0.5 text-[9px] font-black bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded border border-rose-100"
-                      title="ไม่มีความเคลื่อนไหวเกิน 7 วัน"
+                      className="text-[10px] font-bold tabular-nums px-1.5 py-0.5 rounded-full border"
+                      style={{
+                        backgroundColor: deal.probability >= 70 ? '#dcfce7' : deal.probability >= 40 ? '#ede9fe' : '#f1f5f9',
+                        color: deal.probability >= 70 ? '#16a34a' : deal.probability >= 40 ? '#7c3aed' : '#94a3b8',
+                        borderColor: deal.probability >= 70 ? '#bbf7d0' : deal.probability >= 40 ? '#ddd6fe' : '#e2e8f0',
+                      }}
                     >
-                      <Clock size={8} />
-                      {deal.agingDays}ว
+                      {deal.probability}%
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Value + probability */}
-              <div className="flex items-center justify-between gap-2 pt-1">
-                <span className={cn(
-                  "text-sm font-black tabular-nums leading-none tracking-tight",
-                  isHighValue ? "text-amber-700 text-base" : "text-slate-900"
-                )}>
-                  {formatCurrency(deal.value)}
-                </span>
-                {deal.probability !== undefined && deal.probability !== null && (
-                  <span
-                    className="text-[10px] font-bold tabular-nums px-2 py-0.5 rounded-full border"
-                    style={{
-                      backgroundColor: deal.probability >= 70 ? '#dcfce7' : deal.probability >= 40 ? '#ede9fe' : '#f1f5f9',
-                      color: deal.probability >= 70 ? '#16a34a' : deal.probability >= 40 ? '#7c3aed' : '#94a3b8',
-                      borderColor: deal.probability >= 70 ? '#bbf7d0' : deal.probability >= 40 ? '#ddd6fe' : '#e2e8f0',
-                    }}
-                  >
-                    {deal.probability}%
-                  </span>
-                )}
-              </div>
-
-              {/* Progress bar */}
-              <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
+              {/* Probability progress bar */}
+              <div className="h-0.5 bg-slate-100 rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500 ease-out"
                   style={{
@@ -862,55 +866,35 @@ const DealCard = memo(
                 />
               </div>
             </div>
+          </div>
 
-            {/* Action row — smooth hover reveal */}
-            <div className="grid grid-cols-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-all duration-200 max-h-0 group-hover:max-h-12 overflow-hidden bg-slate-50/90 backdrop-blur-xs">
+            {/* Action row — hover reveal */}
+            <div className="grid grid-cols-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-all duration-200 max-h-0 group-hover:max-h-10 overflow-hidden bg-slate-50/90">
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onMove('left');
-                }}
+                onClick={(e) => { e.stopPropagation(); onMove('left'); }}
                 disabled={!canMoveLeft}
-                className={cn(
-                  'h-10 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-bold',
-                  canMoveLeft
-                    ? 'hover:bg-slate-100 hover:text-slate-700'
-                    : 'opacity-10 cursor-not-allowed'
-                )}
+                className={cn('h-9 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-bold', canMoveLeft ? 'hover:bg-slate-100 hover:text-slate-700' : 'opacity-20 cursor-not-allowed')}
                 title="ย้อนขั้นตอน"
               >
-                <ArrowLeft size={13} strokeWidth={2.5} />
+                <ArrowLeft size={12} strokeWidth={2.5} />
+                <span className="text-[9px]">ย้อน</span>
               </button>
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPin();
-                }}
-                className={cn(
-                  'h-10 flex items-center justify-center text-xs gap-1 transition-all border-x border-slate-100 font-bold',
-                  isPinned
-                    ? 'text-amber-500 hover:bg-amber-50/50'
-                    : 'text-slate-400 hover:bg-slate-100 hover:text-amber-500'
-                )}
+                onClick={(e) => { e.stopPropagation(); onPin(); }}
+                className={cn('h-9 flex items-center justify-center text-xs gap-1 transition-all border-x border-slate-100 font-bold', isPinned ? 'text-amber-500 hover:bg-amber-50/50' : 'text-slate-400 hover:bg-slate-100 hover:text-amber-500')}
                 title={isPinned ? 'เลิกปักหมุด' : 'ปักหมุด'}
               >
-                <Star size={13} strokeWidth={2.5} fill={isPinned ? 'currentColor' : 'none'} />
+                <Star size={12} strokeWidth={2.5} fill={isPinned ? 'currentColor' : 'none'} />
+                <span className="text-[9px]">{isPinned ? 'เลิก' : 'หมุด'}</span>
               </button>
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onMove('right');
-                }}
+                onClick={(e) => { e.stopPropagation(); onMove('right'); }}
                 disabled={!canMoveRight}
-                className={cn(
-                  'h-10 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-bold',
-                  canMoveRight
-                    ? 'hover:bg-violet-50 hover:text-violet-600'
-                    : 'opacity-10 cursor-not-allowed'
-                )}
+                className={cn('h-9 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-bold', canMoveRight ? 'hover:bg-violet-50 hover:text-violet-600' : 'opacity-20 cursor-not-allowed')}
                 title="ไปขั้นตอนถัดไป"
               >
-                <ChevronRight size={14} strokeWidth={2.5} />
+                <span className="text-[9px]">ถัดไป</span>
+                <ChevronRight size={12} strokeWidth={2.5} />
               </button>
             </div>
           </motion.div>

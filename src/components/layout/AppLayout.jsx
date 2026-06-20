@@ -27,7 +27,7 @@ import {
 import { useAutoBackup } from '../../hooks/useAutoBackup';
 import { cn, parseYearMonth } from '../../lib/utils';
 import { formatCurrency } from '../../lib/formatters';
-import { pageMotion, reduceMotionProps, springSmooth } from '../../lib/motion';
+import { springSmooth } from '../../lib/motion';
 import CommandPalette from '../ui/CommandPalette';
 import MandateAIOrbs from './MandateAIOrbs';
 import PaywallModal from '../ui/PaywallModal';
@@ -236,7 +236,7 @@ export default function AppLayout() {
   const userId = user?.id;
 
   const { data: myProfile } = useMyProfile(userId);
-  const { shouldBlockBasic, isGuestAccount, isTrialActive, isExpired, trialDaysLeft, isPro, isSuspended } = useSubscription();
+  const { isGuestAccount, isTrialActive, isExpired, trialDaysLeft, isPro, isSuspended } = useSubscription();
   const hasPersonalTarget = myProfile?.personal_target > 0 && !isGuestAccount;
   const effectiveTarget = hasPersonalTarget ? myProfile.personal_target : 0;
 
@@ -329,7 +329,6 @@ export default function AppLayout() {
     return Math.min(100, Math.round((wonThisMonth / effectiveTarget) * 100));
   }, [deals, effectiveTarget]);
 
-  const routeMotionProps = shouldReduceMotion ? reduceMotionProps : pageMotion;
   const mobileSidebarMotion = shouldReduceMotion
     ? { initial: false, animate: 'open', exit: undefined }
     : { initial: 'closed', animate: 'open', exit: 'closed' };
@@ -797,9 +796,12 @@ export default function AppLayout() {
       <PaywallModal />
       <WelcomeModal />
 
-      {/* Floating action widgets — stacked so they never overlap */}
-      <div className="fixed bottom-6 right-6 z-[9990] flex flex-col items-end gap-3 font-sans">
+      {/* Floating action widgets — separated to prevent overlap */}
+      <div className="fixed bottom-6 left-6 lg:left-[312px] z-[9990] font-sans">
         <OnboardingWidget />
+      </div>
+
+      <div className="fixed bottom-6 right-6 z-[9990] font-sans">
         <MandateAIOrbs deals={deals} activities={activities} />
       </div>
     </div>

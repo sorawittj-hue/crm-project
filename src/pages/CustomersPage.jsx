@@ -3,7 +3,7 @@ import { useCustomers, useDeleteCustomer, useCreateCustomer, useUpdateCustomer }
 import { useDeals } from '../hooks/useDeals';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
-import { useAuth } from '../hooks/useAuth';
+
 import { useSubscription } from '../hooks/useSubscription';
 import { useDebounce } from '../hooks/useDebounce';
 import { Card } from '../components/ui/Card';
@@ -22,9 +22,9 @@ import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { downloadCsv } from '../utils/exportUtils';
 import {
   Search, Plus, Users, Building2, Mail, Phone,
-  Star, ChevronRight, Loader2, Download,
+  ChevronRight, Loader2, Download,
   TrendingUp, DollarSign, BarChart3, Trash2, AlertTriangle, HeartPulse,
-  Settings, ListTodo, Sparkles, Target
+  Settings, Sparkles, Target, Filter
 } from 'lucide-react';
 
 
@@ -78,7 +78,7 @@ export default function CustomersPage() {
   const updateCustomerMutation = useUpdateCustomer();
   const navigate = useNavigate();
   const { setPendingNewDealCustomer, openPaywall } = useAppStore();
-  const { user } = useAuth();
+
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
   const { completeTask } = useOnboardingStore();
 
@@ -247,7 +247,7 @@ export default function CustomersPage() {
     }
     if (industryFilter !== 'all') result = result.filter(c => c.industry === industryFilter);
     return result;
-  }, [enrichedCustomers, searchTerm, tierFilter, industryFilter]);
+  }, [enrichedCustomers, debouncedSearchTerm, tierFilter, industryFilter]);
 
   const totalStats = useMemo(() => {
     const total = filteredCustomers.length;
@@ -449,7 +449,7 @@ export default function CustomersPage() {
       {/* CUSTOMER GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         <AnimatePresence mode={filteredCustomers.length > 20 ? "sync" : "popLayout"}>
-          {filteredCustomers.map((customer, i) => {
+          {filteredCustomers.map((customer) => {
             return (
               <motion.div
                 key={customer.id}

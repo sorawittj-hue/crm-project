@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { useEmailTemplates, useAddEmailTemplate, useUpdateEmailTemplate, useDeleteEmailTemplate } from '../hooks/useEmailTemplates';
 import UPSCalculator from '../components/tools/UPSCalculator';
-import { useAuth } from '../hooks/useAuth';
+
 import { useSubscription } from '../hooks/useSubscription';
 import { useAppStore } from '../store/useAppStore';
 import RaidCalculator from '../components/tools/RaidCalculator';
@@ -24,7 +24,7 @@ import { formatCurrency } from '../lib/formatters';
 // ─── Email Templates ───────────────────────────────────────────────────────────
 function EmailTemplates() {
   const { data: templates = [], isLoading } = useEmailTemplates();
-  const { user } = useAuth();
+
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
   const { openPaywall } = useAppStore();
 

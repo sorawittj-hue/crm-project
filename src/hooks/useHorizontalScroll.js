@@ -17,6 +17,7 @@ export function useHorizontalScroll() {
     let isDown = false;
     let startX;
     let scrollLeft;
+    let offsetLeftVal = 0;
 
     // Mouse down - start dragging
     const handleMouseDown = (e) => {
@@ -24,7 +25,8 @@ export function useHorizontalScroll() {
       if (e.target.closest('[data-draggable]')) return;
 
       isDown = true;
-      startX = e.pageX - element.offsetLeft;
+      offsetLeftVal = element.offsetLeft;
+      startX = e.pageX - offsetLeftVal;
       scrollLeft = element.scrollLeft;
       element.style.cursor = 'grabbing';
       element.style.scrollBehavior = 'auto';
@@ -46,7 +48,7 @@ export function useHorizontalScroll() {
     const handleMouseMove = (e) => {
       if (!isDown) return;
       e.preventDefault();
-      const x = e.pageX - element.offsetLeft;
+      const x = e.pageX - offsetLeftVal;
       const walk = (x - startX) * 2; // Scroll speed multiplier
       element.scrollLeft = scrollLeft - walk;
     };
@@ -61,14 +63,16 @@ export function useHorizontalScroll() {
     // Touch events for mobile swipe
     let touchStartX = 0;
     let touchScrollLeft = 0;
+    let touchOffsetLeftVal = 0;
 
     const handleTouchStart = (e) => {
-      touchStartX = e.touches[0].pageX - element.offsetLeft;
+      touchOffsetLeftVal = element.offsetLeft;
+      touchStartX = e.touches[0].pageX - touchOffsetLeftVal;
       touchScrollLeft = element.scrollLeft;
     };
 
     const handleTouchMove = (e) => {
-      const x = e.touches[0].pageX - element.offsetLeft;
+      const x = e.touches[0].pageX - touchOffsetLeftVal;
       const walk = (x - touchStartX) * 1.5;
       element.style.scrollBehavior = 'auto';
       element.scrollLeft = touchScrollLeft - walk;

@@ -25,12 +25,13 @@ export default function MetricTooltip({ label, explanation, formula, position = 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: position === 'top' ? 4 : -4 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.95, x: "-50%", y: position === 'top' ? 4 : -4 }}
+            animate={{ opacity: 1, scale: 1, x: "-50%", y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, x: "-50%", y: position === 'top' ? 4 : -4 }}
+            transition={{ duration: 0.15 }}
             className={`absolute z-[100] w-64 p-3.5 bg-slate-950/95 text-white backdrop-blur-md rounded-2xl shadow-xl text-xs leading-relaxed font-sans pointer-events-none border border-white/10
-              ${position === 'top' ? 'bottom-full left-1/2 -translate-x-1/2 mb-2.5' : ''}
-              ${position === 'bottom' ? 'top-full left-1/2 -translate-x-1/2 mt-2.5' : ''}
+              ${position === 'top' ? 'bottom-full left-1/2 mb-2.5' : ''}
+              ${position === 'bottom' ? 'top-full left-1/2 mt-2.5' : ''}
             `}
           >
             <p className="font-bold text-violet-300 mb-1">{label}</p>

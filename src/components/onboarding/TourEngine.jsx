@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useOnboardingStore } from '../../store/useOnboardingStore';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft, X, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -46,23 +46,14 @@ export default function TourEngine() {
   useEffect(() => {
     if (!isTourActive || !activeStep) return;
 
-    // Route to correct page first if not matching
-    if (window.location.pathname !== activeStep.path) {
-      navigate(activeStep.path);
-      // Wait for navigation and rendering
-      const timer = setTimeout(() => {
-        updateCoordinates(0);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
+    let timer;
+    let active = true;
 
-    updateCoordinates(0);
-
-    function updateCoordinates(attempt = 0) {
+    const updateCoordinates = (attempt = 0) => {
+      if (!active) return;
       const el = document.querySelector(activeStep.target);
       if (el) {
         const rect = el.getBoundingClientRect();
-        // Add padding around the spotlight
         setCoords({
           top: rect.top - 8,
           left: rect.left - 8,
@@ -73,16 +64,26 @@ export default function TourEngine() {
         });
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } else if (attempt < 10) {
-        // Try again in case elements are mounting dynamically
-        setTimeout(() => updateCoordinates(attempt + 1), 100);
+        timer = setTimeout(() => updateCoordinates(attempt + 1), 100);
       } else {
         setCoords(null);
       }
+    };
+
+    if (window.location.pathname !== activeStep.path) {
+      navigate(activeStep.path);
+      timer = setTimeout(() => updateCoordinates(0), 300);
+    } else {
+      updateCoordinates(0);
     }
 
-    window.addEventListener('resize', () => updateCoordinates(0));
+    const handleResize = () => updateCoordinates(0);
+    window.addEventListener('resize', handleResize);
+
     return () => {
-      window.removeEventListener('resize', () => updateCoordinates(0));
+      active = false; // Prevents pending timeouts from executing
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
     };
   }, [isTourActive, currentStep, navigate, activeStep]);
 
@@ -113,13 +114,16 @@ export default function TourEngine() {
 
       {/* Popover Step Description Box */}
       <motion.div
+        key={currentStep}
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="absolute bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 max-w-sm pointer-events-auto z-[10000] flex flex-col gap-4"
+        className="fixed sm:absolute bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 w-[calc(100vw-32px)] sm:w-96 pointer-events-auto z-[10000] flex flex-col gap-4"
         style={{
           top: coords.bottom + 12 > window.innerHeight - 250 ? undefined : coords.bottom + 12,
           bottom: coords.bottom + 12 > window.innerHeight - 250 ? window.innerHeight - coords.top + 12 : undefined,
-          left: Math.min(window.innerWidth - 400, Math.max(16, coords.left)),
+          left: window.innerWidth < 450
+            ? 16
+            : Math.min(window.innerWidth - 400, Math.max(16, coords.left)),
         }}
       >
         <div className="flex justify-between items-start">

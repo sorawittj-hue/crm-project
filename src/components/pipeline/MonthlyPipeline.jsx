@@ -97,6 +97,7 @@ export default function MonthlyPipeline({
   // Active deal count is total in-flight deals (regardless of creation month).
   const { monthlyTotal, monthlyCount, lastMonthTotal, atRiskValue, atRiskCount } = useMemo(() => {
     const allDeals = deals || [];
+    // eslint-disable-next-line react-hooks/purity
     const nowMs = Date.now();
 
     const isInMonth = (raw, m, y) => {

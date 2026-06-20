@@ -13,7 +13,6 @@ import { Plus, Sliders, ScanLine, Download, User, Zap, Loader2, ChevronDown, Sea
 
 // Lazy-load PDFImporter to avoid bundling pdfjs-dist (~5MB) in initial load
 const PDFImporter = lazy(() => import('../components/pipeline/PDFImporter'));
-import { STAGES } from '../lib/constants';
 import { DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
 
 import { Button } from '../components/ui/Button';
@@ -21,7 +20,7 @@ import { Input } from '../components/ui/Input';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
 
-import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../components/ui/Dialog';
+import { Dialog, DialogContent } from '../components/ui/Dialog';
 
 export default function PipelinePage() {
   const { data: deals, isLoading, error } = useDeals();
@@ -243,10 +242,12 @@ export default function PipelinePage() {
     setQuickError(null);
     try {
       // Auto-match customer if existing
-      const matched = customers.find(c =>
-        (c.company || '').toLowerCase() === quickDeal.company.toLowerCase() ||
-        (c.name || '').toLowerCase() === quickDeal.company.toLowerCase()
-      );
+      const matched = quickDeal.company.trim()
+        ? customers.find(c =>
+            (c.company || '').toLowerCase() === quickDeal.company.trim().toLowerCase() ||
+            (c.name || '').toLowerCase() === quickDeal.company.trim().toLowerCase()
+          )
+        : null;
 
       await addDealMutation.mutateAsync({
         title: quickDeal.title || quickDeal.company,
@@ -735,7 +736,7 @@ export default function PipelinePage() {
                                 setNewDeal({
                                   ...newDeal,
                                   company,
-                                  customer_id: matched ? matched.id : newDeal.customer_id,
+                                  customer_id: matched ? matched.id : "",
                                 });
                               }}
                               className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"

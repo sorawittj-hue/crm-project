@@ -5,7 +5,9 @@ import { CheckCircle2, Circle, Trophy, ChevronDown, Sparkles, Play, RotateCcw } 
 
 export default function OnboardingWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const { completedTasks, startTour, isDemoMode, toggleDemoMode, resetOnboarding } = useOnboardingStore();
+  const { completedTasks, startTour, isDemoMode, toggleDemoMode, resetOnboarding, isTourActive } = useOnboardingStore();
+
+  if (isTourActive) return null;
 
   const tasks = [
     { key: 'setTarget', label: 'กำหนดเป้าหมายการขายประจำเดือน', desc: 'ตั้งค่า target เพื่อใช้ forecast ยอดปิด' },
