@@ -7,6 +7,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useSubscription } from '../hooks/useSubscription';
 import { useDebounce } from '../hooks/useDebounce';
 import { Card } from '../components/ui/Card';
+import { useOnboardingStore } from '../store/useOnboardingStore';
+import MetricTooltip from '../components/ui/MetricTooltip';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../components/ui/Dialog';
@@ -78,6 +80,7 @@ export default function CustomersPage() {
   const { setPendingNewDealCustomer, openPaywall } = useAppStore();
   const { user } = useAuth();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
+  const { completeTask } = useOnboardingStore();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState('all');
@@ -170,6 +173,7 @@ export default function CustomersPage() {
     setFormError(null);
     try {
       await createCustomerMutation.mutateAsync(newCustomer);
+      completeTask('addCustomer');
       setIsAddModalOpen(false);
       setNewCustomer(EMPTY_FORM);
     } catch (err) {
@@ -520,7 +524,12 @@ export default function CustomersPage() {
                     {/* Health bar */}
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-medium text-slate-400">Health Score</span>
+                        <span className="text-xs font-medium text-slate-400">
+                          <MetricTooltip 
+                            label="Health Score" 
+                            explanation="ค่าคะแนนสุขภาพประเมินผลจากความถี่ในการติดต่อ และจำนวนวันนับตั้งแต่กิจกรรมล่าสุด ยิ่งกิจกรรมขาดช่วงนาน คะแนนจะยิ่งลดลง"
+                          />
+                        </span>
                         <span className={cn(
                           'text-xs font-bold tabular-nums px-2 py-0.5 rounded-full',
                           customer.health?.status === 'at_risk' ? 'bg-rose-50 text-rose-600'
@@ -565,7 +574,12 @@ export default function CustomersPage() {
                     <div className="flex items-center justify-between pt-1">
                       {(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0)) > 0 ? (
                         <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-1.5 flex-1 mr-2">
-                          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">CLV</span>
+                          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                            <MetricTooltip 
+                              label="CLV" 
+                              explanation="Customer Lifetime Value: มูลค่าดีลรวมสะสมทั้งหมดของลูกค้ารายนี้ที่อยู่ในระบบ"
+                            />
+                          </span>
                           <span className="text-xs font-black text-slate-700 tabular-nums">
                             {formatCurrency(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0))}
                           </span>
@@ -859,7 +873,12 @@ export default function CustomersPage() {
                                 <HeartPulse size={16} />
                               </div>
                               <div>
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Account Health Score</h3>
+                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                  <MetricTooltip 
+                                    label="Account Health Score" 
+                                    explanation="ค่าคะแนนสุขภาพประเมินผลจากความถี่ในการติดต่อ และจำนวนวันนับตั้งแต่กิจกรรมล่าสุด ยิ่งกิจกรรมขาดช่วงนาน คะแนนจะยิ่งลดลง"
+                                  />
+                                </h3>
                                 <p className="text-sm font-bold text-slate-800">
                                   {HEALTH_CONFIG[selectedCustomer.health?.status]?.label || 'Healthy'}
                                 </p>

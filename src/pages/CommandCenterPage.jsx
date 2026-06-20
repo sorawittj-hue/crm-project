@@ -19,6 +19,7 @@ import { STAGE_COLORS, STAGE_LABELS } from '../lib/constants';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
 import QuickWinModal from '../components/pipeline/QuickWinModal';
+import MetricTooltip from '../components/ui/MetricTooltip';
 import {
   TrendingUp,
   Users, AlertCircle,
@@ -431,7 +432,7 @@ export default function CommandCenterPage() {
       {/* GOAL CARD + KPI RIBBON */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
         {/* Goal Card with SVG Radial Gauge */}
-        <Card className="p-7 rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white border border-slate-800 shadow-2xl lg:col-span-2 relative overflow-hidden group/goal hover:shadow-violet-950/20 hover:border-violet-900/40 duration-500">
+        <Card id="goal-card" className="p-7 rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white border border-slate-800 shadow-2xl lg:col-span-2 relative overflow-hidden group/goal hover:shadow-violet-950/20 hover:border-violet-900/40 duration-500">
           <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-violet-600/10 rounded-full blur-3xl pointer-events-none group-hover/goal:bg-violet-600/15 group-hover/goal:scale-110 transition-all duration-700" />
           <div className="absolute -left-12 -top-12 w-40 h-40 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none group-hover/goal:bg-indigo-600/15 group-hover/goal:scale-110 transition-all duration-700" />
           <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none text-white group-hover/goal:rotate-6 group-hover/goal:scale-110 transition-transform duration-700">
@@ -513,90 +514,105 @@ export default function CommandCenterPage() {
         </Card>
 
         {/* KPI Cards */}
-        {[
-          { title: 'Active Pipeline', value: stats?.totalPipelineValue, formatter: v => formatCurrency(v), sub: `${stats?.activeCount || 0} active deals`, icon: Briefcase, color: 'violet', sparkline: stats?.revenueStream?.map(m => m.forecast) },
-          { title: 'Win Rate', value: stats?.winRate, formatter: v => `${Math.round(v)}%`, sub: 'All closed deals', icon: ShieldCheck, color: 'emerald', sparkline: [35, 38, 42, 40, 45, stats?.winRate || 40] },
-          { title: 'Avg Velocity', value: stats?.avgDaysToClose, formatter: v => `${Math.round(v)} Days`, sub: 'Time to close', icon: Zap, color: 'amber', sparkline: [24, 22, 25, 20, 21, stats?.avgDaysToClose || 20] },
-        ].map((kpi, i) => (
-          <motion.div key={kpi.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1, duration: 0.5 }} className="group">
-            <Card className={cn(
-              "p-5 h-full rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden",
-              kpi.color === 'violet' && 'hover:border-violet-200 hover:shadow-violet-500/5',
-              kpi.color === 'emerald' && 'hover:border-emerald-200 hover:shadow-emerald-500/5',
-              kpi.color === 'amber' && 'hover:border-amber-200 hover:shadow-amber-500/5'
-            )}>
-              <div className="absolute -right-6 -bottom-6 w-20 h-20 opacity-5 rounded-full pointer-events-none transition-transform duration-500 group-hover:scale-125"
-                style={{ backgroundColor: kpi.color === 'violet' ? '#8b5cf6' : kpi.color === 'emerald' ? '#10b981' : '#f59e0b' }} />
-              <div className="relative z-10 flex flex-col justify-between h-full">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105",
-                    kpi.color === 'violet' ? 'text-violet-600 bg-violet-50' :
-                    kpi.color === 'emerald' ? 'text-emerald-600 bg-emerald-50' : 'text-amber-600 bg-amber-50')}>
-                    <kpi.icon size={18} strokeWidth={2.5} />
-                  </div>
-                  {/* Mini sparkline */}
-                  {kpi.sparkline && kpi.sparkline.length > 1 && (
-                    <div className="w-16 h-8 shrink-0">
-                      <svg className="w-full h-full overflow-visible" viewBox="0 0 60 20">
-                        <defs>
-                          <linearGradient id={`kpiGlow-${i}`} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor={kpi.color === 'violet' ? '#8b5cf6' : kpi.color === 'emerald' ? '#10b981' : '#f59e0b'} stopOpacity={0.15} />
-                            <stop offset="100%" stopColor={kpi.color === 'violet' ? '#8b5cf6' : kpi.color === 'emerald' ? '#10b981' : '#f59e0b'} stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        {/* Glow Fill */}
-                        <motion.path
-                          d={(() => {
-                            const data = kpi.sparkline;
-                            const min = Math.min(...data);
-                            const max = Math.max(...data);
-                            const range = max - min || 1;
-                            const points = data.map((val, idx) => {
-                              const x = (idx / (data.length - 1)) * 60;
-                              const y = 20 - ((val - min) / range) * 16 - 2;
-                              return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
-                            }).join(' ');
-                            return `${points} L 60 20 L 0 20 Z`;
-                          })()}
-                          fill={`url(#kpiGlow-${i})`}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ duration: 1, delay: 0.5 + i * 0.1 }}
-                        />
-                        {/* Outline stroke */}
-                        <motion.path
-                          d={(() => {
-                            const data = kpi.sparkline;
-                            const min = Math.min(...data);
-                            const max = Math.max(...data);
-                            const range = max - min || 1;
-                            return data.map((val, idx) => {
-                              const x = (idx / (data.length - 1)) * 60;
-                              const y = 20 - ((val - min) / range) * 16 - 2;
-                              return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
-                            }).join(' ');
-                          })()}
-                          fill="none"
-                          stroke={kpi.color === 'violet' ? '#8b5cf6' : kpi.color === 'emerald' ? '#10b981' : '#f59e0b'}
-                          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-                          transition={{ duration: 1.2, ease: "easeInOut", delay: 0.3 + i * 0.1 }}
-                        />
-                      </svg>
+        <div id="kpi-ribbon" className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-5">
+          {[
+            { title: 'Active Pipeline', value: stats?.totalPipelineValue, formatter: v => formatCurrency(v), sub: `${stats?.activeCount || 0} active deals`, icon: Briefcase, color: 'violet', sparkline: stats?.revenueStream?.map(m => m.forecast) },
+            { title: 'Win Rate', value: stats?.winRate, formatter: v => `${Math.round(v)}%`, sub: 'All closed deals', icon: ShieldCheck, color: 'emerald', sparkline: [35, 38, 42, 40, 45, stats?.winRate || 40] },
+            { title: 'Avg Velocity', value: stats?.avgDaysToClose, formatter: v => `${Math.round(v)} Days`, sub: 'Time to close', icon: Zap, color: 'amber', sparkline: [24, 22, 25, 20, 21, stats?.avgDaysToClose || 20] },
+          ].map((kpi, i) => (
+            <motion.div key={kpi.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1, duration: 0.5 }} className="group">
+              <Card className={cn(
+                "p-5 h-full rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden",
+                kpi.color === 'violet' && 'hover:border-violet-200 hover:shadow-violet-500/5',
+                kpi.color === 'emerald' && 'hover:border-emerald-200 hover:shadow-emerald-500/5',
+                kpi.color === 'amber' && 'hover:border-amber-200 hover:shadow-amber-500/5'
+              )}>
+                <div className="absolute -right-6 -bottom-6 w-20 h-20 opacity-5 rounded-full pointer-events-none transition-transform duration-500 group-hover:scale-125"
+                  style={{ backgroundColor: kpi.color === 'violet' ? '#8b5cf6' : kpi.color === 'emerald' ? '#10b981' : '#f59e0b' }} />
+                <div className="relative z-10 flex flex-col justify-between h-full">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105",
+                      kpi.color === 'violet' ? 'text-violet-600 bg-violet-50' :
+                      kpi.color === 'emerald' ? 'text-emerald-600 bg-emerald-50' : 'text-amber-600 bg-amber-50')}>
+                      <kpi.icon size={18} strokeWidth={2.5} />
                     </div>
-                  )}
+                    {/* Mini sparkline */}
+                    {kpi.sparkline && kpi.sparkline.length > 1 && (
+                      <div className="w-16 h-8 shrink-0">
+                        <svg className="w-full h-full overflow-visible" viewBox="0 0 60 20">
+                          <defs>
+                            <linearGradient id={`kpiGlow-${i}`} x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor={kpi.color === 'violet' ? '#8b5cf6' : kpi.color === 'emerald' ? '#10b981' : '#f59e0b'} stopOpacity={0.15} />
+                              <stop offset="100%" stopColor={kpi.color === 'violet' ? '#8b5cf6' : kpi.color === 'emerald' ? '#10b981' : '#f59e0b'} stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          {/* Glow Fill */}
+                          <motion.path
+                            d={(() => {
+                              const data = kpi.sparkline;
+                              const min = Math.min(...data);
+                              const max = Math.max(...data);
+                              const range = max - min || 1;
+                              const points = data.map((val, idx) => {
+                                const x = (idx / (data.length - 1)) * 60;
+                                const y = 20 - ((val - min) / range) * 16 - 2;
+                                return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
+                              }).join(' ');
+                              return `${points} L 60 20 L 0 20 Z`;
+                            })()}
+                            fill={`url(#kpiGlow-${i})`}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 1, delay: 0.5 + i * 0.1 }}
+                          />
+                          {/* Outline stroke */}
+                          <motion.path
+                            d={(() => {
+                              const data = kpi.sparkline;
+                              const min = Math.min(...data);
+                              const max = Math.max(...data);
+                              const range = max - min || 1;
+                              return data.map((val, idx) => {
+                                const x = (idx / (data.length - 1)) * 60;
+                                const y = 20 - ((val - min) / range) * 16 - 2;
+                                return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
+                              }).join(' ');
+                            })()}
+                            fill="none"
+                            stroke={kpi.color === 'violet' ? '#8b5cf6' : kpi.color === 'emerald' ? '#10b981' : '#f59e0b'}
+                            strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                            initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+                            transition={{ duration: 1.2, ease: "easeInOut", delay: 0.3 + i * 0.1 }}
+                          />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      <MetricTooltip 
+                        label={kpi.title} 
+                        explanation={
+                          kpi.title === 'Active Pipeline' ? 'ผลรวมมูลค่าทั้งหมดของทุกดีลการขายที่ยังไม่เข้าสู่ขั้นตอนปิดได้หรือเสีย' :
+                          kpi.title === 'Win Rate' ? 'สัดส่วนจำนวนดีลที่ปิดสำเร็จเทียบกับจำนวนดีลที่เข้าสู่ขั้นตอนปิดทั้งหมด' :
+                          kpi.title === 'Avg Velocity' ? 'จำนวนวันเฉลี่ยที่ใช้ในการดูแลดีลตั้งแต่เริ่มสร้างจนปิดสัญญาสำเร็จ' : ''
+                        }
+                        formula={
+                          kpi.title === 'Win Rate' ? 'ดีลสำเร็จ (Won) / (ดีลสำเร็จ + ดีลแพ้ (Lost)) * 100' :
+                          kpi.title === 'Avg Velocity' ? 'Σ(วันปิดงาน - วันสร้างงาน) / จำนวนดีลสำเร็จ' : ''
+                        }
+                      />
+                    </div>
+                    <p className="text-2xl font-black text-slate-900 tabular-nums leading-none tracking-tight mt-1">
+                      <AnimatedNumber value={kpi.value || 0} formatter={kpi.formatter} />
+                    </p>
+                    <p className="text-xs text-slate-500 font-semibold mt-1.5">{kpi.sub}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{kpi.title}</p>
-                  <p className="text-2xl font-black text-slate-900 tabular-nums leading-none tracking-tight mt-1">
-                    <AnimatedNumber value={kpi.value || 0} formatter={kpi.formatter} />
-                  </p>
-                  <p className="text-xs text-slate-500 font-semibold mt-1.5">{kpi.sub}</p>
-                </div>
-              </div>
-            </Card>
-          </motion.div>
-        ))}
+              </Card>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
       {/* WEEKLY PULSE */}
@@ -854,7 +870,7 @@ export default function CommandCenterPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {/* Today's Action Plan */}
-        <div className="space-y-4">
+        <div id="ai-insights-card" className="space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center">
               <Target size={18} className="text-violet-600" strokeWidth={2.5} />

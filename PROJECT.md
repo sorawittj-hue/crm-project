@@ -1,22 +1,22 @@
-# Project Overview
+# Project: CRM Onboarding & Drag-and-Drop Performance
 
-## Scope
-Redesign and overhaul the Pipeline page in a React CRM application to drastically improve mouse interactions and UI/UX to a premium level.
-
-## Requirements
-1. Implement drag-and-drop using `@hello-pangea/dnd`.
-2. Deals should open in a Side Drawer component (slide from right) to show and edit details without losing context.
-3. UI/UX: Premium design, modern aesthetics (glassmorphism, vibrant HSL, framer-motion animations).
+## Architecture
+- **Onboarding UX**: Global layout component (`src/components/layout/AppLayout.jsx`) wraps the pages, allowing an onboarding tour context to trigger tooltips or interactive guide cards across the CommandCenter, Customers, Pipeline, and Analytics pages.
+- **Pipeline Kanban & Drag-and-Drop**: `src/pages/PipelinePage.jsx` and its sub-components manage deal stages. The drag-and-drop mechanism is implemented using `@hello-pangea/dnd`. State updates must be optimized to prevent full-page re-render cascades and to throttle/pause database refetching during active drag operations.
 
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| 1 | Setup & Install | Install `@hello-pangea/dnd`. | none | DONE |
-| 2 | Side Drawer | Update `MonthlyPipeline.jsx` and `DealDetailSidebar.jsx` to use a Framer Motion side drawer instead of a Dialog modal. | none | DONE |
-| 3 | Board Overhaul | Rewrite `PipelineBoard.jsx` to use `@hello-pangea/dnd`. Apply premium UI/UX styles. | M1, M2 | DONE |
-| 4 | Verification | Ensure E2E programmatic structure and visual interactions work properly. | M3 | DONE |
+| 1 | Exploration | Analyze DND lag triggers and onboarding design options. | none | DONE |
+| 2 | Onboarding UX | Design and implement the beginner-friendly onboarding flow and dashboard metric explanations. | M1 | DONE |
+| 3 | DND Performance | Fix drag-and-drop lag and freeze by optimizing state and sync mechanisms on the Pipeline page. | M1 | DONE |
+| 4 | Verification | Execute review, stress testing, and forensic audit to ensure all acceptance criteria are met. | M2, M3 | PLANNED |
 
 ## Code Layout
-- `src/components/pipeline/PipelineBoard.jsx` (Kanban and Cards)
-- `src/components/pipeline/MonthlyPipeline.jsx` (Parent wrapper with Dialog)
-- `src/components/pipeline/DealDetailSidebar.jsx` (The actual detail content)
+- `src/components/layout/AppLayout.jsx` — Layout wrapper.
+- `src/pages/CommandCenterPage.jsx` — CommandCenter dashboard metrics page.
+- `src/pages/PipelinePage.jsx` — Pipeline Kanban page.
+- `src/pages/CustomersPage.jsx` — Customers list page.
+- `src/pages/AnalyticsPage.jsx` — Analytics dashboard page.
+- `src/components/pipeline/PipelineBoard.jsx` — Board implementation.
+- `src/components/pipeline/MonthlyPipeline.jsx` — Pipeline parent wrapper.

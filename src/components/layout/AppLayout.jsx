@@ -33,6 +33,8 @@ import MandateAIOrbs from './MandateAIOrbs';
 import PaywallModal from '../ui/PaywallModal';
 import WelcomeModal from '../ui/WelcomeModal';
 import GlobalAddDealModal from '../pipeline/GlobalAddDealModal';
+import TourEngine from '../onboarding/TourEngine';
+import OnboardingWidget from '../onboarding/OnboardingWidget';
 
 const sidebarVariants = {
   open: { x: 0, opacity: 1, transition: springSmooth },
@@ -441,7 +443,7 @@ export default function AppLayout() {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 py-4 space-y-0.5 overflow-y-auto overflow-x-hidden no-scrollbar">
+            <nav id="sidebar-nav" className="flex-1 py-4 space-y-0.5 overflow-y-auto overflow-x-hidden no-scrollbar">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.to;
                 return (
@@ -793,6 +795,10 @@ export default function AppLayout() {
       {/* Paywall Modal */}
       <PaywallModal />
       <WelcomeModal />
+
+      {/* Onboarding walkthrough overlays */}
+      <TourEngine />
+      <OnboardingWidget />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, lazy, Suspense, useCallback } from 'react';
 import { useDeals, useUpdateDeal, useAddDeal, useAddMultipleDeals, useDeleteDeals } from '../hooks/useDeals';
 import { useCustomers, useUpdateCustomer } from '../hooks/useCustomers';
 import { useTeam } from '../hooks/useTeam';
@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useSubscription } from '../hooks/useSubscription';
 import { useDebounce } from '../hooks/useDebounce';
 import { useAppStore } from '../store/useAppStore';
+import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useAddActivity } from '../hooks/useActivities';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
 import { Plus, Sliders, ScanLine, Download, User, Zap, Loader2, ChevronDown, Search, Briefcase, Calendar, Building2, Sparkles, UserCheck, Smile, DollarSign, Check, Phone, Mail, ArrowRight, ArrowLeft, TrendingUp } from 'lucide-react';
@@ -35,8 +36,9 @@ export default function PipelinePage() {
   const { pendingOpenDeal, clearPendingOpenDeal, pendingNewDealCustomer, clearPendingNewDealCustomer, openPaywall } = useAppStore();
   const { user } = useAuth();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
+  const { completeTask } = useOnboardingStore();
 
-  const handleUpdateDeal = (id, updates) => {
+  const handleUpdateDeal = useCallback((id, updates) => {
     if (shouldBlockBasic) {
       openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
@@ -104,7 +106,7 @@ export default function PipelinePage() {
     }
 
     updateDealMutation.mutate({ id, ...updates });
-  };
+  }, [shouldBlockBasic, openPaywall, isGuestAccount, deals, customers, updateCustomerMutation, addActivityMutation, updateDealMutation]);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [formTab, setFormTab] = useState('details'); // details, contact
@@ -223,6 +225,7 @@ export default function PipelinePage() {
         actual_close_date: isClosed ? (newDeal.expected_close_date ? new Date(newDeal.expected_close_date + 'T12:00:00').toISOString() : new Date().toISOString()) : null,
         assigned_to: newDeal.assigned_to || null,
       });
+      completeTask('addDeal');
       setIsAddModalOpen(false);
       setNewDeal({ title: '', company: '', value: '', stage: 'lead', customer_id: '', contact: '', contact_email: '', contact_phone: '', probability: '50', expected_close_date: '', assigned_to: '' });
     } catch (err) {
@@ -254,6 +257,7 @@ export default function PipelinePage() {
         probability: 50,
         expected_close_date: quickDeal.expected_close_date || null,
       });
+      completeTask('addDeal');
       setQuickDeal({ company: '', title: '', value: '', expected_close_date: '' });
       setIsQuickAddOpen(false);
     } catch (err) {
@@ -469,27 +473,36 @@ export default function PipelinePage() {
 
 
 
-      <MonthlyPipeline
-        deals={filteredDeals}
-        onAddDeal={(data) => {
-          if (shouldBlockBasic) {
-            openPaywall(isGuestAccount ? 'default' : 'trial_ended');
-            return;
-          }
-          if (data) addDealMutation.mutate(data);
-          else setIsAddModalOpen(true);
-        }}
-        onUpdateDeal={handleUpdateDeal}
-        onDeleteDeal={(id) => {
-          if (shouldBlockBasic) {
-            openPaywall(isGuestAccount ? 'default' : 'trial_ended');
-            return;
-          }
-          deleteDealsMutation.mutate([id]);
-        }}
-        pendingOpenDeal={pendingOpenDeal}
-        onPendingOpenDealHandled={clearPendingOpenDeal}
-      />
+      <div id="pipeline-board">
+        <MonthlyPipeline
+          deals={filteredDeals}
+          onAddDeal={async (data) => {
+            if (shouldBlockBasic) {
+              openPaywall(isGuestAccount ? 'default' : 'trial_ended');
+              return;
+            }
+            if (data) {
+              try {
+                await addDealMutation.mutateAsync(data);
+                completeTask('addDeal');
+              } catch (err) {
+                console.error(err);
+              }
+            }
+            else setIsAddModalOpen(true);
+          }}
+          onUpdateDeal={handleUpdateDeal}
+          onDeleteDeal={(id) => {
+            if (shouldBlockBasic) {
+              openPaywall(isGuestAccount ? 'default' : 'trial_ended');
+              return;
+            }
+            deleteDealsMutation.mutate([id]);
+          }}
+          pendingOpenDeal={pendingOpenDeal}
+          onPendingOpenDealHandled={clearPendingOpenDeal}
+        />
+      </div>
 
       {/* ADD ASSET MODAL */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>

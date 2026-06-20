@@ -1,5 +1,5 @@
-import { useState, useMemo, forwardRef, useRef, useEffect, memo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useMemo, forwardRef, useRef, memo, useCallback, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
   Search, Filter, Star, TrendingUp, AlertTriangle,
@@ -7,12 +7,12 @@ import {
   ArrowLeft,
   Clock, GripVertical, ChevronRight,
   LayoutGrid, List, ThumbsUp, ThumbsDown,
-  Eye, Plus, ChevronDown, Briefcase
+  Eye, Plus, Briefcase
 } from 'lucide-react';
 import { cn, parseYearMonth } from '../../lib/utils';
 import { formatFullCurrency as formatCurrency } from '../../lib/formatters';
 import { useHorizontalScroll, usePipelineKeyboard } from '../../hooks/useHorizontalScroll';
-import { calculateRiskScore } from '../../services/aiDeals';
+
 import { STAGE_IDS } from '../../lib/constants';
 import WinLossModal from './WinLossModal';
 import { useAuth } from '../../hooks/useAuth';
@@ -126,11 +126,14 @@ export default function PipelineBoard({
 
   // Win/Loss Reason State
   const [reasonModal, setReasonModal] = useState({ open: false, dealId: null, targetStage: null });
-  const [localDeals, setLocalDeals] = useState([]);
+  const [localDeals, setLocalDeals] = useState(deals);
+  const isDraggingRef = useRef(false);
 
-  // Sync localDeals with parent deals
+  // Sync external deals into local state — but never interrupt an ongoing drag
   useEffect(() => {
-    setLocalDeals(deals);
+    if (!isDraggingRef.current) {
+      setLocalDeals(deals);
+    }
   }, [deals]);
 
   const scrollRef = useHorizontalScroll();
@@ -147,9 +150,7 @@ export default function PipelineBoard({
 
     const targetMonth = selectedMonth !== undefined ? selectedMonth : new Date().getMonth();
     const targetYear = selectedYear !== undefined ? selectedYear : new Date().getFullYear();
-    const today = new Date(nowMs);
-    const curMonth = today.getMonth();
-    const curYear = today.getFullYear();
+
 
     let result = localDeals.map((deal) => {
       const createdRaw = deal.createdAt || deal.created_at;
@@ -157,7 +158,6 @@ export default function PipelineBoard({
       const agingDays = Math.floor((nowMs - createdMs) / 86_400_000);
       return {
         ...deal,
-        risk: calculateRiskScore(deal, [], nowMs),
         agingDays,
       };
     });
@@ -201,7 +201,28 @@ export default function PipelineBoard({
     }, {});
   }, [processedDeals]);
 
-  const handleDragEnd = (result) => {
+  const initiateMove = useCallback((dealId, targetStage) => {
+    setLocalDeals(prev => prev.map(d => 
+      d.id === dealId ? { ...d, stage: targetStage, last_activity: new Date().toISOString() } : d
+    ));
+
+    if (targetStage === 'won' || targetStage === 'lost') {
+      setReasonModal({ open: true, dealId, targetStage });
+    } else {
+      onUpdateDeal(dealId, {
+        stage: targetStage,
+        last_activity: new Date().toISOString(),
+      });
+    }
+  }, [onUpdateDeal]);
+
+  const handleDragStart = useCallback(() => {
+    isDraggingRef.current = true;
+  }, []);
+
+  const handleDragEnd = useCallback((result) => {
+    isDraggingRef.current = false;
+
     if (shouldBlockBasic) {
       openPaywall(isGuestAccount ? 'guest_upgrade' : 'trial_ended');
       return;
@@ -248,9 +269,9 @@ export default function PipelineBoard({
 
     const targetStage = destination.droppableId;
     initiateMove(draggableId, targetStage);
-  };
+  }, [shouldBlockBasic, openPaywall, isGuestAccount, dealsByStage, initiateMove]);
 
-  const handleMoveDeal = (dealId, direction) => {
+  const handleMoveDeal = useCallback((dealId, direction) => {
     const deal = localDeals.find((d) => d.id === dealId);
     if (!deal) return;
 
@@ -261,22 +282,7 @@ export default function PipelineBoard({
       const targetStage = STAGES[newIndex];
       initiateMove(dealId, targetStage);
     }
-  };
-
-  const initiateMove = (dealId, targetStage) => {
-    setLocalDeals(prev => prev.map(d => 
-      d.id === dealId ? { ...d, stage: targetStage, last_activity: new Date().toISOString() } : d
-    ));
-
-    if (targetStage === 'won' || targetStage === 'lost') {
-      setReasonModal({ open: true, dealId, targetStage });
-    } else {
-      onUpdateDeal(dealId, {
-        stage: targetStage,
-        last_activity: new Date().toISOString(),
-      });
-    }
-  };
+  }, [localDeals, initiateMove]);
 
   const submitReason = (reason, closeDate) => {
     const isWon = reasonModal.targetStage === 'won';
@@ -310,11 +316,11 @@ export default function PipelineBoard({
     onEscape: () => setSelectedDealId(null),
   });
 
-  const togglePin = (dealId) => {
+  const togglePin = useCallback((dealId) => {
     setPinnedDealIds((prev) =>
       prev.includes(dealId) ? prev.filter((id) => id !== dealId) : [...prev, dealId]
     );
-  };
+  }, []);
 
   const filterColorMap = {
     violet: { active: 'bg-violet-600 text-white border-violet-600 shadow-violet-200', inactive: 'bg-white text-slate-600 border-slate-200 hover:border-violet-300 hover:text-violet-600' },
@@ -527,7 +533,7 @@ export default function PipelineBoard({
       {/* KANBAN BOARD (Desktop Only) */}
       {viewMode === 'kanban' && (
         <div className="hidden md:block">
-          <DragDropContext onDragEnd={handleDragEnd}>
+          <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div
             ref={scrollRef}
             className="flex-1 min-h-[560px] relative overflow-x-auto overflow-y-hidden custom-scrollbar-horizontal"
@@ -749,7 +755,7 @@ const DealCard = memo(
         >
           <motion.div
             initial={false}
-            animate={isDragging ? { scale: 1.03, rotate: 1.2, boxShadow: '0 15px 30px rgba(124, 58, 237, 0.15)' } : { scale: 1, rotate: 0, boxShadow: 'none' }}
+            animate={isDragging ? { boxShadow: '0 15px 30px rgba(124, 58, 237, 0.15)' } : { boxShadow: 'none' }}
             whileHover={{ y: -3, borderColor: isHighValue ? '#fbbf24' : 'rgba(124, 58, 237, 0.4)', boxShadow: '0 8px 16px rgba(0, 0, 0, 0.04)' }}
             transition={{ type: 'spring', stiffness: 500, damping: 32 }}
             className={cn(
@@ -843,12 +849,10 @@ const DealCard = memo(
 
               {/* Progress bar */}
               <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.max(0, Math.min(100, deal.probability || 0))}%` }}
-                  transition={{ duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
-                  className="h-full rounded-full"
+                <div
+                  className="h-full rounded-full transition-all duration-500 ease-out"
                   style={{
+                    width: `${Math.max(0, Math.min(100, deal.probability || 0))}%`,
                     background: deal.probability >= 70
                       ? 'linear-gradient(to right, #10b981, #059669)'
                       : deal.probability >= 40

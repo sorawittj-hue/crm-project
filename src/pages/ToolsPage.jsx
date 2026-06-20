@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useOnboardingStore } from '../store/useOnboardingStore';
 import {
   Mail, Calculator, Plus, Pencil, Trash2,
   Copy, Check, Loader2, FileText,
@@ -293,10 +294,17 @@ function EmailTemplates() {
 
 // ─── Deal ROI Calculator ───────────────────────────────────────────────────────
 function DealCalculator() {
+  const { completeTask } = useOnboardingStore();
   const [dealValue, setDealValue] = useState('');
   const [cost, setCost] = useState('');
   const [probability, setProbability] = useState('70');
   const [months, setMonths] = useState('3');
+
+  useEffect(() => {
+    if (Number(dealValue) > 0 && Number(cost) > 0) {
+      completeTask('useCalculator');
+    }
+  }, [dealValue, cost, completeTask]);
 
   const calc = (() => {
     const v = Number(dealValue) || 0;

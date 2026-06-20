@@ -18,8 +18,37 @@ export function useDeals() {
 
     const channel = supabase
       .channel('public:deals')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'deals' }, () => {
-        queryClient.invalidateQueries({ queryKey: ['deals'] });
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'deals' }, (payload) => {
+        const { eventType, new: newRecord, old: oldRecord } = payload;
+        
+        queryClient.setQueriesData({ queryKey: ['deals'] }, (old) => {
+          if (!old) return old;
+          
+          const isOwned = (record) => !record.owner_id || record.owner_id === user.id;
+
+          if (eventType === 'INSERT' && newRecord) {
+            if (!isOwned(newRecord)) return old;
+            if (old.some(d => d.id === newRecord.id)) return old;
+            return [newRecord, ...old];
+          }
+          
+          if (eventType === 'UPDATE' && newRecord) {
+            const existing = old.find(d => d.id === newRecord.id);
+            // Avoid triggering cache changes if data is identical (e.g. from our own update)
+            if (existing && JSON.stringify(existing) === JSON.stringify(newRecord)) return old;
+            
+            if (!isOwned(newRecord)) {
+              return old.filter(d => d.id !== newRecord.id);
+            }
+            return old.map(deal => deal.id === newRecord.id ? { ...deal, ...newRecord } : deal);
+          }
+          
+          if (eventType === 'DELETE' && oldRecord) {
+            return old.filter(deal => deal.id !== oldRecord.id);
+          }
+          
+          return old;
+        });
       })
       .subscribe();
 
@@ -76,13 +105,23 @@ export function useUpdateDeal() {
       return { previousDealsQueries };
     },
     onSuccess: (data, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: ['deals'] });
+      if (data) {
+        queryClient.setQueriesData({ queryKey: ['deals'] }, (old) => {
+          if (!old) return [data];
+          return old.map(deal => deal.id === data.id ? { ...deal, ...data } : deal);
+        });
+      } else {
+        queryClient.setQueriesData({ queryKey: ['deals'] }, (old) => {
+          if (!old) return old;
+          return old.map(deal => deal.id === variables.id ? { ...deal, ...variables } : deal);
+        });
+      }
       
       // Trigger integration notification if deal is moved to 'won'
       if (variables.stage === 'won') {
         let wasAlreadyWon = false;
         if (context?.previousDealsQueries) {
-          for (const [_, oldData] of context.previousDealsQueries) {
+          for (const [, oldData] of context.previousDealsQueries) {
             const oldDeal = oldData?.find(d => d.id === variables.id);
             if (oldDeal && oldDeal.stage === 'won') {
               wasAlreadyWon = true;
@@ -129,7 +168,16 @@ export function useAddDeal() {
       return addDeal(newDeal);
     },
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['deals'] });
+      const newRecord = Array.isArray(data) ? data[0] : data;
+      if (newRecord) {
+        queryClient.setQueriesData({ queryKey: ['deals'] }, (old) => {
+          if (!old) return [newRecord];
+          if (old.some(d => d.id === newRecord.id)) return old;
+          return [newRecord, ...old];
+        });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['deals'] });
+      }
       toast.success('Deal created successfully');
       
       const mergedData = { ...(data?.[0] || data || {}), ...variables };
@@ -158,8 +206,16 @@ export function useAddMultipleDeals() {
       }
       return addMultipleDeals(deals);
     },
-    onSuccess: (_, deals) => {
-      queryClient.invalidateQueries({ queryKey: ['deals'] });
+    onSuccess: (data, deals) => {
+      if (data && Array.isArray(data)) {
+        queryClient.setQueriesData({ queryKey: ['deals'] }, (old) => {
+          if (!old) return data;
+          const filteredNew = data.filter(n => !old.some(o => o.id === n.id));
+          return [...filteredNew, ...old];
+        });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['deals'] });
+      }
       toast.success(`Successfully added ${deals.length} deal(s)`);
     },
     onError: (error) => {
@@ -182,8 +238,15 @@ export function useDeleteDeals() {
       }
       return deleteDeals(ids);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['deals'] });
+    onSuccess: (_, ids) => {
+      if (ids && Array.isArray(ids)) {
+        queryClient.setQueriesData({ queryKey: ['deals'] }, (old) => {
+          if (!old) return [];
+          return old.filter(deal => !ids.includes(deal.id));
+        });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['deals'] });
+      }
       toast.success('Deal(s) deleted successfully');
     },
     onError: (error) => {

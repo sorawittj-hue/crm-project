@@ -1,16 +1,18 @@
 import { useAuth } from './useAuth';
 import { useMyProfile } from './useUserProfiles';
 import { isLocalTrialActive as checkLocalTrial, getTrialDaysLeft as getLocalTrialDaysLeft } from '../lib/localDb';
+import { useOnboardingStore } from '../store/useOnboardingStore';
 
 export function useSubscription() {
   const { user } = useAuth();
   const { data: myProfile, isLoading } = useMyProfile(user?.id);
+  const { isDemoMode } = useOnboardingStore();
 
   // 1. VIP / Admin logic
   const isOwner = user?.email === 'sorawittj@gmail.com' || user?.user_metadata?.role === 'admin';
   
-  // 2. Local Trial logic
-  const isGuestAccount = checkLocalTrial();
+  // 2. Local Trial logic / Demo Mode sandbox
+  const isGuestAccount = checkLocalTrial() || isDemoMode;
 
   // 3. Admin logic
   const isAdmin = myProfile?.role === 'admin';
@@ -23,9 +25,13 @@ export function useSubscription() {
   let isExpired = false;
   let trialDaysLeft = 0;
 
-  if (isGuestAccount) {
+  if (isGuestAccount && !isDemoMode) {
     trialDaysLeft = 3;
     isTrialActive = false; // Guest is read-only
+    isExpired = false;
+  } else if (isDemoMode) {
+    trialDaysLeft = 30;
+    isTrialActive = true;
     isExpired = false;
   } else if (myProfile?.plan_type === 'trial' || (!isPro && user)) {
     // Registered users trial logic
@@ -47,14 +53,14 @@ export function useSubscription() {
 
   // Final access checks
   // Can they perform normal actions? (Pro or Registered Trial active. Guests are read-only)
-  const canUseBasicFeatures = isPro || isTrialActive;
+  const canUseBasicFeatures = isPro || isTrialActive || isDemoMode;
   
   // Can they perform premium actions? (Export, Backup)
-  const canUsePremiumFeatures = isPro;
+  const canUsePremiumFeatures = isPro || isDemoMode;
 
   // Should we show the paywall for normal actions?
   // Guests are blocked from basic actions (read-only showcase mode)
-  const shouldBlockBasic = isGuestAccount || !canUseBasicFeatures;
+  const shouldBlockBasic = (isGuestAccount && !isDemoMode) || !canUseBasicFeatures;
 
   const isSuspended = myProfile?.plan_type === 'suspended';
 
@@ -73,4 +79,5 @@ export function useSubscription() {
     isSuspended
   };
 }
+
 
