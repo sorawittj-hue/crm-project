@@ -104,7 +104,7 @@ export default function MandateAIOrbs({ deals = [], activities = [] }) {
   if (staleHighValueDeals.length === 0) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-3 pointer-events-none select-none font-sans">
+    <div className="relative flex flex-col items-end gap-3 pointer-events-none select-none font-sans">
       <AnimatePresence mode="wait">
         {!isExpanded ? (
           /* COLLAPSED PULSING ORB PILL */

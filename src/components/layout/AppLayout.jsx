@@ -790,15 +790,18 @@ export default function AppLayout() {
       />
       <GlobalAddDealModal />
 
-      <MandateAIOrbs deals={deals} activities={activities} />
-      
+      {/* Onboarding walkthrough overlays */}
+      <TourEngine />
+
       {/* Paywall Modal */}
       <PaywallModal />
       <WelcomeModal />
 
-      {/* Onboarding walkthrough overlays */}
-      <TourEngine />
-      <OnboardingWidget />
+      {/* Floating action widgets — stacked so they never overlap */}
+      <div className="fixed bottom-6 right-6 z-[9990] flex flex-col items-end gap-3 font-sans">
+        <OnboardingWidget />
+        <MandateAIOrbs deals={deals} activities={activities} />
+      </div>
     </div>
   );
 }

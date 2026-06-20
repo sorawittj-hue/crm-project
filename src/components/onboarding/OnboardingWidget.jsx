@@ -19,7 +19,7 @@ export default function OnboardingWidget() {
   const progressPercent = Math.round((completedCount / tasks.length) * 100);
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9990] font-sans">
+    <div className="relative font-sans">
       <AnimatePresence>
         {isOpen && (
           <motion.div
