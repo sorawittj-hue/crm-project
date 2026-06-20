@@ -347,88 +347,92 @@ export default function CustomersPage() {
       </header>
 
       {/* KPI RIBBON */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="p-5 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-700 text-white shadow-lg shadow-violet-200 relative overflow-hidden">
-          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="p-6 rounded-[2rem] bg-gradient-to-br from-violet-600 to-purple-700 text-white shadow-[0_8px_30px_rgba(139,92,246,0.3)] relative overflow-hidden group hover:-translate-y-1 hover:shadow-[0_15px_40px_rgba(139,92,246,0.4)] transition-all duration-300">
+          <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-white/20 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+          <div className="absolute top-0 right-0 w-full h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-semibold text-violet-200 uppercase tracking-wider">ลูกค้าทั้งหมด</p>
-              <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center"><Users size={18} /></div>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[10px] font-bold text-violet-100 uppercase tracking-widest">ลูกค้าทั้งหมด</p>
+              <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-inner group-hover:scale-110 transition-transform"><Users size={20} /></div>
             </div>
-            <p className="text-3xl font-black tabular-nums">{totalStats.total}</p>
-            <p className="text-xs text-violet-200 mt-1">รายชื่อในระบบ</p>
+            <p className="text-3xl font-black tabular-nums tracking-tight drop-shadow-md">{totalStats.total}</p>
+            <p className="text-xs font-semibold text-violet-200 mt-1">รายชื่อในระบบ</p>
           </div>
         </div>
-        <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-200 relative overflow-hidden">
-          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
+        <div className="p-6 rounded-[2rem] bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-[0_8px_30px_rgba(16,185,129,0.3)] relative overflow-hidden group hover:-translate-y-1 hover:shadow-[0_15px_40px_rgba(16,185,129,0.4)] transition-all duration-300">
+          <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-white/20 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+          <div className="absolute top-0 right-0 w-full h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-semibold text-emerald-100 uppercase tracking-wider">ปิดได้รวม</p>
-              <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center"><DollarSign size={18} /></div>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[10px] font-bold text-emerald-100 uppercase tracking-widest">ปิดได้รวม</p>
+              <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-inner group-hover:scale-110 transition-transform"><DollarSign size={20} /></div>
             </div>
-            <p className="text-2xl font-black tabular-nums leading-tight">{formatCurrency(totalStats.totalWonValue)}</p>
-            <p className="text-xs text-emerald-100 mt-1">มูลค่าดีลที่ Won</p>
+            <p className="text-2xl font-black tabular-nums leading-tight tracking-tight drop-shadow-md">{formatCurrency(totalStats.totalWonValue)}</p>
+            <p className="text-xs font-semibold text-emerald-100 mt-1">มูลค่าดีลที่ Won</p>
           </div>
         </div>
-        <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-200 relative overflow-hidden">
-          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
+        <div className="p-6 rounded-[2rem] bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-[0_8px_30px_rgba(245,158,11,0.3)] relative overflow-hidden group hover:-translate-y-1 hover:shadow-[0_15px_40px_rgba(245,158,11,0.4)] transition-all duration-300">
+          <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-white/20 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+          <div className="absolute top-0 right-0 w-full h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-semibold text-amber-100 uppercase tracking-wider">ดีลดำเนินการ</p>
-              <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center"><TrendingUp size={18} /></div>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[10px] font-bold text-amber-100 uppercase tracking-widest">ดีลดำเนินการ</p>
+              <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-inner group-hover:scale-110 transition-transform"><TrendingUp size={20} /></div>
             </div>
-            <p className="text-2xl font-black tabular-nums leading-tight">{formatCurrency(totalStats.totalActiveValue)}</p>
-            <p className="text-xs text-amber-100 mt-1">มูลค่า Pipeline</p>
+            <p className="text-2xl font-black tabular-nums leading-tight tracking-tight drop-shadow-md">{formatCurrency(totalStats.totalActiveValue)}</p>
+            <p className="text-xs font-semibold text-amber-100 mt-1">มูลค่า Pipeline</p>
           </div>
         </div>
-        <div className="p-5 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-lg shadow-rose-200 relative overflow-hidden">
-          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
+        <div className="p-6 rounded-[2rem] bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-[0_8px_30px_rgba(244,63,94,0.3)] relative overflow-hidden group hover:-translate-y-1 hover:shadow-[0_15px_40px_rgba(244,63,94,0.4)] transition-all duration-300">
+          <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-white/20 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+          <div className="absolute top-0 right-0 w-full h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-semibold text-rose-100 uppercase tracking-wider">ต้องดูแลด่วน</p>
-              <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center"><AlertTriangle size={18} /></div>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[10px] font-bold text-rose-100 uppercase tracking-widest">ต้องดูแลด่วน</p>
+              <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-inner group-hover:scale-110 transition-transform"><AlertTriangle size={20} /></div>
             </div>
-            <p className="text-3xl font-black tabular-nums">{totalStats.atRiskAccounts}</p>
-            <p className="text-xs text-rose-100 mt-1">บัญชีเสี่ยง</p>
+            <p className="text-3xl font-black tabular-nums tracking-tight drop-shadow-md">{totalStats.atRiskAccounts}</p>
+            <p className="text-xs font-semibold text-rose-100 mt-1">บัญชีเสี่ยง</p>
           </div>
         </div>
       </div>
 
       {/* SEARCH & FILTERS */}
-      <div className="flex flex-col md:flex-row gap-3">
+      <div className="flex flex-col xl:flex-row gap-4 bg-white/60 backdrop-blur-xl p-4 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <Input
             placeholder="ค้นหาลูกค้าด้วยชื่อ, บริษัท, อีเมล, อุตสาหกรรม..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-11 pl-11 bg-white border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:ring-violet-500/20 shadow-sm"
+            className="h-14 pl-12 bg-white/80 border-slate-200/60 rounded-[1.25rem] text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-violet-500/20 focus:border-violet-300 shadow-inner transition-all"
           />
           {searchTerm !== debouncedSearchTerm && (
-            <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 text-violet-500 animate-spin" size={16} />
+            <Loader2 className="absolute right-5 top-1/2 -translate-y-1/2 text-violet-500 animate-spin" size={18} />
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-1 bg-slate-100/50 backdrop-blur-sm border border-slate-200/50 p-1.5 rounded-[1.25rem] shadow-inner overflow-x-auto no-scrollbar">
             {[
-              { val: 'all', label: 'ทั้งหมด', count: gradeCounts.all, activeClass: 'bg-violet-600 text-white shadow-sm' },
-              { val: 'grade-A', label: 'A', count: gradeCounts.A, activeClass: 'bg-emerald-600 text-white shadow-sm' },
-              { val: 'grade-B', label: 'B', count: gradeCounts.B, activeClass: 'bg-blue-600 text-white shadow-sm' },
-              { val: 'grade-C', label: 'C', count: gradeCounts.C, activeClass: 'bg-amber-500 text-white shadow-sm' },
-              { val: 'grade-D', label: 'D', count: gradeCounts.D, activeClass: 'bg-rose-500 text-white shadow-sm' },
+              { val: 'all', label: 'ทั้งหมด', count: gradeCounts.all, activeClass: 'bg-violet-600 text-white shadow-[0_4px_15px_rgba(124,58,237,0.3)]' },
+              { val: 'grade-A', label: 'A', count: gradeCounts.A, activeClass: 'bg-emerald-600 text-white shadow-[0_4px_15px_rgba(16,185,129,0.3)]' },
+              { val: 'grade-B', label: 'B', count: gradeCounts.B, activeClass: 'bg-blue-600 text-white shadow-[0_4px_15px_rgba(37,99,235,0.3)]' },
+              { val: 'grade-C', label: 'C', count: gradeCounts.C, activeClass: 'bg-amber-500 text-white shadow-[0_4px_15px_rgba(245,158,11,0.3)]' },
+              { val: 'grade-D', label: 'D', count: gradeCounts.D, activeClass: 'bg-rose-500 text-white shadow-[0_4px_15px_rgba(244,63,94,0.3)]' },
             ].map(({ val, label, count, activeClass }) => (
               <button
                 key={val}
                 onClick={() => setTierFilter(val)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
-                  tierFilter === val ? activeClass : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                  'flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 whitespace-nowrap',
+                  tierFilter === val ? activeClass : 'text-slate-500 hover:text-slate-900 hover:bg-white hover:shadow-sm'
                 )}
               >
                 {label}
                 <span className={cn(
-                  'text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center',
-                  tierFilter === val ? 'bg-white/25 text-white' : 'bg-slate-100 text-slate-400'
+                  'text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[20px] text-center',
+                  tierFilter === val ? 'bg-white/25 text-white' : 'bg-slate-200/70 text-slate-500'
                 )}>{count}</span>
               </button>
             ))}
@@ -437,7 +441,7 @@ export default function CustomersPage() {
             <select
               value={industryFilter}
               onChange={e => setIndustryFilter(e.target.value)}
-              className="h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 outline-none cursor-pointer hover:border-violet-300 transition-colors shadow-sm"
+              className="h-14 px-4 bg-white/80 border border-slate-200/60 rounded-[1.25rem] text-xs font-bold text-slate-600 outline-none cursor-pointer focus:bg-white focus:border-violet-300 transition-all shadow-sm shrink-0"
             >
               <option value="all">🏭 อุตสาหกรรม: ทั้งหมด</option>
               {industries.map(ind => <option key={ind} value={ind}>{ind}</option>)}
@@ -460,9 +464,10 @@ export default function CustomersPage() {
                 transition={{ duration: 0.2, ease: 'easeOut' }}
               >
                 <div
-                  className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm cursor-pointer group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-violet-200"
+                  className="p-6 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 cursor-pointer group relative overflow-hidden transition-all duration-500 hover:shadow-[0_15px_35px_rgb(0,0,0,0.08)] hover:-translate-y-1.5"
                   onClick={() => { setSelectedCustomer(customer); setIsSidebarOpen(true); }}
                 >
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                   {/* Gradient left border accent */}
                   <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity"
                     style={{ background: `linear-gradient(to bottom, ${getAvatarGradient(customer.name)[0]}, ${getAvatarGradient(customer.name)[1]})` }} />
@@ -471,9 +476,10 @@ export default function CustomersPage() {
                     {/* Header */}
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-base font-black shadow-md group-hover:scale-110 transition-transform duration-300"
+                        <div className="w-12 h-12 rounded-[1.25rem] flex items-center justify-center text-white text-lg font-black shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 relative"
                           style={{ background: `linear-gradient(135deg, ${getAvatarGradient(customer.name)[0]}, ${getAvatarGradient(customer.name)[1]})` }}>
-                          {customer.name?.charAt(0).toUpperCase() || '?'}
+                          <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-[1.25rem]" />
+                          <span className="relative z-10 drop-shadow-md">{customer.name?.charAt(0).toUpperCase() || '?'}</span>
                         </div>
                         <div>
                           <h3 className="text-sm font-bold text-slate-900 leading-tight group-hover:text-violet-700 transition-colors">{customer.name}</h3>
@@ -538,19 +544,22 @@ export default function CustomersPage() {
                             : 'bg-emerald-50 text-emerald-600'
                         )}>{customer.health?.score ?? 0}%</span>
                       </div>
-                      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-2.5 bg-slate-100/60 rounded-full overflow-hidden shadow-inner border border-slate-200/50">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${Math.max(0, Math.min(100, customer.health?.score || 0))}%` }}
                           transition={{ duration: 0.5, ease: 'easeOut' }}
-                          className="h-full rounded-full"
+                          className="h-full rounded-full relative"
                           style={{ 
                             background: customer.health?.status === 'at_risk' ? 'linear-gradient(to right, #fda4af, #f43f5e)'
                               : customer.health?.status === 'watch' ? 'linear-gradient(to right, #fcd34d, #f59e0b)'
                               : customer.health?.status === 'growth' ? 'linear-gradient(to right, #93c5fd, #3b82f6)'
-                              : 'linear-gradient(to right, #6ee7b7, #10b981)'
+                              : 'linear-gradient(to right, #6ee7b7, #10b981)',
+                            boxShadow: `0 0 10px ${customer.health?.status === 'at_risk' ? 'rgba(244,63,94,0.4)' : customer.health?.status === 'watch' ? 'rgba(245,158,11,0.4)' : customer.health?.status === 'growth' ? 'rgba(59,130,246,0.4)' : 'rgba(16,185,129,0.4)'}`
                           }}
-                        />
+                        >
+                          <div className="absolute inset-0 bg-white/20 w-1/2 skew-x-12 -translate-x-full animate-[shimmer_2s_infinite]" />
+                        </motion.div>
                       </div>
                     </div>
 
@@ -598,11 +607,11 @@ export default function CustomersPage() {
         </AnimatePresence>
 
         {filteredCustomers.length === 0 && (
-          <div className="col-span-full flex flex-col items-center justify-center py-24 text-center bg-white/50 backdrop-blur-sm rounded-3xl border border-slate-200/60 shadow-sm relative overflow-hidden">
+          <div className="col-span-full flex flex-col items-center justify-center py-32 text-center bg-white/40 backdrop-blur-3xl rounded-[3rem] border border-white/60 shadow-[0_8px_40px_rgb(0,0,0,0.03)] relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-violet-50/50 via-white/50 to-purple-50/50" />
             <div className="relative z-10 max-w-md mx-auto flex flex-col items-center">
-              <div className="w-24 h-24 bg-gradient-to-br from-violet-100 to-purple-100 rounded-3xl flex items-center justify-center mb-6 shadow-inner rotate-3 hover:rotate-6 transition-transform duration-500">
-                <Users size={40} className="text-violet-600 drop-shadow-md" />
+              <div className="w-28 h-28 bg-white/60 backdrop-blur-md rounded-[2rem] flex items-center justify-center mb-8 shadow-xl shadow-violet-500/10 border border-white/80 hover:scale-110 transition-transform duration-500">
+                <Users size={48} className="text-violet-600 drop-shadow-md" />
               </div>
               <h3 className="text-2xl font-black text-slate-800 tracking-tight mb-3">
                 {searchTerm ? 'ไม่พบข้อมูลลูกค้าที่ค้นหา' : 'ยังไม่มีฐานลูกค้า'}
@@ -638,14 +647,15 @@ export default function CustomersPage() {
 
       {/* CUSTOMER DETAIL DIALOG */}
       <Dialog open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-        <DialogContent className="p-0 border-0 bg-white max-w-2xl overflow-y-auto max-h-[90vh]">
+        <DialogContent className="p-0 border border-white/80 bg-white/95 backdrop-blur-3xl max-w-2xl overflow-y-auto max-h-[90vh] rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)]">
           {selectedCustomer && (
             <div className="p-8 space-y-6 pb-8">
-              <DialogHeader className="space-y-4 border-b border-slate-100 pb-6 mb-2 relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-violet-50/50 to-fuchsia-50/50 rounded-t-3xl -z-10 -mx-8 -mt-8 px-8 pt-8 pb-6 border-b border-violet-100/50" />
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-[2rem] bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-white text-2xl font-black shadow-xl ring-4 ring-white">
-                    {selectedCustomer.name?.charAt(0)}
+              <DialogHeader className="space-y-4 border-b border-slate-100/80 pb-6 mb-2 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-violet-100/40 to-fuchsia-100/40 rounded-t-[2.5rem] -z-10 -mx-8 -mt-8 px-8 pt-8 pb-6 border-b border-violet-100/50" />
+                <div className="flex items-center gap-5">
+                  <div className="w-20 h-20 rounded-[1.5rem] bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-white text-3xl font-black shadow-xl ring-4 ring-white relative">
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-[1.5rem]" />
+                    <span className="relative z-10 drop-shadow-md">{selectedCustomer.name?.charAt(0)}</span>
                   </div>
                   <div>
                     <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">{selectedCustomer.name}</DialogTitle>
@@ -726,100 +736,100 @@ export default function CustomersPage() {
                       )}
 
                       <form onSubmit={handleSaveCustomer} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                          <div className="col-span-2 space-y-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ชื่อลูกค้า *</label>
+                        <div className="grid grid-cols-2 gap-5 bg-white/40 backdrop-blur-md p-6 rounded-[2rem] border border-white/60 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
+                          <div className="col-span-2 space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">ชื่อลูกค้า *</label>
                             <Input
                               required
                               value={localCustomer.name}
                               onChange={e => setLocalCustomer(p => ({ ...p, name: e.target.value }))}
-                              className="h-11 rounded-xl bg-white border-slate-200 text-sm font-bold focus:border-violet-400"
+                              className="h-12 rounded-xl bg-white/80 border-slate-200/60 text-sm font-bold focus:bg-white focus:border-violet-400 focus:ring-violet-400/20 shadow-inner transition-all"
                             />
                           </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">บริษัท</label>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">บริษัท</label>
                             <Input
                               value={localCustomer.company}
                               onChange={e => setLocalCustomer(p => ({ ...p, company: e.target.value }))}
-                              className="h-11 rounded-xl bg-white border-slate-200 text-sm focus:border-violet-400"
+                              className="h-12 rounded-xl bg-white/80 border-slate-200/60 text-sm focus:bg-white focus:border-violet-400 focus:ring-violet-400/20 shadow-inner transition-all"
                             />
                           </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">อุตสาหกรรม</label>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">อุตสาหกรรม</label>
                             <Input
                               value={localCustomer.industry}
                               onChange={e => setLocalCustomer(p => ({ ...p, industry: e.target.value }))}
-                              className="h-11 rounded-xl bg-white border-slate-200 text-sm focus:border-violet-400"
+                              className="h-12 rounded-xl bg-white/80 border-slate-200/60 text-sm focus:bg-white focus:border-violet-400 focus:ring-violet-400/20 shadow-inner transition-all"
                             />
                           </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ระดับลูกค้า (Tier)</label>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">ระดับลูกค้า (Tier)</label>
                             <select
                               value={localCustomer.tier}
                               onChange={e => setLocalCustomer(p => ({ ...p, tier: e.target.value }))}
-                              className="w-full h-11 rounded-xl bg-white border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-violet-400"
+                              className="w-full h-12 rounded-xl bg-white/80 border border-slate-200/60 px-4 text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-violet-400 focus:ring-4 focus:ring-violet-400/20 shadow-inner transition-all cursor-pointer"
                             >
                               <option value="Silver">🥈 Silver</option>
                               <option value="Gold">🥇 Gold</option>
                               <option value="Platinum">💎 Platinum</option>
                             </select>
                           </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">เลขประจำตัวผู้เสียภาษี</label>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">เลขประจำตัวผู้เสียภาษี</label>
                             <Input
                               placeholder="ระบุ Tax ID"
                               value={localCustomer.tax_id || ''}
                               onChange={e => setLocalCustomer(p => ({ ...p, tax_id: e.target.value }))}
-                              className="h-11 rounded-xl bg-white border-slate-200 text-sm focus:border-violet-400"
+                              className="h-12 rounded-xl bg-white/80 border-slate-200/60 text-sm focus:bg-white focus:border-violet-400 focus:ring-violet-400/20 shadow-inner transition-all"
                             />
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                          <div className="space-y-1 col-span-2 md:col-span-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">อีเมล</label>
+                        <div className="grid grid-cols-2 gap-5 bg-white/40 backdrop-blur-md p-6 rounded-[2rem] border border-white/60 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
+                          <div className="space-y-1.5 col-span-2 md:col-span-1">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">อีเมล</label>
                             <Input
                               type="email"
                               value={localCustomer.email}
                               onChange={e => setLocalCustomer(p => ({ ...p, email: e.target.value }))}
-                              className="h-11 rounded-xl bg-white border-slate-200 text-sm focus:border-violet-400"
+                              className="h-12 rounded-xl bg-white/80 border-slate-200/60 text-sm focus:bg-white focus:border-violet-400 focus:ring-violet-400/20 shadow-inner transition-all"
                             />
                           </div>
-                          <div className="space-y-1 col-span-2 md:col-span-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">เบอร์โทร</label>
+                          <div className="space-y-1.5 col-span-2 md:col-span-1">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">เบอร์โทร</label>
                             <Input
                               value={localCustomer.phone}
                               onChange={e => setLocalCustomer(p => ({ ...p, phone: e.target.value }))}
-                              className="h-11 rounded-xl bg-white border-slate-200 text-sm focus:border-violet-400"
+                              className="h-12 rounded-xl bg-white/80 border-slate-200/60 text-sm focus:bg-white focus:border-violet-400 focus:ring-violet-400/20 shadow-inner transition-all"
                             />
                           </div>
-                          <div className="col-span-2 space-y-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ที่อยู่</label>
+                          <div className="col-span-2 space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">ที่อยู่</label>
                             <Input
                               value={localCustomer.address || ''}
                               onChange={e => setLocalCustomer(p => ({ ...p, address: e.target.value }))}
-                              className="h-11 rounded-xl bg-white border-slate-200 text-sm focus:border-violet-400"
+                              className="h-12 rounded-xl bg-white/80 border-slate-200/60 text-sm focus:bg-white focus:border-violet-400 focus:ring-violet-400/20 shadow-inner transition-all"
                             />
                           </div>
                         </div>
 
-                        <div className="space-y-1 bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">บันทึกเพิ่มเติม</label>
+                        <div className="space-y-1.5 bg-white/40 backdrop-blur-md p-6 rounded-[2rem] border border-white/60 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">บันทึกเพิ่มเติม</label>
                           <Textarea
                             value={localCustomer.notes}
                             onChange={e => setLocalCustomer(p => ({ ...p, notes: e.target.value }))}
-                            className="rounded-xl bg-white border-slate-200 resize-none min-h-[80px] text-sm focus:border-violet-400"
+                            className="rounded-[1.25rem] bg-white/80 border-slate-200/60 resize-none min-h-[100px] text-sm focus:bg-white focus:border-violet-400 focus:ring-violet-400/20 shadow-inner transition-all p-4"
                           />
                         </div>
 
-                        <div className="flex gap-3 pt-2">
+                        <div className="flex gap-3 pt-4">
                           {selectedCustomer._fromDeals ? (
                             <Button
                               type="button"
                               onClick={async () => {
                                 await handleConvertSynthetic(selectedCustomer);
                               }}
-                              className="w-full h-12 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs uppercase tracking-widest border-0 flex items-center justify-center gap-2"
+                              className="w-full h-14 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold text-xs uppercase tracking-widest border-0 flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(124,58,237,0.3)] hover:shadow-[0_12px_25px_rgba(124,58,237,0.4)] hover:-translate-y-0.5 transition-all"
                               disabled={createCustomerMutation.isPending}
                             >
                               <Plus size={15} /> บันทึกเป็นลูกค้าทางการ
@@ -828,16 +838,16 @@ export default function CustomersPage() {
                             <>
                               <Button
                                 type="submit"
-                                className="flex-[2] h-12 rounded-xl bg-slate-900 hover:bg-slate-700 border-0 text-white font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+                                className="flex-[2] h-14 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 border-0 text-white font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(124,58,237,0.3)] hover:shadow-[0_12px_25px_rgba(124,58,237,0.4)] hover:-translate-y-0.5 transition-all"
                                 disabled={updateCustomerMutation.isPending}
                               >
-                                {updateCustomerMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Settings size={14} />}
+                                {updateCustomerMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Settings size={16} />}
                                 อัปเดตข้อมูลลูกค้า
                               </Button>
                               <Button
                                 type="button"
                                 variant="ghost"
-                                className="flex-1 h-12 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+                                className="flex-1 h-14 rounded-2xl bg-white/50 border border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm"
                                 onClick={() => {
                                   if (shouldBlockBasic) {
                                     openPaywall(isGuestAccount ? 'default' : 'trial_ended');
@@ -846,7 +856,7 @@ export default function CustomersPage() {
                                   }
                                 }}
                               >
-                                <Trash2 size={14} /> ลบลูกค้า
+                                <Trash2 size={16} /> ลบลูกค้า
                               </Button>
                             </>
                           )}
@@ -1116,115 +1126,115 @@ export default function CustomersPage() {
 
       {/* ADD CUSTOMER MODAL */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-xl bg-white rounded-[3rem] p-0 border-0 shadow-2xl overflow-hidden">
+        <DialogContent className="max-w-xl bg-white/95 backdrop-blur-3xl rounded-[3rem] p-0 border border-white/80 shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)] overflow-hidden">
           <div className="h-2 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-purple-600" />
-          <div className="p-12 pt-8">
-            <DialogHeader className="mb-8">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center shrink-0">
-                  <Users size={24} className="text-violet-600" />
+          <div className="p-10 pt-8 space-y-6">
+            <DialogHeader>
+              <div className="flex items-center gap-5">
+                <div className="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-violet-50 to-purple-50 flex items-center justify-center shrink-0 border border-violet-100 shadow-inner">
+                  <Users size={28} className="text-violet-600 drop-shadow-md" />
                 </div>
                 <div>
-                  <DialogTitle className="text-xl font-bold text-slate-900">เพิ่มลูกค้าใหม่</DialogTitle>
-                  <p className="text-sm text-slate-400 mt-1">กรอกข้อมูลลูกค้าที่ต้องการเพิ่มเข้าสู่ระบบ</p>
+                  <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">เพิ่มลูกค้าใหม่</DialogTitle>
+                  <p className="text-sm text-slate-500 mt-1 font-medium">กรอกข้อมูลลูกค้าที่ต้องการเพิ่มเข้าสู่ระบบ</p>
                 </div>
               </div>
             </DialogHeader>
 
-          <form onSubmit={handleAddSubmit} className="space-y-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2 space-y-2">
-                <label className="text-sm font-semibold text-slate-600">ชื่อลูกค้า *</label>
+          <form onSubmit={handleAddSubmit} className="space-y-6">
+            <div className="grid grid-cols-2 gap-5 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+              <div className="col-span-2 space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">ชื่อลูกค้า *</label>
                 <Input
                   required
                   placeholder="เช่น คุณสมชาย ใจดี"
                   value={newCustomer.name}
                   onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
-                  className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 font-bold focus:bg-white"
+                  className="h-12 rounded-xl bg-white/80 border-slate-200/60 text-sm font-bold focus:bg-white focus:border-violet-400 focus:ring-violet-400/20 shadow-inner transition-all"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-600">บริษัท</label>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">บริษัท</label>
                 <Input
                   placeholder="เช่น บริษัท ABC จำกัด"
                   value={newCustomer.company}
                   onChange={(e) => setNewCustomer({ ...newCustomer, company: e.target.value })}
-                  className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white"
+                  className="h-12 rounded-xl bg-white/80 border-slate-200/60 text-sm focus:bg-white focus:border-violet-400 focus:ring-violet-400/20 shadow-inner transition-all"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-600">อุตสาหกรรม</label>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">อุตสาหกรรม</label>
                 <Input
                   placeholder="เช่น IT, Manufacturing"
                   value={newCustomer.industry}
                   onChange={(e) => setNewCustomer({ ...newCustomer, industry: e.target.value })}
-                  className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white"
+                  className="h-12 rounded-xl bg-white/80 border-slate-200/60 text-sm focus:bg-white focus:border-violet-400 focus:ring-violet-400/20 shadow-inner transition-all"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-600">อีเมล</label>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">อีเมล</label>
                 <Input
                   type="email"
                   placeholder="example@company.com"
                   value={newCustomer.email}
                   onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
-                  className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white"
+                  className="h-12 rounded-xl bg-white/80 border-slate-200/60 text-sm focus:bg-white focus:border-violet-400 focus:ring-violet-400/20 shadow-inner transition-all"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-600">เบอร์โทร</label>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">เบอร์โทร</label>
                 <Input
                   placeholder="0XX-XXX-XXXX"
                   value={newCustomer.phone}
                   onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
-                  className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white"
+                  className="h-12 rounded-xl bg-white/80 border-slate-200/60 text-sm focus:bg-white focus:border-violet-400 focus:ring-violet-400/20 shadow-inner transition-all"
                 />
               </div>
-              <div className="col-span-2 space-y-2">
-                <label className="text-sm font-semibold text-slate-600">ระดับลูกค้า</label>
+              <div className="col-span-2 space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">ระดับลูกค้า</label>
                 <select
                   value={newCustomer.tier}
                   onChange={(e) => setNewCustomer({ ...newCustomer, tier: e.target.value })}
-                  className="w-full h-12 rounded-2xl border-0 ring-1 ring-slate-100 bg-slate-50/50 px-4 font-semibold outline-none focus:ring-violet-400"
+                  className="w-full h-12 rounded-xl bg-white/80 border border-slate-200/60 px-4 text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-violet-400 focus:ring-4 focus:ring-violet-400/20 shadow-inner transition-all cursor-pointer"
                 >
                   <option value="Silver">🥈 Silver</option>
                   <option value="Gold">🥇 Gold</option>
                   <option value="Platinum">💎 Platinum</option>
                 </select>
               </div>
-              <div className="col-span-2 space-y-2">
-                <label className="text-sm font-semibold text-slate-600">บันทึก</label>
+              <div className="col-span-2 space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">บันทึก</label>
                 <Textarea
                   placeholder="บันทึกข้อมูลเพิ่มเติม..."
                   value={newCustomer.notes}
                   onChange={(e) => setNewCustomer({ ...newCustomer, notes: e.target.value })}
-                  className="rounded-2xl border-slate-100 bg-slate-50/50 resize-none min-h-[80px] focus:bg-white"
+                  className="rounded-[1.25rem] bg-white/80 border-slate-200/60 resize-none min-h-[100px] text-sm focus:bg-white focus:border-violet-400 focus:ring-violet-400/20 shadow-inner transition-all p-4"
                 />
               </div>
             </div>
 
             {formError && (
-              <div className="px-4 py-3 rounded-xl bg-rose-50 border border-rose-100 text-sm text-rose-600 font-medium">
+              <div className="px-5 py-4 rounded-2xl bg-rose-50 border border-rose-100 text-sm text-rose-600 font-bold shadow-sm">
                 {formError}
               </div>
             )}
 
-            <div className="pt-4 flex gap-4">
+            <div className="pt-2 flex gap-4">
               <Button
                 type="button"
                 variant="ghost"
                 disabled={createCustomerMutation.isPending}
                 onClick={() => setIsAddModalOpen(false)}
-                className="flex-1 h-11 rounded-xl text-sm text-slate-500"
+                className="flex-1 h-14 rounded-2xl text-sm font-bold text-slate-500 hover:bg-slate-100"
               >
                 ยกเลิก
               </Button>
               <Button
                 type="submit"
                 disabled={createCustomerMutation.isPending}
-                className="flex-[2] h-11 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-violet-500/20 disabled:opacity-70 flex items-center justify-center gap-2"
+                className="flex-[2] h-14 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-bold shadow-[0_8px_20px_rgba(124,58,237,0.3)] hover:shadow-[0_12px_25px_rgba(124,58,237,0.4)] disabled:opacity-70 flex items-center justify-center gap-2 hover:-translate-y-0.5 transition-all"
               >
-                {createCustomerMutation.isPending && <Loader2 size={14} className="animate-spin" />}
+                {createCustomerMutation.isPending && <Loader2 size={18} className="animate-spin" />}
                 {createCustomerMutation.isPending ? 'กำลังบันทึก...' : 'บันทึกลูกค้า'}
               </Button>
             </div>
