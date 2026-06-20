@@ -974,7 +974,10 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="space-y-4">
                     {!analytics?.wonReasons?.length ? (
-                      <p className="text-xs text-slate-400 text-center py-8 bg-slate-50 border border-dashed border-slate-200 rounded-2xl font-medium">ไม่มีข้อมูลวิเคราะห์เหตุผลการชนะดีล</p>
+                      <div className="flex flex-col items-center justify-center py-8 bg-slate-50/50 backdrop-blur-sm border border-dashed border-slate-200/80 rounded-2xl">
+                        <div className="w-10 h-10 mb-3 rounded-full bg-white shadow-sm flex items-center justify-center"><Info size={16} className="text-slate-400" /></div>
+                        <p className="text-xs text-slate-500 font-medium">ไม่มีข้อมูลวิเคราะห์เหตุผลการชนะดีล</p>
+                      </div>
                     ) : analytics.wonReasons.map((r, i) => {
                       const max = analytics.wonReasons[0].count;
                       const pct = Math.round((r.count / max) * 100);
@@ -985,12 +988,15 @@ export default function AnalyticsPage() {
                             <span className="font-bold text-slate-400">{r.count}×</span>
                             <span className="font-bold text-emerald-600">{formatCurrency(r.totalValue)}</span>
                           </div>
-                          <div className="h-3 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                          <div className="h-3 bg-slate-100/50 rounded-full overflow-hidden shadow-inner border border-slate-200/50">
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${pct}%` }}
-                              className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500"
-                            />
+                              className="h-full relative shadow-[0_0_15px_rgba(16,185,129,0.5)]"
+                              style={{ background: 'linear-gradient(90deg, #34d399, #10b981)' }}
+                            >
+                              <div className="absolute inset-0 bg-white/20 w-1/2 skew-x-12 -translate-x-full animate-[shimmer_2s_infinite]" />
+                            </motion.div>
                           </div>
                         </div>
                       );
@@ -1013,7 +1019,10 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="space-y-4">
                     {!analytics?.lostReasons?.length ? (
-                      <p className="text-xs text-slate-400 text-center py-8 bg-slate-50 border border-dashed border-slate-200 rounded-2xl font-medium">ไม่มีข้อมูลวิเคราะห์เหตุผลการแพ้ดีล</p>
+                      <div className="flex flex-col items-center justify-center py-8 bg-slate-50/50 backdrop-blur-sm border border-dashed border-slate-200/80 rounded-2xl">
+                        <div className="w-10 h-10 mb-3 rounded-full bg-white shadow-sm flex items-center justify-center"><Info size={16} className="text-slate-400" /></div>
+                        <p className="text-xs text-slate-500 font-medium">ไม่มีข้อมูลวิเคราะห์เหตุผลการแพ้ดีล</p>
+                      </div>
                     ) : analytics.lostReasons.map((r, i) => {
                       const max = analytics.lostReasons[0].count;
                       const pct = Math.round((r.count / max) * 100);
@@ -1024,12 +1033,15 @@ export default function AnalyticsPage() {
                             <span className="font-bold text-slate-400">{r.count}×</span>
                             <span className="font-bold text-rose-500">{formatCurrency(r.totalValue)}</span>
                           </div>
-                          <div className="h-3 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                          <div className="h-3 bg-slate-100/50 rounded-full overflow-hidden shadow-inner border border-slate-200/50">
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${pct}%` }}
-                              className="h-full bg-gradient-to-r from-rose-400 to-rose-500"
-                            />
+                              className="h-full relative shadow-[0_0_15px_rgba(244,63,94,0.5)]"
+                              style={{ background: 'linear-gradient(90deg, #fb7185, #f43f5e)' }}
+                            >
+                              <div className="absolute inset-0 bg-white/20 w-1/2 skew-x-12 -translate-x-full animate-[shimmer_2s_infinite]" />
+                            </motion.div>
                           </div>
                         </div>
                       );
@@ -1101,8 +1113,10 @@ export default function AnalyticsPage() {
                         "bg-white border-slate-100"
                       )}
                     >
+                      {i === 0 && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12 -translate-x-[150%] animate-[shimmer_3s_infinite] pointer-events-none z-0" />}
+                      
                       {/* Ranking Medals */}
-                      <div className="absolute top-4 right-4 flex items-center gap-1.5">
+                      <div className="absolute top-4 right-4 flex items-center gap-1.5 relative z-10">
                         {i === 0 && (
                           <span className="text-[10px] font-black text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-md tracking-wider">
                             👑 CHAMPION
@@ -1199,7 +1213,7 @@ export default function AnalyticsPage() {
             <div className="space-y-8">
               {/* Row 1: Grade distribution & Tier distribution */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-1 p-7 rounded-3xl bg-white border border-slate-100 shadow-sm flex flex-col items-center">
+                <Card className="lg:col-span-1 p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 flex flex-col items-center group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
                   <div className="w-full mb-6">
                     <h3 className="text-base font-bold text-slate-900 tracking-tight">Revenue by Customer Grade</h3>
                     <p className="text-xs text-slate-400 mt-1 font-medium">Won deal values across VIP to At-risk groups</p>
@@ -1227,7 +1241,10 @@ export default function AnalyticsPage() {
                         </div>
                       </>
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-xs text-slate-400 font-semibold">ไม่มีข้อมูลยอดขายแยกตามเกรด</div>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/50 backdrop-blur-sm border border-dashed border-slate-200/80 rounded-full m-4">
+                        <Info size={16} className="text-slate-400 mb-2" />
+                        <p className="text-[10px] text-slate-500 font-medium text-center px-4">ไม่มีข้อมูลยอดขายแยกตามเกรด</p>
+                      </div>
                     )}
                   </div>
                   <div className="w-full mt-auto space-y-3 pt-6 border-t border-slate-100">
@@ -1243,7 +1260,7 @@ export default function AnalyticsPage() {
                   </div>
                 </Card>
 
-                <Card className="lg:col-span-2 p-7 rounded-3xl bg-white border border-slate-100 shadow-sm">
+                <Card className="lg:col-span-2 p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
                   <div className="mb-6">
                     <h3 className="text-base font-bold text-slate-900 tracking-tight">Revenue & Pipeline by Customer Tier</h3>
                     <p className="text-xs text-slate-400 mt-1 font-medium">Comparison of closed revenue vs active pipeline per tier</p>
@@ -1275,7 +1292,7 @@ export default function AnalyticsPage() {
 
               {/* Row 2: Revenue by industry & Quota simulator */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="p-7 rounded-3xl bg-white border border-slate-100 shadow-sm">
+                <Card className="p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
                   <div className="mb-6">
                     <h3 className="text-base font-bold text-slate-900 tracking-tight">Top Industries by Revenue</h3>
                     <p className="text-xs text-slate-400 mt-1 font-medium">Won deal volumes in top 5 market sectors</p>
@@ -1298,7 +1315,10 @@ export default function AnalyticsPage() {
                         </BarChart>
                       </SafeResponsiveContainer>
                     ) : (
-                      <div className="h-full flex items-center justify-center text-xs text-slate-400 font-semibold bg-slate-50 border border-dashed border-slate-200 rounded-2xl">ไม่มีข้อมูลวิเคราะห์อุตสาหกรรมในระบบ</div>
+                      <div className="h-full flex flex-col items-center justify-center bg-slate-50/50 backdrop-blur-sm border border-dashed border-slate-200/80 rounded-2xl">
+                        <div className="w-10 h-10 mb-3 rounded-full bg-white shadow-sm flex items-center justify-center"><Info size={16} className="text-slate-400" /></div>
+                        <p className="text-xs text-slate-500 font-medium">ไม่มีข้อมูลวิเคราะห์อุตสาหกรรมในระบบ</p>
+                      </div>
                     )}
                   </div>
                 </Card>
