@@ -141,40 +141,56 @@ export async function createCustomer(customerData) {
 }
 
 /**
+ * Known columns for the customers table.
+ * Any extra fields (e.g. computed join data like `deals`) are stripped
+ * before the PATCH request to avoid a 400 from PostgREST.
+ */
+const CUSTOMER_COLUMNS = new Set([
+  'name', 'company', 'email', 'phone', 'address',
+  'tax_id', 'industry', 'tier', 'notes',
+  'owner_id', 'updated_at',
+]);
+
+/**
  * Update a customer
  */
 export async function updateCustomer({ id, ...updates }) {
   try {
     if (!id) throw new Error('Customer ID is required');
     await getRequiredUserId();
-    
-    const { data, error } = await supabase
-      .from('customers')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select();
-    
-    if (error) throw error;
-    return data?.[0];
-  } catch (error) {
-    if (isMissingColumnError(error)) {
-      const { data, error: legacyError } = await supabase
+
+    // Strip any keys that are not real DB columns (e.g. joined `deals` array)
+    let payload = Object.fromEntries(
+      Object.entries(updates).filter(([key]) => CUSTOMER_COLUMNS.has(key))
+    );
+    payload.updated_at = new Date().toISOString();
+
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const { data, error } = await supabase
         .from('customers')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
+        .update(payload)
         .eq('id', id)
         .select();
 
-      if (!legacyError) return data?.[0];
+      if (!error) return data?.[0];
+
+      if (!isMissingColumnError(error)) {
+        console.error('Error updating customer:', error);
+        throw new Error('Failed to update customer: ' + error.message);
+      }
+
+      const nextPayload = removeMissingColumn(payload, error);
+      if (nextPayload === payload) {
+        console.error('Error updating customer (cannot remove column):', error);
+        throw new Error('Failed to update customer: ' + error.message);
+      }
+      payload = nextPayload;
     }
 
+    return null;
+  } catch (error) {
     console.error('Error updating customer:', error);
-    throw new Error('Failed to update customer: ' + error.message);
+    throw error instanceof Error ? error : new Error('Failed to update customer');
   }
 }
 
