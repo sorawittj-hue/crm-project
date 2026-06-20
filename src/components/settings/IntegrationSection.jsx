@@ -101,17 +101,23 @@ export function IntegrationSection() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-col gap-1 mb-6">
-        <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-          <Plug className="text-violet-500" size={24} /> ปลั๊กอิน & การเชื่อมต่อ (Integrations)
-        </h2>
-        <p className="text-sm font-medium text-slate-500">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-500/20 ring-1 ring-white/20">
+            <Plug size={20} strokeWidth={2.5} />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">ปลั๊กอิน & การเชื่อมต่อ</h2>
+            <p className="text-[10px] font-bold text-violet-600 uppercase tracking-widest mt-0.5">Integrations</p>
+          </div>
+        </div>
+        <p className="text-sm font-medium text-slate-500 mt-2 pl-[3.25rem]">
           เชื่อมต่อแอปพลิเคชันที่คุณใช้งานเป็นประจำ เพื่อรับการแจ้งเตือนและส่งต่อข้อมูลแบบอัตโนมัติ
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {PLUGINS.map(plugin => {
           const Icon = plugin.icon;
           const isEnabled = settings[plugin.id]?.enabled || false;
@@ -119,50 +125,57 @@ export function IntegrationSection() {
           return (
             <motion.div
               key={plugin.id}
-              whileHover={{ y: -4 }}
+              whileHover={{ y: -6, scale: 1.02 }}
               className={cn(
-                "group relative overflow-hidden bg-white rounded-3xl border transition-all duration-300 cursor-pointer",
+                "group relative overflow-hidden bg-white/70 backdrop-blur-2xl rounded-[2rem] border transition-all duration-500 cursor-pointer",
                 isEnabled 
-                  ? `border-${plugin.textColor.split('-')[1]}-200 shadow-xl ${plugin.glow}`
-                  : "border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300"
+                  ? `border-${plugin.textColor.split('-')[1]}-300/50 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.12)] ${plugin.glow}`
+                  : "border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)]"
               )}
               onClick={() => setActivePlugin(plugin)}
             >
+              {/* Premium Glow effect behind active card */}
+              {isEnabled && <div className={cn("absolute inset-0 opacity-5 bg-gradient-to-br from-transparent to-current", plugin.textColor)} />}
+              
               {isEnabled && (
-                <div className="absolute top-0 right-0 p-4">
-                  <div className={cn("flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-opacity-10", plugin.color.replace('bg-', 'bg-').replace(']', ']/10'), plugin.textColor)}>
-                    <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", plugin.color)} />
-                    Active
+                <div className="absolute top-0 right-0 p-5 z-10">
+                  <div className={cn("flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border shadow-sm backdrop-blur-md", 
+                    plugin.color.replace('bg-', 'bg-').replace(']', ']/10'), 
+                    plugin.color.replace('bg-', 'border-').replace(']', ']/20'), 
+                    plugin.textColor)}>
+                    <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse shadow-[0_0_8px_currentColor]", plugin.color)} />
+                    Connected
                   </div>
                 </div>
               )}
               
-              <div className="p-6">
+              <div className="p-7 relative z-10">
                 <div className={cn(
-                  "w-12 h-12 rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg transition-transform group-hover:scale-110",
+                  "w-14 h-14 rounded-[1.25rem] flex items-center justify-center text-white mb-5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 relative",
                   plugin.color,
-                  isEnabled ? plugin.glow : "shadow-slate-200"
+                  isEnabled ? plugin.glow : "shadow-md"
                 )}>
-                  <Icon size={24} strokeWidth={2.5} />
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-[1.25rem]" />
+                  <Icon size={26} strokeWidth={2.5} className="relative z-10 drop-shadow-md" />
                 </div>
                 
-                <h3 className="text-base font-black text-slate-900 mb-2">{plugin.name}</h3>
-                <p className="text-xs font-medium text-slate-500 leading-relaxed mb-6 line-clamp-2">
+                <h3 className="text-base font-black text-slate-900 mb-2.5">{plugin.name}</h3>
+                <p className="text-xs font-semibold text-slate-500 leading-relaxed mb-6 line-clamp-2">
                   {plugin.desc}
                 </p>
 
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <div className="flex items-center justify-between pt-5 border-t border-slate-100/80">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest group-hover:text-slate-600 transition-colors">
                     {isEnabled ? 'Configure' : 'Setup Now'}
                   </span>
                   <button 
                     onClick={(e) => togglePlugin(plugin.id, e)}
                     className={cn(
-                      "transition-colors",
+                      "transition-all duration-300",
                       isEnabled ? plugin.textColor : "text-slate-300 hover:text-slate-400"
                     )}
                   >
-                    {isEnabled ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
+                    {isEnabled ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
                   </button>
                 </div>
               </div>
@@ -179,7 +192,7 @@ export function IntegrationSection() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
               onClick={() => setActivePlugin(null)}
             />
             
@@ -187,19 +200,20 @@ export function IntegrationSection() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg bg-white/95 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)] border border-white/50 overflow-hidden"
             >
               <div className={cn("h-2 w-full", activePlugin.color)} />
               
-              <div className="p-6 md:p-8">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex items-center gap-4">
-                    <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg", activePlugin.color)}>
-                      <activePlugin.icon size={24} />
+              <div className="p-8">
+                <div className="flex items-start justify-between mb-8">
+                  <div className="flex items-center gap-5">
+                    <div className={cn("w-14 h-14 rounded-[1.25rem] flex items-center justify-center text-white shadow-lg relative", activePlugin.color)}>
+                      <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-[1.25rem]" />
+                      <activePlugin.icon size={26} className="relative z-10 drop-shadow-md" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-black text-slate-900 leading-tight">{activePlugin.name}</h2>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Configuration</p>
+                      <h2 className="text-2xl font-black text-slate-900 leading-tight">{activePlugin.name}</h2>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Configuration</p>
                     </div>
                   </div>
                   <button 
@@ -210,10 +224,10 @@ export function IntegrationSection() {
                   </button>
                 </div>
 
-                <form onSubmit={handleSave} className="space-y-4">
+                <form onSubmit={handleSave} className="space-y-5">
                   {activePlugin.fields.map(field => (
-                    <div key={field.key} className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    <div key={field.key} className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
                         {field.label}
                       </label>
                       <Input
@@ -227,16 +241,16 @@ export function IntegrationSection() {
                             [field.key]: e.target.value
                           }
                         })}
-                        className="font-mono text-sm bg-slate-50 border-slate-200"
+                        className="font-mono text-sm bg-slate-50/50 hover:bg-slate-50 focus:bg-white border-slate-200 shadow-inner transition-colors rounded-2xl h-12"
                       />
                     </div>
                   ))}
 
-                  <div className="pt-6 flex gap-3">
+                  <div className="pt-8 flex gap-4">
                     <Button
                       type="button"
                       variant="outline"
-                      className="flex-1 rounded-xl h-12 font-bold"
+                      className="flex-1 rounded-[1.25rem] h-14 font-bold border-slate-200 text-slate-600 hover:bg-slate-50"
                       onClick={() => setActivePlugin(null)}
                     >
                       ยกเลิก
@@ -244,21 +258,21 @@ export function IntegrationSection() {
                     <Button
                       type="submit"
                       disabled={isSaving}
-                      className={cn("flex-1 rounded-xl h-12 font-bold text-white shadow-lg", activePlugin.color.replace('bg-', 'hover:bg-').replace(']', ']/90'), activePlugin.color)}
+                      className={cn("flex-1 rounded-[1.25rem] h-14 font-bold text-white shadow-xl transition-all hover:-translate-y-0.5", activePlugin.color.replace('bg-', 'hover:bg-').replace(']', ']/90'), activePlugin.color, activePlugin.glow)}
                     >
-                      {isSaving ? <Loader2 className="animate-spin" size={18} /> : (
+                      {isSaving ? <Loader2 className="animate-spin" size={20} /> : (
                         <>
-                          <Save size={18} className="mr-2" /> บันทึกการเชื่อมต่อ
+                          <Save size={20} className="mr-2" /> บันทึกการเชื่อมต่อ
                         </>
                       )}
                     </Button>
                   </div>
                 </form>
                 
-                <div className="mt-6 p-4 rounded-2xl bg-slate-50 flex gap-3 border border-slate-100">
+                <div className="mt-8 p-4 rounded-2xl bg-slate-50/80 flex gap-3 border border-slate-100/50">
                   <AlertCircle size={20} className="text-slate-400 shrink-0" />
-                  <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                    ข้อมูลของคุณจะถูกเข้ารหัสและจัดเก็บไว้อย่างปลอดภัยใน Local Storage ของคุณเท่านั้น ไม่มีการส่งไปเก็บไว้ที่เซิร์ฟเวอร์ส่วนกลาง
+                  <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">
+                    ข้อมูลส่วนตัวของคุณจะถูกเข้ารหัสและจัดเก็บไว้อย่างปลอดภัยใน Local Storage ของคุณเท่านั้น ไม่มีการส่งไปเก็บไว้ที่เซิร์ฟเวอร์ส่วนกลาง
                   </p>
                 </div>
               </div>
