@@ -294,51 +294,66 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm"
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-md"
             onClick={onClose}
           />
 
           {/* Drawer Panel */}
           <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 250 }}
-            className="relative z-10 w-full max-w-xl h-dvh bg-white shadow-2xl flex flex-col overflow-hidden"
+            initial={{ x: '100%', opacity: 0.8 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: '100%', opacity: 0.8 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 220 }}
+            className="relative z-10 w-full max-w-xl h-dvh bg-white shadow-[0_0_40px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden border-l border-white/20"
           >
             {/* ─── HEADER ─── */}
             <div className={cn(
-              'shrink-0 px-6 pt-6 pb-5 border-b border-slate-100',
-              deal.stage === 'won' ? 'bg-gradient-to-br from-emerald-50 to-teal-50' :
-              deal.stage === 'lost' ? 'bg-gradient-to-br from-rose-50 to-pink-50' :
+              'relative shrink-0 px-6 pt-6 pb-6 border-b border-slate-100/80 overflow-hidden',
+              deal.stage === 'lead' ? 'bg-gradient-to-br from-slate-50 via-white to-slate-100/50' :
+              deal.stage === 'contact' ? 'bg-gradient-to-br from-amber-50 via-orange-50/20 to-amber-100/40' :
+              deal.stage === 'proposal' ? 'bg-gradient-to-br from-sky-50 via-blue-50/20 to-indigo-50/40' :
+              deal.stage === 'negotiation' ? 'bg-gradient-to-br from-violet-50 via-purple-50/20 to-fuchsia-50/40' :
+              deal.stage === 'won' ? 'bg-gradient-to-br from-emerald-50 via-teal-50/20 to-emerald-100/40' :
+              deal.stage === 'lost' ? 'bg-gradient-to-br from-rose-50 via-red-50/20 to-rose-100/40' :
               'bg-white'
             )}>
+              {/* Decorative gradient orb */}
+              <div className={cn(
+                "absolute -top-24 -right-24 w-64 h-64 rounded-full blur-3xl opacity-40 pointer-events-none",
+                deal.stage === 'lead' ? 'bg-slate-300' :
+                deal.stage === 'contact' ? 'bg-amber-300' :
+                deal.stage === 'proposal' ? 'bg-sky-300' :
+                deal.stage === 'negotiation' ? 'bg-violet-300' :
+                deal.stage === 'won' ? 'bg-emerald-300' :
+                deal.stage === 'lost' ? 'bg-rose-300' : 'bg-slate-200'
+              )} />
+              
               {/* Top bar */}
-              <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="relative z-10 flex items-start justify-between gap-3 mb-5">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className={cn('inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold border shrink-0', stageBadge.cls)}>
+                  <span className={cn('inline-flex items-center px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border shrink-0 shadow-sm backdrop-blur-md bg-white/60', stageBadge.cls)}>
                     {stageBadge.label}
                   </span>
                 </div>
                 <button
                   onClick={onClose}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all shrink-0"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-all shrink-0 bg-white/40 backdrop-blur-sm shadow-sm border border-white/50"
                 >
                   <X size={18} />
                 </button>
               </div>
 
               {/* Deal name + company */}
-              <div className="space-y-1 mb-4">
-                <h2 className="text-xl font-black text-slate-900 leading-tight line-clamp-2">{deal.title}</h2>
-                <div className="flex items-center gap-1.5 text-sm text-slate-500 font-medium">
-                  <Building2 size={13} />
+              <div className="relative z-10 space-y-1.5 mb-5">
+                <h2 className="text-2xl font-black text-slate-900 leading-tight line-clamp-2 drop-shadow-sm">{deal.title}</h2>
+                <div className="flex items-center gap-1.5 text-sm text-slate-600 font-semibold bg-white/40 w-fit px-2.5 py-1 rounded-lg backdrop-blur-sm border border-white/60 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+                  <Building2 size={14} className="text-slate-500" />
                   <span>{deal.company || '—'}</span>
                   {deal.contact && (
                     <>
-                      <span className="text-slate-300">•</span>
-                      <User size={13} />
+                      <span className="text-slate-300 mx-0.5">•</span>
+                      <User size={14} className="text-slate-500" />
                       <span>{deal.contact}</span>
                     </>
                   )}
@@ -346,23 +361,23 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
               </div>
 
               {/* KPI row */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-3 relative z-10">
                 {/* Value */}
-                <div className="bg-white/80 backdrop-blur rounded-xl p-3 border border-slate-100 shadow-sm">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">มูลค่า</p>
-                  <p className="text-base font-black text-slate-900 tabular-nums leading-tight">{formatCurrency(deal.value)}</p>
+                <div className="bg-white/60 backdrop-blur-md rounded-2xl p-3.5 border border-white/60 shadow-sm transition-all hover:bg-white/80">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">มูลค่า</p>
+                  <p className="text-lg font-black text-slate-900 tabular-nums leading-tight">{formatCurrency(deal.value)}</p>
                 </div>
                 {/* Probability */}
-                <div className="bg-white/80 backdrop-blur rounded-xl p-3 border border-slate-100 shadow-sm">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">โอกาส</p>
+                <div className="bg-white/60 backdrop-blur-md rounded-2xl p-3.5 border border-white/60 shadow-sm transition-all hover:bg-white/80">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">โอกาส</p>
                   <div className="flex items-center gap-1.5">
-                    <p className="text-base font-black text-slate-900 tabular-nums">{deal.probability}%</p>
+                    <p className="text-lg font-black text-slate-900 tabular-nums leading-tight">{deal.probability}%</p>
                   </div>
-                  <div className="mt-1.5 h-1 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="mt-2 h-1.5 bg-slate-200/50 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${deal.probability}%` }}
-                      className={cn('h-full rounded-full',
+                      className={cn('h-full rounded-full shadow-sm',
                         deal.probability >= 70 ? 'bg-emerald-500' :
                         deal.probability >= 40 ? 'bg-violet-500' : 'bg-amber-500'
                       )}
@@ -370,37 +385,37 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                   </div>
                 </div>
                 {/* Stage position */}
-                <div className="bg-white/80 backdrop-blur rounded-xl p-3 border border-slate-100 shadow-sm">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ขั้นตอน</p>
-                  <div className="flex items-center gap-1.5">
-                    <span className={cn('w-2 h-2 rounded-full shrink-0', wf?.dot || 'bg-slate-400')} />
-                    <p className="text-xs font-bold text-slate-700 truncate">{stageBadge.label.replace('🎉 ', '')}</p>
+                <div className="bg-white/60 backdrop-blur-md rounded-2xl p-3.5 border border-white/60 shadow-sm transition-all hover:bg-white/80">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">ขั้นตอน</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className={cn('w-2.5 h-2.5 rounded-full shrink-0 shadow-sm', wf?.dot || 'bg-slate-400')} />
+                    <p className="text-sm font-bold text-slate-800 truncate">{stageBadge.label.replace('🎉 ', '')}</p>
                   </div>
                 </div>
               </div>
 
               {/* Quick action buttons */}
-              <div className="flex gap-2 mt-4">
+              <div className="relative z-10 flex gap-2 mt-5">
                 <Button
-                  className="flex-1 h-10 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white border-0 shadow-md shadow-emerald-500/20 flex items-center justify-center gap-1.5"
+                  className="flex-1 h-11 rounded-xl text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white border-0 shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-1.5 transition-all hover:-translate-y-0.5"
                   onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : onRequestCloseStage?.('won')}
                   disabled={deal.stage === 'won'}
                 >
-                  <CheckCircle2 size={14} /> ปิดได้!
+                  <CheckCircle2 size={16} /> ปิดได้!
                 </Button>
                 <Button
                   variant="outline"
-                  className="flex-1 h-10 rounded-xl text-xs font-bold border-rose-200 text-rose-600 hover:bg-rose-50 flex items-center justify-center gap-1.5"
+                  className="flex-1 h-11 rounded-xl text-sm font-bold border-white/60 bg-white/60 backdrop-blur-sm text-rose-600 hover:bg-rose-50 hover:border-rose-200 flex items-center justify-center gap-1.5 shadow-sm transition-all hover:-translate-y-0.5"
                   onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : onRequestCloseStage?.('lost')}
                   disabled={deal.stage === 'lost'}
                 >
-                  <XCircle size={14} /> ปิดไม่ได้
+                  <XCircle size={16} /> ปิดไม่ได้
                 </Button>
                 <button
                   onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : onRequestDelete?.(deal.id)}
-                  className="w-10 h-10 rounded-xl bg-rose-50 text-rose-400 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center shrink-0"
+                  className="w-11 h-11 rounded-xl bg-white/60 backdrop-blur-sm border border-white/60 text-slate-400 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all flex items-center justify-center shrink-0 shadow-sm"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={18} />
                 </button>
               </div>
             </div>
@@ -662,25 +677,45 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                 {activeTab === 'playbook' && (
                   <motion.div key="playbook" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="p-6 space-y-5">
                     {wf && (
-                      <div className={cn('space-y-4 p-5 rounded-2xl border', wf.color)}>
-                        <div className="flex items-center gap-2">
-                          <ListTodo size={14} className={wf.headerColor} />
-                          <h3 className={cn('text-xs font-black uppercase tracking-widest', wf.headerColor)}>
+                      <div className={cn('space-y-6 p-6 rounded-3xl border shadow-sm', wf.color)}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={cn("p-1.5 rounded-lg bg-white/60 shadow-sm border border-white", wf.headerColor)}>
+                            <ListTodo size={16} />
+                          </div>
+                          <h3 className={cn('text-sm font-black uppercase tracking-widest', wf.headerColor)}>
                             ขั้นตอน: {wf.label}
                           </h3>
                         </div>
-                        <ul className="space-y-3">
+                        <div className="relative space-y-4 pl-2">
+                          <div className={cn("absolute left-[11px] top-4 bottom-4 w-[2px] rounded-full opacity-20", deal.stage === 'won' ? 'bg-emerald-500' : deal.stage === 'lost' ? 'bg-rose-500' : wf.dot)} />
                           {wf.steps.map((step, i) => (
-                            <li key={step.key} className="flex items-start gap-3 text-sm">
-                              <span className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 shrink-0 mt-0.5 shadow-sm">{i + 1}</span>
-                              <span className="text-slate-700 leading-relaxed font-medium">{step.text}</span>
-                            </li>
+                            <motion.div 
+                              initial={{ opacity: 0, x: -10 }} 
+                              animate={{ opacity: 1, x: 0 }} 
+                              transition={{ delay: i * 0.08 }}
+                              key={step.key} 
+                              className="relative flex items-start gap-4 text-sm group"
+                            >
+                              <div className={cn(
+                                "relative z-10 w-6 h-6 rounded-full bg-white border-2 flex items-center justify-center text-[10px] font-bold shrink-0 mt-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-white",
+                                deal.stage === 'won' ? 'border-emerald-200 text-emerald-600 group-hover:border-emerald-400 group-hover:shadow-[0_0_12px_rgba(52,211,153,0.5)]' : 
+                                deal.stage === 'lost' ? 'border-rose-200 text-rose-600 group-hover:border-rose-400 group-hover:shadow-[0_0_12px_rgba(251,113,133,0.5)]' : 
+                                `border-slate-200 text-slate-500 group-hover:border-slate-400 group-hover:text-slate-700 group-hover:shadow-[0_0_12px_rgba(0,0,0,0.1)]`
+                              )}>
+                                {i + 1}
+                              </div>
+                              <div className="flex-1 bg-white/60 backdrop-blur-md border border-white/60 group-hover:border-white p-3.5 rounded-2xl shadow-sm transition-all group-hover:shadow-md">
+                                <span className="text-slate-700 leading-relaxed font-semibold">{step.text}</span>
+                              </div>
+                            </motion.div>
                           ))}
-                        </ul>
+                        </div>
                         {wf.reminder && (
-                          <div className="flex items-start gap-2 p-3.5 rounded-xl bg-white/80 border border-rose-200">
-                            <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
-                            <p className="text-xs font-semibold text-rose-700 leading-relaxed">{wf.reminder}</p>
+                          <div className="flex items-start gap-3 p-4 rounded-2xl bg-white/80 border border-rose-200 shadow-sm mt-4">
+                            <div className="p-1.5 bg-rose-50 rounded-lg text-rose-500 shrink-0">
+                              <AlertTriangle size={16} />
+                            </div>
+                            <p className="text-xs font-semibold text-rose-700 leading-relaxed mt-0.5">{wf.reminder}</p>
                           </div>
                         )}
                         {['proposal', 'negotiation'].includes(deal.stage) && (() => {

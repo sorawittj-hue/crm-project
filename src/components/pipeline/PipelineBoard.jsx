@@ -31,8 +31,9 @@ const STAGE_CONFIG = {
     gradientTo: 'to-slate-100/50',
     headerBg: 'bg-gradient-to-br from-slate-50 to-slate-100/80',
     dotColor: '#94a3b8',
-    columnBorder: 'border-slate-200',
-    dragOverClass: 'bg-slate-50/70 border-slate-350 shadow-slate-100/50 ring-slate-400/20',
+    columnBorder: 'border-slate-200/60',
+    glassBg: 'bg-slate-50/40',
+    dragOverClass: 'bg-slate-50/80 border-slate-300 shadow-slate-200/50 ring-slate-400/30',
   },
   contact: {
     label: 'นัดเจอ',
@@ -44,8 +45,9 @@ const STAGE_CONFIG = {
     gradientTo: 'to-amber-100/50',
     headerBg: 'bg-gradient-to-br from-amber-50 to-orange-50/80',
     dotColor: '#f59e0b',
-    columnBorder: 'border-amber-200',
-    dragOverClass: 'bg-amber-50/40 border-amber-350 shadow-amber-100/50 ring-amber-400/20',
+    columnBorder: 'border-amber-200/60',
+    glassBg: 'bg-amber-50/30',
+    dragOverClass: 'bg-amber-50/60 border-amber-300 shadow-amber-200/50 ring-amber-400/30',
   },
   proposal: {
     label: 'เสนอราคา',
@@ -57,8 +59,9 @@ const STAGE_CONFIG = {
     gradientTo: 'to-blue-100/50',
     headerBg: 'bg-gradient-to-br from-sky-50 to-blue-50/80',
     dotColor: '#0ea5e9',
-    columnBorder: 'border-sky-200',
-    dragOverClass: 'bg-sky-50/60 border-sky-350 shadow-sky-100/50 ring-sky-400/20',
+    columnBorder: 'border-sky-200/60',
+    glassBg: 'bg-sky-50/30',
+    dragOverClass: 'bg-sky-50/60 border-sky-300 shadow-sky-200/50 ring-sky-400/30',
   },
   negotiation: {
     label: 'กำลังปิด',
@@ -70,8 +73,9 @@ const STAGE_CONFIG = {
     gradientTo: 'to-purple-100/50',
     headerBg: 'bg-gradient-to-br from-violet-50 to-purple-50/80',
     dotColor: '#8b5cf6',
-    columnBorder: 'border-violet-200',
-    dragOverClass: 'bg-violet-50/60 border-violet-350 shadow-violet-100/50 ring-violet-400/20',
+    columnBorder: 'border-violet-200/60',
+    glassBg: 'bg-violet-50/30',
+    dragOverClass: 'bg-violet-50/60 border-violet-300 shadow-violet-200/50 ring-violet-400/30',
   },
   won: {
     label: 'ปิดได้ ✓',
@@ -83,8 +87,9 @@ const STAGE_CONFIG = {
     gradientTo: 'to-green-100/50',
     headerBg: 'bg-gradient-to-br from-emerald-50 to-green-50/80',
     dotColor: '#10b981',
-    columnBorder: 'border-emerald-200',
-    dragOverClass: 'bg-emerald-50/60 border-emerald-350 shadow-emerald-100/50 ring-emerald-400/20',
+    columnBorder: 'border-emerald-200/60',
+    glassBg: 'bg-emerald-50/30',
+    dragOverClass: 'bg-emerald-50/60 border-emerald-300 shadow-emerald-200/50 ring-emerald-400/30',
   },
   lost: {
     label: 'ปิดไม่ได้',
@@ -96,8 +101,9 @@ const STAGE_CONFIG = {
     gradientTo: 'to-red-100/50',
     headerBg: 'bg-gradient-to-br from-rose-50 to-red-50/80',
     dotColor: '#f43f5e',
-    columnBorder: 'border-rose-200',
-    dragOverClass: 'bg-rose-50/60 border-rose-350 shadow-rose-100/50 ring-rose-400/20',
+    columnBorder: 'border-rose-200/60',
+    glassBg: 'bg-rose-50/30',
+    dragOverClass: 'bg-rose-50/60 border-rose-300 shadow-rose-200/50 ring-rose-400/30',
   },
 };
 
@@ -323,10 +329,10 @@ export default function PipelineBoard({
   }, []);
 
   const filterColorMap = {
-    violet: { active: 'bg-violet-600 text-white border-violet-600 shadow-violet-200', inactive: 'bg-white text-slate-600 border-slate-200 hover:border-violet-300 hover:text-violet-600' },
-    amber: { active: 'bg-amber-500 text-white border-amber-500 shadow-amber-200', inactive: 'bg-white text-slate-600 border-slate-200 hover:border-amber-300 hover:text-amber-600' },
-    emerald: { active: 'bg-emerald-600 text-white border-emerald-600 shadow-emerald-200', inactive: 'bg-white text-slate-600 border-slate-200 hover:border-emerald-300 hover:text-emerald-600' },
-    rose: { active: 'bg-rose-500 text-white border-rose-500 shadow-rose-200', inactive: 'bg-white text-slate-600 border-slate-200 hover:border-rose-300 hover:text-rose-600' },
+    violet: { active: 'bg-gradient-to-r from-violet-600 to-purple-600 text-white border-transparent shadow-lg shadow-violet-500/30 scale-105', inactive: 'bg-white/80 backdrop-blur-sm text-slate-600 border-slate-200/80 hover:border-violet-300 hover:bg-violet-50/50 hover:text-violet-600' },
+    amber: { active: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-transparent shadow-lg shadow-amber-500/30 scale-105', inactive: 'bg-white/80 backdrop-blur-sm text-slate-600 border-slate-200/80 hover:border-amber-300 hover:bg-amber-50/50 hover:text-amber-600' },
+    emerald: { active: 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-transparent shadow-lg shadow-emerald-500/30 scale-105', inactive: 'bg-white/80 backdrop-blur-sm text-slate-600 border-slate-200/80 hover:border-emerald-300 hover:bg-emerald-50/50 hover:text-emerald-600' },
+    rose: { active: 'bg-gradient-to-r from-rose-500 to-red-500 text-white border-transparent shadow-lg shadow-rose-500/30 scale-105', inactive: 'bg-white/80 backdrop-blur-sm text-slate-600 border-slate-200/80 hover:border-rose-300 hover:bg-rose-50/50 hover:text-rose-600' },
   };
 
   if (deals.length === 0) {
@@ -376,8 +382,8 @@ export default function PipelineBoard({
                 onClick={() => setActiveFilter(filter.id)}
                 whileTap={{ scale: 0.95 }}
                 className={cn(
-                  'flex items-center gap-2 px-4 h-9 rounded-xl text-xs font-semibold transition-all whitespace-nowrap border shadow-sm',
-                  isActive ? `${colors.active} shadow-md` : colors.inactive
+                  'flex items-center gap-2 px-4 h-9 rounded-full text-xs font-semibold transition-all duration-300 whitespace-nowrap border shadow-sm',
+                  isActive ? colors.active : colors.inactive
                 )}
               >
                 <filter.icon size={13} strokeWidth={2.5} />
@@ -432,7 +438,7 @@ export default function PipelineBoard({
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
+                <tr className="bg-slate-50/80 backdrop-blur-sm border-b border-slate-200/80">
                   <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">บริษัท / ดีล</th>
                   <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">ขั้นตอน</th>
                   <th className="text-right px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">มูลค่า</th>
@@ -452,7 +458,7 @@ export default function PipelineBoard({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.03 }}
                       onClick={() => onDealClick(deal)}
-                      className={cn('hover:bg-violet-50/50 cursor-pointer transition-colors group', isStagnant && 'bg-rose-50/30')}
+                      className={cn('hover:bg-gradient-to-r hover:from-violet-50/50 hover:to-white cursor-pointer transition-all duration-300 group hover:shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] relative z-10 hover:z-20', isStagnant && 'bg-rose-50/30')}
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
@@ -552,10 +558,10 @@ export default function PipelineBoard({
                     {(provided, snapshot) => (
                       <div
                         className={cn(
-                          'flex-shrink-0 flex flex-col w-[290px] h-full rounded-2xl transition-[background-color,border-color,box-shadow,transform] duration-300 border overflow-hidden',
+                          'flex-shrink-0 flex flex-col w-[290px] h-full rounded-[1.25rem] transition-all duration-300 border overflow-hidden backdrop-blur-md',
                           snapshot.isDraggingOver
-                            ? `ring-2 shadow-lg ${stage.dragOverClass}`
-                            : 'bg-white/70 backdrop-blur-sm border-slate-200/80 shadow-sm hover:shadow-md'
+                            ? `ring-2 ${stage.dragOverClass}`
+                            : `${stage.glassBg} ${stage.columnBorder} shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)]`
                         )}
                       >
                         {/* Column header */}
@@ -758,13 +764,13 @@ const DealCard = memo(
             whileHover={{ y: -2, boxShadow: '0 8px 20px rgba(0, 0, 0, 0.06)' }}
             transition={{ type: 'spring', stiffness: 480, damping: 30 }}
             className={cn(
-              'group relative rounded-2xl border overflow-hidden transition-colors duration-200 bg-white/95 backdrop-blur-sm cursor-pointer',
-              isDragging ? 'border-violet-400 ring-2 ring-violet-500/20 z-50 shadow-2xl'
-                : isSelected ? 'border-violet-500 ring-2 ring-violet-500/15 shadow-md'
-                : isPinned ? 'border-blue-200 bg-blue-50/20 shadow-sm'
-                : isHighValue ? 'border-amber-300/80 bg-gradient-to-br from-white via-white to-amber-50/20 shadow-sm'
-                : isStagnant ? 'border-rose-200 bg-rose-50/30 shadow-sm'
-                : 'border-slate-200/70 shadow-sm hover:border-violet-200/60'
+              'group relative rounded-2xl border overflow-hidden transition-all duration-300 bg-white/95 backdrop-blur-md cursor-pointer hover:shadow-lg hover:-translate-y-0.5',
+              isDragging ? 'border-violet-400 ring-4 ring-violet-500/20 z-50 shadow-2xl scale-105'
+                : isSelected ? 'border-violet-500 ring-2 ring-violet-500/20 shadow-md bg-violet-50/30'
+                : isPinned ? 'border-blue-200 bg-gradient-to-br from-white to-blue-50/40 shadow-sm hover:border-blue-300'
+                : isHighValue ? 'border-amber-300/80 bg-gradient-to-br from-white to-amber-50/40 shadow-sm hover:border-amber-400/80'
+                : isStagnant ? 'border-rose-200 bg-gradient-to-br from-white to-rose-50/40 shadow-sm hover:border-rose-300'
+                : 'border-slate-200/70 shadow-sm hover:border-violet-200/80'
             )}
           >
             {/* Colored left accent bar */}
@@ -774,7 +780,7 @@ const DealCard = memo(
               {/* === DRAG HANDLE ZONE === */}
               <div
                 {...dragHandleProps}
-                className="absolute top-0 right-0 w-9 h-full flex items-center justify-center cursor-grab active:cursor-grabbing z-10 bg-slate-50/50 hover:bg-violet-50/80 border-l border-slate-100/70 transition-all text-slate-400 hover:text-violet-600"
+                className="absolute top-0 right-0 w-9 h-full flex items-center justify-center cursor-grab active:cursor-grabbing z-10 bg-slate-50/50 group-hover:bg-violet-50/80 border-l border-slate-100/70 transition-all duration-300 text-slate-400 hover:text-violet-600"
                 title="ลากเพื่อย้ายขั้นตอน"
                 onClick={(e) => e.stopPropagation()}
               >

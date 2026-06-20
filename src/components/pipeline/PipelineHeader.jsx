@@ -78,22 +78,22 @@ export default function PipelineHeader({
     <div className="space-y-4">
       {/* MONTH NAVIGATOR */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center bg-white border border-slate-200 rounded-2xl p-1 shadow-sm gap-1">
+        <div className="flex items-center bg-white/90 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-1.5 shadow-sm hover:shadow-md transition-shadow gap-1">
           <button
             onClick={goPrev}
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-violet-50 hover:text-violet-600 transition-colors"
             aria-label="เดือนก่อน"
           >
             <ChevronLeft size={18} />
           </button>
 
           <div className="flex items-center gap-2 px-4 min-w-[190px] justify-center select-none">
-            <CalendarDays size={15} className="text-violet-500" />
-            <span className="text-sm font-bold text-slate-900 tabular-nums">
+            <CalendarDays size={16} className="text-violet-500 drop-shadow-sm" />
+            <span className="text-sm font-bold text-slate-900 tabular-nums tracking-wide">
               {MONTHS_TH[selectedMonth]} {selectedYear + 543}
             </span>
             {isCurrent && (
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-violet-100 text-violet-600 rounded-full">
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-gradient-to-r from-violet-100 to-purple-100 text-violet-700 rounded-full border border-violet-200/50 shadow-sm">
                 ปัจจุบัน
               </span>
             )}
@@ -101,7 +101,7 @@ export default function PipelineHeader({
 
           <button
             onClick={goNext}
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-violet-50 hover:text-violet-600 transition-colors"
             aria-label="เดือนถัดไป"
           >
             <ChevronRight size={18} />
@@ -124,7 +124,7 @@ export default function PipelineHeader({
       {/* KPI STRIP */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {/* Target progress — prominent */}
-        <div className="col-span-2 p-5 rounded-2xl bg-gradient-to-br from-violet-600 via-violet-700 to-purple-700 text-white shadow-lg shadow-violet-500/25 relative overflow-hidden">
+        <div className="col-span-2 p-5 rounded-2xl bg-gradient-to-br from-violet-600 via-violet-700 to-purple-800 text-white shadow-lg shadow-violet-500/25 relative overflow-hidden group hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-violet-500/30">
           <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/5" />
           <div className="absolute -bottom-12 -left-6 w-28 h-28 rounded-full bg-white/5" />
           <div className="relative z-10 space-y-3">
@@ -164,10 +164,10 @@ export default function PipelineHeader({
 
         {/* Growth */}
         <div className={cn(
-          'p-5 rounded-2xl border shadow-sm flex flex-col justify-between relative overflow-hidden',
+          'p-5 rounded-2xl border flex flex-col justify-between relative overflow-hidden group hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300',
           isPositiveTrend
-            ? 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-100'
-            : 'bg-gradient-to-br from-rose-50 to-red-50 border-rose-100'
+            ? 'bg-gradient-to-br from-emerald-50/80 to-emerald-100/30 border-emerald-200/60 shadow-emerald-100/50'
+            : 'bg-gradient-to-br from-rose-50/80 to-rose-100/30 border-rose-200/60 shadow-rose-100/50'
         )}>
           <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full opacity-20"
             style={{ backgroundColor: isPositiveTrend ? '#10b981' : '#f43f5e' }} />
@@ -200,7 +200,7 @@ export default function PipelineHeader({
         </div>
 
         {/* Deal count */}
-        <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 shadow-sm flex flex-col justify-between relative overflow-hidden">
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-50/80 to-amber-100/30 border border-amber-200/60 shadow-amber-100/50 flex flex-col justify-between relative overflow-hidden group hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-amber-200/30" />
           <div className="flex justify-between items-start relative z-10">
             <p className="text-xs text-amber-700 font-semibold tracking-wide uppercase">ปิดได้เดือนนี้</p>
@@ -218,7 +218,7 @@ export default function PipelineHeader({
         </div>
 
         {/* At risk count / value */}
-        <div className="col-span-2 lg:col-span-1 p-5 rounded-2xl bg-gradient-to-br from-rose-50 via-rose-50/50 to-orange-50/30 border border-rose-100 shadow-sm flex flex-col justify-between relative overflow-hidden">
+        <div className="col-span-2 lg:col-span-1 p-5 rounded-2xl bg-gradient-to-br from-rose-50/90 via-rose-50/60 to-orange-50/40 border border-rose-200/60 shadow-rose-100/50 flex flex-col justify-between relative overflow-hidden group hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-rose-200/25" />
           <div className="flex justify-between items-start relative z-10">
             <p className="text-xs text-rose-800 font-semibold tracking-wide uppercase">ดีลค้าง/เสี่ยงสูง</p>
