@@ -1,6 +1,7 @@
-import { TrendingUp, TrendingDown, Target, Activity, ChevronLeft, ChevronRight, CalendarDays, AlertTriangle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, Activity, ChevronLeft, ChevronRight, CalendarDays, AlertTriangle, Download } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
+import { downloadCsv } from '../../utils/exportUtils';
 
 const MONTHS_TH = [
   'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
@@ -22,6 +23,7 @@ function AnimatedNumber({ value, prefix = '', suffix = '' }) {
 }
 
 export default function PipelineHeader({
+  deals = [],
   selectedMonth,
   selectedYear,
   onMonthChange,
@@ -108,17 +110,41 @@ export default function PipelineHeader({
           </button>
         </div>
 
-        {!isCurrent && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            onClick={goToday}
-            className="h-10 px-5 rounded-xl bg-violet-600 text-white hover:bg-violet-700 text-xs font-semibold flex items-center gap-2 transition-all shadow-md shadow-violet-200"
+        <div className="flex items-center gap-2">
+          {!isCurrent && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              onClick={goToday}
+              className="h-10 px-5 rounded-xl bg-violet-600 text-white hover:bg-violet-700 text-xs font-semibold flex items-center gap-2 transition-all shadow-md shadow-violet-200"
+            >
+              <Target size={14} />
+              กลับไปเดือนปัจจุบัน
+            </motion.button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              const dataToExport = deals.map(d => ({
+                'หัวข้อดีล': d.title || '',
+                'ชื่อบริษัท': d.company || '',
+                'มูลค่าดีล': d.value || 0,
+                'ขั้นตอน': d.stage || '',
+                'โอกาสสำเร็จ (%)': d.probability || 0,
+                'วันที่สร้าง': d.created_at ? new Date(d.created_at).toLocaleDateString('th-TH') : '',
+                'วันที่คาดว่าจะปิด': d.expected_close_date ? new Date(d.expected_close_date).toLocaleDateString('th-TH') : '',
+                'ขั้นตอนถัดไป': d.next_step || '',
+              }));
+              downloadCsv(dataToExport, `Deals_Export_${MONTHS_TH[selectedMonth]}_${selectedYear}`);
+            }}
+            className="h-10 px-4 rounded-xl border border-slate-200 bg-white/90 text-slate-650 hover:bg-slate-50 hover:text-violet-600 text-xs font-bold flex items-center gap-2 transition-all shadow-sm hover:shadow-md cursor-pointer shrink-0"
+            title="ส่งออกดีลทั้งหมดเป็น CSV"
           >
-            <Target size={14} />
-            กลับไปเดือนปัจจุบัน
-          </motion.button>
-        )}
+            <Download size={14} />
+            <span>ส่งออก CSV</span>
+          </button>
+        </div>
       </div>
 
       {/* KPI STRIP */}

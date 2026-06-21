@@ -61,21 +61,40 @@ async function notifyLineOA(settings, message) {
 async function notifyWebhook(settings, payload) {
   if (!settings.enabled || !settings.webhook_url) return;
 
-  try {
-    const headers = { 'Content-Type': 'application/json' };
-    if (settings.secret_key) {
-      headers['X-Nova-Signature'] = settings.secret_key;
-    }
-
-    await fetch(settings.webhook_url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload)
-    });
-    console.log('[Integration] Webhook notification sent.');
-  } catch (err) {
-    console.error('[Integration] Webhook error:', err);
+  const headers = { 'Content-Type': 'application/json' };
+  if (settings.secret_key) {
+    headers['X-Nova-Signature'] = settings.secret_key;
   }
+
+  const maxRetries = 3;
+  let delay = 1000;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(settings.webhook_url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+      });
+      
+      if (response.ok) {
+        console.log(`[Integration] Webhook sent successfully on attempt ${attempt}.`);
+        return;
+      }
+      
+      console.warn(`[Integration] Webhook attempt ${attempt} failed with status: ${response.status}`);
+    } catch (err) {
+      console.error(`[Integration] Webhook attempt ${attempt} error:`, err);
+    }
+    
+    if (attempt < maxRetries) {
+      console.log(`[Integration] Retrying webhook in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      delay *= 2;
+    }
+  }
+  
+  console.error('[Integration] Webhook dispatch failed after all retries.');
 }
 
 export async function dispatchNotification(eventType, data) {

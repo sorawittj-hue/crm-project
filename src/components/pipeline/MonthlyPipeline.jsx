@@ -180,8 +180,8 @@ export default function MonthlyPipeline({
 
   return (
     <div className="flex flex-col space-y-5">
-      {/* HEADER WITH KPIs — stats filtered by selected month (won revenue) */}
       <PipelineHeader
+        deals={deals}
         selectedMonth={selectedMonth}
         selectedYear={selectedYear}
         onMonthChange={onMonthChange || setLocalMonth}

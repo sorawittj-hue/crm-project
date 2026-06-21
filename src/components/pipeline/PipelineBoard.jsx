@@ -19,6 +19,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 import { Button } from '../ui/Button';
+import { normalizeDealForIntelligence } from '../../utils/salesIntelligence';
 
 const STAGE_CONFIG = {
   lead: {
@@ -553,6 +554,16 @@ export default function PipelineBoard({
                   0
                 );
 
+                // Compute column stats for heatmap
+                const normalized = stageDeals.map(d => normalizeDealForIntelligence(d));
+                const active = normalized.filter(d => d.isActive);
+                const avgInactive = active.length > 0
+                  ? Math.round(active.reduce((sum, d) => sum + (d.daysInactive || 0), 0) / active.length)
+                  : 0;
+                const atRisk = active.filter(d => d.isAtRisk).length;
+                const isCritical = !['won', 'lost'].includes(stageId) && (avgInactive >= 10 || atRisk >= 3);
+                const isWarning = !['won', 'lost'].includes(stageId) && !isCritical && (avgInactive >= 5 || atRisk >= 1);
+
                 return (
                   <Droppable droppableId={stageId} key={stageId}>
                     {(provided, snapshot) => (
@@ -561,7 +572,11 @@ export default function PipelineBoard({
                           'flex-shrink-0 flex flex-col w-[290px] h-full rounded-[1.25rem] transition-all duration-300 border overflow-hidden backdrop-blur-md',
                           snapshot.isDraggingOver
                             ? `ring-2 ${stage.dragOverClass}`
-                            : `${stage.glassBg} ${stage.columnBorder} shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)]`
+                            : isCritical
+                              ? 'border-rose-350 shadow-[0_4px_20px_rgba(244,63,94,0.08)] bg-rose-50/10 hover:shadow-[0_8px_30px_rgba(244,63,94,0.12)]'
+                              : isWarning
+                                ? 'border-amber-300 shadow-[0_4px_20px_rgba(245,158,11,0.06)] bg-amber-50/10 hover:shadow-[0_8px_30px_rgba(245,158,11,0.1)]'
+                                : `${stage.glassBg} ${stage.columnBorder} shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)]`
                         )}
                       >
                         {/* Column header */}
@@ -579,9 +594,30 @@ export default function PipelineBoard({
                               {stageDeals.length}
                             </span>
                           </div>
-                          <p className="text-sm font-black tabular-nums" style={{ color: stage.dotColor }}>
-                            {formatCurrency(totalValue)}
-                          </p>
+                          <div className="flex items-end justify-between">
+                            <p className="text-sm font-black tabular-nums shrink-0" style={{ color: stage.dotColor }}>
+                              {formatCurrency(totalValue)}
+                            </p>
+                            
+                            {/* Stagnation Heatmap indicators */}
+                            {!['won', 'lost'].includes(stageId) && active.length > 0 && (
+                              isCritical ? (
+                                <span className="text-[9px] font-bold text-rose-600 bg-rose-100/70 border border-rose-200/50 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                                  <AlertTriangle size={8} className="animate-pulse shrink-0" />
+                                  นิ่งเฉลี่ย: {avgInactive} วัน
+                                </span>
+                              ) : isWarning ? (
+                                <span className="text-[9px] font-bold text-amber-700 bg-amber-100/70 border border-amber-200/50 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                                  <Clock size={8} className="shrink-0" />
+                                  นิ่งเฉลี่ย: {avgInactive} วัน
+                                </span>
+                              ) : (
+                                <span className="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full shrink-0">
+                                  นิ่งเฉลี่ย: {avgInactive} วัน
+                                </span>
+                              )
+                            )}
+                          </div>
                         </div>
 
                         {/* Cards */}

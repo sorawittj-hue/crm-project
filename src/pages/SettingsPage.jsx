@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useMyProfile } from '../hooks/useUserProfiles';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
-import { Target, Users, ListTree, User, Building2, ShieldCheck, Loader2, Sparkles, Settings2, Plug, Crown, Shield, Bell } from 'lucide-react';
+import { Target, Users, ListTree, User, Building2, ShieldCheck, Loader2, Sparkles, Settings2, Plug, Crown, Shield, Bell, History } from 'lucide-react';
 
 import { TargetsSection } from '../components/settings/TargetsSection';
 import { TeamSection } from '../components/settings/TeamSection';
@@ -17,6 +17,7 @@ import { BackupSection } from '../components/settings/BackupSection';
 import { IntegrationSection } from '../components/settings/IntegrationSection';
 import { ConsoleCenterSection } from '../components/settings/ConsoleCenterSection';
 import { NotificationSection } from '../components/settings/NotificationSection';
+import { AuditLogSection } from '../components/settings/AuditLogSection';
 import { Database } from 'lucide-react';
 
 const BASE_SECTIONS = [
@@ -44,11 +45,10 @@ export default function SettingsPage() {
     ? [
         ...BASE_SECTIONS,
         { id: 'users', label: 'ผู้ใช้งาน', icon: ShieldCheck },
+        { id: 'audit', label: 'ประวัติการทำงาน 📋', icon: History },
         { id: 'console', label: 'Console Center 👑', icon: Crown }
       ]
-    : isAdmin
-      ? [...BASE_SECTIONS, { id: 'users', label: 'ผู้ใช้งาน', icon: ShieldCheck }]
-      : BASE_SECTIONS;
+    : BASE_SECTIONS;
 
   if (settingsLoading || teamLoading) return (
     <div className="flex items-center justify-center h-[60vh]">
@@ -178,6 +178,7 @@ export default function SettingsPage() {
               {activeSection === 'data' && <BackupSection />}
               {activeSection === 'plugins' && <IntegrationSection />}
               {activeSection === 'users' && (isAdmin || isOwner) && <UsersSection />}
+              {activeSection === 'audit' && (isAdmin || isOwner) && <AuditLogSection />}
               {activeSection === 'console' && isOwner && <ConsoleCenterSection />}
             </motion.div>
           </AnimatePresence>
