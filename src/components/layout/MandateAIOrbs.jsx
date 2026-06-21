@@ -4,7 +4,6 @@ import { X, ExternalLink, Zap, Trash2, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatCurrency } from '../../lib/formatters';
 import { useAppStore } from '../../store/useAppStore';
-import { useOnboardingStore } from '../../store/useOnboardingStore';
 
 const DISMISSED_ORBS_KEY = 'crm.dismissedStaleDeals.v1';
 
@@ -46,8 +45,7 @@ export default function MandateAIOrbs({ deals = [], activities = [] }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
   const setPendingOpenDeal = useAppStore(state => state.setPendingOpenDeal);
-  const isTourActive = useOnboardingStore(state => state.isTourActive);
-
+  
   useEffect(() => {
     // Logic: Find active deals with value >= 100,000 THB, not won/lost,
     // and no activity in the last 7 days.

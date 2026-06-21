@@ -10,7 +10,6 @@ import { useAuth } from '../../hooks/useAuth';
 import { useMyProfile } from '../../hooks/useUserProfiles';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
-import { useOnboardingStore } from '../../store/useOnboardingStore';
 
 export function TargetsSection() {
   const { data: settings } = useSettings();
@@ -19,8 +18,7 @@ export function TargetsSection() {
   const { user } = useAuth();
   const { openPaywall } = useAppStore();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
-  const { completeTask } = useOnboardingStore();
-
+  
   const [targetForm, setTargetForm] = useState(null);
   const [savingTargets, setSavingTargets] = useState(false);
 
@@ -40,8 +38,7 @@ export function TargetsSection() {
       await updateSettings.mutateAsync({
         monthly_target: Number(targetForm.monthly_target),
       });
-      completeTask('setTarget');
-      success('บันทึกเป้าหมายยอดขายสำเร็จ');
+            success('บันทึกเป้าหมายยอดขายสำเร็จ');
       setTargetForm(null);
     } catch (err) {
       error('เกิดข้อผิดพลาดในการบันทึกเป้าหมาย: ' + err.message);

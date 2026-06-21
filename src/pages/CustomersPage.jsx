@@ -7,7 +7,6 @@ import { useAppStore } from '../store/useAppStore';
 import { useSubscription } from '../hooks/useSubscription';
 import { useDebounce } from '../hooks/useDebounce';
 import { Card } from '../components/ui/Card';
-import { useOnboardingStore } from '../store/useOnboardingStore';
 import MetricTooltip from '../components/ui/MetricTooltip';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -80,8 +79,7 @@ export default function CustomersPage() {
   const { setPendingNewDealCustomer, openPaywall } = useAppStore();
 
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
-  const { completeTask } = useOnboardingStore();
-
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState('all');
   const [industryFilter, setIndustryFilter] = useState('all');
@@ -173,8 +171,7 @@ export default function CustomersPage() {
     setFormError(null);
     try {
       await createCustomerMutation.mutateAsync(newCustomer);
-      completeTask('addCustomer');
-      setIsAddModalOpen(false);
+            setIsAddModalOpen(false);
       setNewCustomer(EMPTY_FORM);
     } catch (err) {
       setFormError(err?.message || 'ไม่สามารถบันทึกได้ กรุณาลองใหม่');

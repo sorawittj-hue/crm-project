@@ -33,8 +33,8 @@ import MandateAIOrbs from './MandateAIOrbs';
 import PaywallModal from '../ui/PaywallModal';
 import WelcomeModal from '../ui/WelcomeModal';
 import GlobalAddDealModal from '../pipeline/GlobalAddDealModal';
-import TourEngine from '../onboarding/TourEngine';
-import OnboardingWidget from '../onboarding/OnboardingWidget';
+
+
 
 const sidebarVariants = {
   open: { x: 0, opacity: 1, transition: springSmooth },
@@ -789,8 +789,8 @@ export default function AppLayout() {
       />
       <GlobalAddDealModal />
 
-      {/* Onboarding walkthrough overlays */}
-      <TourEngine />
+      
+      
 
       {/* Paywall Modal */}
       <PaywallModal />
@@ -798,7 +798,7 @@ export default function AppLayout() {
 
       {/* Floating action widgets — separated to prevent overlap */}
       <div className="fixed bottom-6 left-6 lg:left-[312px] z-[9990] font-sans">
-        <OnboardingWidget />
+        
       </div>
 
       <div className="fixed bottom-6 right-6 z-[9990] font-sans">

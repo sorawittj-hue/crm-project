@@ -1,18 +1,16 @@
 import { useAuth } from './useAuth';
 import { useMyProfile } from './useUserProfiles';
 import { isLocalTrialActive as checkLocalTrial, getTrialDaysLeft as getLocalTrialDaysLeft } from '../lib/localDb';
-import { useOnboardingStore } from '../store/useOnboardingStore';
 
 export function useSubscription() {
   const { user } = useAuth();
   const { data: myProfile, isLoading } = useMyProfile(user?.id);
-  const { isDemoMode } = useOnboardingStore();
-
+  
   // 1. VIP / Admin logic
   const isOwner = user?.email === 'sorawittj@gmail.com' || user?.user_metadata?.role === 'admin';
   
   // 2. Local Trial logic / Demo Mode sandbox
-  const isGuestAccount = checkLocalTrial() || isDemoMode;
+  const isGuestAccount = checkLocalTrial() ;
 
   // 3. Admin logic
   const isAdmin = myProfile?.role === 'admin';
@@ -25,13 +23,9 @@ export function useSubscription() {
   let isExpired = false;
   let trialDaysLeft = 0;
 
-  if (isGuestAccount && !isDemoMode) {
+  if (isGuestAccount) {
     trialDaysLeft = 3;
     isTrialActive = false; // Guest is read-only
-    isExpired = false;
-  } else if (isDemoMode) {
-    trialDaysLeft = 30;
-    isTrialActive = true;
     isExpired = false;
   } else if (myProfile?.plan_type === 'trial' || (!isPro && user)) {
     // Registered users trial logic
@@ -53,10 +47,10 @@ export function useSubscription() {
 
   // Final access checks
   // Can they perform normal actions? (Pro, Registered Trial active, Demo mode, or Guest/Sandbox)
-  const canUseBasicFeatures = isPro || isTrialActive || isDemoMode || isGuestAccount;
+  const canUseBasicFeatures = isPro || isTrialActive  || isGuestAccount;
   
   // Can they perform premium actions? (Export, Backup)
-  const canUsePremiumFeatures = isPro || isDemoMode;
+  const canUsePremiumFeatures = isPro ;
 
   // Should we show the paywall for normal actions?
   const shouldBlockBasic = !canUseBasicFeatures;

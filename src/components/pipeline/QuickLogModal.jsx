@@ -6,7 +6,6 @@ import { Input } from '../ui/Input';
 import { Phone, Mail, Clock, FileText, CheckCircle2, Loader2, CalendarClock } from 'lucide-react';
 import { useAddActivity } from '../../hooks/useActivities';
 import { cn } from '../../lib/utils';
-import { useOnboardingStore } from '../../store/useOnboardingStore';
 
 const ACTIVITY_TYPES = [
   { id: 'call', label: 'โทร', icon: Phone, color: 'text-blue-600 bg-blue-50 border-blue-200' },
@@ -17,8 +16,7 @@ const ACTIVITY_TYPES = [
 
 export default function QuickLogModal({ open, onOpenChange, deal }) {
   const addActivityMutation = useAddActivity();
-  const { completeTask } = useOnboardingStore();
-  const [type, setType] = useState('call');
+    const [type, setType] = useState('call');
   const [note, setNote] = useState('');
   const [setFollowUp, setSetFollowUp] = useState(false);
   const [followUpDate, setFollowUpDate] = useState('');
@@ -39,8 +37,7 @@ export default function QuickLogModal({ open, onOpenChange, deal }) {
         description: note,
         completed_at: new Date().toISOString(),
       });
-      completeTask('logActivity');
-
+      
       // 2. Add follow up task if checked
       if (setFollowUp && followUpDate) {
         await addActivityMutation.mutateAsync({

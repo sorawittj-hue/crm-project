@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useSubscription } from '../hooks/useSubscription';
 import { useDebounce } from '../hooks/useDebounce';
 import { useAppStore } from '../store/useAppStore';
-import { useOnboardingStore } from '../store/useOnboardingStore';
+
 import { useAddActivity } from '../hooks/useActivities';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
 import { Plus, Sliders, ScanLine, Download, User, Zap, Loader2, ChevronDown, Search, Briefcase, Calendar, Building2, Sparkles, UserCheck, Smile, DollarSign, Check, Phone, Mail, ArrowRight, ArrowLeft, TrendingUp } from 'lucide-react';
@@ -35,7 +35,7 @@ export default function PipelinePage() {
   const { pendingOpenDeal, clearPendingOpenDeal, pendingNewDealCustomer, clearPendingNewDealCustomer, openPaywall } = useAppStore();
   const { user } = useAuth();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
-  const { completeTask } = useOnboardingStore();
+  
 
   const handleUpdateDeal = useCallback((id, updates) => {
     if (shouldBlockBasic) {
@@ -224,7 +224,7 @@ export default function PipelinePage() {
         actual_close_date: isClosed ? (newDeal.expected_close_date ? new Date(newDeal.expected_close_date + 'T12:00:00').toISOString() : new Date().toISOString()) : null,
         assigned_to: newDeal.assigned_to || null,
       });
-      completeTask('addDeal');
+      
       setIsAddModalOpen(false);
       setNewDeal({ title: '', company: '', value: '', stage: 'lead', customer_id: '', contact: '', contact_email: '', contact_phone: '', probability: '50', expected_close_date: '', assigned_to: '' });
     } catch (err) {
@@ -258,7 +258,7 @@ export default function PipelinePage() {
         probability: 50,
         expected_close_date: quickDeal.expected_close_date || null,
       });
-      completeTask('addDeal');
+      
       setQuickDeal({ company: '', title: '', value: '', expected_close_date: '' });
       setIsQuickAddOpen(false);
     } catch (err) {
@@ -485,7 +485,7 @@ export default function PipelinePage() {
             if (data) {
               try {
                 await addDealMutation.mutateAsync(data);
-                completeTask('addDeal');
+                
               } catch (err) {
                 console.error(err);
               }
