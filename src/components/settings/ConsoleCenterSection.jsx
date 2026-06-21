@@ -5,12 +5,11 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { cn } from '../../lib/utils';
 import { 
-  ShieldCheck, Crown, Users, Sparkles, Calendar, Search, 
-  UserCheck, ShieldAlert, Mail, Clock, RefreshCw, UserMinus, Plus,
+  Crown, Users, Sparkles, Calendar, Search, 
+  UserCheck, ShieldAlert, Mail, Clock, RefreshCw, Plus,
   UserPlus, Trash2, Lock, Unlock, Loader2, Sliders, X
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { useSubscription } from '../../hooks/useSubscription';
 import { 
   useAllProfiles, 
   useUpdateProfileRole, 
@@ -103,7 +102,6 @@ export function ConsoleCenterSection() {
       const isUserPro = profile.email === 'sorawittj@gmail.com' || profile.plan_type === 'pro';
       const isSuspended = profile.plan_type === 'suspended';
       let isUserTrial = false;
-      let isUserExpired = false;
 
       if (!isUserPro && !isSuspended) {
         if (profile.plan_type === 'trial' || (!profile.plan_type && profile.created_at)) {
@@ -112,7 +110,6 @@ export function ConsoleCenterSection() {
             : new Date(new Date(profile.created_at).getTime() + 3 * 24 * 60 * 60 * 1000);
           const now = new Date();
           isUserTrial = now < endDate;
-          isUserExpired = now >= endDate;
         }
       }
 
@@ -317,7 +314,7 @@ export function ConsoleCenterSection() {
       await deleteProfile.mutateAsync(profileToDelete.id);
       setProfileToDelete(null);
       setManagedProfile(null); // Close the drawer if the deleted user is the one being managed
-    } catch (err) {
+    } catch {
       // Toast is handled inside hook
     }
   };
@@ -555,8 +552,6 @@ export function ConsoleCenterSection() {
               // Calculate trial status
               let trialDaysLeft = 0;
               let isUserTrial = false;
-              let isUserExpired = false;
-              let trialEndDateString = '';
 
               if (!isUserPro && !isSuspended) {
                 const endDate = profile.trial_ends_at 
@@ -564,8 +559,6 @@ export function ConsoleCenterSection() {
                   : new Date(new Date(profile.created_at).getTime() + 3 * 24 * 60 * 60 * 1000);
                 const now = new Date();
                 isUserTrial = now < endDate;
-                isUserExpired = now >= endDate;
-                trialEndDateString = endDate.toISOString().split('T')[0];
                 
                 const diffTime = endDate.getTime() - now.getTime();
                 trialDaysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -891,7 +884,7 @@ export function ConsoleCenterSection() {
                         </span>
                       ) : currentManagedProfile.plan_type === 'trial' ? (
                         <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 uppercase tracking-wider">
-                          ⚡ TRIAL ACTIVE
+                          ⚡ TRIAL ACTIVE ({managedTrialDaysLeft} วัน)
                         </span>
                       ) : (
                         <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 uppercase tracking-wider">
