@@ -4,6 +4,8 @@ import DealDetailSidebar from './DealDetailSidebar';
 import { useTeam } from '../../hooks/useTeam';
 import PipelineHeader from './PipelineHeader';
 import PipelineBoard from './PipelineBoard';
+import RenewalsBoard from './RenewalsBoard';
+import { useCustomers } from '../../hooks/useCustomers';
 import { useAppStore } from '../../store/useAppStore';
 import { parseYearMonth } from '../../lib/utils';
 import ConfirmDialog from '../ui/ConfirmDialog';
@@ -21,8 +23,10 @@ export default function MonthlyPipeline({
   // Global deal selection from notification clicks or dashboard
   pendingOpenDeal,
   onPendingOpenDealHandled,
+  viewMode = 'pipeline',
 }) {
   const { data: teamMembers } = useTeam();
+  const { data: customers } = useCustomers();
   const { monthlyTarget } = useAppStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const drawerRef = useRef(null);
@@ -196,17 +200,25 @@ export default function MonthlyPipeline({
         onAddDeal={onAddDeal}
       />
 
-      {/* PIPELINE BOARD — shows filtered deals with carry-over logic */}
+      {/* PIPELINE BOARD OR RENEWALS BOARD */}
       <div className="min-h-[560px]">
-        <PipelineBoard
-          deals={deals || []}
-          onDealClick={handleDealClick}
-          onUpdateDeal={onUpdateDeal}
-          onAddDeal={onAddDeal}
-          teamMembers={teamMembers}
-          selectedMonth={selectedMonth}
-          selectedYear={selectedYear}
-        />
+        {viewMode === 'renewals' ? (
+          <RenewalsBoard 
+            deals={deals} 
+            customers={customers} 
+            onDealClick={handleDealClick} 
+          />
+        ) : (
+          <PipelineBoard
+            deals={deals || []}
+            onDealClick={handleDealClick}
+            onUpdateDeal={onUpdateDeal}
+            onAddDeal={onAddDeal}
+            teamMembers={teamMembers}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+          />
+        )}
       </div>
 
       {/* SIDE DRAWER FOR DEAL DETAILS */}

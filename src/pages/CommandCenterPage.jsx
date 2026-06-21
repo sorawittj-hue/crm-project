@@ -18,6 +18,7 @@ import CustomTooltip from '../components/ui/CustomTooltip';
 import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
 import { AnimatedNumber } from '../components/ui/AnimatedNumber';
 import { useCommandCenterStats } from '../hooks/useCommandCenterStats';
+import FocusDealsCard from '../components/command-center/FocusDealsCard';
 import QuickWinModal from '../components/pipeline/QuickWinModal';
 import MetricTooltip from '../components/ui/MetricTooltip';
 import {
@@ -75,7 +76,9 @@ export default function CommandCenterPage() {
   const hasPersonalTarget = myProfile?.personal_target > 0;
   const monthlyGoal = hasPersonalTarget ? myProfile.personal_target : 0;
 
-  const stats = useCommandCenterStats(deals, monthlyGoal);
+  const [viewMode, setViewMode] = useState('team'); // 'team' | 'personal'
+  const baseStats = useCommandCenterStats(deals, monthlyGoal, user?.id);
+  const stats = viewMode === 'personal' && baseStats?.myStats ? baseStats.myStats : baseStats;
 
   // Customer Health
   const customerStats = useMemo(() => {
@@ -223,6 +226,10 @@ export default function CommandCenterPage() {
           <div className="flex items-center gap-2 mb-2">
             <Sparkles size={16} className="text-violet-500 animate-pulse" />
             <span className="text-xs font-bold text-violet-600 uppercase tracking-widest">Nova Pipeline</span>
+            <div className="ml-4 flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+              <button onClick={() => setViewMode('team')} className={cn("px-3 py-1 text-[10px] font-bold rounded-md transition-all", viewMode === 'team' ? "bg-white text-violet-700 shadow-sm" : "text-slate-500 hover:text-slate-700")}>ทีม</button>
+              <button onClick={() => setViewMode('personal')} className={cn("px-3 py-1 text-[10px] font-bold rounded-md transition-all", viewMode === 'personal' ? "bg-white text-violet-700 shadow-sm" : "text-slate-500 hover:text-slate-700")}>ของฉัน</button>
+            </div>
           </div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">
             {getGreeting()}, <span className="text-violet-600 bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600">{userName}</span>
@@ -286,6 +293,8 @@ export default function CommandCenterPage() {
         {/* ================= LEFT COLUMN: ACTION & DATA VISUALS (2/3 width) ================= */}
         <div className="lg:col-span-2 space-y-6">
           
+          <FocusDealsCard focusDeals={stats?.focusDeals} onOpenDeal={openDeal} />
+
           {/* TODAY'S FOCUS / ACTIONS */}
           <div id="ai-insights-card" className="space-y-4">
             <div className="flex items-center gap-3">

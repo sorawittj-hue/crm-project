@@ -81,3 +81,25 @@ export async function callGeminiAPI(prompt, schema = null) {
     return null;
   }
 }
+
+/**
+ * Extract deal information from transcribed voice text.
+ */
+export async function parseVoiceDealText(transcript) {
+  const schema = {
+    type: 'OBJECT',
+    properties: {
+      company: { type: 'STRING', description: 'ชื่อบริษัทหรือชื่อลูกค้า' },
+      title: { type: 'STRING', description: 'หัวข้อดีล หรือสินค้าที่ขาย หากไม่มีให้ตั้งให้' },
+      value: { type: 'NUMBER', description: 'มูลค่าดีลตัวเลขล้วน (ถ้ามี)' },
+      contact: { type: 'STRING', description: 'ชื่อบุคคลผู้ติดต่อ' },
+      stage: { type: 'STRING', description: 'สถานะ: lead, contact, proposal, negotiation' },
+      expected_close_date: { type: 'STRING', description: 'วันที่คาดว่าจะปิดดีล YYYY-MM-DD' }
+    },
+    required: ['company', 'title']
+  };
+
+  const prompt = `ผู้ใช้บันทึกเสียงข้อมูลดีลการขายดังนี้:\n\n"${transcript}"\n\nจงดึงข้อมูลที่เกี่ยวข้องออกมา หากข้อมูลส่วนใดไม่ถูกกล่าวถึง ให้เป็น null หรือค่าว่างเปล่า (ห้ามแต่งข้อมูลเองยกเว้น title ที่อาจสรุปสั้นๆ จาก context)`;
+  
+  return await callGeminiAPI(prompt, schema);
+}

@@ -1,14 +1,11 @@
 import { useMemo } from 'react';
-import { buildPipelineIntelligence } from '../utils/salesIntelligence';
+import { buildPipelineIntelligence, getTopFocusDeals } from '../utils/salesIntelligence';
 import { daysSince } from '../lib/formatters';
 import { STAGE_COLORS, STAGE_LABELS } from '../lib/constants';
 
 const FUNNEL_STAGES = ['lead', 'contact', 'proposal', 'negotiation'];
 
-export function useCommandCenterStats(deals, monthlyGoal) {
-  return useMemo(() => {
-    if (!deals) return null;
-    const now = new Date();
+const calculateStats = (deals, monthlyGoal, now) => {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     const intelligence = buildPipelineIntelligence(deals, { monthlyGoal, now });
@@ -119,6 +116,8 @@ export function useCommandCenterStats(deals, monthlyGoal) {
         }, 0) / wonDeals.length)
       : 0;
 
+    const focusDeals = getTopFocusDeals(deals, now, 3);
+
     return {
       totalWonValue,
       totalPipelineValue,
@@ -139,6 +138,25 @@ export function useCommandCenterStats(deals, monthlyGoal) {
       winRate,
       avgDaysToClose,
       renewalDeals,
+      focusDeals,
     };
-  }, [deals, monthlyGoal]);
+};
+
+export function useCommandCenterStats(deals, monthlyGoal, currentUserId = null) {
+  return useMemo(() => {
+    if (!deals) return null;
+    const now = new Date();
+    
+    const stats = calculateStats(deals, monthlyGoal, now);
+    let myStats = null;
+    if (currentUserId) {
+      const myDeals = deals.filter(d => d.assigned_to === currentUserId);
+      myStats = calculateStats(myDeals, monthlyGoal, now);
+    }
+
+    return {
+      ...stats,
+      myStats
+    };
+  }, [deals, monthlyGoal, currentUserId]);
 }

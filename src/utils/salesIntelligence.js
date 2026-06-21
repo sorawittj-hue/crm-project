@@ -1,4 +1,6 @@
 import { parseYearMonth } from '../lib/utils';
+import { STAGE_COLORS } from '../lib/constants';
+import { buildCustomerHealth } from './customerIntelligence';
 
 const DAY_MS = 86_400_000;
 const TERMINAL_STAGES = new Set(['won', 'lost']);
@@ -52,7 +54,7 @@ const PRIORITY_WEIGHT = {
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-const toFiniteNumber = (value, fallback = 0) => {
+export const toFiniteNumber = (value, fallback = 0) => {
   const numberValue = Number(value);
   return Number.isFinite(numberValue) ? numberValue : fallback;
 };
@@ -148,6 +150,87 @@ export const normalizeDealForIntelligence = (deal, now = new Date()) => {
     ...normalized,
     recommendedAction: getRecommendedAction(normalized),
   };
+};
+
+const STAGE_VELOCITY_WEIGHT = {
+  lead: 1.0,
+  contact: 1.2,
+  proposal: 1.5,
+  negotiation: 2.0,
+};
+
+export const calculateFocusScore = (deal, now) => {
+  if (TERMINAL_STAGES.has(deal.stage)) return 0;
+  
+  const value = Math.max(0, toFiniteNumber(deal.value));
+  const probability = getProbability(deal);
+  const lastTouchDate = getLastTouchDate(deal);
+  const createdDate = deal.created_at || deal.createdAt;
+  const daysInactive = getDaysBetween(lastTouchDate || createdDate, now);
+  
+  const recencyWeight = clamp(1 + (daysInactive / 10), 1, 3);
+  const stageVelocityWeight = STAGE_VELOCITY_WEIGHT[deal.stage] || 1.0;
+  
+  return value * (probability / 100) * recencyWeight * stageVelocityWeight;
+};
+
+export const getTopFocusDeals = (deals, now = new Date(), limit = 3) => {
+  return deals
+    .filter(deal => !TERMINAL_STAGES.has(deal.stage))
+    .map(deal => {
+      const normalized = normalizeDealForIntelligence(deal, now);
+      return {
+        ...normalized,
+        focusScore: calculateFocusScore(deal, now)
+      };
+    })
+    .sort((a, b) => b.focusScore - a.focusScore)
+    .slice(0, limit);
+};
+
+export const getUpcomingRenewals = (deals, customers, now = new Date(), windowDays = 90) => {
+  if (!deals || !Array.isArray(deals)) return [];
+
+  const nowMs = now.getTime();
+  const limitMs = nowMs + (windowDays * 86_400_000);
+
+  // Filter deals that are recurring and have a renewal date within window
+  let renewals = deals.filter(d => {
+    if (TERMINAL_STAGES.has(d.stage) || !d.is_recurring || !d.renewal_date) return false;
+    const renewalMs = new Date(d.renewal_date).getTime();
+    return renewalMs >= nowMs && renewalMs <= limitMs;
+  });
+
+  if (customers && customers.length > 0) {
+    const healthScores = buildCustomerHealth(customers, deals, { now });
+    const healthMap = new Map(healthScores.map(c => [c.id, c]));
+
+    renewals = renewals.map(deal => {
+      const customerHealth = deal.customer_id ? healthMap.get(deal.customer_id) : null;
+      return {
+        ...deal,
+        customerHealthScore: customerHealth?.health?.score || 100, // Default to healthy if not found
+        customerHealthGrade: customerHealth?.grade || 'A'
+      };
+    });
+  } else {
+    renewals = renewals.map(deal => ({
+      ...deal,
+      customerHealthScore: 100,
+      customerHealthGrade: 'A'
+    }));
+  }
+
+  return renewals.sort((a, b) => {
+    const aDate = new Date(a.renewal_date).getTime();
+    const bDate = new Date(b.renewal_date).getTime();
+    
+    // Sort primarily by date
+    if (aDate !== bDate) return aDate - bDate;
+    
+    // Then sort by health score (lower score = higher priority)
+    return a.customerHealthScore - b.customerHealthScore;
+  });
 };
 
 const sumDealValue = (deals, field = 'value') =>

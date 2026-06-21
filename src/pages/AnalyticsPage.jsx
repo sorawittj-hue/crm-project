@@ -13,6 +13,7 @@ import { formatCurrency } from '../lib/formatters';
 import { STAGE_COLORS, STAGE_LABELS } from '../lib/constants';
 import { buildPipelineIntelligence, DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
 import { buildCustomerHealth } from '../utils/customerIntelligence';
+import { calculateForecastAccuracy, getLostReasonBreakdown } from '../utils/forecastAccuracy';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
 import {
@@ -193,6 +194,8 @@ export default function AnalyticsPage() {
     const currentYear = today.getFullYear();
     const monthsBack = timeRange === '3m' ? 2 : timeRange === '6m' ? 5 : 11;
     const intelligence = buildPipelineIntelligence(deals, { monthlyGoal: monthlyTarget, now: today });
+    const forecastAccuracyData = calculateForecastAccuracy(deals, monthsBack + 1);
+    const accuracyBreakdown = getLostReasonBreakdown(deals);
 
     // Customer Segment Enriched Stats
     const customerHealth = buildCustomerHealth(customers, deals, { now: today });
@@ -432,6 +435,8 @@ export default function AnalyticsPage() {
       industryData,
       tierData,
       gradeData,
+      forecastAccuracyData,
+      accuracyBreakdown,
     };
   }, [deals, customers, monthlyTarget, timeRange, teamMembers]);
 
@@ -859,6 +864,62 @@ export default function AnalyticsPage() {
                   )}
                 </AnimatePresence>
               </div>
+              
+              {/* FORECAST ACCURACY DASHBOARD */}
+              <Card className="p-8 rounded-[2.5rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 relative overflow-hidden group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500 mt-8">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100/50">
+                      <Target size={22} className="text-indigo-500" strokeWidth={2.5} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 tracking-tight">Forecast Accuracy</h3>
+                      <p className="text-xs text-slate-500 mt-1 font-medium">ความแม่นยำของการคาดการณ์ยอดขายเทียบกับยอดจริง</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                  <div className="col-span-2 h-[300px] w-full min-w-0 min-h-0">
+                    <SafeResponsiveContainer>
+                      <ComposedChart data={analytics?.forecastAccuracyData}>
+                        <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} dy={15} />
+                        <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
+                        <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v}%`} dx={10} />
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }} />
+                        <Bar yAxisId="left" dataKey="forecast" name="Forecast" fill="#cbd5e1" radius={[4, 4, 0, 0]} barSize={30} isAnimationActive={false} opacity={0.6} />
+                        <Bar yAxisId="left" dataKey="actual" name="Actual" fill="#7c3aed" radius={[4, 4, 0, 0]} barSize={30} isAnimationActive={false} />
+                        <Line yAxisId="right" type="monotone" dataKey="accuracy" name="Accuracy %" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }} isAnimationActive={false} />
+                      </ComposedChart>
+                    </SafeResponsiveContainer>
+                  </div>
+
+                  <div className="col-span-1 bg-slate-50/50 rounded-3xl p-6 border border-slate-100 flex flex-col">
+                    <div className="flex items-center gap-2.5 mb-6">
+                      <AlertCircle size={16} className="text-slate-400" strokeWidth={2.5} />
+                      <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Lost Reasons Breakdown</p>
+                    </div>
+                    <div className="space-y-4 flex-1 overflow-y-auto pr-2">
+                      {analytics?.accuracyBreakdown?.length === 0 ? (
+                        <div className="text-center py-6">
+                          <p className="text-xs text-slate-400">ยังไม่มีข้อมูลดีลที่แพ้</p>
+                        </div>
+                      ) : (
+                        analytics?.accuracyBreakdown?.map((item, i) => (
+                          <div key={item.reason} className="flex flex-col gap-1 pb-3 border-b border-slate-100 last:border-0 last:pb-0">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-bold text-slate-700">{item.reason}</span>
+                              <span className="text-xs font-black text-slate-900 bg-white px-2 py-0.5 rounded shadow-sm border border-slate-100">{item.count} ดีล</span>
+                            </div>
+                            <div className="text-xs text-rose-500 font-semibold">สูญเสียโอกาส {formatCurrency(item.value)}</div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </Card>
             </>
           )}
 

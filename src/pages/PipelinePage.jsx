@@ -13,6 +13,7 @@ import { Plus, Sliders, ScanLine, Download, User, Zap, Loader2, ChevronDown, Sea
 
 // Lazy-load PDFImporter to avoid bundling pdfjs-dist (~5MB) in initial load
 const PDFImporter = lazy(() => import('../components/pipeline/PDFImporter'));
+import VoiceToDealModal from '../components/pipeline/VoiceToDealModal';
 import { DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
 
 import { Button } from '../components/ui/Button';
@@ -113,6 +114,8 @@ export default function PipelinePage() {
   const [myDealsOnly, setMyDealsOnly] = useState(false);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState('pipeline'); // 'pipeline' | 'renewals'
   const [quickDeal, setQuickDeal] = useState({ company: '', title: '', value: '', expected_close_date: '' });
   const [quickError, setQuickError] = useState(null);
 
@@ -318,6 +321,31 @@ export default function PipelinePage() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
+          <div className="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/60 mr-2">
+            <button
+              onClick={() => setViewMode('pipeline')}
+              className={cn(
+                'px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+                viewMode === 'pipeline'
+                  ? 'bg-white text-violet-700 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              )}
+            >
+              <Briefcase size={14} /> Pipeline
+            </button>
+            <button
+              onClick={() => setViewMode('renewals')}
+              className={cn(
+                'px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+                viewMode === 'renewals'
+                  ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/20'
+                  : 'text-slate-500 hover:text-slate-700'
+              )}
+            >
+              <Calendar size={14} /> Renewals
+            </button>
+          </div>
+
           {/* Ghost actions */}
           <button
             onClick={() => setMyDealsOnly(v => !v)}
@@ -393,6 +421,20 @@ export default function PipelinePage() {
                     >
                       <Sliders size={12} className="text-violet-500" />
                       <span>สแกนใบเสนอราคา (PDF)</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsToolsOpen(false);
+                        if (shouldBlockBasic) {
+                          openPaywall(isGuestAccount ? 'default' : 'trial_ended');
+                        } else {
+                          setIsVoiceModalOpen(true);
+                        }
+                      }}
+                      className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-2"
+                    >
+                      <Mic size={12} className="text-rose-500" />
+                      <span>สั่งงานด้วยเสียง (Voice)</span>
                     </button>
                   </motion.div>
                 </>
@@ -480,10 +522,23 @@ export default function PipelinePage() {
         </DialogContent>
       </Dialog>
 
+      <VoiceToDealModal 
+        open={isVoiceModalOpen} 
+        onOpenChange={setIsVoiceModalOpen}
+        onSaveDeal={async (dealData) => {
+          try {
+            await addDealMutation.mutateAsync(dealData);
+          } catch (err) {
+            console.error(err);
+          }
+        }}
+      />
+
 
 
       <div id="pipeline-board">
         <MonthlyPipeline
+          viewMode={viewMode}
           deals={filteredDeals}
           onAddDeal={async (data) => {
             if (shouldBlockBasic) {
