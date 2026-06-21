@@ -208,6 +208,36 @@ export default function PipelineBoard({
     }, {});
   }, [processedDeals]);
 
+  const stageStats = useMemo(() => {
+    return STAGES.reduce((acc, stageId) => {
+      const stageDeals = dealsByStage[stageId] || [];
+      const totalValue = stageDeals.reduce(
+        (sum, d) => sum + (Number(d.value) || 0),
+        0
+      );
+
+      // Compute column stats for heatmap
+      const normalized = stageDeals.map(d => normalizeDealForIntelligence(d));
+      const active = normalized.filter(d => d.isActive);
+      const avgInactive = active.length > 0
+        ? Math.round(active.reduce((sum, d) => sum + (d.daysInactive || 0), 0) / active.length)
+        : 0;
+      const atRisk = active.filter(d => d.isAtRisk).length;
+      const isCritical = !['won', 'lost'].includes(stageId) && (avgInactive >= 10 || atRisk >= 3);
+      const isWarning = !['won', 'lost'].includes(stageId) && !isCritical && (avgInactive >= 5 || atRisk >= 1);
+
+      acc[stageId] = {
+        totalValue,
+        activeCount: active.length,
+        avgInactive,
+        atRisk,
+        isCritical,
+        isWarning,
+      };
+      return acc;
+    }, {});
+  }, [dealsByStage]);
+
   const initiateMove = useCallback((dealId, targetStage) => {
     setLocalDeals(prev => prev.map(d => 
       d.id === dealId ? { ...d, stage: targetStage, last_activity: new Date().toISOString() } : d
@@ -549,20 +579,13 @@ export default function PipelineBoard({
               {STAGES.map((stageId) => {
                 const stage = STAGE_CONFIG[stageId];
                 const stageDeals = dealsByStage[stageId] || [];
-                const totalValue = stageDeals.reduce(
-                  (sum, d) => sum + (Number(d.value) || 0),
-                  0
-                );
-
-                // Compute column stats for heatmap
-                const normalized = stageDeals.map(d => normalizeDealForIntelligence(d));
-                const active = normalized.filter(d => d.isActive);
-                const avgInactive = active.length > 0
-                  ? Math.round(active.reduce((sum, d) => sum + (d.daysInactive || 0), 0) / active.length)
-                  : 0;
-                const atRisk = active.filter(d => d.isAtRisk).length;
-                const isCritical = !['won', 'lost'].includes(stageId) && (avgInactive >= 10 || atRisk >= 3);
-                const isWarning = !['won', 'lost'].includes(stageId) && !isCritical && (avgInactive >= 5 || atRisk >= 1);
+                const { totalValue, activeCount, avgInactive, isCritical, isWarning } = stageStats[stageId] || {
+                  totalValue: 0,
+                  activeCount: 0,
+                  avgInactive: 0,
+                  isCritical: false,
+                  isWarning: false
+                };
 
                 return (
                   <Droppable droppableId={stageId} key={stageId}>
@@ -600,7 +623,7 @@ export default function PipelineBoard({
                             </p>
                             
                             {/* Stagnation Heatmap indicators */}
-                            {!['won', 'lost'].includes(stageId) && active.length > 0 && (
+                            {!['won', 'lost'].includes(stageId) && activeCount > 0 && (
                               isCritical ? (
                                 <span className="text-[9px] font-bold text-rose-600 bg-rose-100/70 border border-rose-200/50 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
                                   <AlertTriangle size={8} className="animate-pulse shrink-0" />

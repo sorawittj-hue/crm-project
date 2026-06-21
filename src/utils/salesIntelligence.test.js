@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeDealForIntelligence } from './salesIntelligence';
+import { normalizeDealForIntelligence, buildPipelineIntelligence } from './salesIntelligence';
 
 describe('Sales Intelligence Utilities - Unit Tests', () => {
   it('should correctly normalize an active deal with default proposal probability', () => {
@@ -61,5 +61,41 @@ describe('Sales Intelligence Utilities - Unit Tests', () => {
     expect(result.weightedValue).toBe(75000);
     expect(result.isActive).toBe(false); // won is terminal stage
     expect(result.isAtRisk).toBe(false);
+  });
+
+  it('should correctly calculate pipeline intelligence aggregates', () => {
+    const mockDeals = [
+      {
+        id: 'deal-1',
+        stage: 'proposal',
+        value: 100000,
+        created_at: '2026-06-01T00:00:00Z',
+        last_activity: '2026-06-18T00:00:00Z',
+        expected_close_date: '2026-07-01'
+      },
+      {
+        id: 'deal-2',
+        stage: 'won',
+        value: 50000,
+        created_at: '2026-06-05T00:00:00Z',
+        actual_close_date: '2026-06-12T00:00:00Z'
+      },
+      {
+        id: 'deal-3',
+        stage: 'lost',
+        value: 30000,
+        created_at: '2026-06-01T00:00:00Z',
+        actual_close_date: '2026-06-10T00:00:00Z'
+      }
+    ];
+
+    const now = new Date('2026-06-21T00:00:00Z');
+    const result = buildPipelineIntelligence(mockDeals, { monthlyGoal: 100000, now });
+
+    expect(result.currentMonthWonValue).toBe(50000);
+    expect(result.activePipelineValue).toBe(100000);
+    expect(result.forecastToGoalValue).toBe(50000 + 55000); // won + weighted proposal
+    expect(result.goalGap).toBe(50000); // 100000 goal - 50000 won
+    expect(result.winRate).toBe(50); // 1 won, 1 lost = 50%
   });
 });

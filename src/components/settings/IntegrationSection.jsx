@@ -71,7 +71,19 @@ export function IntegrationSection() {
             const parsed = JSON.parse(saved);
             setSettings(parsed);
             // Sync to database
-            updateSettings.mutate({ integrations: parsed });
+            updateSettings.mutate(
+              { integrations: parsed },
+              {
+                onSuccess: () => {
+                  try {
+                    localStorage.removeItem('nova_integrations');
+                    console.log('[Integration] Migrated localStorage integrations to DB and cleared localStorage.');
+                  } catch (e) {
+                    console.error('Failed to remove legacy localStorage key', e);
+                  }
+                }
+              }
+            );
           }
         } catch (e) {
           console.error('Failed to load integration settings fallback', e);

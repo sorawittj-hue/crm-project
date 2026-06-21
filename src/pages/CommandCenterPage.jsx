@@ -1,8 +1,7 @@
-import { useMemo, useEffect, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeals } from '../hooks/useDeals';
 import { useTeam } from '../hooks/useTeam';
-
 import { useActivities, useUpdateActivity } from '../hooks/useActivities';
 import { useCustomers } from '../hooks/useCustomers';
 import { useSubscription } from '../hooks/useSubscription';
@@ -11,13 +10,14 @@ import { useAuth } from '../hooks/useAuth';
 import { useMyProfile } from '../hooks/useUserProfiles';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { motion, animate, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { formatCurrency, daysSince } from '../lib/formatters';
-import { buildPipelineIntelligence, buildCustomerHealth } from '../utils/salesIntelligence';
-import { STAGE_COLORS, STAGE_LABELS } from '../lib/constants';
+import { buildCustomerHealth } from '../utils/salesIntelligence';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
+import { AnimatedNumber } from '../components/ui/AnimatedNumber';
+import { useCommandCenterStats } from '../hooks/useCommandCenterStats';
 import QuickWinModal from '../components/pipeline/QuickWinModal';
 import MetricTooltip from '../components/ui/MetricTooltip';
 import {
@@ -33,28 +33,7 @@ import {
   CartesianGrid, Tooltip as RechartsTooltip
 } from 'recharts';
 
-// --- Animated Number Component ---
-function AnimatedNumber({ value, formatter, duration = 0.4, className = '', animate: shouldAnimate = true }) {
-  const ref = useRef(null);
-  const isReduced = useReducedMotion();
-  useEffect(() => {
-    if (!shouldAnimate || isReduced) return;
-    const numericValue = typeof value === 'number' ? value : parseFloat(value?.toString().replace(/[^0-9.-]+/g, "") || 0);
-    if (isNaN(numericValue)) return;
-    const controls = animate(0, numericValue, {
-      duration,
-      ease: [0.19, 1, 0.22, 1],
-      onUpdate(val) {
-        if (ref.current) {
-          ref.current.textContent = formatter ? formatter(val) : Math.round(val).toLocaleString();
-        }
-      }
-    });
-    return () => controls.stop();
-  }, [value, formatter, duration, shouldAnimate, isReduced]);
 
-  return <span ref={ref} className={cn("font-display", className)}>{formatter ? formatter(value) : Math.round(value || 0).toLocaleString()}</span>;
-}
 
 const ACTIVITY_ICON = {
   call: { Icon: Phone, color: 'bg-blue-50 text-blue-500' },
@@ -65,7 +44,6 @@ const ACTIVITY_ICON = {
   whatsapp: { Icon: MessageSquare, color: 'bg-emerald-50 text-emerald-600' },
 };
 
-const FUNNEL_STAGES = ['lead', 'contact', 'proposal', 'negotiation'];
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -97,131 +75,7 @@ export default function CommandCenterPage() {
   const hasPersonalTarget = myProfile?.personal_target > 0;
   const monthlyGoal = hasPersonalTarget ? myProfile.personal_target : 0;
 
-  const stats = useMemo(() => {
-    if (!deals) return null;
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const intelligence = buildPipelineIntelligence(deals, { monthlyGoal, now });
-    const totalWonValue = intelligence.currentMonthWonValue;
-    const activePipeline = intelligence.activeDeals;
-    const totalPipelineValue = intelligence.activePipelineValue;
-    const achievementPercent = monthlyGoal > 0 ? Math.round((totalWonValue / monthlyGoal) * 100) : 0;
-
-    const months = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(currentYear, currentMonth - i, 1);
-      months.push({
-        name: d.toLocaleDateString('th-TH', { month: 'short' }),
-        month: d.getMonth(),
-        year: d.getFullYear(),
-        actual: 0,
-        forecast: 0
-      });
-    }
-
-    deals.forEach(deal => {
-      const rawDate = deal.stage === 'won'
-        ? (deal.actual_close_date || deal.updated_at || deal.created_at)
-        : deal.created_at;
-      const dealDate = new Date(rawDate);
-      const mIdx = months.findIndex(m => m.month === dealDate.getMonth() && m.year === dealDate.getFullYear());
-      if (mIdx !== -1) {
-        if (deal.stage === 'won') months[mIdx].actual += Number(deal.value || 0);
-        else if (deal.stage !== 'lost') {
-          months[mIdx].forecast += Number(deal.value || 0) * (Number(deal.probability || 0) / 100);
-        }
-      }
-    });
-
-    const urgentDeals = (intelligence.highImpactRisks.length > 0 ? intelligence.highImpactRisks : activePipeline)
-      .filter(d => daysSince(d.last_activity || d.created_at) >= 3)
-      .sort((a, b) => (Number(b.value) * (b.probability / 100)) - (Number(a.value) * (a.probability / 100)))
-      .slice(0, 3);
-
-    const prevMonthActual = months[months.length - 2]?.actual || 0;
-    const currentMonthActual = months[months.length - 1]?.actual || 0;
-    const growthPercent = prevMonthActual > 0
-      ? ((currentMonthActual - prevMonthActual) / prevMonthActual * 100).toFixed(1)
-      : 0;
-
-    const weekAgo = now.getTime() - 7 * 86_400_000;
-    const newDealsThisWeek = deals.filter(d => new Date(d.created_at).getTime() >= weekAgo).length;
-
-    const wonThisWeek = deals.filter(d => {
-      if (d.stage !== 'won') return false;
-      const dt = new Date(d.actual_close_date || d.updated_at || d.created_at);
-      return dt.getTime() >= weekAgo;
-    });
-    const wonThisWeekValue = wonThisWeek.reduce((s, d) => s + Number(d.value || 0), 0);
-
-    const activeDealsArr = activePipeline;
-    const commitValue = activeDealsArr
-      .filter(d => Number(d.probability) >= 70)
-      .reduce((s, d) => s + Number(d.value || 0) * (Number(d.probability) / 100), 0);
-    const bestCaseValue = activeDealsArr
-      .reduce((s, d) => s + Number(d.value || 0), 0);
-    const worstCaseValue = activeDealsArr
-      .filter(d => Number(d.probability) >= 90)
-      .reduce((s, d) => s + Number(d.value || 0), 0);
-
-    const now30 = now.getTime() + 30 * 86_400_000;
-    const hotDeals = activeDealsArr
-      .map(d => ({
-        ...d,
-        score: Number(d.value || 0) * (Number(d.probability || 0) / 100),
-        closingSoon: d.expected_close_date && new Date(d.expected_close_date).getTime() <= now30,
-      }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 5);
-
-    // Pipeline mini-funnel
-    const funnelData = FUNNEL_STAGES.map(stage => {
-      const stageDeals = deals.filter(d => d.stage === stage);
-      return {
-        stage,
-        label: STAGE_LABELS[stage] || stage,
-        count: stageDeals.length,
-        value: stageDeals.reduce((s, d) => s + Number(d.value || 0), 0),
-        color: STAGE_COLORS[stage],
-      };
-    });
-
-    // Won deals stats
-    const wonDeals = deals.filter(d => d.stage === 'won');
-    const lostDeals = deals.filter(d => d.stage === 'lost');
-    const winRate = (wonDeals.length + lostDeals.length) > 0
-      ? Math.round((wonDeals.length / (wonDeals.length + lostDeals.length)) * 100)
-      : 0;
-    const avgDaysToClose = wonDeals.length > 0
-      ? Math.round(wonDeals.reduce((s, d) => {
-          const created = new Date(d.created_at);
-          const closed = new Date(d.actual_close_date || d.updated_at || d.created_at);
-          return s + Math.max(0, (closed - created) / 86400000);
-        }, 0) / wonDeals.length)
-      : 0;
-
-    return {
-      totalWonValue,
-      totalPipelineValue,
-      achievementPercent,
-      activeCount: activePipeline.length,
-      urgentDeals,
-      revenueStream: months,
-      growthPercent,
-      intelligence,
-      newDealsThisWeek,
-      wonThisWeek: wonThisWeek.length,
-      wonThisWeekValue,
-      commitValue,
-      bestCaseValue,
-      worstCaseValue,
-      hotDeals,
-      funnelData,
-      winRate,
-      avgDaysToClose,
-    };
-  }, [deals, monthlyGoal]);
+  const stats = useCommandCenterStats(deals, monthlyGoal);
 
   // Customer Health
   const customerStats = useMemo(() => {
