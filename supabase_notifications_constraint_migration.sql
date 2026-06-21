@@ -10,8 +10,11 @@
 DELETE FROM notifications a USING notifications b
 WHERE a.id < b.id AND a.notification_key = b.notification_key;
 
--- 2. Add the unique constraint on the notification_key column
+-- 2. Safely remove existing constraint and conflicting index relations
 ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_notification_key_key;
+DROP INDEX IF EXISTS notifications_notification_key_key;
+
+-- 3. Add the unique constraint on the notification_key column
 ALTER TABLE notifications ADD CONSTRAINT notifications_notification_key_key UNIQUE (notification_key);
 
 -- =========================================================================
