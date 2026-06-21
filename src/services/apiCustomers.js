@@ -93,26 +93,46 @@ export async function getCustomerById(id) {
   }
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateEmail(email) {
+  if (!email) return true;
+  return EMAIL_REGEX.test(email.trim());
+}
+
+function sanitizePhone(phone) {
+  if (!phone) return null;
+  return phone.trim().replace(/[^\d+x()-]/g, ''); // Keep digits, +, x, (), -
+}
+
 /**
  * Create a new customer
  */
 export async function createCustomer(customerData) {
   try {
     // Validation
-    if (!customerData.name) {
+    if (!customerData.name || !customerData.name.trim()) {
       throw new Error('Customer name is required');
     }
+
+    if (customerData.email && !validateEmail(customerData.email)) {
+      throw new Error('Invalid email address format');
+    }
+
+    const validTiers = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+    const tier = customerData.tier && validTiers.includes(customerData.tier) ? customerData.tier : 'Silver';
+    const phone = sanitizePhone(customerData.phone);
     
     const userId = await getRequiredUserId();
     let payload = addOwnerIdIfSupported('customers', {
       name: customerData.name.trim(),
       company: customerData.company?.trim() || null,
       email: customerData.email?.trim() || null,
-      phone: customerData.phone?.trim() || null,
+      phone,
       address: customerData.address?.trim() || null,
       tax_id: customerData.tax_id?.trim() || null,
       industry: customerData.industry || null,
-      tier: customerData.tier || 'Silver',
+      tier,
       notes: customerData.notes?.trim() || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -158,6 +178,19 @@ export async function updateCustomer({ id, ...updates }) {
   try {
     if (!id) throw new Error('Customer ID is required');
     await getRequiredUserId();
+
+    if (updates.email && !validateEmail(updates.email)) {
+      throw new Error('Invalid email address format');
+    }
+
+    if (updates.phone !== undefined) {
+      updates.phone = sanitizePhone(updates.phone);
+    }
+
+    const validTiers = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+    if (updates.tier && !validTiers.includes(updates.tier)) {
+      throw new Error('Invalid customer tier');
+    }
 
     // Strip any keys that are not real DB columns (e.g. joined `deals` array)
     let payload = Object.fromEntries(

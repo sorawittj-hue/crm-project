@@ -12,6 +12,15 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 import ConfirmDialog from '../ui/ConfirmDialog';
 
+const AVATAR_COLORS = {
+  violet: { bg: 'bg-gradient-to-br from-violet-500 to-indigo-600', ring: 'from-violet-400 to-indigo-500', text: 'text-violet-700 bg-violet-50/50 border-violet-100/50', dot: 'bg-violet-600' },
+  emerald: { bg: 'bg-gradient-to-br from-emerald-500 to-teal-600', ring: 'from-emerald-400 to-teal-500', text: 'text-emerald-700 bg-emerald-50/50 border-emerald-100/50', dot: 'bg-emerald-600' },
+  amber: { bg: 'bg-gradient-to-br from-amber-400 to-orange-500', ring: 'from-amber-400 to-orange-500', text: 'text-amber-700 bg-amber-50/50 border-amber-100/50', dot: 'bg-amber-600' },
+  rose: { bg: 'bg-gradient-to-br from-rose-400 to-pink-500', ring: 'from-rose-400 to-pink-500', text: 'text-rose-700 bg-rose-50/50 border-rose-100/50', dot: 'bg-rose-600' },
+  blue: { bg: 'bg-gradient-to-br from-blue-500 to-cyan-600', ring: 'from-blue-400 to-cyan-500', text: 'text-blue-700 bg-blue-50/50 border-blue-100/50', dot: 'bg-blue-600' },
+  purple: { bg: 'bg-gradient-to-br from-purple-500 to-fuchsia-600', ring: 'from-purple-400 to-fuchsia-500', text: 'text-purple-700 bg-purple-50/50 border-purple-100/50', dot: 'bg-purple-600' },
+};
+
 export function AccountSection() {
   const { user, signOut } = useAuth();
   const { openPaywall } = useAppStore();
@@ -25,6 +34,43 @@ export function AccountSection() {
   const [personalTargetForm, setPersonalTargetForm] = useState(null);
   const [savingPersonalTarget, setSavingPersonalTarget] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Profile Edit States
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileName, setProfileName] = useState('');
+  const [selectedColor, setSelectedColor] = useState('violet');
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  const handleOpenEdit = () => {
+    setProfileName(user?.user_metadata?.full_name || user?.email?.split('@')[0] || '');
+    setSelectedColor(user?.user_metadata?.avatar_color || 'violet');
+    setIsEditingProfile(true);
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    if (!profileName.trim()) {
+      error('กรุณากรอกชื่อของคุณ');
+      return;
+    }
+    setSavingProfile(true);
+    try {
+      const { supabase } = await import('../../utils/supabase');
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: {
+          full_name: profileName.trim(),
+          avatar_color: selectedColor
+        }
+      });
+      if (updateError) throw updateError;
+      success('อัปเดตข้อมูลโปรไฟล์ส่วนตัวสำเร็จ');
+      setIsEditingProfile(false);
+    } catch (err) {
+      error('ไม่สามารถอัปเดตข้อมูลโปรไฟล์ได้: ' + err.message);
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   const handleSavePersonalTarget = async (e) => {
     e.preventDefault();
@@ -46,6 +92,9 @@ export function AccountSection() {
     }
   };
 
+  const userColorKey = user?.user_metadata?.avatar_color || 'violet';
+  const theme = AVATAR_COLORS[userColorKey] || AVATAR_COLORS.violet;
+
   return (
     <div className="space-y-6">
       <Card className="p-8 rounded-[2rem] bg-white/60 backdrop-blur-3xl border border-white shadow-xl shadow-slate-200/50 space-y-8 relative overflow-hidden">
@@ -53,28 +102,93 @@ export function AccountSection() {
         <div className="flex items-center justify-between relative z-10">
           <div>
             <h2 className="text-xl font-black text-slate-900 tracking-tight relative z-10">โปรไฟล์ของคุณ</h2>
-            <p className="text-sm font-medium text-slate-500 mt-1 relative z-10">ข้อมูลส่วนตัวและรหัสผ่าน</p>
+            <p className="text-sm font-medium text-slate-500 mt-1 relative z-10">ข้อมูลส่วนตัวและภาพประจำตัว</p>
           </div>
+          {!isEditingProfile && (
+            <Button
+              onClick={handleOpenEdit}
+              className="h-9 px-4 rounded-xl text-sm bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20"
+            >
+              <Pencil size={13} className="mr-1.5" /> แก้ไขข้อมูล
+            </Button>
+          )}
         </div>
-        <div className="space-y-4">
-          <div className="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-violet-50/80 to-purple-50/50 border border-violet-100/50">
-            <div className="p-0.5 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 shrink-0">
-              <div className="w-12 h-12 rounded-[14px] bg-violet-600 flex items-center justify-center text-white text-xl font-black">
-                {user?.email?.charAt(0).toUpperCase() || 'U'}
+
+        <div className="space-y-4 relative z-10">
+          {isEditingProfile ? (
+            <form onSubmit={handleSaveProfile} className="space-y-4 p-5 rounded-2xl bg-slate-50 border border-slate-200/60">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-500">ชื่อผู้ใช้งาน</label>
+                <Input
+                  value={profileName}
+                  onChange={e => setProfileName(e.target.value)}
+                  placeholder="เช่น สมชาย มุ่งมั่น"
+                  className="h-10 rounded-xl border-slate-200 bg-white text-xs font-bold text-slate-800"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-500">สีธีมรูปประจำตัว (Avatar Theme Color)</label>
+                <div className="flex flex-wrap gap-3 py-1">
+                  {Object.keys(AVATAR_COLORS).map(colorKey => {
+                    const c = AVATAR_COLORS[colorKey];
+                    const isSelected = selectedColor === colorKey;
+                    return (
+                      <button
+                        key={colorKey}
+                        type="button"
+                        onClick={() => setSelectedColor(colorKey)}
+                        className={cn(
+                          "w-9 h-9 rounded-full border-2 transition-all hover:scale-110 flex items-center justify-center p-[2px]",
+                          isSelected ? "border-violet-600 scale-105 shadow-md shadow-violet-600/10" : "border-transparent"
+                        )}
+                      >
+                        <div className={cn("w-full h-full rounded-full shadow-inner", c.bg)} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  onClick={() => setIsEditingProfile(false)}
+                  className="flex-1 h-9 rounded-xl text-slate-500 text-xs border border-slate-200 hover:bg-slate-100"
+                  disabled={savingProfile}
+                >
+                  ยกเลิก
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="flex-1 h-9 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-semibold border-0 shadow-md shadow-violet-500/20 flex items-center justify-center gap-1.5"
+                  disabled={savingProfile}
+                >
+                  {savingProfile ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+                  บันทึกโปรไฟล์
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div className={cn("flex items-center gap-4 p-5 rounded-2xl border transition-all duration-300", theme.text)}>
+              <div className={cn("p-0.5 rounded-2xl bg-gradient-to-br shrink-0", theme.ring)}>
+                <div className={cn("w-12 h-12 rounded-[14px] flex items-center justify-center text-white text-xl font-black shadow-inner", theme.bg)}>
+                  {(user?.user_metadata?.full_name || user?.email || 'U').charAt(0).toUpperCase()}
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-slate-900 truncate">
+                  {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'ผู้ใช้'}
+                </p>
+                <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+                <span className={cn('text-[10px] font-bold px-2.5 py-0.5 rounded-full mt-2 inline-flex items-center gap-1 shrink-0',
+                  isAdmin ? 'bg-violet-100 text-violet-700 border border-violet-200' : 'bg-slate-200 text-slate-600 border border-slate-300'
+                )}>
+                  {isAdmin ? '⚡ Admin' : 'Member'}
+                </span>
               </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-900">
-                {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'ผู้ใช้'}
-              </p>
-              <p className="text-xs text-slate-400 truncate">{user?.email}</p>
-              <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full mt-1.5 inline-flex items-center gap-1',
-                isAdmin ? 'bg-violet-100 text-violet-700' : 'bg-slate-200 text-slate-600'
-              )}>
-                {isAdmin ? '⚡ Admin' : 'Member'}
-              </span>
-            </div>
-          </div>
+          )}
         </div>
         <Button
           onClick={signOut}

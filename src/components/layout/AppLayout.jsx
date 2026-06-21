@@ -820,9 +820,23 @@ export default function AppLayout() {
                 <p className="text-xs font-semibold text-slate-800 leading-none">{displayName}</p>
                 <p className="text-[10px] text-violet-500 font-medium mt-0.5">{user?.email || ''}</p>
               </div>
-              <div className="w-8 h-8 rounded-xl bg-violet-100 border border-violet-200 flex items-center justify-center font-bold text-xs text-violet-700">
-                {displayInitial}
-              </div>
+              {(() => {
+                const colorKey = user?.user_metadata?.avatar_color || 'violet';
+                const themes = {
+                  violet: 'bg-violet-50 border-violet-200 text-violet-700',
+                  emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+                  amber: 'bg-amber-50 border-amber-200 text-amber-750',
+                  rose: 'bg-rose-50 border-rose-200 text-rose-700',
+                  blue: 'bg-blue-50 border-blue-200 text-blue-700',
+                  purple: 'bg-purple-50 border-purple-200 text-purple-700',
+                };
+                const activeTheme = themes[colorKey] || themes.violet;
+                return (
+                  <div className={cn("w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-xs shrink-0 transition-all", activeTheme)}>
+                    {displayInitial}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </header>

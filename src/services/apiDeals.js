@@ -92,10 +92,30 @@ const DEAL_COLUMNS = new Set([
 /**
  * Update a deal with validation
  */
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateEmail(email) {
+  if (!email) return true;
+  return EMAIL_REGEX.test(email.trim());
+}
+
+function sanitizePhone(phone) {
+  if (!phone) return null;
+  return phone.trim().replace(/[^\d+x()-]/g, ''); // Keep digits, +, x, (), -
+}
+
 export async function updateDeal({ id, ...updates }) {
   try {
     if (!id) throw new Error('Deal ID is required');
     await getRequiredUserId();
+
+    if (updates.contact_email && !validateEmail(updates.contact_email)) {
+      throw new Error('Invalid contact email address format');
+    }
+
+    if (updates.contact_phone !== undefined) {
+      updates.contact_phone = sanitizePhone(updates.contact_phone);
+    }
 
     // Validate stage transitions
     const validStages = ['lead', 'contact', 'proposal', 'negotiation', 'won', 'lost'];
@@ -159,12 +179,23 @@ export async function updateDeal({ id, ...updates }) {
 export async function addDeal(newDeal) {
   try {
     // Required fields validation
-    if (!newDeal.title) {
+    if (!newDeal.title || !newDeal.title.trim()) {
       throw new Error('Deal title is required');
+    }
+
+    if (newDeal.contact_email && !validateEmail(newDeal.contact_email)) {
+      throw new Error('Invalid contact email address format');
+    }
+
+    // Validate probability range
+    if (newDeal.probability !== undefined && (newDeal.probability < 0 || newDeal.probability > 100)) {
+      throw new Error('Probability must be between 0 and 100');
     }
 
     const userId = await getRequiredUserId();
     await ensureOwnerTeamMember();
+
+    const phone = sanitizePhone(newDeal.contact_phone);
 
     // Set defaults - use authenticated user ID or null (not hardcoded 'leader')
     let dealData = addOwnerIdIfSupported('deals', {
@@ -178,7 +209,7 @@ export async function addDeal(newDeal) {
       assigned_to: newDeal.assigned_to ?? userId,
       contact: newDeal.contact?.trim() || null,
       contact_email: newDeal.contact_email?.trim() || null,
-      contact_phone: newDeal.contact_phone?.trim() || null,
+      contact_phone: phone,
       description: newDeal.description?.trim() || null,
       source: newDeal.source || 'inbound',
       priority: newDeal.priority || 'medium',
@@ -224,29 +255,34 @@ export async function addMultipleDeals(deals) {
     const userId = await getRequiredUserId();
     await ensureOwnerTeamMember();
 
-    let dealsData = deals.map(newDeal => addOwnerIdIfSupported('deals', {
-      title: newDeal.title?.trim() || 'Untitled Deal',
-      company: newDeal.company?.trim() || null,
-      customer_id: newDeal.customer_id || null,
-      value: Number(newDeal.value) || 0,
-      stage: newDeal.stage || 'lead',
-      probability: newDeal.probability || 0,
-      // Use provided assigned_to, or authenticated user ID, or null
-      assigned_to: newDeal.assigned_to ?? userId,
-      contact: newDeal.contact?.trim() || null,
-      contact_email: newDeal.contact_email?.trim() || null,
-      contact_phone: newDeal.contact_phone?.trim() || null,
-      description: newDeal.description?.trim() || null,
-      source: newDeal.source || 'inbound',
-      priority: newDeal.priority || 'medium',
-      expected_close_date: newDeal.expected_close_date || null,
-      last_activity: newDeal.last_activity || new Date().toISOString(),
-      next_step: newDeal.next_step || null,
-      tags: newDeal.tags || [],
-      metadata: newDeal.metadata || {},
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }, userId));
+    let dealsData = deals.map(newDeal => {
+      if (newDeal.contact_email && !validateEmail(newDeal.contact_email)) {
+        throw new Error('Invalid contact email address format');
+      }
+      return addOwnerIdIfSupported('deals', {
+        title: newDeal.title?.trim() || 'Untitled Deal',
+        company: newDeal.company?.trim() || null,
+        customer_id: newDeal.customer_id || null,
+        value: Number(newDeal.value) || 0,
+        stage: newDeal.stage || 'lead',
+        probability: newDeal.probability || 0,
+        // Use provided assigned_to, or authenticated user ID, or null
+        assigned_to: newDeal.assigned_to ?? userId,
+        contact: newDeal.contact?.trim() || null,
+        contact_email: newDeal.contact_email?.trim() || null,
+        contact_phone: sanitizePhone(newDeal.contact_phone),
+        description: newDeal.description?.trim() || null,
+        source: newDeal.source || 'inbound',
+        priority: newDeal.priority || 'medium',
+        expected_close_date: newDeal.expected_close_date || null,
+        last_activity: newDeal.last_activity || new Date().toISOString(),
+        next_step: newDeal.next_step || null,
+        tags: newDeal.tags || [],
+        metadata: newDeal.metadata || {},
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, userId);
+    });
 
     for (let attempt = 0; attempt < 6; attempt += 1) {
       const { data, error } = await supabase

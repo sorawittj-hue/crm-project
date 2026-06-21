@@ -1,15 +1,70 @@
 import { supabase } from '../utils/supabase';
 
 export async function fetchMyProfile() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user?.id) return null;
-  const { data, error } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('id', session.user.id)
-    .single();
-  if (error) return null;
-  return data;
+  try {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.error('Failed to get auth session for profile fetch:', sessionError);
+      return null;
+    }
+    if (!session?.user?.id) return null;
+
+    const userId = session.user.id;
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching user profile from database:', error);
+      return null;
+    }
+
+    const fullName = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User';
+
+    // Self-Healing: Create the profile row if it doesn't exist
+    if (!data) {
+      try {
+        console.info(`Self-healing: Profile for user ${userId} not found. Creating a new one...`);
+        const newProfile = await createProfile({
+          id: userId,
+          email: session.user.email,
+          fullName,
+          role: 'member',
+          planType: 'trial',
+          trialEndsAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString() // 3 days trial
+        });
+        return newProfile;
+      } catch (createErr) {
+        console.error('Failed to self-heal user profile:', createErr);
+        return null;
+      }
+    }
+
+    // Session Syncing: Sync names/emails if they changed in Auth metadata
+    if (data.email !== session.user.email || (fullName && data.full_name !== fullName)) {
+      try {
+        const { data: updatedData, error: syncError } = await supabase
+          .from('user_profiles')
+          .update({
+            email: session.user.email,
+            full_name: fullName,
+          })
+          .eq('id', userId)
+          .select()
+          .single();
+        if (!syncError && updatedData) return updatedData;
+      } catch (syncErr) {
+        console.error('Failed to sync Auth metadata to user profile:', syncErr);
+      }
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Unexpected error in fetchMyProfile:', err);
+    return null;
+  }
 }
 
 export async function fetchAllProfiles() {
