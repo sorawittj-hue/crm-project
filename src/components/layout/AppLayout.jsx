@@ -8,7 +8,6 @@ import {
   ChevronRight, Target, TrendingUp,
   AlertCircle, Clock, CheckCircle2, CalendarClock, Briefcase,
   BarChart2, Trash2, CheckCheck, Plus, Sparkles, Lock, Crown,
-  Circle, Check,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useDeals } from '../../hooks/useDeals';

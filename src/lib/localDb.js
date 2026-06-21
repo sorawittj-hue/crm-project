@@ -35,7 +35,7 @@ export const getTrialState = () => {
     const raw = localStorage.getItem(STORAGE_KEYS.TRIAL_STATE);
     if (!raw) return { isActive: false, startTime: null };
     return JSON.parse(raw);
-  } catch (e) {
+  } catch {
     return { isActive: false, startTime: null };
   }
 };
@@ -69,7 +69,7 @@ const getList = (key) => {
   try {
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : [];
-  } catch (e) {
+  } catch {
     return [];
   }
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import {
@@ -300,11 +300,7 @@ function DealCalculator() {
   const [probability, setProbability] = useState('70');
   const [months, setMonths] = useState('3');
 
-  useEffect(() => {
-    if (Number(dealValue) > 0 && Number(cost) > 0) {
-      
-    }
-  }, [dealValue, cost, completeTask]);
+
 
   const calc = (() => {
     const v = Number(dealValue) || 0;

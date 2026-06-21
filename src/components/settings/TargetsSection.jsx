@@ -6,8 +6,7 @@ import { formatFullCurrency } from '../../lib/formatters';
 import { useToast } from '../ui/Toast';
 import { Pencil, Save, Loader2, Target } from 'lucide-react';
 import { useSettings, useUpdateSettings } from '../../hooks/useSettings';
-import { useAuth } from '../../hooks/useAuth';
-import { useMyProfile } from '../../hooks/useUserProfiles';
+
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -15,7 +14,7 @@ export function TargetsSection() {
   const { data: settings } = useSettings();
   const updateSettings = useUpdateSettings();
   const { success, error } = useToast();
-  const { user } = useAuth();
+
   const { openPaywall } = useAppStore();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
   

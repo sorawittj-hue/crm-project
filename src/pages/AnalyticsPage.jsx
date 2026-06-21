@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { useDeals } from '../hooks/useDeals';
-import { useSettings } from '../hooks/useSettings';
+
 import { useTeam } from '../hooks/useTeam';
 import { useAuth } from '../hooks/useAuth';
 import { useMyProfile } from '../hooks/useUserProfiles';
@@ -22,7 +22,7 @@ import {
 import {
   Target, ArrowUpRight, ArrowDownRight, Loader2,
   Activity, DollarSign, ShieldCheck, ThumbsUp, ThumbsDown, AlertCircle,
-  Trophy, Zap, Clock, Sparkles, TrendingUp, Sliders, Info, Briefcase
+  Trophy, Clock, Sparkles, TrendingUp, Sliders, Info, Briefcase
 } from 'lucide-react';
 
 // --- Premium Typewriter Effect Component ---
@@ -168,7 +168,7 @@ export default function AnalyticsPage() {
   const { user } = useAuth();
   const { data: myProfile } = useMyProfile(user?.id);
   const { data: deals, isLoading: dealsLoading } = useDeals();
-  const { data: settings, isLoading: settingsLoading } = useSettings();
+
   const { data: teamMembers, isLoading: teamLoading } = useTeam();
   const { data: customers = [] } = useCustomers();
 
@@ -181,7 +181,6 @@ export default function AnalyticsPage() {
   const [simAvgValue, setSimAvgValue] = useState(200000);
   const [simLeads, setSimLeads] = useState(20);
 
-  const teamTarget = settings?.monthly_target || 10000000;
   const hasPersonalTarget = myProfile?.personal_target > 0;
   const monthlyTarget = hasPersonalTarget ? myProfile.personal_target : 0;
 
@@ -435,7 +434,7 @@ export default function AnalyticsPage() {
     };
   }, [deals, customers, monthlyTarget, timeRange, teamMembers]);
 
-  const isLoading = dealsLoading || settingsLoading || teamLoading;
+  const isLoading = dealsLoading || teamLoading;
 
   useEffect(() => {
     if (analytics) {
@@ -485,7 +484,7 @@ export default function AnalyticsPage() {
       'quota': quotaText,
       'bottleneck': bottleneckText
     };
-  }, [analytics, monthlyTarget]);
+  }, [analytics, monthlyTarget, hasPersonalTarget]);
 
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center h-[60vh] gap-6">

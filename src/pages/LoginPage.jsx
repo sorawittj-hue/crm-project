@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { startLocalTrial } from '../lib/localDb';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Eye, EyeOff, ArrowRight, Loader2, UserPlus, LogIn, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Loader2, UserPlus, LogIn, Sparkles } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();

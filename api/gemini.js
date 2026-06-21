@@ -1,3 +1,4 @@
+/* global process */
 import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
 

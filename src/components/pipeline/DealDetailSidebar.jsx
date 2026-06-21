@@ -4,25 +4,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trash2, CheckCircle2, XCircle,
   Phone, Mail, FileText, Clock,
-  Sparkles, Activity, Target, ShieldCheck, Zap,
+  Sparkles, Activity, Target, Zap,
   Loader2, Send, CalendarClock, ListTodo, AlertTriangle, Settings,
-  Building2, User, DollarSign, TrendingUp, X, ChevronRight
+  Building2, User, TrendingUp, X
 } from 'lucide-react';
-import WinLossModal from './WinLossModal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
-import { Badge } from '../ui/Badge';
-import ConfirmDialog from '../ui/ConfirmDialog';
 import { cn } from '../../lib/utils';
 import { formatFullCurrency as formatCurrency } from '../../lib/formatters';
 import { callGeminiAPI } from '../../services/ai';
 import { useDealActivities, useAddActivity } from '../../hooks/useActivities';
 import { useEmailTemplates } from '../../hooks/useEmailTemplates';
 import { createPortal } from 'react-dom';
-import { supabase } from '../../utils/supabase';
 import { useSubscription } from '../../hooks/useSubscription';
-import { useAuth } from '../../hooks/useAuth';
 import { useAppStore } from '../../store/useAppStore';
 
 const STAGE_WORKFLOW = {
@@ -137,8 +132,7 @@ const TABS = [
   { id: 'edit',        label: 'แก้ไข',      icon: Settings },
 ];
 
-export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, onClose, onRequestDelete, onRequestCloseStage }) {
-  const { user } = useAuth();
+export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onRequestDelete, onRequestCloseStage }) {
   const { openPaywall } = useAppStore();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
 
@@ -218,7 +212,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
       if (parsed) setAiAnalysis(parsed);
     }
     setIsAnalyzing(false);
-  }, [deal]);
+  }, [deal, isGuestAccount]);
 
   useEffect(() => {
     if (deal && deal.value >= 1000000 && !aiAnalysis) handleAIAnalysis();
@@ -806,7 +800,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onDelete, on
                             <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100">
                               <Zap size={24} className="text-slate-300" />
                             </div>
-                            <p className="text-sm font-medium text-slate-400">กดปุ่ม "วิเคราะห์ใหม่" เพื่อให้ AI ประเมินโอกาสปิดดีล</p>
+                            <p className="text-sm font-medium text-slate-400">กดปุ่ม &ldquo;วิเคราะห์ใหม่&rdquo; เพื่อให้ AI ประเมินโอกาสปิดดีล</p>
                           </div>
                         )}
                       </AnimatePresence>

@@ -1,6 +1,6 @@
 import { useAuth } from './useAuth';
 import { useMyProfile } from './useUserProfiles';
-import { isLocalTrialActive as checkLocalTrial, getTrialDaysLeft as getLocalTrialDaysLeft } from '../lib/localDb';
+import { isLocalTrialActive as checkLocalTrial } from '../lib/localDb';
 
 export function useSubscription() {
   const { user } = useAuth();

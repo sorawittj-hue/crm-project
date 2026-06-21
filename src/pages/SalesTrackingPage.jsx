@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell
 } from 'recharts';
@@ -7,7 +7,7 @@ import SafeResponsiveContainer from '../components/charts/SafeResponsiveContaine
 import { buildPipelineIntelligence } from '../utils/salesIntelligence';
 import { 
   BadgeDollarSign, TrendingUp, Target, Save, Loader2, Calendar, 
-  BarChart3, Plus, ArrowUpRight, ArrowDownRight, Edit2
+  BarChart3, Edit2
 } from 'lucide-react';
 import { useDeals } from '../hooks/useDeals';
 import { useMonthlySales, useUpsertMonthlySale } from '../hooks/useSales';
@@ -39,7 +39,7 @@ const pageMotion = {
   exit: { opacity: 0, y: -15, transition: { duration: 0.2 } }
 };
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
@@ -60,8 +60,8 @@ export default function SalesTrackingPage() {
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
   const annualTarget = monthlyTarget * 12;
 
-  const { data: deals = [], isLoading: loadingDeals } = useDeals();
-  const { data: dbSales = [], isLoading: loadingSales } = useMonthlySales(currentYear);
+  const { data: deals = [] } = useDeals();
+  const { data: dbSales = [] } = useMonthlySales(currentYear);
   const upsertSale = useUpsertMonthlySale();
 
   const [editValues, setEditValues] = useState({});

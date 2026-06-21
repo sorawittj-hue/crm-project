@@ -5,7 +5,7 @@ import { Input } from '../ui/Input';
 import { useToast } from '../ui/Toast';
 import { formatFullCurrency } from '../../lib/formatters';
 import { cn } from '../../lib/utils';
-import { Pencil, Save, Loader2, LogOut, Target, Download, Trash2, AlertTriangle } from 'lucide-react';
+import { Pencil, Save, Loader2, LogOut, Target, Download, Trash2 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useMyProfile, useUpdateMyPersonalTarget } from '../../hooks/useUserProfiles';
 import { useSubscription } from '../../hooks/useSubscription';

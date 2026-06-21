@@ -9,7 +9,7 @@ import { getAutoBackupHistory } from '../../hooks/useAutoBackup';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '../../lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -23,7 +23,6 @@ export function BackupSection() {
 
   const [isExporting, setIsExporting] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   
   const [autoBackups, setAutoBackups] = useState([]);
@@ -142,7 +141,7 @@ export function BackupSection() {
 
   const handleFactoryReset = async () => {
     if (!user?.id) return;
-    setIsResetting(true);
+    setIsRestoring(true);
     try {
       await factoryResetWorkspace(user.id);
       await queryClient.invalidateQueries({ queryKey: ['deals'] });
@@ -153,7 +152,7 @@ export function BackupSection() {
     } catch (err) {
       error('เกิดข้อผิดพลาดในการล้างข้อมูล: ' + err.message);
     } finally {
-      setIsResetting(false);
+      setIsRestoring(false);
     }
   };
 
@@ -261,7 +260,7 @@ export function BackupSection() {
               <div className="p-8 text-center text-slate-400 text-sm font-medium">ยังไม่มีประวัติการสำรองข้อมูลอัตโนมัติ</div>
             ) : (
               <div className="divide-y divide-slate-100">
-                {autoBackups.map((bkp, i) => {
+                {autoBackups.map((bkp) => {
                   const dateObj = new Date(bkp.date);
                   const isToday = new Date().toDateString() === dateObj.toDateString();
                   return (

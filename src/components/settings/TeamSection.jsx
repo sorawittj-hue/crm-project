@@ -9,8 +9,7 @@ import { Plus, Check, X, Pencil, Trash2, Users, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTeam, useAddTeamMember, useUpdateTeamMember, useDeleteTeamMember } from '../../hooks/useTeam';
 import ConfirmDialog from '../ui/ConfirmDialog';
-import { useAuth } from '../../hooks/useAuth';
-import { supabase } from '../../utils/supabase';
+
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -34,7 +33,7 @@ export function TeamSection() {
   const updateMember = useUpdateTeamMember();
   const deleteMember = useDeleteTeamMember();
   const { success, error } = useToast();
-  const { user } = useAuth();
+
   const { openPaywall } = useAppStore();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
 
@@ -212,7 +211,7 @@ export function TeamSection() {
                 <Users size={32} className="text-violet-400" />
               </div>
               <p className="text-sm font-bold text-slate-600">ยังไม่มีสมาชิกในทีม</p>
-              <p className="text-xs text-slate-400 mt-1">กดปุ่ม "เพิ่มสมาชิก" เพื่อเริ่มสร้างทีมขาย</p>
+              <p className="text-xs text-slate-400 mt-1">กดปุ่ม &ldquo;เพิ่มสมาชิก&rdquo; เพื่อเริ่มสร้างทีมขาย</p>
             </div>
           )}
         </div>

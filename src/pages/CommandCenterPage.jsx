@@ -2,7 +2,7 @@ import { useMemo, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeals } from '../hooks/useDeals';
 import { useTeam } from '../hooks/useTeam';
-import { useSettings } from '../hooks/useSettings';
+
 import { useActivities, useUpdateActivity } from '../hooks/useActivities';
 import { useCustomers } from '../hooks/useCustomers';
 import { useSubscription } from '../hooks/useSubscription';
@@ -11,24 +11,22 @@ import { useAuth } from '../hooks/useAuth';
 import { useMyProfile } from '../hooks/useUserProfiles';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { motion, animate, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, animate, useReducedMotion } from 'framer-motion';
 import { cn } from '../lib/utils';
-import { formatCurrency, formatFullCurrency, daysSince } from '../lib/formatters';
-import { buildPipelineIntelligence, buildCustomerHealth, DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
+import { formatCurrency, daysSince } from '../lib/formatters';
+import { buildPipelineIntelligence, buildCustomerHealth } from '../utils/salesIntelligence';
 import { STAGE_COLORS, STAGE_LABELS } from '../lib/constants';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
 import QuickWinModal from '../components/pipeline/QuickWinModal';
 import MetricTooltip from '../components/ui/MetricTooltip';
 import {
-  TrendingUp,
   Users, AlertCircle,
   ArrowUpRight, ArrowDownRight, Briefcase,
   Target, Clock, CalendarClock, ChevronRight, CheckCircle2,
   Phone, Mail, FileText, MessageSquare, Activity, Trophy,
   Star, Flame, BarChart3, Sparkles, Shield, Zap,
-  PieChart as PieChartIcon, Wrench, Settings, ShieldCheck,
-  Crown, Loader2
+  Wrench, ShieldCheck, Loader2
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis,
@@ -88,7 +86,6 @@ export default function CommandCenterPage() {
   const { data: myProfile } = useMyProfile(user?.id);
   const { data: deals, isLoading: dealsLoading } = useDeals();
   const { data: teamMembers, isLoading: teamLoading } = useTeam();
-  const { data: settings, isLoading: settingsLoading } = useSettings();
   const { data: activities = [] } = useActivities();
   const updateActivityMutation = useUpdateActivity();
   const { data: customers = [] } = useCustomers();
@@ -97,7 +94,6 @@ export default function CommandCenterPage() {
 
   const [isQuickWinOpen, setIsQuickWinOpen] = useState(false);
 
-  const teamGoal = settings?.monthly_target || 10000000;
   const hasPersonalTarget = myProfile?.personal_target > 0;
   const monthlyGoal = hasPersonalTarget ? myProfile.personal_target : 0;
 
@@ -244,6 +240,7 @@ export default function CommandCenterPage() {
   // Today's Action Plan
   const actionPlan = useMemo(() => {
     if (!deals) return { followUps: [], closingThisWeek: [], stale: [] };
+    // eslint-disable-next-line
     const now = Date.now();
     const endOfToday = new Date(now); endOfToday.setHours(23, 59, 59, 999);
     const dealMap = Object.fromEntries(deals.map(d => [d.id, d]));
@@ -344,7 +341,7 @@ export default function CommandCenterPage() {
     });
   };
 
-  const isLoading = dealsLoading || teamLoading || settingsLoading;
+  const isLoading = dealsLoading || teamLoading;
   const hasNoDeals = (deals || []).length === 0;
   const userName = myProfile?.full_name || user?.email?.split('@')[0] || '';
 
@@ -820,7 +817,7 @@ export default function CommandCenterPage() {
               { title: 'Active Pipeline', value: stats?.totalPipelineValue, formatter: v => formatCurrency(v), sub: `${stats?.activeCount || 0} active deals`, icon: Briefcase, color: 'violet', sparkline: stats?.revenueStream?.map(m => m.forecast) },
               { title: 'Win Rate', value: stats?.winRate, formatter: v => `${Math.round(v)}%`, sub: 'สัดส่วนดีลสำเร็จทั้งหมด', icon: ShieldCheck, color: 'emerald', sparkline: [35, 38, 42, 40, 45, stats?.winRate || 40] },
               { title: 'Avg Velocity', value: stats?.avgDaysToClose, formatter: v => `${Math.round(v)} วัน`, sub: 'ระยะเวลาเฉลี่ยถึงปิดดีล', icon: Zap, color: 'amber', sparkline: [24, 22, 25, 20, 21, stats?.avgDaysToClose || 20] },
-            ].map((kpi, i) => (
+            ].map((kpi) => (
               <Card key={kpi.title} className={cn(
                 "p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden",
                 kpi.color === 'violet' && 'hover:border-violet-200',

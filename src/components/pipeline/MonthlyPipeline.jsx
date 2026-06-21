@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+
 import DealDetailSidebar from './DealDetailSidebar';
 import { useTeam } from '../../hooks/useTeam';
 import PipelineHeader from './PipelineHeader';

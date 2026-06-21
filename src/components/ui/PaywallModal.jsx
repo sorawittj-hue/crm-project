@@ -6,9 +6,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { Crown, Sparkles, CheckCircle2, Shield, Zap, ShieldCheck, Loader2, LogIn, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-function cn(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
+
 
 export default function PaywallModal() {
   const { isPaywallOpen, closePaywall, paywallReason } = useAppStore();
@@ -19,7 +17,7 @@ export default function PaywallModal() {
   const [success, setSuccess] = useState(false);
   const [successType, setSuccessType] = useState('premium'); // 'premium' or 'trial'
   
-  const [guestTab, setGuestTab] = useState('premium'); // 'premium' or 'trial'
+
   
   const [registering, setRegistering] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
@@ -67,7 +65,7 @@ export default function PaywallModal() {
       setSuccess(false);
       setConfirming(false);
       setRegistering(false);
-      setGuestTab('premium');
+
       setFormData({ name: '', email: '', password: '' });
       setRegisterError('');
     }, 300);

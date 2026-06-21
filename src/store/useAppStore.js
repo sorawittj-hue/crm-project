@@ -46,7 +46,7 @@ export const useAppStore = create(
                 finalReason = 'guest_upgrade';
               }
             }
-          } catch (e) {
+          } catch {
             // Silently ignore
           }
         }

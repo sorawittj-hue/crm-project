@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+
 import { CheckCircle2, DollarSign, Calendar, Building2, AlignLeft, Loader2, Zap } from 'lucide-react';
 import { useAddDeal } from '../../hooks/useDeals';
 import { useAppStore } from '../../store/useAppStore';

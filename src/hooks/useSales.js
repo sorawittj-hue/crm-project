@@ -21,7 +21,7 @@ export function useUpsertMonthlySale() {
 
   return useMutation({
     mutationFn: upsertMonthlySale,
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['monthly_sales'] });
       // Toast handles success silently to not spam if user types quickly, 
       // but we can show it for explicit saves.

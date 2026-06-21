@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plug, Webhook, MessageCircle, Send, Check, Loader2, Save, AlertCircle, ToggleLeft, ToggleRight, X } from 'lucide-react';
-import { Card } from '../ui/Card';
+import { Plug, Webhook, MessageCircle, Send, Loader2, Save, AlertCircle, ToggleLeft, ToggleRight, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { cn } from '../../lib/utils';
@@ -78,7 +77,7 @@ export function IntegrationSection() {
       localStorage.setItem('nova_integrations', JSON.stringify(settings));
       toast.success('บันทึกการตั้งค่าปลั๊กอินเรียบร้อย');
       setActivePlugin(null); // close modal
-    } catch (e) {
+    } catch {
       toast.error('ไม่สามารถบันทึกการตั้งค่าได้');
     } finally {
       setIsSaving(false);

@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import {
   fetchNotifications,
-  upsertNotification,
   upsertNotificationsBatch,
   markNotificationRead,
   markAllNotificationsRead,
@@ -67,11 +66,12 @@ export function useNotifications(userId) {
     staleTime: 30_000,
   });
 
-  const currentNotifs = query.data || [];
+  const currentNotifs = query.data;
 
   useEffect(() => {
-    if (!userId || !currentNotifs.length) {
-      if (currentNotifs.length === 0) {
+    const notifs = currentNotifs || [];
+    if (!userId || !notifs.length) {
+      if (notifs.length === 0) {
         prevNotifsRef.current = [];
       }
       return;
@@ -80,7 +80,7 @@ export function useNotifications(userId) {
     // Only diff if we already had a previous list loaded
     if (prevNotifsRef.current.length > 0) {
       const prevKeys = new Set(prevNotifsRef.current.map(n => n.id));
-      const newUnread = currentNotifs.filter(n => !n.is_read && !prevKeys.has(n.id));
+      const newUnread = notifs.filter(n => !n.is_read && !prevKeys.has(n.id));
 
       if (newUnread.length > 0) {
         let settings = { soundEnabled: true, desktopEnabled: false };
@@ -116,7 +116,7 @@ export function useNotifications(userId) {
       }
     }
 
-    prevNotifsRef.current = currentNotifs;
+    prevNotifsRef.current = notifs;
   }, [currentNotifs, userId, toast]);
 
   return query;

@@ -91,6 +91,7 @@ export function useAuth() {
     return () => {
       listeners.delete(listener);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const signIn = async (email, password) => {

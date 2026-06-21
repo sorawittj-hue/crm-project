@@ -3,7 +3,7 @@ import { Card } from '../ui/Card';
 import { cn } from '../../lib/utils';
 import { 
   Bell, Volume2, ShieldAlert, CalendarClock, Briefcase, 
-  Clock, BarChart2, ShieldCheck, HelpCircle, Play, Info
+  Clock, BarChart2, Play, Info
 } from 'lucide-react';
 import { useToast } from '../ui/Toast';
 
@@ -60,7 +60,6 @@ function playNotificationChime() {
 export function NotificationSection() {
   const toast = useToast();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-  const [desktopPermission, setDesktopPermission] = useState('default');
 
   // Load settings on mount
   useEffect(() => {
@@ -80,9 +79,6 @@ export function NotificationSection() {
       console.error('Failed to load notification settings:', e);
     }
 
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      setDesktopPermission(Notification.permission);
-    }
   }, []);
 
   // Save settings helper
@@ -125,7 +121,6 @@ export function NotificationSection() {
     // If permission is default, ask user
     if (Notification.permission === 'default') {
       const permission = await Notification.requestPermission();
-      setDesktopPermission(permission);
       if (permission !== 'granted') {
         toast.error('คุณไม่ได้อนุญาตสิทธิ์การแจ้งเตือน');
         return;

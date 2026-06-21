@@ -392,7 +392,7 @@ const CommandCenter = ({
                     color={m.color}
                     icon_type={m.icon_type}
                     activeNow={true}
-                    onReview={(member) => window.location.href = '/pipeline'}
+                    onReview={() => window.location.href = '/pipeline'}
                   />
                 );
               })}

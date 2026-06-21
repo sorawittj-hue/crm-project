@@ -1,6 +1,6 @@
 import { Card } from '../ui/Card';
 import { cn } from '../../lib/utils';
-import { ShieldCheck, Clock, Users, Shield } from 'lucide-react';
+import { Clock, Users } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAllProfiles, useUpdateProfileRole } from '../../hooks/useUserProfiles';

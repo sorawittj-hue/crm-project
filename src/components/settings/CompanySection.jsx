@@ -6,8 +6,7 @@ import { useToast } from '../ui/Toast';
 import { Pencil, Save, Loader2, Building2, Briefcase, Banknote } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useSettings, useUpdateSettings } from '../../hooks/useSettings';
-import { useAuth } from '../../hooks/useAuth';
-import { useMyProfile } from '../../hooks/useUserProfiles';
+
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -15,7 +14,7 @@ export function CompanySection() {
   const { data: settings } = useSettings();
   const updateSettings = useUpdateSettings();
   const { success, error } = useToast();
-  const { user } = useAuth();
+
   const { openPaywall } = useAppStore();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Laptop, Server, Wifi, Cpu, Monitor, HardDrive, Zap, Shield, Lightbulb, ChevronRight
+  Laptop, Server, Wifi, Cpu, Monitor, HardDrive, Zap, Shield, Lightbulb
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
