@@ -10,6 +10,7 @@
 UPDATE user_profiles SET role = 'admin' WHERE email = 'sorawittj@gmail.com';
 
 -- 2. Define the SECURITY DEFINER function to check admin role (avoids RLS infinite recursion)
+-- We cast auth.uid() to text (auth.uid()::text) because the id column in user_profiles is stored as text.
 CREATE OR REPLACE FUNCTION is_admin()
 RETURNS boolean AS $$
 BEGIN
@@ -18,7 +19,7 @@ BEGIN
     OR
     EXISTS (
       SELECT 1 FROM user_profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid()::text AND role = 'admin'
     )
   );
 END;
@@ -40,7 +41,7 @@ CREATE POLICY "Self read on user_profiles"
   ON user_profiles
   FOR SELECT
   TO authenticated
-  USING (auth.uid() = id);
+  USING (auth.uid()::text = id);
 
 -- 6. Policy: Allow admins/owner to read all profile rows
 CREATE POLICY "Admin read all on user_profiles"
@@ -62,8 +63,8 @@ CREATE POLICY "Allow self updates on user_profiles"
   ON user_profiles
   FOR UPDATE
   TO authenticated
-  USING (auth.uid() = id)
-  WITH CHECK (auth.uid() = id);
+  USING (auth.uid()::text = id)
+  WITH CHECK (auth.uid()::text = id);
 
 -- 9. Trigger: Enforce column-level security on self-updates (Role/Plan Protection)
 -- Even though a user is allowed to update their own row, we want to block regular users
@@ -94,7 +95,7 @@ BEGIN
   END IF;
 
   -- Double-check that normal users can only edit their own profile row
-  IF auth.uid() <> NEW.id THEN
+  IF auth.uid()::text <> NEW.id::text THEN
     RAISE EXCEPTION 'Unauthorized operation: You can only modify your own profile.';
   END IF;
 
