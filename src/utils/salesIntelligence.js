@@ -1,5 +1,5 @@
 import { parseYearMonth } from '../lib/utils';
-import { STAGE_COLORS } from '../lib/constants';
+
 import { buildCustomerHealth } from './customerIntelligence';
 
 const DAY_MS = 86_400_000;

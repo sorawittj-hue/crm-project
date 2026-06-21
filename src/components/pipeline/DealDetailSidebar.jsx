@@ -244,7 +244,9 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
     }`;
 
     const result = await callGeminiAPI(prompt);
-    if (result) {
+    if (result?.disabled) {
+      setAiAnalysis({ disabled: true, strategy: "ฟีเจอร์ AI ปิดใช้งานชั่วคราว — จะกลับมาเร็วๆนี้", risk_level: "medium", next_step: "-", win_likelihood: 0 });
+    } else if (result) {
       const parsed = parseAIResponse(result);
       if (parsed) setAiAnalysis(parsed);
     }

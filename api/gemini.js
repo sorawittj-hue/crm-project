@@ -63,7 +63,7 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'Gemini API Key missing on server' });
+    return res.status(503).json({ error: 'AI_DISABLED', message: 'ฟีเจอร์ AI ปิดใช้งานชั่วคราว' });
   }
 
   try {

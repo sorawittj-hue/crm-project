@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Dialog, DialogContent } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { Loader2, Mic, StopCircle, Sparkles, Check } from 'lucide-react';
+import { Loader2, Mic, StopCircle, Check } from 'lucide-react';
 import { parseVoiceDealText } from '../../services/ai';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -55,7 +55,7 @@ export default function VoiceToDealModal({ open, onOpenChange, onSaveDeal }) {
     recognitionRef.current.start();
   };
 
-  const stopRecording = async () => {
+  const stopRecording = useCallback(async () => {
     if (recognitionRef.current) {
       recognitionRef.current.stop();
     }
@@ -66,14 +66,17 @@ export default function VoiceToDealModal({ open, onOpenChange, onSaveDeal }) {
     } else {
       setError('ไม่ได้ยินเสียงหรือข้อความสั้นเกินไป กรุณาลองใหม่');
     }
-  };
+  }, [transcript]);
 
   const processTranscript = async (text) => {
     setIsProcessing(true);
     setError(null);
     try {
       const result = await parseVoiceDealText(text);
-      if (result) {
+      if (result?.disabled) {
+        setParsedData(null);
+        setError('ฟีเจอร์ AI ปิดใช้งานชั่วคราว — จะกลับมาเร็วๆนี้');
+      } else if (result) {
         setParsedData({
           title: result.title || '',
           company: result.company || '',
@@ -85,7 +88,7 @@ export default function VoiceToDealModal({ open, onOpenChange, onSaveDeal }) {
       } else {
         setError('ไม่สามารถแยกข้อมูลจากเสียงได้ กรุณาลองใหม่ หรือพิมพ์เอง');
       }
-    } catch (err) {
+    } catch {
       setError('เกิดข้อผิดพลาดในการประมวลผลด้วย AI');
     } finally {
       setIsProcessing(false);
@@ -108,12 +111,11 @@ export default function VoiceToDealModal({ open, onOpenChange, onSaveDeal }) {
     onOpenChange(false);
   };
 
-  // When modal closes, stop recording if active
   useEffect(() => {
     if (!open && isRecording) {
       stopRecording();
     }
-  }, [open, isRecording]);
+  }, [open, isRecording, stopRecording]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -169,7 +171,7 @@ export default function VoiceToDealModal({ open, onOpenChange, onSaveDeal }) {
 
                 {transcript && (
                   <div className="w-full bg-slate-50 p-4 rounded-xl text-sm text-slate-700 italic border border-slate-100 min-h-[60px] max-h-[120px] overflow-y-auto shadow-inner">
-                    "{transcript}"
+                    &quot;{transcript}&quot;
                   </div>
                 )}
                 

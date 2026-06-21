@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { getUpcomingRenewals } from '../../utils/salesIntelligence';
 import { Card } from '../ui/Card';
 import { cn } from '../../lib/utils';
@@ -6,6 +6,7 @@ import { formatCurrency } from '../../lib/formatters';
 import { Calendar, AlertTriangle, CheckCircle, ShieldAlert } from 'lucide-react';
 
 export default function RenewalsBoard({ deals, customers, onDealClick }) {
+  const [now] = useState(() => Date.now());
   const renewals = useMemo(() => {
     return getUpcomingRenewals(deals, customers, new Date(), 90);
   }, [deals, customers]);
@@ -26,7 +27,7 @@ export default function RenewalsBoard({ deals, customers, onDealClick }) {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {renewals.map(deal => {
         const renewalDate = new Date(deal.renewal_date);
-        const daysLeft = Math.ceil((renewalDate.getTime() - Date.now()) / 86400000);
+        const daysLeft = Math.ceil((renewalDate.getTime() - now) / 86400000);
         
         let statusColor = "bg-emerald-50 text-emerald-700 border-emerald-100";
         let StatusIcon = CheckCircle;

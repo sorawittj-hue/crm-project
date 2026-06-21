@@ -906,7 +906,7 @@ export default function AnalyticsPage() {
                           <p className="text-xs text-slate-400">ยังไม่มีข้อมูลดีลที่แพ้</p>
                         </div>
                       ) : (
-                        analytics?.accuracyBreakdown?.map((item, i) => (
+                        analytics?.accuracyBreakdown?.map((item) => (
                           <div key={item.reason} className="flex flex-col gap-1 pb-3 border-b border-slate-100 last:border-0 last:pb-0">
                             <div className="flex justify-between items-center">
                               <span className="text-sm font-bold text-slate-700">{item.reason}</span>

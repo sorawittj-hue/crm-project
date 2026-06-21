@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Sparkles, ChevronRight, Loader2 } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { Target, Sparkles, Loader2, Info } from 'lucide-react';
 import { formatCurrency, daysSince } from '../../lib/formatters';
 import { callGeminiAPI } from "../../services/ai";
 
@@ -31,11 +30,15 @@ export default function FocusDealsCard({ focusDeals, onOpenDeal }) {
       Explain in Thai language. Be concise and professional.`;
       
       const response = await callGeminiAPI(prompt, null);
+      if (response?.disabled) {
+        setExplanations(prev => ({ ...prev, [deal.id]: { disabled: true, text: 'ฟีเจอร์ AI ปิดใช้งานชั่วคราว — จะกลับมาเร็วๆนี้' } }));
+        return;
+      }
       const explanationText = typeof response === 'string' ? response : (response?.text || 'ไม่สามารถวิเคราะห์ได้');
-      setExplanations(prev => ({ ...prev, [deal.id]: explanationText }));
+      setExplanations(prev => ({ ...prev, [deal.id]: { disabled: false, text: explanationText } }));
     } catch (error) {
       console.error('Failed to get AI explanation:', error);
-      setExplanations(prev => ({ ...prev, [deal.id]: 'ไม่สามารถดึงข้อมูล AI ได้ในขณะนี้' }));
+      setExplanations(prev => ({ ...prev, [deal.id]: { disabled: false, text: 'ไม่สามารถดึงข้อมูล AI ได้ในขณะนี้' } }));
     } finally {
       setExplainingId(null);
     }
@@ -95,11 +98,15 @@ export default function FocusDealsCard({ focusDeals, onOpenDeal }) {
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className="p-3 bg-violet-50 rounded-xl border border-violet-100 relative"
+                    className={`p-3 rounded-xl border relative ${explanations[deal.id].disabled ? 'bg-slate-50 border-slate-200' : 'bg-violet-50 border-violet-100'}`}
                   >
-                    <Sparkles size={14} className="text-violet-500 absolute top-3 right-3" />
-                    <p className="text-xs text-violet-800 leading-relaxed font-medium pr-6">
-                      {explanations[deal.id]}
+                    {explanations[deal.id].disabled ? (
+                      <Info size={14} className="text-slate-400 absolute top-3 right-3" />
+                    ) : (
+                      <Sparkles size={14} className="text-violet-500 absolute top-3 right-3" />
+                    )}
+                    <p className={`text-xs leading-relaxed font-medium pr-6 ${explanations[deal.id].disabled ? 'text-slate-500' : 'text-violet-800'}`}>
+                      {explanations[deal.id].text}
                     </p>
                   </motion.div>
                 ) : (

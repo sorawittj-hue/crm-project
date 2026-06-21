@@ -74,6 +74,9 @@ const PDFImporter = ({ onDataExtracted }) => {
                 };
 
                 const result = await callGeminiAPI(prompt, schema);
+                if (result?.disabled) {
+                    throw new Error("ฟีเจอร์ AI ปิดใช้งานชั่วคราว — จะกลับมาเร็วๆนี้");
+                }
                 if (!result) {
                     throw new Error("Failed to analyze PDF with AI.");
                 }

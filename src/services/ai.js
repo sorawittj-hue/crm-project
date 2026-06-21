@@ -18,104 +18,75 @@ const rateLimiter = {
   },
 };
 
+/**
+ * Call Gemini API using the secure Vercel Edge Function proxy.
+ * @param {string} prompt - The prompt to send
+ * @param {object} [schema] - Optional GoogleGenAI Type schema for structured output
+ * @returns {object|string|null} Parsed JSON or text response
+ */
 export async function callGeminiAPI(prompt, schema = null) {
   if (!rateLimiter.canCall()) {
-    return { text: 'กำลังประมวลผลเร็วเกินไป กรุณารอสักครู่' };
+    console.warn('AI rate limit reached — please wait before making more requests.');
+    return { text: 'คำขอ AI มากเกินไป กรุณารอสักครู่แล้วลองใหม่' };
   }
 
-  // 🚀 Local Smart AI Engine (Fallback / Replacement for Gemini)
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(simulateSmartAI(prompt, schema));
-    }, 800); // Simulate network delay
-  });
-}
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
 
-function simulateSmartAI(prompt, schema) {
-  const p = prompt.toLowerCase();
-
-  // 1. Voice-to-Deal Parsing
-  if (p.includes('ผู้ใช้บันทึกเสียง') || p.includes('ดึงข้อมูลดีล')) {
-    const transcriptMatch = prompt.match(/"([^"]+)"/);
-    const text = transcriptMatch ? transcriptMatch[1] : prompt;
-    
-    // Heuristics
-    const valueMatch = text.match(/(\d+(?:,\d+)*)\s*(บาท|ล้าน|หมื่น|แสน)/);
-    let value = 0;
-    if (valueMatch) {
-      const numRaw = valueMatch[1].replace(/,/g, '');
-      const unit = valueMatch[2];
-      value = parseInt(numRaw, 10);
-      if (unit === 'ล้าน') value *= 1000000;
-      if (unit === 'แสน') value *= 100000;
-      if (unit === 'หมื่น') value *= 10000;
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const title = text.length > 20 ? text.substring(0, 20) + "..." : "ดีลใหม่จากเสียง";
-    let company = "ลูกค้าใหม่";
-    const companyMatch = text.match(/(?:บริษัท|ลูกค้า|ชื่อ)\s*([ก-๙a-zA-Z0-9]+)/);
-    if (companyMatch) company = companyMatch[1];
+    const response = await fetch('/api/gemini', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ 
+        prompt,
+        schema,
+        model: 'gemini-2.5-flash'
+      }),
+    });
 
-    let stage = 'lead';
-    if (text.includes('เสนอ') || text.includes('ใบเสนอราคา')) stage = 'proposal';
-    if (text.includes('ต่อรอง') || text.includes('ลดราคา')) stage = 'negotiation';
+    if (!response.ok) {
+      const err = await response.json();
+      if (err.error === 'AI_DISABLED') {
+        throw new Error('AI_DISABLED');
+      }
+      throw new Error(err.error || 'Failed to fetch from AI proxy');
+    }
 
-    return {
-      company,
-      title,
-      value: value || null,
-      contact: "ติดต่อจากเสียง",
-      stage,
-      expected_close_date: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0] // +14 days
-    };
+    const data = await response.json();
+    const text = data.text;
+    if (!text) return null;
+
+    // If schema was provided, the response should already be valid JSON string
+    if (schema) {
+      try {
+        return JSON.parse(text);
+      } catch {
+        return { text };
+      }
+    }
+
+    // Try parsing as JSON for legacy unstructured calls
+    const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    try {
+      return JSON.parse(jsonStr);
+    } catch {
+      return { text }; // Fallback if not JSON
+    }
+  } catch (error) {
+    if (error.message === 'AI_DISABLED') {
+      console.info('AI features are currently disabled (missing API key).');
+      return { disabled: true, text: null };
+    }
+    console.error("AI Proxy Error:", error.message);
+    return null;
   }
-
-  // 2. Focus Deals Card Explain
-  if (p.includes('ทำไมดีล') || p.includes('ถึงน่าสนใจ')) {
-    const valueMatch = prompt.match(/มูลค่า\s*([0-9,]+)/);
-    const stageMatch = prompt.match(/สถานะ\s*([a-zA-Z]+)/);
-    return {
-      text: `🚀 ดีลนี้มีความน่าสนใจเพราะมีการเปลี่ยนแปลงเชิงบวก สัญญาณการซื้อชัดเจน ${valueMatch ? `บวกกับมูลค่าที่สูงถึง ${valueMatch[1]} บาท ` : ''}แนะนำให้รีบ Follow-up เพื่อปิดการขายให้เร็วที่สุด`
-    };
-  }
-
-  // 3. PDF Importer Parsing
-  if (p.includes('extract structured data') || p.includes('pdf text')) {
-    return {
-      company_name: "บริษัทจากการสแกน จำกัด",
-      contact_name: "ผู้ติดต่อ PDF",
-      email: "contact@example.com",
-      phone: "080-000-0000",
-      items: [
-        { description: "บริการตามใบเสนอราคา", quantity: 1, unit_price: 50000, amount: 50000 }
-      ],
-      total_amount: 50000,
-      quote_number: "QT-" + Math.floor(Math.random() * 10000),
-      quote_date: new Date().toISOString().split('T')[0]
-    };
-  }
-
-  // 4. Analyze Deal
-  if (p.includes('analyze this sales deal')) {
-    return {
-      winProbability: 65,
-      riskLevel: "medium",
-      riskFactors: ["ไม่มีการติดต่อในระยะหลัง", "มูลค่าสูงแต่ยังอยู่ที่สถานะเริ่มต้น"],
-      nextBestAction: "โทรหาลูกค้าเพื่ออัปเดตความคืบหน้าและนัดหมายเพื่อเสนอเดโม่",
-      suggestedEmail: "สวัสดีครับคุณลูกค้า,\n\nผมขออนุญาตติดตามเรื่องดีลที่เราได้คุยกันไว้ ไม่ทราบว่าทางทีมมีข้อสงสัยเพิ่มเติมไหมครับ?\n\nขอบคุณครับ",
-      daysSinceActivity: 5,
-      isStalled: false,
-      priority: "high"
-    };
-  }
-
-  // Default fallback if schema is requested
-  if (schema) {
-    if (schema.type === 'ARRAY' || schema.type === 2) return [];
-    return {};
-  }
-  
-  return { text: "ระบบวิเคราะห์ข้อความอัจฉริยะ (Local Engine) ประมวลผลเสร็จสิ้น" };
 }
 
 /**
