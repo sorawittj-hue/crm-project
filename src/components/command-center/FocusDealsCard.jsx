@@ -30,8 +30,9 @@ export default function FocusDealsCard({ focusDeals, onOpenDeal }) {
       
       Explain in Thai language. Be concise and professional.`;
       
-      const response = await callGeminiAPI(prompt, 0.7);
-      setExplanations(prev => ({ ...prev, [deal.id]: response }));
+      const response = await callGeminiAPI(prompt, null);
+      const explanationText = typeof response === 'string' ? response : (response?.text || 'ไม่สามารถวิเคราะห์ได้');
+      setExplanations(prev => ({ ...prev, [deal.id]: explanationText }));
     } catch (error) {
       console.error('Failed to get AI explanation:', error);
       setExplanations(prev => ({ ...prev, [deal.id]: 'ไม่สามารถดึงข้อมูล AI ได้ในขณะนี้' }));
