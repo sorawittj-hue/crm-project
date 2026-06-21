@@ -137,139 +137,74 @@ export default function PaywallModal() {
               <div className="w-full md:w-7/12 p-8 lg:p-10 bg-white relative">
                 
                 {paywallReason === 'guest_upgrade' ? (
-                  <div className="flex flex-col h-full">
-                    {/* Guest Choice Tabs */}
-                    <div className="flex bg-slate-100 p-1.5 rounded-xl mb-6">
-                      <button 
-                        onClick={() => setGuestTab('premium')} 
-                        className={cn("flex-1 py-2.5 text-sm font-bold rounded-lg transition-all", guestTab === 'premium' ? "bg-white shadow-sm text-violet-700" : "text-slate-500 hover:text-slate-700")}
-                      >
-                        ชำระเงิน (ใช้งานจริง)
-                      </button>
-                      <button 
-                        onClick={() => setGuestTab('trial')} 
-                        className={cn("flex-1 py-2.5 text-sm font-bold rounded-lg transition-all", guestTab === 'trial' ? "bg-white shadow-sm text-violet-700" : "text-slate-500 hover:text-slate-700")}
-                      >
-                        สร้างบัญชี (บันทึกข้อมูล)
-                      </button>
-                    </div>
-
-                    {guestTab === 'premium' ? (
-                      // Premium QR Code
-                      <div className="flex flex-col flex-1 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <div className="flex justify-between items-end mb-6 pb-4 border-b border-slate-100">
-                          <div>
-                            <span className="text-xs font-black text-violet-600 uppercase tracking-widest bg-violet-50 px-2 py-1 rounded-md">PRO PLAN</span>
-                            <h2 className="text-xl font-black text-slate-900 mt-2">สมัครสมาชิกรายเดือน</h2>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-2xl font-black text-slate-900">299</span>
-                            <span className="text-xs font-bold text-slate-500 ml-1">THB / เดือน</span>
-                          </div>
+                  <div className="flex flex-col h-full items-center justify-center">
+                    {/* Trial Registration Form for Sandbox Migration */}
+                    <div className="flex flex-col w-full max-w-md mx-auto animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <div className="mb-6 text-center">
+                        <div className="w-16 h-16 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center mb-4 mx-auto shadow-lg shadow-violet-500/10">
+                          <User size={32} />
                         </div>
-
-                        <div className="flex-1 flex flex-col items-center justify-center mb-6">
-                          <div className="bg-white border-2 border-slate-100 rounded-3xl p-5 shadow-2xl shadow-slate-200/50 flex flex-col items-center text-center relative overflow-hidden transform scale-95">
-                            <div className="absolute top-0 left-0 right-0 bg-[#113566] text-white py-1.5 text-[10px] font-bold tracking-widest flex items-center justify-center gap-2">
-                              PROMPTPAY
-                            </div>
-                            <div className="w-40 h-40 mt-8 mb-3 border border-slate-200 rounded-2xl overflow-hidden p-2 bg-white">
-                               <img src="/promptpay_qr.png" alt="PromptPay QR Code" className="w-full h-full object-contain" />
-                            </div>
-                            <p className="text-xs font-bold text-slate-600 mb-1">สแกนเพื่อชำระเงิน</p>
-                            <p className="text-lg font-black text-violet-700">299.00 บาท</p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2 mt-auto">
-                          <button
-                            onClick={handleConfirmPayment}
-                            disabled={confirming}
-                            className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg disabled:opacity-50 active:scale-95 text-sm"
-                          >
-                            {confirming ? (
-                              <>
-                                <Loader2 size={18} className="animate-spin" />
-                                กำลังตรวจสอบ...
-                              </>
-                            ) : (
-                              <>
-                                <CheckCircle2 size={18} />
-                                ฉันโอนเงินแล้ว
-                              </>
-                            )}
-                          </button>
-                        </div>
+                        <h2 className="text-2xl font-black text-slate-900">บันทึกข้อมูล Sandbox ขึ้น Cloud</h2>
+                        <p className="text-sm text-slate-500 mt-2 leading-relaxed">ข้อมูลที่ทดลองเล่นจะไม่สูญหาย สร้างบัญชีเพื่อใช้งานต่อได้ทันที</p>
                       </div>
-                    ) : (
-                      // Trial Registration Form
-                      <div className="flex flex-col flex-1 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <div className="mb-4 text-center">
-                          <div className="w-12 h-12 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center mb-3 mx-auto">
-                            <User size={24} />
-                          </div>
-                          <h2 className="text-xl font-black text-slate-900">บันทึกข้อมูล Sandbox ขึ้น Cloud</h2>
-                          <p className="text-xs text-slate-500 mt-1">ข้อมูลที่ทดลองเล่นจะไม่สูญหาย สร้างบัญชีเพื่อใช้งานต่อได้ทันที</p>
-                        </div>
 
-                        <form onSubmit={(e) => handleRegister(e, false)} className="space-y-3">
-                          {registerError && (
-                            <div className="p-2.5 bg-red-50 text-red-600 text-[10px] font-bold rounded-lg flex items-center gap-2">
-                              <AlertCircle size={14} />
-                              {registerError}
-                            </div>
+                      <form onSubmit={(e) => handleRegister(e, false)} className="space-y-4">
+                        {registerError && (
+                          <div className="p-3 bg-red-50 text-red-600 text-xs font-bold rounded-lg flex items-center gap-2">
+                            <AlertCircle size={16} />
+                            {registerError}
+                          </div>
+                        )}
+                        <div>
+                          <div className="relative">
+                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                            <input
+                              type="text"
+                              value={formData.name}
+                              onChange={e => setFormData({ ...formData, name: e.target.value })}
+                              className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all text-sm font-medium"
+                              placeholder="ชื่อ-นามสกุล"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="relative">
+                            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                            <input
+                              type="email"
+                              value={formData.email}
+                              onChange={e => setFormData({ ...formData, email: e.target.value })}
+                              className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all text-sm font-medium"
+                              placeholder="อีเมล (you@example.com)"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="relative">
+                            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                            <input
+                              type="password"
+                              value={formData.password}
+                              onChange={e => setFormData({ ...formData, password: e.target.value })}
+                              className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all text-sm font-medium"
+                              placeholder="รหัสผ่าน"
+                            />
+                          </div>
+                        </div>
+                        
+                        <button
+                          type="submit"
+                          disabled={registering}
+                          className="w-full h-14 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 mt-6 transition-all shadow-xl shadow-violet-500/25 disabled:opacity-50 active:scale-95 text-base"
+                        >
+                          {registering ? (
+                            <Loader2 size={20} className="animate-spin" />
+                          ) : (
+                            'สร้างบัญชีและย้ายข้อมูล'
                           )}
-                          <div>
-                            <div className="relative">
-                              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                              <input
-                                type="text"
-                                value={formData.name}
-                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all text-xs font-medium"
-                                placeholder="ชื่อ-นามสกุล"
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <div className="relative">
-                              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                              <input
-                                type="email"
-                                value={formData.email}
-                                onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all text-xs font-medium"
-                                placeholder="อีเมล (you@example.com)"
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <div className="relative">
-                              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                              <input
-                                type="password"
-                                value={formData.password}
-                                onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all text-xs font-medium"
-                                placeholder="รหัสผ่าน"
-                              />
-                            </div>
-                          </div>
-                          
-                          <button
-                            type="submit"
-                            disabled={registering}
-                            className="w-full h-12 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 mt-4 transition-all shadow-lg disabled:opacity-50 active:scale-95 text-sm"
-                          >
-                            {registering ? (
-                              <Loader2 size={16} className="animate-spin" />
-                            ) : (
-                              'สร้างบัญชีและย้ายข้อมูล'
-                            )}
-                          </button>
-                        </form>
-                      </div>
-                    )}
+                        </button>
+                      </form>
+                    </div>
                   </div>
                 ) : paywallReason === 'default' ? (
                   <div className="h-full flex flex-col justify-center items-center text-center">
