@@ -7,7 +7,7 @@ export function useSubscription() {
   const { data: myProfile, isLoading } = useMyProfile(user?.id);
   
   // 1. VIP / Admin logic
-  const isOwner = user?.email === 'sorawittj@gmail.com' || user?.user_metadata?.role === 'admin';
+  const isOwner = myProfile?.role === 'admin';
   
   // 2. Local Trial logic / Demo Mode sandbox
   const isGuestAccount = checkLocalTrial() ;

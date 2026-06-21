@@ -15,7 +15,8 @@ import {
   useUpdateProfileRole, 
   useUpdateProfileSubscription,
   useDeleteProfile,
-  useCreateProfile
+  useCreateProfile,
+  useMyProfile
 } from '../../hooks/useUserProfiles';
 import { useToast } from '../ui/Toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../ui/Dialog';
@@ -27,10 +28,11 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_KEY || import.meta.env.VITE_SU
 
 export function ConsoleCenterSection() {
   const { user } = useAuth();
+  const { data: myProfile } = useMyProfile(user?.id);
   const { success, error } = useToast();
   
   // Security check - owner only
-  const isOwner = user?.email === 'sorawittj@gmail.com';
+  const isOwner = myProfile?.role === 'admin';
   
   const { data: allProfiles = [], isLoading } = useAllProfiles();
   const updateRole = useUpdateProfileRole();
@@ -99,7 +101,7 @@ export function ConsoleCenterSection() {
       if (!matchesSearch) return false;
 
       // Calculate status for filtering
-      const isUserPro = profile.email === 'sorawittj@gmail.com' || profile.plan_type === 'pro';
+      const isUserPro = profile.role === 'admin' || profile.plan_type === 'pro';
       const isSuspended = profile.plan_type === 'suspended';
       let isUserTrial = false;
 
@@ -129,7 +131,7 @@ export function ConsoleCenterSection() {
     let freeCount = 0;
 
     allProfiles.forEach(profile => {
-      const isUserPro = profile.email === 'sorawittj@gmail.com' || profile.plan_type === 'pro';
+      const isUserPro = profile.role === 'admin' || profile.plan_type === 'pro';
       const isSuspended = profile.plan_type === 'suspended';
       if (isUserPro) {
         proCount++;
@@ -545,8 +547,8 @@ export function ConsoleCenterSection() {
             </div>
           ) : (
             filteredProfiles.map(profile => {
-              const isUserPro = profile.email === 'sorawittj@gmail.com' || profile.plan_type === 'pro';
-              const isOwnerAccount = profile.email === 'sorawittj@gmail.com';
+              const isUserPro = profile.role === 'admin' || profile.plan_type === 'pro';
+              const isOwnerAccount = profile.role === 'admin';
               const isSuspended = profile.plan_type === 'suspended';
               
               // Calculate trial status
@@ -856,7 +858,7 @@ export function ConsoleCenterSection() {
                     "w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl text-white shadow-md shrink-0",
                     currentManagedProfile.plan_type === 'suspended'
                       ? "bg-slate-400"
-                      : currentManagedProfile.email === 'sorawittj@gmail.com' || currentManagedProfile.plan_type === 'pro'
+                      : currentManagedProfile.role === 'admin' || currentManagedProfile.plan_type === 'pro'
                         ? "bg-gradient-to-br from-amber-400 to-orange-500"
                         : currentManagedProfile.plan_type === 'trial'
                           ? "bg-gradient-to-br from-violet-500 to-indigo-600"
@@ -878,7 +880,7 @@ export function ConsoleCenterSection() {
                         <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 uppercase tracking-wider flex items-center gap-0.5">
                           <Lock size={8} /> SUSPENDED
                         </span>
-                      ) : currentManagedProfile.email === 'sorawittj@gmail.com' || currentManagedProfile.plan_type === 'pro' ? (
+                      ) : currentManagedProfile.role === 'admin' || currentManagedProfile.plan_type === 'pro' ? (
                         <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 uppercase tracking-wider">
                           👑 PRO SUBSCRIBER
                         </span>

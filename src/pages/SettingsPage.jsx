@@ -38,7 +38,7 @@ export default function SettingsPage() {
   const { data: myProfile } = useMyProfile(user?.id);
   
   const isAdmin = myProfile?.role === 'admin';
-  const isOwner = user?.email === 'sorawittj@gmail.com';
+  const isOwner = isAdmin;
 
   const SECTIONS = isOwner
     ? [
