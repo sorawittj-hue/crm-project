@@ -150,7 +150,7 @@ export default function PaywallModal() {
                         onClick={() => setGuestTab('trial')} 
                         className={cn("flex-1 py-2.5 text-sm font-bold rounded-lg transition-all", guestTab === 'trial' ? "bg-white shadow-sm text-violet-700" : "text-slate-500 hover:text-slate-700")}
                       >
-                        สมัครสมาชิก (ลองใช้ 3 วัน)
+                        สร้างบัญชี (บันทึกข้อมูล)
                       </button>
                     </div>
 
@@ -208,8 +208,8 @@ export default function PaywallModal() {
                           <div className="w-12 h-12 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center mb-3 mx-auto">
                             <User size={24} />
                           </div>
-                          <h2 className="text-xl font-black text-slate-900">สร้างบัญชีทดลองใช้ฟรี</h2>
-                          <p className="text-xs text-slate-500 mt-1">รับสิทธิ์ใช้งาน 3 วันเต็ม ย้ายข้อมูลขึ้น Cloud ทันที</p>
+                          <h2 className="text-xl font-black text-slate-900">บันทึกข้อมูล Sandbox ขึ้น Cloud</h2>
+                          <p className="text-xs text-slate-500 mt-1">ข้อมูลที่ทดลองเล่นจะไม่สูญหาย สร้างบัญชีเพื่อใช้งานต่อได้ทันที</p>
                         </div>
 
                         <form onSubmit={(e) => handleRegister(e, false)} className="space-y-3">
@@ -264,7 +264,7 @@ export default function PaywallModal() {
                             {registering ? (
                               <Loader2 size={16} className="animate-spin" />
                             ) : (
-                              'สมัครสมาชิกทดลองฟรี'
+                              'สร้างบัญชีและย้ายข้อมูล'
                             )}
                           </button>
                         </form>
