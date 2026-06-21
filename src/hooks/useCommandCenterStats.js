@@ -70,10 +70,9 @@ export function useCommandCenterStats(deals, monthlyGoal) {
       .reduce((s, d) => s + Number(d.value || 0) * (Number(d.probability) / 100), 0);
     const bestCaseValue = activeDealsArr
       .reduce((s, d) => s + Number(d.value || 0), 0);
-    const calculatedWorstCase = activeDealsArr
+    const worstCaseValue = activeDealsArr
       .filter(d => Number(d.probability) >= 90)
       .reduce((s, d) => s + Number(d.value || 0), 0);
-    const worstCaseValue = Math.min(calculatedWorstCase, commitValue);
 
     const now30 = now.getTime() + 30 * 86_400_000;
     const hotDeals = activeDealsArr

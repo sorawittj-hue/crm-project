@@ -60,9 +60,9 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Verify Vercel Cron signature in production
+  // Verify Vercel Cron signature
   const authHeader = req.headers.authorization;
-  if (process.env.NODE_ENV === 'production' && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

@@ -92,7 +92,6 @@ CREATE TABLE IF NOT EXISTS deals (
   priority TEXT DEFAULT 'medium', -- low, medium, high, critical
   expected_close_date DATE,
   actual_close_date DATE,
-  lost_reason TEXT,
   last_activity TIMESTAMPTZ,
   next_step TEXT,
   tags TEXT[],
