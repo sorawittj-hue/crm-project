@@ -2,6 +2,7 @@ import { supabase } from '../utils/supabase';
 import { isMissingColumnError, removeMissingColumn } from './sessionScope';
 
 let notificationWritesDisabled = false;
+let batchUpsertDisabled = false;
 
 function isNotificationSchemaError(error) {
   const message = String(error?.message || '');
@@ -189,6 +190,15 @@ export async function dismissAllNotifications(userId) {
 export async function upsertNotificationsBatch(notificationsList) {
   if (notificationWritesDisabled || !notificationsList?.length) return [];
 
+  if (batchUpsertDisabled) {
+    const results = [];
+    for (const notif of notificationsList) {
+      const res = await upsertNotification(notif).catch(() => null);
+      if (res) results.push(res);
+    }
+    return results;
+  }
+
   let payloads = notificationsList.map(notif => {
     const ownerId = notif.owner_id || notif.user_id;
     return {
@@ -209,6 +219,9 @@ export async function upsertNotificationsBatch(notificationsList) {
 
     if (error) {
       if (isNotificationSchemaError(error)) {
+        if (error.code === '42P10' || String(error.message || '').includes('no unique or exclusion constraint')) {
+          batchUpsertDisabled = true;
+        }
         console.warn('Batch upsert failed due to schema constraint. Falling back to sequential upserts...', error);
         const results = [];
         for (const notif of notificationsList) {
