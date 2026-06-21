@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { cn } from '../../lib/utils';
 import { useToast } from '../ui/Toast';
+import { useSettings, useUpdateSettings } from '../../hooks/useSettings';
 
 const PLUGINS = [
   {
@@ -54,37 +55,46 @@ export function IntegrationSection() {
   const [isSaving, setIsSaving] = useState(false);
   const toast = useToast();
 
-  // Load settings from localStorage
+  const { data: appSettings, isLoading } = useSettings();
+  const updateSettings = useUpdateSettings();
+
+  // Load settings from database with localStorage fallback
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('nova_integrations');
-      if (saved) {
-        setSettings(JSON.parse(saved));
+    if (appSettings) {
+      if (appSettings.integrations && Object.keys(appSettings.integrations).length > 0) {
+        setSettings(appSettings.integrations);
+      } else {
+        // Fallback to local storage if DB is empty
+        try {
+          const saved = localStorage.getItem('nova_integrations');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            setSettings(parsed);
+            // Sync to database
+            updateSettings.mutate({ integrations: parsed });
+          }
+        } catch (e) {
+          console.error('Failed to load integration settings fallback', e);
+        }
       }
-    } catch (e) {
-      console.error('Failed to load integration settings', e);
     }
-  }, []);
+  }, [appSettings, updateSettings]);
 
   const handleSave = async (e) => {
     e.preventDefault();
     setIsSaving(true);
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
     try {
-      localStorage.setItem('nova_integrations', JSON.stringify(settings));
-      toast.success('บันทึกการตั้งค่าปลั๊กอินเรียบร้อย');
+      await updateSettings.mutateAsync({ integrations: settings });
       setActivePlugin(null); // close modal
-    } catch {
-      toast.error('ไม่สามารถบันทึกการตั้งค่าได้');
+    } catch (err) {
+      console.error('Failed to save integration settings:', err);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const togglePlugin = (pluginId, e) => {
+  const togglePlugin = async (pluginId, e) => {
     e.stopPropagation();
     const current = settings[pluginId] || {};
     const newSettings = {
@@ -95,9 +105,22 @@ export function IntegrationSection() {
       }
     };
     setSettings(newSettings);
-    localStorage.setItem('nova_integrations', JSON.stringify(newSettings));
-    toast.success(newSettings[pluginId].enabled ? `เปิดใช้งาน ${pluginId} แล้ว` : `ปิดใช้งาน ${pluginId} แล้ว`);
+    
+    try {
+      await updateSettings.mutateAsync({ integrations: newSettings });
+      toast.success(newSettings[pluginId].enabled ? `เปิดใช้งาน ${pluginId} แล้ว` : `ปิดใช้งาน ${pluginId} แล้ว`);
+    } catch (err) {
+      console.error('Failed to toggle plugin:', err);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="animate-spin text-violet-600" size={32} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -271,7 +294,7 @@ export function IntegrationSection() {
                 <div className="mt-8 p-4 rounded-2xl bg-slate-50/80 flex gap-3 border border-slate-100/50">
                   <AlertCircle size={20} className="text-slate-400 shrink-0" />
                   <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">
-                    ข้อมูลส่วนตัวของคุณจะถูกเข้ารหัสและจัดเก็บไว้อย่างปลอดภัยใน Local Storage ของคุณเท่านั้น ไม่มีการส่งไปเก็บไว้ที่เซิร์ฟเวอร์ส่วนกลาง
+                    ข้อมูลการเชื่อมต่อจะถูกจัดเก็บไว้อย่างปลอดภัยบนฐานข้อมูล Supabase ส่วนตัวของคุณในฝั่งเซิร์ฟเวอร์ และเรียกใช้แบบเข้ารหัสผ่าน Secure Endpoint
                   </p>
                 </div>
               </div>

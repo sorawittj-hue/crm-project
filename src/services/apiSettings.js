@@ -17,6 +17,7 @@ const DEFAULTS = {
   currency: 'THB',
   fiscal_month_start: 1,
   timezone: 'Asia/Bangkok',
+  integrations: {},
 };
 
 function toSettingsPayload(payload) {
@@ -103,6 +104,7 @@ export async function updateAppSettings(updates) {
     currency: updates.currency || 'THB',
     fiscal_month_start: Number(updates.fiscal_month_start) || 1,
     timezone: updates.timezone || 'Asia/Bangkok',
+    integrations: updates.integrations,
     updated_at: new Date().toISOString(),
   };
 
