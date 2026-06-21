@@ -33,6 +33,7 @@ export default function WinLossModal({ open, targetStage, onClose, onConfirm }) 
   };
 
   const [reason, setReason] = useState('');
+  const [lostReason, setLostReason] = useState('');
   const [closeDate, setCloseDate] = useState(getTodayLocalDate());
   const [touched, setTouched] = useState(false);
 
@@ -43,6 +44,7 @@ export default function WinLossModal({ open, targetStage, onClose, onConfirm }) 
   const handleOpenChange = (val) => {
     if (!val) {
       setReason('');
+      setLostReason('');
       setTouched(false);
       setCloseDate(getTodayLocalDate());
       onClose?.();
@@ -51,15 +53,27 @@ export default function WinLossModal({ open, targetStage, onClose, onConfirm }) 
 
   const handleConfirm = () => {
     setTouched(true);
-    if (tooShort) return;
-    onConfirm?.(reason.trim(), closeDate);
+    if (isWon) {
+      if (tooShort) return;
+    } else {
+      if (tooShort || !lostReason) return;
+    }
+    onConfirm?.(reason.trim(), closeDate, isWon ? null : lostReason);
     setReason('');
+    setLostReason('');
     setTouched(false);
     setCloseDate(getTodayLocalDate());
   };
 
   const handlePreset = (preset) => {
     setReason(prev => prev ? `${prev}, ${preset}` : preset);
+    if (!isWon) {
+      if (preset === 'งบประมาณไม่พอ') setLostReason('budget');
+      else if (preset === 'เลือกเจ้าอื่น / คู่แข่งราคาถูกกว่า') setLostReason('คู่แข่ง');
+      else if (preset === 'ยกเลิก/เลื่อนโปรเจกต์') setLostReason('timing');
+      else if (preset === 'ติดต่อไม่ได้ / ไม่มีการตอบรับ') setLostReason('timing');
+      else if (preset === 'ข้อกำหนดเงื่อนไขไม่ตรงกัน') setLostReason('อื่นๆ');
+    }
   };
 
   return (
@@ -115,6 +129,33 @@ export default function WinLossModal({ open, targetStage, onClose, onConfirm }) 
               ))}
             </div>
           </div>
+
+          {/* Lost Reason Dropdown */}
+          {!isWon && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                หมวดหมู่เหตุผลที่เสียดีล <span className="text-rose-400">*</span>
+              </label>
+              <select
+                value={lostReason}
+                onChange={(e) => setLostReason(e.target.value)}
+                className="w-full h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:border-violet-400 focus:bg-white outline-none transition-all cursor-pointer"
+                required
+              >
+                <option value="">-- เลือกหมวดหมู่เหตุผลที่เสียดีล --</option>
+                <option value="ราคา">ราคา (Price)</option>
+                <option value="คู่แข่ง">คู่แข่ง (Competitor)</option>
+                <option value="timing">timing (Timing)</option>
+                <option value="budget">budget (Budget)</option>
+                <option value="อื่นๆ">อื่นๆ (Other)</option>
+              </select>
+              {touched && !lostReason && (
+                <p className="text-xs text-rose-500 font-medium">
+                  กรุณาเลือกหมวดหมู่เหตุผลที่เสียดีล
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Reason textarea */}
           <div className="space-y-1.5">

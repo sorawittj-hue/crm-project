@@ -86,7 +86,8 @@ const DEAL_COLUMNS = new Set([
   'probability', 'assigned_to', 'contact', 'contact_email',
   'contact_phone', 'description', 'source', 'priority',
   'expected_close_date', 'actual_close_date', 'last_activity',
-  'next_step', 'tags', 'metadata', 'owner_id', 'updated_at'
+  'next_step', 'tags', 'metadata', 'owner_id', 'updated_at',
+  'lost_reason', 'is_recurring', 'renewal_date'
 ]);
 
 /**

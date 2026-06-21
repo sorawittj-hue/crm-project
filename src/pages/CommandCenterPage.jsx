@@ -13,7 +13,7 @@ import { Button } from '../components/ui/Button';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { formatCurrency, daysSince } from '../lib/formatters';
-import { buildCustomerHealth } from '../utils/salesIntelligence';
+import { buildCustomerHealth } from '../utils/customerIntelligence';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
 import { AnimatedNumber } from '../components/ui/AnimatedNumber';
@@ -26,7 +26,7 @@ import {
   Target, Clock, CalendarClock, ChevronRight, CheckCircle2,
   Phone, Mail, FileText, MessageSquare, Activity, Trophy,
   Star, Flame, BarChart3, Sparkles, Shield, Zap,
-  Wrench, ShieldCheck, Loader2
+  Wrench, ShieldCheck, Loader2, RefreshCw
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis,
@@ -487,6 +487,57 @@ export default function CommandCenterPage() {
                     </div>
                   </motion.button>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* CONTRACT RENEWALS */}
+          {stats?.renewalDeals && stats.renewalDeals.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center">
+                  <RefreshCw size={18} className="text-indigo-500" strokeWidth={2.5} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 tracking-tight">Contract Renewals (ต่ออายุสัญญาใน 90 วัน)</h3>
+                  <p className="text-xs text-slate-400 font-medium">สัญญาแบบ Subscription/Recurring ที่ใกล้ครบกำหนด</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {stats.renewalDeals.map((d, i) => {
+                  let badgeColor = "bg-emerald-100 text-emerald-700 border-emerald-200";
+                  if (d.diffDays <= 30) badgeColor = "bg-rose-100 text-rose-700 border-rose-200 animate-pulse";
+                  else if (d.diffDays <= 60) badgeColor = "bg-amber-100 text-amber-700 border-amber-200";
+                  
+                  return (
+                    <motion.button key={d.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                      onClick={() => openDeal(d)}
+                      className="text-left p-5 rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-lg hover:border-indigo-200 transition-all group duration-300 relative overflow-hidden"
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold text-slate-800 truncate group-hover:text-indigo-700 transition-colors">{d.title}</p>
+                          <p className="text-xs text-slate-400 font-semibold truncate mt-0.5">{d.company}</p>
+                        </div>
+                        <span className={cn("text-[9px] font-black px-2 py-0.5 rounded-md border tracking-tight uppercase shadow-inner shrink-0", badgeColor)}>
+                          ใน {d.diffDays} วัน
+                        </span>
+                      </div>
+                      <div className="flex items-baseline justify-between pt-2.5 border-t border-slate-100/60">
+                        <div>
+                          <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">มูลค่าสัญญา</p>
+                          <p className="text-sm font-black text-slate-800 tabular-nums mt-0.5">{formatCurrency(Number(d.value))}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider text-right">วันที่ต่อสัญญา</p>
+                          <p className="text-xs font-bold text-slate-600 mt-1 text-right">
+                            {new Date(d.renewal_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' })}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.button>
+                  );
+                })}
               </div>
             </div>
           )}

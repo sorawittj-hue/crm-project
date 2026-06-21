@@ -16,7 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { formatCurrency, formatFullCurrency } from '../lib/formatters';
 import { STAGE_LABELS } from '../lib/constants';
-import { buildCustomerHealth } from '../utils/salesIntelligence';
+import { buildCustomerHealth } from '../utils/customerIntelligence';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { downloadCsv } from '../utils/exportUtils';
 import {

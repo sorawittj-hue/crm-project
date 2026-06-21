@@ -123,6 +123,8 @@ export default function PipelinePage() {
     title: '', company: '', value: '', stage: 'lead', customer_id: '',
     contact: '', contact_email: '', contact_phone: '', probability: '50',
     expected_close_date: '', assigned_to: '',
+    is_recurring: false,
+    renewal_date: '',
   });
 
   const [customerSearch, setCustomerSearch] = useState('');
@@ -226,7 +228,13 @@ export default function PipelinePage() {
       });
       
       setIsAddModalOpen(false);
-      setNewDeal({ title: '', company: '', value: '', stage: 'lead', customer_id: '', contact: '', contact_email: '', contact_phone: '', probability: '50', expected_close_date: '', assigned_to: '' });
+      setNewDeal({
+        title: '', company: '', value: '', stage: 'lead', customer_id: '',
+        contact: '', contact_email: '', contact_phone: '', probability: '50',
+        expected_close_date: '', assigned_to: '',
+        is_recurring: false,
+        renewal_date: '',
+      });
     } catch (err) {
       setFormError(err?.message || 'ไม่สามารถบันทึกดีลได้ กรุณาลองใหม่');
     }
@@ -852,6 +860,38 @@ export default function PipelinePage() {
                             />
                           </div>
                         </div>
+                      </div>
+
+                      {/* Recurring / Subscription deals */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                        <div className="flex items-center gap-2.5 h-11">
+                          <input
+                            type="checkbox"
+                            id="is_recurring_add"
+                            checked={newDeal.is_recurring}
+                            onChange={(e) => setNewDeal({ ...newDeal, is_recurring: e.target.checked })}
+                            className="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-slate-300 cursor-pointer"
+                          />
+                          <label htmlFor="is_recurring_add" className="text-xs font-bold text-slate-600 cursor-pointer">
+                            ดีลต่ออายุ (Recurring/SaaS)
+                          </label>
+                        </div>
+                        {newDeal.is_recurring && (
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold text-slate-500">วันต่ออายุสัญญา</label>
+                            <div className="relative">
+                              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                                <Calendar size={16} />
+                              </span>
+                              <input
+                                type="date"
+                                value={newDeal.renewal_date}
+                                onChange={(e) => setNewDeal({ ...newDeal, renewal_date: e.target.value })}
+                                className="w-full h-11 pl-10 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-bold text-slate-800"
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Nav Buttons Tab 1 */}

@@ -70,9 +70,10 @@ export function useCommandCenterStats(deals, monthlyGoal) {
       .reduce((s, d) => s + Number(d.value || 0) * (Number(d.probability) / 100), 0);
     const bestCaseValue = activeDealsArr
       .reduce((s, d) => s + Number(d.value || 0), 0);
-    const worstCaseValue = activeDealsArr
+    const calculatedWorstCase = activeDealsArr
       .filter(d => Number(d.probability) >= 90)
-      .reduce((s, d) => s + Number(d.value || 0) * (Number(d.probability) / 100), 0);
+      .reduce((s, d) => s + Number(d.value || 0), 0);
+    const worstCaseValue = Math.min(calculatedWorstCase, commitValue);
 
     const now30 = now.getTime() + 30 * 86_400_000;
     const hotDeals = activeDealsArr
@@ -83,6 +84,17 @@ export function useCommandCenterStats(deals, monthlyGoal) {
       }))
       .sort((a, b) => b.score - a.score)
       .slice(0, 5);
+
+    const nowMs = now.getTime();
+    const renewalDeals = deals
+      .filter(d => d.is_recurring && d.renewal_date && d.stage !== 'lost')
+      .map(d => {
+        const renewalDate = new Date(d.renewal_date);
+        const diffDays = Math.ceil((renewalDate.getTime() - nowMs) / 86_400_000);
+        return { ...d, diffDays, renewalDate };
+      })
+      .filter(d => d.diffDays >= 0 && d.diffDays <= 90)
+      .sort((a, b) => a.diffDays - b.diffDays);
 
     const funnelData = FUNNEL_STAGES.map(stage => {
       const stageDeals = deals.filter(d => d.stage === stage);
@@ -127,6 +139,7 @@ export function useCommandCenterStats(deals, monthlyGoal) {
       funnelData,
       winRate,
       avgDaysToClose,
+      renewalDeals,
     };
   }, [deals, monthlyGoal]);
 }

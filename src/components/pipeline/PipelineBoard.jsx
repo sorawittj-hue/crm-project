@@ -321,7 +321,7 @@ export default function PipelineBoard({
     }
   }, [localDeals, initiateMove]);
 
-  const submitReason = (reason, closeDate) => {
+  const submitReason = (reason, closeDate, lostReason) => {
     const isWon = reasonModal.targetStage === 'won';
     const deal = deals.find(d => d.id === reasonModal.dealId); // use original deals for metadata
     const closeIsoString = closeDate ? new Date(closeDate + 'T12:00:00').toISOString() : new Date().toISOString();
@@ -329,7 +329,7 @@ export default function PipelineBoard({
       stage: reasonModal.targetStage,
       last_activity: new Date().toISOString(),
       actual_close_date: closeIsoString,
-      lost_reason: isWon ? null : reason,
+      lost_reason: isWon ? null : lostReason,
       metadata: {
         ...(deal?.metadata || {}),
         ...(isWon ? { win_reason: reason } : {}),

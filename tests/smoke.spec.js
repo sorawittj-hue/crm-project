@@ -1,3 +1,4 @@
+/* global process */
 import { test, expect } from '@playwright/test';
 
 test.describe('Zenith CRM E2E Smoke Test', () => {
@@ -5,9 +6,16 @@ test.describe('Zenith CRM E2E Smoke Test', () => {
     // 1. Go to Login page
     await page.goto('/login');
     
-    // Fill credentials (assuming mock login or test environment)
-    await page.fill('input[type="email"]', 'sorawittj@gmail.com');
-    await page.fill('input[type="password"]', 'testpassword123');
+    // Fill credentials from env vars
+    const email = process.env.E2E_TEST_EMAIL;
+    const password = process.env.E2E_TEST_PASSWORD;
+    if (!email || !password) {
+      console.warn('Skipping E2E Smoke Test because E2E_TEST_EMAIL and E2E_TEST_PASSWORD are not set.');
+      test.skip(true, 'Credentials not configured');
+      return;
+    }
+    await page.fill('input[type="email"]', email);
+    await page.fill('input[type="password"]', password);
     await page.click('button[type="submit"]');
 
     // Wait for redirection to dashboard (Command Center)

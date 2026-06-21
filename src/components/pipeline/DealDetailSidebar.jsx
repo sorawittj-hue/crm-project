@@ -146,13 +146,51 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
   const [showEmailTemplatesPanel, setShowEmailTemplatesPanel] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [copiedTemplate, setCopiedTemplate] = useState(false);
+  const [nextActionRecommendation, setNextActionRecommendation] = useState(null);
+  const [loadingRecommendation, setLoadingRecommendation] = useState(false);
 
   const { data: emailTemplates = [] } = useEmailTemplates();
+
+  const { data: activities = [], isLoading: activitiesLoading } = useDealActivities(deal?.id);
+
+  const handleFetchNextBestAction = useCallback(async () => {
+    if (!deal) return;
+    setLoadingRecommendation(true);
+    try {
+      const daysInactive = Math.floor((Date.now() - new Date(deal.last_activity || deal.created_at).getTime()) / 86_400_000);
+      const activityContext = (activities || []).slice(0, 3).map(a => `${a.type}: ${a.title}`).join(', ');
+      
+      const prompt = `จากดีล "${deal.title}" (มูลค่า ${deal.value} THB, สถานะ ${deal.stage}, ไม่ได้เคลื่อนไหวมา ${daysInactive} วัน, กิจกรรมล่าสุด: ${activityContext || 'ไม่มี'}) 
+ช่วยแนะนำขั้นตอนถัดไป (Next Best Action) ที่สั้น กระชับ ตรงประเด็น (ไม่เกิน 1 ประโยค หรือ 25 คำ) ในภาษาไทย เพื่อปิดดีลหรือกระตุ้นดีลนี้`;
+      
+      const res = await callGeminiAPI(prompt);
+      const text = res?.text || (typeof res === 'string' ? res : null);
+      if (text) {
+        setNextActionRecommendation(text);
+      } else {
+        setNextActionRecommendation('ไม่สามารถวิเคราะห์ได้ในขณะนี้');
+      }
+    } catch (error) {
+      console.error('Failed to fetch next best action:', error);
+      setNextActionRecommendation('เกิดข้อผิดพลาดในการวิเคราะห์');
+    } finally {
+      setLoadingRecommendation(false);
+    }
+  }, [deal, activities]);
+
+  useEffect(() => {
+    setNextActionRecommendation(null);
+    if (deal?.id && !['won', 'lost'].includes(deal?.stage)) {
+      handleFetchNextBestAction();
+    }
+  }, [deal?.id, deal?.stage, handleFetchNextBestAction]);
 
   const [localEdit, setLocalEdit] = useState({
     title: '', company: '', value: '', probability: '', stage: 'lead',
     contact: '', contact_email: '', contact_phone: '', expected_close_date: '',
     actual_close_date: '',
+    is_recurring: false,
+    renewal_date: '',
   });
 
   const setField = (field, value) => setLocalEdit(p => ({ ...p, [field]: value }));
@@ -166,7 +204,6 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
     if (deal[field] != value) onUpdate(deal.id, { [field]: value });
   };
 
-  const { data: activities = [], isLoading: activitiesLoading } = useDealActivities(deal?.id);
   const addActivityMutation = useAddActivity();
 
   const parseAIResponse = (text) => {
@@ -235,6 +272,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
         contact_phone: deal.contact_phone || '',
         expected_close_date: deal.expected_close_date ? deal.expected_close_date.slice(0, 10) : '',
         actual_close_date: deal.actual_close_date ? deal.actual_close_date.slice(0, 10) : '',
+        is_recurring: !!deal.is_recurring,
+        renewal_date: deal.renewal_date ? deal.renewal_date.slice(0, 10) : '',
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -556,6 +595,46 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       </div>
                     )}
 
+                    {/* AI Next Best Action Suggestion */}
+                    {!['won', 'lost'].includes(deal.stage) && (
+                      <div className="bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 rounded-2xl p-4 space-y-2.5 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <Sparkles size={14} className="text-indigo-600 animate-pulse" />
+                            <span className="text-xs font-black uppercase tracking-widest text-indigo-800">แนะนำขั้นตอนถัดไป (AI)</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleFetchNextBestAction}
+                            disabled={loadingRecommendation}
+                            className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+                          >
+                            {loadingRecommendation ? 'กำลังวิเคราะห์...' : 'รีเฟรช 🔄'}
+                          </button>
+                        </div>
+                        {loadingRecommendation ? (
+                          <div className="flex items-center gap-2 py-1.5 text-xs text-slate-400 font-semibold">
+                            <Loader2 size={12} className="animate-spin text-indigo-500" />
+                            <span>กำลังให้ AI ประเมินการกระทำที่ดีที่สุด...</span>
+                          </div>
+                        ) : nextActionRecommendation ? (
+                          <p className="text-xs font-bold text-slate-700 leading-relaxed bg-white/70 p-2.5 rounded-xl border border-indigo-100/30">
+                            {nextActionRecommendation}
+                          </p>
+                        ) : (
+                          <div className="text-center py-2">
+                            <button
+                              type="button"
+                              onClick={handleFetchNextBestAction}
+                              className="text-xs font-bold text-indigo-600 hover:bg-indigo-105 px-3 py-1.5 rounded-lg border border-dashed border-indigo-300 bg-white"
+                            >
+                              วิเคราะห์ Next Best Action ✨
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* Schedule follow-up */}
                     <div className="rounded-2xl bg-amber-50/60 border border-amber-100 p-4 space-y-3">
                       <div className="flex items-center gap-2">
@@ -871,6 +950,36 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                           >
                             {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                           </select>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 pt-1">
+                          <div className="flex items-center gap-2 h-11">
+                            <input
+                              type="checkbox"
+                              id="is_recurring_edit"
+                              checked={localEdit.is_recurring}
+                              onChange={e => {
+                                const val = e.target.checked;
+                                setField('is_recurring', val);
+                                saveField('is_recurring', val);
+                              }}
+                              className="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-slate-300 cursor-pointer"
+                            />
+                            <label htmlFor="is_recurring_edit" className="text-xs font-bold text-slate-655 cursor-pointer">
+                              ดีลต่ออายุ (Recurring)
+                            </label>
+                          </div>
+                          {localEdit.is_recurring && (
+                            <div className="space-y-1.5 animate-fadeIn">
+                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">วันต่ออายุสัญญา</label>
+                              <input
+                                type="date"
+                                value={localEdit.renewal_date}
+                                onChange={e => setField('renewal_date', e.target.value)}
+                                onBlur={() => saveField('renewal_date', localEdit.renewal_date || null)}
+                                className="w-full h-11 rounded-xl bg-white border border-slate-200 px-3 outline-none text-sm font-bold text-slate-800 focus:border-violet-400 transition-all"
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

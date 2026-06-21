@@ -11,7 +11,8 @@ import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/formatters';
 import { STAGE_COLORS, STAGE_LABELS } from '../lib/constants';
-import { buildPipelineIntelligence, buildCustomerHealth, DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
+import { buildPipelineIntelligence, DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
+import { buildCustomerHealth } from '../utils/customerIntelligence';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
 import {
