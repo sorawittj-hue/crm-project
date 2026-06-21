@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useMyProfile } from '../hooks/useUserProfiles';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
-import { Target, Users, ListTree, User, Building2, ShieldCheck, Loader2, Sparkles, Settings2, Plug, Crown, Shield } from 'lucide-react';
+import { Target, Users, ListTree, User, Building2, ShieldCheck, Loader2, Sparkles, Settings2, Plug, Crown, Shield, Bell } from 'lucide-react';
 
 import { TargetsSection } from '../components/settings/TargetsSection';
 import { TeamSection } from '../components/settings/TeamSection';
@@ -16,16 +16,18 @@ import { UsersSection } from '../components/settings/UsersSection';
 import { BackupSection } from '../components/settings/BackupSection';
 import { IntegrationSection } from '../components/settings/IntegrationSection';
 import { ConsoleCenterSection } from '../components/settings/ConsoleCenterSection';
+import { NotificationSection } from '../components/settings/NotificationSection';
 import { Database } from 'lucide-react';
 
 const BASE_SECTIONS = [
-  { id: 'targets',  label: 'เป้าหมายยอดขาย', icon: Target },
-  { id: 'team',     label: 'ทีมงาน',           icon: Users },
-  { id: 'pipeline', label: 'ขั้นตอนดีล',        icon: ListTree },
-  { id: 'company',  label: 'บริษัท',            icon: Building2 },
-  { id: 'account',  label: 'บัญชีผู้ใช้',        icon: User },
-  { id: 'data',     label: 'จัดการข้อมูล',       icon: Database },
-  { id: 'plugins',  label: 'การเชื่อมต่อ',       icon: Plug },
+  { id: 'targets',       label: 'เป้าหมายยอดขาย', icon: Target },
+  { id: 'team',          label: 'ทีมงาน',           icon: Users },
+  { id: 'pipeline',      label: 'ขั้นตอนดีล',        icon: ListTree },
+  { id: 'company',       label: 'บริษัท',            icon: Building2 },
+  { id: 'account',       label: 'บัญชีผู้ใช้',        icon: User },
+  { id: 'notifications', label: 'การแจ้งเตือน',    icon: Bell },
+  { id: 'data',          label: 'จัดการข้อมูล',       icon: Database },
+  { id: 'plugins',       label: 'การเชื่อมต่อ',       icon: Plug },
 ];
 
 export default function SettingsPage() {
@@ -172,6 +174,7 @@ export default function SettingsPage() {
               {activeSection === 'pipeline' && <PipelineSection />}
               {activeSection === 'company' && <CompanySection />}
               {activeSection === 'account' && <AccountSection />}
+              {activeSection === 'notifications' && <NotificationSection />}
               {activeSection === 'data' && <BackupSection />}
               {activeSection === 'plugins' && <IntegrationSection />}
               {activeSection === 'users' && (isAdmin || isOwner) && <UsersSection />}

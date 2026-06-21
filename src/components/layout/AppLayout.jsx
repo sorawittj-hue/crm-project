@@ -8,6 +8,7 @@ import {
   ChevronRight, Target, TrendingUp,
   AlertCircle, Clock, CheckCircle2, CalendarClock, Briefcase,
   BarChart2, Trash2, CheckCheck, Plus, Sparkles, Lock, Crown,
+  Circle, Check,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useDeals } from '../../hooks/useDeals';
@@ -20,6 +21,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 import {
   useNotifications,
   useProactiveEngine,
+  useMarkNotificationRead,
   useMarkAllNotificationsRead,
   useDismissNotification,
   useDismissAllNotifications,
@@ -231,6 +233,7 @@ export default function AppLayout() {
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [notifFilter, setNotifFilter] = useState('all');
   const notifRef = useRef(null);
 
   const userId = user?.id;
@@ -241,6 +244,7 @@ export default function AppLayout() {
   const effectiveTarget = hasPersonalTarget ? myProfile.personal_target : 0;
 
   const { data: notifications = [] } = useNotifications(userId);
+  const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const dismiss = useDismissNotification();
   const dismissAll = useDismissAllNotifications();
@@ -251,9 +255,22 @@ export default function AppLayout() {
   const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications]);
   const totalCount = notifications.length;
 
+  const filteredNotifications = useMemo(() => {
+    if (notifFilter === 'critical') {
+      return notifications.filter(n => n.priority === 'critical' || n.priority === 'high' || n.type === 'deal_at_risk' || n.type === 'deal_closing_overdue');
+    }
+    if (notifFilter === 'activities') {
+      return notifications.filter(n => n.type === 'follow_up_overdue');
+    }
+    if (notifFilter === 'goals') {
+      return notifications.filter(n => n.type === 'monthly_goal_at_risk' || n.type === 'deal_stale' || n.type === 'deal_closing_soon');
+    }
+    return notifications;
+  }, [notifications, notifFilter]);
+
   const grouped = useMemo(() => {
     const map = {};
-    for (const n of notifications) {
+    for (const n of filteredNotifications) {
       if (!map[n.type]) map[n.type] = [];
       map[n.type].push(n);
     }
@@ -262,7 +279,7 @@ export default function AppLayout() {
       map[type].sort((a, b) => (PRIO[a.priority] ?? 5) - (PRIO[b.priority] ?? 5) || new Date(b.created_at) - new Date(a.created_at));
     }
     return map;
-  }, [notifications]);
+  }, [filteredNotifications]);
 
   const displayName = useMemo(() => {
     if (!user) return 'User';
@@ -271,12 +288,7 @@ export default function AppLayout() {
 
   const displayInitial = displayName.charAt(0).toUpperCase();
 
-  useEffect(() => {
-    if (isNotifOpen && unreadCount > 0 && userId) {
-      markAllRead.mutate(userId);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNotifOpen]);
+  // Auto-mark read on open disabled to prevent immediate badge loss
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -621,8 +633,8 @@ export default function AppLayout() {
                       <div className="flex items-center gap-2">
                         <Bell size={14} className="text-violet-600" />
                         <span className="text-sm font-bold text-slate-800">การแจ้งเตือน</span>
-                        {totalCount > 0 && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">{totalCount}</span>
+                        {unreadCount > 0 && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 animate-pulse">{unreadCount} ใหม่</span>
                         )}
                       </div>
                       {totalCount > 0 && (
@@ -647,13 +659,52 @@ export default function AppLayout() {
                       )}
                     </div>
 
+                    {/* Filter tabs */}
+                    <div className="px-4 py-2 border-b border-slate-50 flex items-center gap-1.5 bg-slate-50/50">
+                      {[
+                        { id: 'all', label: 'ทั้งหมด' },
+                        { id: 'critical', label: 'เสี่ยง/วิกฤต' },
+                        { id: 'activities', label: 'นัดหมาย' },
+                        { id: 'goals', label: 'เป้าหมาย' },
+                      ].map(tab => {
+                        const count = tab.id === 'all' ? totalCount : 
+                                      tab.id === 'critical' ? notifications.filter(n => n.priority === 'critical' || n.priority === 'high' || n.type === 'deal_at_risk' || n.type === 'deal_closing_overdue').length :
+                                      tab.id === 'activities' ? notifications.filter(n => n.type === 'follow_up_overdue').length :
+                                      notifications.filter(n => n.type === 'monthly_goal_at_risk' || n.type === 'deal_stale' || n.type === 'deal_closing_soon').length;
+
+                        const isActive = notifFilter === tab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            onClick={() => setNotifFilter(tab.id)}
+                            className={cn(
+                              "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1",
+                              isActive
+                                ? "bg-white text-violet-600 shadow-sm border border-slate-200/50"
+                                : "text-slate-500 hover:text-slate-800 hover:bg-slate-100/55"
+                            )}
+                          >
+                            <span>{tab.label}</span>
+                            {count > 0 && (
+                              <span className={cn(
+                                "text-[9px] px-1 rounded-full",
+                                isActive ? "bg-violet-100 text-violet-700" : "bg-slate-200 text-slate-500"
+                              )}>
+                                {count}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
                     {/* Notification list */}
                     <div className="max-h-[min(560px,calc(100vh-120px))] overflow-y-auto custom-scrollbar-thin">
-                      {totalCount === 0 ? (
+                      {filteredNotifications.length === 0 ? (
                         <div className="py-14 text-center space-y-2">
                           <CheckCircle2 size={28} className="text-emerald-400 mx-auto" />
-                          <p className="text-sm font-semibold text-slate-400">ทุกอย่างอัพเดทแล้ว 🎉</p>
-                          <p className="text-xs text-slate-300">ไม่มีการแจ้งเตือนใหม่</p>
+                          <p className="text-sm font-semibold text-slate-400">ไม่มีการแจ้งเตือนในหมวดหมู่นี้ 🎉</p>
+                          <p className="text-xs text-slate-300">ทุกอย่างอัพเดทแล้ว</p>
                         </div>
                       ) : (
                         TYPE_ORDER.map(type => {
@@ -663,12 +714,12 @@ export default function AppLayout() {
                           const Icon = section.icon;
                           return (
                             <div key={type}>
-                              <div className={cn('px-4 py-2 border-b flex items-center gap-2', section.bg, section.border)}>
-                                <Icon size={12} className={section.color} />
-                                <span className={cn('text-[10px] font-bold uppercase tracking-widest', section.color)}>
+                              <div className={cn('px-4 py-1.5 border-b flex items-center gap-2', section.bg, section.border)}>
+                                <Icon size={11} className={section.color} />
+                                <span className={cn('text-[9px] font-black uppercase tracking-widest', section.color)}>
                                   {section.label}
                                 </span>
-                                <span className={cn('ml-auto text-[10px] font-bold', section.color)}>{items.length}</span>
+                                <span className={cn('ml-auto text-[9px] font-bold', section.color)}>{items.length}</span>
                               </div>
                               <div className="divide-y divide-slate-50">
                                 {items.map(notif => {
@@ -677,20 +728,38 @@ export default function AppLayout() {
                                     <div
                                       key={notif.id}
                                       className={cn(
-                                        'group flex items-start gap-3 px-4 py-2.5 border-l-2 transition-colors',
+                                        'group flex items-start gap-3 px-4 py-2.5 border-l-2 transition-colors relative',
                                         pcfg.bar, pcfg.bg,
-                                        !notif.is_read && 'bg-violet-50/30',
+                                        !notif.is_read && 'bg-violet-50/20',
                                       )}
                                     >
-                                      {/* Priority dot */}
-                                      <div className="flex-none mt-1.5">
-                                        <div className={cn('w-2 h-2 rounded-full', pcfg.dot)} />
-                                      </div>
+                                      {/* Read/Unread Checkbox button */}
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (!notif.is_read) {
+                                            markRead.mutate(notif.id);
+                                          }
+                                        }}
+                                        className="flex-none mt-1 text-slate-300 hover:text-violet-600 transition-colors"
+                                        title={notif.is_read ? "อ่านแล้ว" : "ทำเครื่องหมายว่าอ่านแล้ว"}
+                                      >
+                                        {notif.is_read ? (
+                                          <CheckCircle2 size={14} className="text-emerald-500 fill-emerald-50" />
+                                        ) : (
+                                          <div className="w-3.5 h-3.5 rounded-full border-2 border-slate-300 hover:border-violet-500 flex items-center justify-center transition-all group/btn">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-violet-600 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                                          </div>
+                                        )}
+                                      </button>
 
                                       {/* Content — clickable to navigate */}
                                       <button
                                         className="flex-1 min-w-0 text-left"
                                         onClick={() => {
+                                          if (!notif.is_read) {
+                                            markRead.mutate(notif.id);
+                                          }
                                           if (notif.related_deal_id) {
                                             const deal = deals.find(d => d.id === notif.related_deal_id);
                                             if (deal) setPendingOpenDeal(deal);
@@ -700,13 +769,15 @@ export default function AppLayout() {
                                         }}
                                       >
                                         <p className={cn(
-                                          'text-sm leading-snug truncate',
-                                          notif.is_read ? 'font-medium text-slate-700' : 'font-semibold text-slate-900'
+                                          'text-[13px] leading-snug truncate',
+                                          notif.is_read ? 'font-medium text-slate-500' : 'font-bold text-slate-800'
                                         )}>
                                           {notif.title}
                                         </p>
-                                        <p className="text-xs text-slate-400 truncate mt-0.5">{notif.message}</p>
-                                        <p className="text-[10px] text-slate-300 mt-1">{relativeTime(notif.created_at)}</p>
+                                        <p className={cn("text-xs truncate mt-0.5", notif.is_read ? "text-slate-400" : "text-slate-500")}>
+                                          {notif.message}
+                                        </p>
+                                        <p className="text-[9px] text-slate-350 mt-1">{relativeTime(notif.created_at)}</p>
                                       </button>
 
                                       {/* Dismiss */}

@@ -185,3 +185,49 @@ export async function dismissAllNotifications(userId) {
   }
   if (error) throw new Error('Could not dismiss all');
 }
+
+export async function upsertNotificationsBatch(notificationsList) {
+  if (notificationWritesDisabled || !notificationsList?.length) return [];
+
+  let payloads = notificationsList.map(notif => {
+    const ownerId = notif.owner_id || notif.user_id;
+    return {
+      ...notif,
+      owner_id: ownerId,
+      notification_key: ownerId && notif.notification_key
+        ? `${ownerId}:${notif.notification_key}`
+        : notif.notification_key,
+      created_at: new Date().toISOString(),
+    };
+  });
+
+  try {
+    const { data, error } = await supabase
+      .from('notifications')
+      .upsert(payloads, { onConflict: 'notification_key' })
+      .select();
+
+    if (error) {
+      if (isNotificationSchemaError(error)) {
+        console.warn('Batch upsert failed due to schema constraint. Falling back to sequential upserts...', error);
+        const results = [];
+        for (const notif of notificationsList) {
+          const res = await upsertNotification(notif);
+          if (res) results.push(res);
+        }
+        return results;
+      }
+      throw error;
+    }
+    return data || [];
+  } catch (err) {
+    console.error('Failed to batch upsert notifications:', err);
+    const results = [];
+    for (const notif of notificationsList) {
+      const res = await upsertNotification(notif).catch(() => null);
+      if (res) results.push(res);
+    }
+    return results;
+  }
+}
+
