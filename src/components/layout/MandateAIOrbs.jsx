@@ -101,7 +101,7 @@ export default function MandateAIOrbs({ deals = [], activities = [] }) {
     setIsExpanded(false);
   };
 
-  if (staleHighValueDeals.length === 0 || isTourActive) return null;
+  if (staleHighValueDeals.length === 0) return null;
 
   return (
     <div className="relative flex flex-col items-end gap-3 pointer-events-none select-none font-sans">
