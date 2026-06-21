@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -6,7 +7,7 @@ import { cn } from '../../lib/utils';
 import { 
   ShieldCheck, Crown, Users, Sparkles, Calendar, Search, 
   UserCheck, ShieldAlert, Mail, Clock, RefreshCw, UserMinus, Plus,
-  UserPlus, Trash2, Lock, Unlock, Loader2
+  UserPlus, Trash2, Lock, Unlock, Loader2, Sliders, X
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -41,6 +42,32 @@ export function ConsoleCenterSection() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'pro', 'trial', 'free'
   const [customExpiries, setCustomExpiries] = useState({}); // { [userId]: 'YYYY-MM-DD' }
+  const [managedProfile, setManagedProfile] = useState(null);
+
+  // Compute reactive managed profile based on fresh database queries
+  const currentManagedProfile = useMemo(() => {
+    if (!managedProfile) return null;
+    return allProfiles.find(p => p.id === managedProfile.id) || managedProfile;
+  }, [allProfiles, managedProfile]);
+
+  const managedTrialEndDateString = useMemo(() => {
+    if (!currentManagedProfile) return '';
+    const date = currentManagedProfile.trial_ends_at 
+      ? new Date(currentManagedProfile.trial_ends_at) 
+      : new Date(new Date(currentManagedProfile.created_at).getTime() + 3 * 24 * 60 * 60 * 1000);
+    return date.toISOString().split('T')[0];
+  }, [currentManagedProfile]);
+
+  const managedTrialDaysLeft = useMemo(() => {
+    if (!currentManagedProfile) return 0;
+    const endDate = currentManagedProfile.trial_ends_at 
+      ? new Date(currentManagedProfile.trial_ends_at) 
+      : new Date(new Date(currentManagedProfile.created_at).getTime() + 3 * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const diffTime = endDate.getTime() - now.getTime();
+    let days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return days < 0 ? 0 : days;
+  }, [currentManagedProfile]);
 
   // Add User State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -131,6 +158,21 @@ export function ConsoleCenterSection() {
       free: freeCount
     };
   }, [allProfiles]);
+
+  const proPct = useMemo(() => {
+    if (stats.total === 0) return 0;
+    return (stats.pro / stats.total) * 100;
+  }, [stats]);
+
+  const trialPct = useMemo(() => {
+    if (stats.total === 0) return 0;
+    return (stats.trial / stats.total) * 100;
+  }, [stats]);
+
+  const freePct = useMemo(() => {
+    if (stats.total === 0) return 0;
+    return (stats.free / stats.total) * 100;
+  }, [stats]);
 
   const handleUpdateRole = async (id, newRole) => {
     try {
@@ -274,6 +316,7 @@ export function ConsoleCenterSection() {
     try {
       await deleteProfile.mutateAsync(profileToDelete.id);
       setProfileToDelete(null);
+      setManagedProfile(null); // Close the drawer if the deleted user is the one being managed
     } catch (err) {
       // Toast is handled inside hook
     }
@@ -323,22 +366,112 @@ export function ConsoleCenterSection() {
       {/* Overview Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'ผู้สมัครใช้งานทั้งหมด', value: stats.total, icon: Users, color: 'text-violet-600 bg-violet-50 border-violet-100' },
-          { label: 'ผู้ใช้ระดับ PRO', value: stats.pro, icon: Crown, color: 'text-amber-500 bg-amber-50 border-amber-100' },
-          { label: 'กำลังทดลองใช้ (Active)', value: stats.trial, icon: Sparkles, color: 'text-emerald-500 bg-emerald-50 border-emerald-100' },
-          { label: 'หมดอายุ / บัญชีฟรี / ระงับ', value: stats.free, icon: Clock, color: 'text-slate-500 bg-slate-50 border-slate-200' },
+          { 
+            label: 'ผู้สมัครใช้งานทั้งหมด', 
+            value: stats.total, 
+            icon: Users, 
+            gradient: 'from-violet-600 to-indigo-700', 
+            shadow: 'shadow-violet-600/10' 
+          },
+          { 
+            label: 'ผู้ใช้ระดับ PRO', 
+            value: stats.pro, 
+            icon: Crown, 
+            gradient: 'from-amber-500 to-orange-600', 
+            shadow: 'shadow-amber-500/10' 
+          },
+          { 
+            label: 'กำลังทดลองใช้ (Active)', 
+            value: stats.trial, 
+            icon: Sparkles, 
+            gradient: 'from-emerald-500 to-teal-600', 
+            shadow: 'shadow-emerald-500/10' 
+          },
+          { 
+            label: 'หมดอายุ / บัญชีฟรี / ระงับ', 
+            value: stats.free, 
+            icon: Clock, 
+            gradient: 'from-slate-700 to-slate-800', 
+            shadow: 'shadow-slate-700/10' 
+          },
         ].map((item, idx) => (
-          <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_2px_15px_rgba(0,0,0,0.01)] flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{item.label}</span>
-              <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center", item.color)}>
-                <item.icon size={14} />
+          <div 
+            key={idx} 
+            className={cn(
+              "p-5 rounded-[2rem] border-0 text-white flex flex-col justify-between relative overflow-hidden bg-gradient-to-br shadow-xl transition-all hover:-translate-y-0.5", 
+              item.gradient, 
+              item.shadow
+            )}
+          >
+            {/* Background pattern decoration */}
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-bl-full pointer-events-none" />
+            
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <span className="text-[10px] font-bold text-white/80 uppercase tracking-wider">{item.label}</span>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white/20 text-white">
+                <item.icon size={15} />
               </div>
             </div>
-            <h3 className="text-2xl font-black text-slate-900">{isLoading ? '...' : item.value}</h3>
+            <h3 className="text-3xl font-black text-white relative z-10">
+              {isLoading ? '...' : item.value.toLocaleString()}
+            </h3>
           </div>
         ))}
       </div>
+
+      {/* Proportion Bar */}
+      <Card className="p-6 rounded-[2rem] bg-white border border-slate-100 shadow-xl space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <h3 className="text-xs font-black text-slate-900">อัตราส่วนประเภทบัญชีผู้ใช้ (Account Classification Ratio)</h3>
+            <p className="text-[10px] font-medium text-slate-500">สัดส่วนผู้ใช้ระดับพรีเมียม ทดลองใช้งาน และบัญชีฟรี</p>
+          </div>
+          <div className="text-[11px] font-bold text-slate-600">
+            PRO: <span className="text-amber-600 font-extrabold">{proPct.toFixed(1)}%</span>
+          </div>
+        </div>
+        
+        {/* Multi-segment Progress Bar */}
+        <div className="h-3.5 bg-slate-100 rounded-full overflow-hidden flex shadow-inner border border-slate-200/30">
+          {stats.pro > 0 && (
+            <div 
+              style={{ width: `${proPct}%` }} 
+              className="bg-gradient-to-r from-amber-400 to-orange-500 h-full transition-all duration-500 cursor-help relative group"
+              title={`PRO: ${stats.pro} คน (${proPct.toFixed(1)}%)`}
+            />
+          )}
+          {stats.trial > 0 && (
+            <div 
+              style={{ width: `${trialPct}%` }} 
+              className="bg-gradient-to-r from-violet-500 to-indigo-600 h-full transition-all duration-500 cursor-help"
+              title={`TRIAL: ${stats.trial} คน (${trialPct.toFixed(1)}%)`}
+            />
+          )}
+          {stats.free > 0 && (
+            <div 
+              style={{ width: `${freePct}%` }} 
+              className="bg-slate-400 h-full transition-all duration-500 cursor-help"
+              title={`FREE/EXPIRED/SUSPENDED: ${stats.free} คน (${freePct.toFixed(1)}%)`}
+            />
+          )}
+        </div>
+
+        {/* Legend */}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-1 text-[10px] font-bold text-slate-500">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-sm shadow-orange-500/10" />
+            <span>PRO ({stats.pro} คน)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 shadow-sm shadow-indigo-500/10" />
+            <span>TRIAL ({stats.trial} คน)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded bg-slate-400 shadow-sm" />
+            <span>FREE / EXPIRED / SUSPENDED ({stats.free} คน)</span>
+          </div>
+        </div>
+      </Card>
 
       {/* Main Console Area */}
       <Card className="p-8 rounded-[2rem] bg-white border border-slate-100 shadow-xl space-y-6 relative overflow-hidden">
@@ -403,7 +536,7 @@ export function ConsoleCenterSection() {
         </div>
 
         {/* User List */}
-        <div className="space-y-4 relative z-10">
+        <div className="space-y-3 relative z-10">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-2">
               <RefreshCw className="animate-spin" size={24} />
@@ -440,13 +573,13 @@ export function ConsoleCenterSection() {
               }
 
               return (
-                <div key={profile.id} className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors">
+                <div key={profile.id} className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50/60 border border-slate-100 hover:bg-slate-50 hover:border-slate-200/80 transition-all group">
                   {/* Left Column: Avatar & User Info */}
-                  <div className="flex items-start gap-3.5 min-w-[280px]">
+                  <div className="flex items-center gap-3.5 min-w-0">
                     <div className={cn(
-                      'w-11 h-11 rounded-xl flex items-center justify-center font-black text-sm shrink-0 shadow-sm transition-all',
+                      'w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 shadow-sm transition-all',
                       isSuspended
-                        ? 'bg-rose-50 border border-rose-100 text-rose-505'
+                        ? 'bg-rose-50 border border-rose-100 text-rose-500'
                         : isUserPro 
                           ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white' 
                           : isUserTrial 
@@ -455,178 +588,78 @@ export function ConsoleCenterSection() {
                     )}>
                       {(profile.full_name || profile.email || '?').charAt(0).toUpperCase()}
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <p className="text-sm font-black text-slate-800 leading-none">
+                    <div className="min-w-0 space-y-0.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-black text-slate-800 truncate leading-none">
                           {profile.full_name || 'ไม่ระบุชื่อ'}
-                        </p>
+                        </span>
                         {isOwnerAccount && (
                           <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-violet-600 text-white uppercase tracking-wider">
                             OWNER 👑
                           </span>
                         )}
                         {isSuspended ? (
-                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-rose-600 text-white uppercase tracking-wider flex items-center gap-0.5">
+                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 uppercase tracking-wider flex items-center gap-0.5">
                             <Lock size={8} /> ระงับการใช้งาน
                           </span>
                         ) : isUserPro ? (
-                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-amber-500 text-white uppercase tracking-wider flex items-center gap-0.5">
+                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 uppercase tracking-wider">
                             PRO
                           </span>
                         ) : isUserTrial ? (
-                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-emerald-500 text-white uppercase tracking-wider">
+                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 uppercase tracking-wider">
                             TRIAL ({trialDaysLeft} วัน)
                           </span>
                         ) : (
-                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-slate-300 text-slate-600 uppercase tracking-wider">
+                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 uppercase tracking-wider">
                             FREE / EXPIRED
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-400 flex items-center gap-1">
-                        <Mail size={11} /> {profile.email}
+                      <p className="text-xs text-slate-400 truncate flex items-center gap-1">
+                        <Mail size={11} className="shrink-0" /> {profile.email}
                       </p>
-                      <div className="flex items-center gap-4 text-[10px] text-slate-400">
-                        <span className="flex items-center gap-1">
-                          <Clock size={10} />
-                          สมัคร: {new Date(profile.created_at).toLocaleDateString('th-TH')}
-                        </span>
-                        {profile.last_seen_at && (
-                          <span className="flex items-center gap-1">
-                            <UserCheck size={10} />
-                            ใช้งานล่าสุด: {new Date(profile.last_seen_at).toLocaleDateString('th-TH')}
-                          </span>
-                        )}
-                      </div>
                     </div>
                   </div>
 
-                  {/* Right Column: Actions */}
-                  {isOwnerAccount ? (
-                    <div className="text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl h-fit w-fit lg:self-center">
-                      บัญชีหลัก (แก้ไขสิทธิ์ไม่ได้)
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap items-center gap-4 border-t border-slate-100 lg:border-t-0 pt-4 lg:pt-0">
-                      
-                      {/* 1. Plan Changer */}
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase">แผนสมาชิก</span>
-                        <select
-                          value={profile.plan_type || 'free'}
-                          onChange={e => handleUpdatePlan(profile.id, e.target.value)}
-                          disabled={updateSubscription.isPending}
-                          className="h-8 px-2 rounded-lg border border-slate-200 bg-white text-xs font-semibold outline-none cursor-pointer text-slate-600 w-32"
-                        >
-                          <option value="pro">Pro (พรีเมียม)</option>
-                          <option value="trial">Trial (ทดลองใช้)</option>
-                          <option value="free">Free / Expired</option>
-                          <option value="suspended">🔒 ระงับการใช้งาน</option>
-                        </select>
+                  {/* Middle Metadata (Registration / Last Login) */}
+                  <div className="hidden md:flex items-center gap-6 text-[11px] text-slate-400 shrink-0">
+                    <span className="flex items-center gap-1">
+                      <Clock size={11} />
+                      สมัคร: {new Date(profile.created_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' })}
+                    </span>
+                    {profile.last_seen_at ? (
+                      <span className="flex items-center gap-1">
+                        <UserCheck size={11} />
+                        ใช้งานล่าสุด: {new Date(profile.last_seen_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' })}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <UserCheck size={11} />
+                        ใช้งานล่าสุด: —
+                      </span>
+                    )}
+                    <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold uppercase text-[9px]">
+                      {profile.role || 'member'}
+                    </span>
+                  </div>
+
+                  {/* Right Column: Manage Button */}
+                  <div className="shrink-0 flex items-center gap-2">
+                    {isOwnerAccount ? (
+                      <div className="text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl">
+                        บัญชีหลัก
                       </div>
-
-                      {/* 2. Quick Extend Trial (Only relevant if not PRO and not Suspended) */}
-                      {profile.plan_type !== 'pro' && !isSuspended && (
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[9px] font-bold text-slate-400 uppercase">ขยายเวลาทดลองใช้</span>
-                          <div className="flex gap-1">
-                            {[
-                              { label: '+3 วัน', val: 3 },
-                              { label: '+7 วัน', val: 7 },
-                              { label: '+30 วัน', val: 30 },
-                            ].map(btn => (
-                              <button
-                                key={btn.label}
-                                onClick={() => handleQuickExtendTrial(profile, btn.val)}
-                                disabled={updateSubscription.isPending}
-                                className="h-8 px-2.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 transition-colors"
-                              >
-                                {btn.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* 3. Custom Calendar Expiry (Only if not PRO and not Suspended) */}
-                      {profile.plan_type !== 'pro' && !isSuspended && (
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[9px] font-bold text-slate-400 uppercase">กำหนดวันหมดอายุ</span>
-                          <div className="flex gap-1 items-center">
-                            <input
-                              type="date"
-                              value={customExpiries[profile.id] || trialEndDateString}
-                              onChange={e => setCustomExpiries({ ...customExpiries, [profile.id]: e.target.value })}
-                              className="h-8 px-2 border border-slate-200 rounded-lg text-xs outline-none bg-white text-slate-600"
-                            />
-                            {customExpiries[profile.id] && customExpiries[profile.id] !== trialEndDateString && (
-                              <Button
-                                size="icon"
-                                className="h-8 w-8 bg-violet-600 hover:bg-violet-700 rounded-lg shrink-0"
-                                onClick={() => handleCustomExpirySave(profile.id)}
-                                disabled={updateSubscription.isPending}
-                              >
-                                <Plus size={14} />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* 4. Role Changer */}
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase">บทบาท</span>
-                        <select
-                          value={profile.role || 'member'}
-                          onChange={e => handleUpdateRole(profile.id, e.target.value)}
-                          disabled={updateRole.isPending}
-                          className="h-8 px-2 rounded-lg border border-slate-200 bg-white text-xs font-semibold outline-none cursor-pointer text-slate-600 w-28"
-                        >
-                          <option value="member">Member</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      </div>
-
-                      {/* 5. Extra Actions (Suspend & Delete) */}
-                      <div className="flex items-center gap-1.5 pt-4 lg:pt-0">
-                        {/* Suspend / Resume Button */}
-                        <button
-                          onClick={() => {
-                            if (isSuspended) {
-                              handleToggleSuspend(profile);
-                            } else {
-                              setProfileToSuspend(profile);
-                              setSuspendConfirmOpen(true);
-                            }
-                          }}
-                          disabled={updateSubscription.isPending}
-                          title={isSuspended ? "เปิดใช้งานบัญชี" : "ระงับบัญชี"}
-                          className={cn(
-                            "w-8 h-8 rounded-lg flex items-center justify-center border transition-all active:scale-95",
-                            isSuspended
-                              ? "bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-600"
-                              : "bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-600"
-                          )}
-                        >
-                          {isSuspended ? <Unlock size={14} /> : <Lock size={14} />}
-                        </button>
-
-                        {/* Delete Button */}
-                        <button
-                          onClick={() => {
-                            setProfileToDelete(profile);
-                            setDeleteConfirmOpen(true);
-                          }}
-                          disabled={deleteProfile.isPending}
-                          title="ลบผู้ใช้งาน"
-                          className="w-8 h-8 rounded-lg flex items-center justify-center bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 transition-all active:scale-95"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-
-                    </div>
-                  )}
+                    ) : (
+                      <button
+                        onClick={() => setManagedProfile(profile)}
+                        className="h-9 px-3.5 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all border border-slate-200 shadow-sm active:scale-95 group-hover:border-violet-200 group-hover:text-violet-700"
+                      >
+                        <Sliders size={13} />
+                        จัดการสมาชิก
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })
@@ -780,6 +813,289 @@ export function ConsoleCenterSection() {
           }
         }}
       />
+
+      {/* Manage User Drawer */}
+      <AnimatePresence>
+        {currentManagedProfile && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setManagedProfile(null)}
+              className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-50"
+            />
+            
+            {/* Drawer */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 h-full w-full sm:w-[460px] bg-white shadow-2xl z-50 flex flex-col border-l border-slate-100"
+            >
+              {/* Drawer Header */}
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center">
+                    <Sliders size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-950">การจัดการบัญชีผู้ใช้งาน</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Console Center Controls</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setManagedProfile(null)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Drawer Content */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* User Hero Section */}
+                <div className="p-5 rounded-2.5xl bg-gradient-to-br from-slate-50 to-slate-100/50 border border-slate-100/80 flex items-start gap-4">
+                  {/* Large Avatar */}
+                  <div className={cn(
+                    "w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl text-white shadow-md shrink-0",
+                    currentManagedProfile.plan_type === 'suspended'
+                      ? "bg-slate-400"
+                      : currentManagedProfile.email === 'sorawittj@gmail.com' || currentManagedProfile.plan_type === 'pro'
+                        ? "bg-gradient-to-br from-amber-400 to-orange-500"
+                        : currentManagedProfile.plan_type === 'trial'
+                          ? "bg-gradient-to-br from-violet-500 to-indigo-600"
+                          : "bg-slate-300"
+                  )}>
+                    {(currentManagedProfile.full_name || currentManagedProfile.email || '?').charAt(0).toUpperCase()}
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <h4 className="text-base font-black text-slate-900 truncate">
+                      {currentManagedProfile.full_name || 'ไม่ระบุชื่อ'}
+                    </h4>
+                    <p className="text-xs text-slate-500 truncate flex items-center gap-1">
+                      <Mail size={12} className="text-slate-400 shrink-0" />
+                      {currentManagedProfile.email}
+                    </p>
+                    
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                      {currentManagedProfile.plan_type === 'suspended' ? (
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 uppercase tracking-wider flex items-center gap-0.5">
+                          <Lock size={8} /> SUSPENDED
+                        </span>
+                      ) : currentManagedProfile.email === 'sorawittj@gmail.com' || currentManagedProfile.plan_type === 'pro' ? (
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 uppercase tracking-wider">
+                          👑 PRO SUBSCRIBER
+                        </span>
+                      ) : currentManagedProfile.plan_type === 'trial' ? (
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 uppercase tracking-wider">
+                          ⚡ TRIAL ACTIVE
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 uppercase tracking-wider">
+                          FREE / EXPIRED
+                        </span>
+                      )}
+                      
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 uppercase">
+                        {currentManagedProfile.role || 'member'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Metadata Grid */}
+                <div className="grid grid-cols-2 gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100/50 text-xs">
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase">วันที่สมัครใช้งาน</p>
+                    <p className="font-bold text-slate-700 mt-0.5">
+                      {new Date(currentManagedProfile.created_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase">ใช้งานล่าสุด</p>
+                    <p className="font-bold text-slate-700 mt-0.5">
+                      {currentManagedProfile.last_seen_at 
+                        ? new Date(currentManagedProfile.last_seen_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })
+                        : '—'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Form Actions Section */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">การตั้งค่าสิทธิ์และแผนใช้งาน</h4>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Plan Type Selector */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">แผนสมาชิก</label>
+                      <select
+                        value={currentManagedProfile.plan_type || 'free'}
+                        onChange={e => handleUpdatePlan(currentManagedProfile.id, e.target.value)}
+                        disabled={updateSubscription.isPending}
+                        className="w-full h-11 px-3 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold outline-none cursor-pointer text-slate-800 focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all"
+                      >
+                        <option value="pro">Pro (พรีเมียม)</option>
+                        <option value="trial">Trial (ทดลองใช้)</option>
+                        <option value="free">Free / Expired</option>
+                        <option value="suspended">🔒 ระงับการใช้งาน</option>
+                      </select>
+                    </div>
+
+                    {/* Role Selector */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">บทบาทระบบ</label>
+                      <select
+                        value={currentManagedProfile.role || 'member'}
+                        onChange={e => handleUpdateRole(currentManagedProfile.id, e.target.value)}
+                        disabled={updateRole.isPending}
+                        className="w-full h-11 px-3 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold outline-none cursor-pointer text-slate-800 focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all"
+                      >
+                        <option value="member">Member (ผู้ใช้ทั่วไป)</option>
+                        <option value="admin">Admin (ผู้ควบคุม)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Trial Duration Extension (Show only if plan is trial or free/expired and not suspended) */}
+                {currentManagedProfile.plan_type !== 'pro' && currentManagedProfile.plan_type !== 'suspended' && (
+                  <div className="p-5 rounded-2.5xl border border-violet-100 bg-violet-50/30 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center">
+                        <Calendar size={14} />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-slate-900">ตัวจัดการระยะเวลาทดลองใช้ (Trial Manager)</h4>
+                        <p className="text-[10px] text-slate-500 font-medium">ขยายเวลาหรือระบุวันที่หมดอายุทดลองใช้แบบเฉพาะคน</p>
+                      </div>
+                    </div>
+
+                    {/* Current Expire Info */}
+                    <div className="p-3 bg-white rounded-xl border border-violet-100/50 flex justify-between items-center text-xs">
+                      <span className="text-slate-500">วันหมดอายุปัจจุบัน:</span>
+                      <span className="font-bold text-violet-700">
+                        {currentManagedProfile.trial_ends_at
+                          ? new Date(currentManagedProfile.trial_ends_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })
+                          : 'ยังไม่เริ่มทดลองใช้'}
+                      </span>
+                    </div>
+
+                    {/* Quick Extend Buttons */}
+                    <div className="space-y-1.5">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">ปุ่มลัดขยายเวลาทดลอง</span>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { label: '+3 วัน', val: 3 },
+                          { label: '+7 วัน', val: 7 },
+                          { label: '+30 วัน', val: 30 },
+                        ].map(btn => (
+                          <button
+                            key={btn.label}
+                            onClick={() => handleQuickExtendTrial(currentManagedProfile, btn.val)}
+                            disabled={updateSubscription.isPending}
+                            className="h-10 bg-white hover:bg-violet-600 hover:text-white border border-violet-200 text-violet-700 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 flex items-center justify-center"
+                          >
+                            {btn.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Calendar Selector */}
+                    <div className="space-y-1.5">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">กำหนดวันหมดอายุเป็นวันเฉพาะ</span>
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <input
+                            type="date"
+                            value={customExpiries[currentManagedProfile.id] || managedTrialEndDateString}
+                            onChange={e => setCustomExpiries({ ...customExpiries, [currentManagedProfile.id]: e.target.value })}
+                            className="w-full h-11 px-3 border border-slate-200 rounded-xl text-xs outline-none bg-white text-slate-800 focus:border-violet-400 transition-all cursor-pointer"
+                          />
+                        </div>
+                        {customExpiries[currentManagedProfile.id] && customExpiries[currentManagedProfile.id] !== managedTrialEndDateString && (
+                          <Button
+                            className="h-11 px-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shrink-0 border-0 flex items-center gap-1.5"
+                            onClick={() => handleCustomExpirySave(currentManagedProfile.id)}
+                            disabled={updateSubscription.isPending}
+                          >
+                            <Plus size={14} />
+                            บันทึกวัน
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Danger Zone */}
+                <div className="p-5 rounded-2.5xl border border-rose-100 bg-rose-50/30 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center">
+                      <ShieldAlert size={14} />
+                    </div>
+                    <h4 className="text-xs font-black text-rose-950">Danger Zone (พื้นที่ควบคุมความปลอดภัย)</h4>
+                  </div>
+
+                  <p className="text-[10px] text-rose-700/70 leading-relaxed font-medium">
+                    การกระทำในส่วนนี้มีผลกระทบโดยตรงต่อสิทธิ์การเข้าใช้งานระบบ CRM ของสมาชิกคนนี้ กรุณาตรวจสอบให้แน่ใจก่อนทำการเปลี่ยนแปลงใดๆ
+                  </p>
+
+                  <div className="flex flex-col gap-2 pt-2">
+                    {/* Suspend / Resume Option */}
+                    <button
+                      onClick={() => {
+                        if (currentManagedProfile.plan_type === 'suspended') {
+                          handleToggleSuspend(currentManagedProfile);
+                        } else {
+                          setProfileToSuspend(currentManagedProfile);
+                          setSuspendConfirmOpen(true);
+                        }
+                      }}
+                      disabled={updateSubscription.isPending}
+                      className={cn(
+                        "w-full h-11 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all active:scale-[0.98]",
+                        currentManagedProfile.plan_type === 'suspended'
+                          ? "bg-emerald-600 hover:bg-emerald-700 text-white border-0 shadow-lg shadow-emerald-500/10"
+                          : "bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
+                      )}
+                    >
+                      {currentManagedProfile.plan_type === 'suspended' ? (
+                        <>
+                          <Unlock size={14} />
+                          เปิดระบบระงับใช้งาน (Unsuspend User)
+                        </>
+                      ) : (
+                        <>
+                          <Lock size={14} />
+                          ระงับการเข้าใช้งานระบบ (Suspend User)
+                        </>
+                      )}
+                    </button>
+
+                    {/* Delete Option */}
+                    <button
+                      onClick={() => {
+                        setProfileToDelete(currentManagedProfile);
+                        setDeleteConfirmOpen(true);
+                      }}
+                      disabled={deleteProfile.isPending}
+                      className="w-full h-11 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-rose-500/10 border-0"
+                    >
+                      <Trash2 size={14} />
+                      ลบบัญชีและล้างข้อมูลถาวร (Delete Account)
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
