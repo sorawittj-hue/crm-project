@@ -188,13 +188,13 @@ function TrialBanner({ isTrialActive, isExpired, trialDaysLeft, isGuestAccount, 
           </div>
           <div>
             <h3 className="text-white font-black text-lg tracking-tight">
-              {isExpired ? 'หมดเวลาทดลองใช้งาน' : isGuestAccount ? 'โหมดผู้เยี่ยมชม (อ่านอย่างเดียว)' : `เหลือเวลาทดลองใช้ ${trialDaysLeft} วัน`}
+              {isExpired ? 'หมดเวลาทดลองใช้งาน' : isGuestAccount ? 'โหมดกระบะทราย (Sandbox Mode)' : `เหลือเวลาทดลองใช้ ${trialDaysLeft} วัน`}
             </h3>
             <p className="text-indigo-200 text-sm font-medium mt-0.5">
               {isExpired 
                 ? 'อัปเกรดเพื่อใช้งานฐานข้อมูลส่วนตัวและฟีเจอร์ระดับ Pro ต่อเนื่อง' 
                 : isGuestAccount
-                  ? 'ปลดล็อคเพื่อเริ่มทดลองใช้งานฟรี 3 วัน หรือสมัครสมาชิกพรีเมียมเพื่อบันทึกข้อมูลจริง'
+                  ? 'ข้อมูลทดลองเล่นทั้งหมดจะถูกบันทึกชั่วคราวในเบราว์เซอร์ สมัครสมาชิกเพื่อบันทึกข้อมูลขึ้นระบบ Cloud'
                   : 'ทดลองใช้ 3 วันฟรี! ปลดล็อคระบบ Premium เพียง 299 บาท/รอบบิล'}
             </p>
           </div>

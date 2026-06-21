@@ -52,15 +52,14 @@ export function useSubscription() {
   }
 
   // Final access checks
-  // Can they perform normal actions? (Pro or Registered Trial active. Guests are read-only)
-  const canUseBasicFeatures = isPro || isTrialActive || isDemoMode;
+  // Can they perform normal actions? (Pro, Registered Trial active, Demo mode, or Guest/Sandbox)
+  const canUseBasicFeatures = isPro || isTrialActive || isDemoMode || isGuestAccount;
   
   // Can they perform premium actions? (Export, Backup)
   const canUsePremiumFeatures = isPro || isDemoMode;
 
   // Should we show the paywall for normal actions?
-  // Guests are blocked from basic actions (read-only showcase mode)
-  const shouldBlockBasic = (isGuestAccount && !isDemoMode) || !canUseBasicFeatures;
+  const shouldBlockBasic = !canUseBasicFeatures;
 
   const isSuspended = myProfile?.plan_type === 'suspended';
 
