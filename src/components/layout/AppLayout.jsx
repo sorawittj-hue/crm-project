@@ -30,7 +30,6 @@ import { cn, parseYearMonth } from '../../lib/utils';
 import { formatCurrency } from '../../lib/formatters';
 import { springSmooth } from '../../lib/motion';
 import CommandPalette from '../ui/CommandPalette';
-import MandateAIOrbs from './MandateAIOrbs';
 import PaywallModal from '../ui/PaywallModal';
 import WelcomeModal from '../ui/WelcomeModal';
 import GlobalAddDealModal from '../pipeline/GlobalAddDealModal';
@@ -885,9 +884,6 @@ export default function AppLayout() {
         
       </div>
 
-      <div className="fixed bottom-6 right-6 z-[9990] font-sans">
-        <MandateAIOrbs deals={deals} activities={activities} />
-      </div>
     </div>
   );
 }
