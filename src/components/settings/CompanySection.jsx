@@ -3,7 +3,7 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { useToast } from '../ui/Toast';
-import { Pencil, Save, Loader2, Building2, Briefcase, Banknote, BotOff } from 'lucide-react';
+import { Pencil, Save, Loader2, Building2, Briefcase, Banknote, Bot } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useSettings, useUpdateSettings } from '../../hooks/useSettings';
 
@@ -119,7 +119,7 @@ export function CompanySection() {
           <div className="flex items-center justify-between p-4 rounded-xl border border-rose-100 bg-rose-50/50 mt-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-white text-rose-500 flex items-center justify-center shadow-sm border border-rose-100">
-                <BotOff size={20} />
+                <Bot size={20} />
               </div>
               <div>
                 <p className="text-sm font-bold text-slate-900">ปิดการใช้งาน AI</p>
