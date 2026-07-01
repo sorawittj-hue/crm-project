@@ -1,6 +1,7 @@
 import { supabase } from '../utils/supabase';
 import {
   addOwnerIdIfSupported,
+  ensureOwnerTeamMember,
   filterRowByOwner,
   filterRowsByOwner,
   getRequiredUserId,
@@ -21,6 +22,7 @@ export async function fetchCustomers(options = {}) {
     const { data, error } = await supabase
       .from('customers')
       .select('*')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .range(from, to);
     
@@ -31,6 +33,7 @@ export async function fetchCustomers(options = {}) {
       const { data, error: legacyError } = await supabase
         .from('customers')
         .select('*')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false })
         .range(from, to);
 
@@ -178,6 +181,7 @@ export async function updateCustomer({ id, ...updates }) {
   try {
     if (!id) throw new Error('Customer ID is required');
     await getRequiredUserId();
+    await ensureOwnerTeamMember();
 
     if (updates.email && !validateEmail(updates.email)) {
       throw new Error('Invalid email address format');
@@ -234,10 +238,11 @@ export async function deleteCustomer(id) {
   try {
     if (!id) throw new Error('Customer ID is required');
     await getRequiredUserId();
+    await ensureOwnerTeamMember();
     
     const { error } = await supabase
       .from('customers')
-      .delete()
+      .update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq('id', id);
     
     if (error) throw error;
@@ -246,7 +251,7 @@ export async function deleteCustomer(id) {
     if (isMissingColumnError(error)) {
       const { error: legacyError } = await supabase
         .from('customers')
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .eq('id', id);
 
       if (!legacyError) return true;
@@ -286,7 +291,7 @@ export async function searchCustomers(query) {
     return filterRowsByOwner('customers', data, userId);
   } catch (error) {
     console.error('Error searching customers:', error);
-    return [];
+    throw new Error('Failed to search customers: ' + error.message);
   }
 }
 

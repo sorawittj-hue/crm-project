@@ -18,6 +18,7 @@ import {
   useCreateProfile,
   useMyProfile
 } from '../../hooks/useUserProfiles';
+import { useSettings } from '../../hooks/useSettings';
 import { useToast } from '../ui/Toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../ui/Dialog';
 import ConfirmDialog from '../ui/ConfirmDialog';
@@ -32,7 +33,8 @@ export function ConsoleCenterSection() {
   const { success, error } = useToast();
   
   // Security check - owner only
-  const isOwner = myProfile?.role === 'admin';
+  const { data: settings } = useSettings();
+  const isOwner = myProfile?.role === 'owner' || user?.id === settings?.owner_id;
   
   const { data: allProfiles = [], isLoading } = useAllProfiles();
   const updateRole = useUpdateProfileRole();
@@ -548,7 +550,7 @@ export function ConsoleCenterSection() {
           ) : (
             filteredProfiles.map(profile => {
               const isUserPro = profile.role === 'admin' || profile.plan_type === 'pro';
-              const isOwnerAccount = profile.role === 'admin';
+              const isOwnerAccount = profile.role === 'owner' || profile.id === settings?.owner_id;
               const isSuspended = profile.plan_type === 'suspended';
               
               // Calculate trial status

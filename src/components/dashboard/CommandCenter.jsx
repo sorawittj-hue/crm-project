@@ -581,7 +581,7 @@ const CommandCenter = ({
               </button>
             </div>
             <div className="max-h-64 overflow-y-auto p-2">
-              {[1, 2, 3].map((i) => (
+              {[]?.map((i) => (
                 <div key={i} className="p-3 hover:bg-white/5 rounded-xl cursor-pointer">
                   <p className="text-xs font-medium">Deal updated: Enterprise Deal #{i}</p>
                   <p className="text-[10px] text-muted-foreground mt-1">{i} hour ago</p>

@@ -33,7 +33,7 @@ export async function fetchActivitiesByDeal(dealId) {
     }
 
     console.error('Error fetching activities:', error);
-    return [];
+    throw new Error('Failed to fetch activities for deal: ' + error.message);
   }
 }
 
@@ -63,7 +63,7 @@ export async function fetchActivities() {
     }
 
     console.error('Error fetching activities:', error);
-    return [];
+    throw new Error('Failed to fetch activities: ' + error.message);
   }
 }
 

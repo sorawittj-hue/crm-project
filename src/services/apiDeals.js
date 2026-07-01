@@ -23,6 +23,7 @@ export async function fetchDeals(options = {}) {
     const { data, error } = await supabase
       .from('deals')
       .select('*')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .range(from, to);
 
@@ -33,6 +34,7 @@ export async function fetchDeals(options = {}) {
       const { data, error: legacyError } = await supabase
         .from('deals')
         .select('*')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false })
         .range(from, to);
 
@@ -109,6 +111,7 @@ export async function updateDeal({ id, ...updates }) {
   try {
     if (!id) throw new Error('Deal ID is required');
     await getRequiredUserId();
+    await ensureOwnerTeamMember();
 
     if (updates.contact_email && !validateEmail(updates.contact_email)) {
       throw new Error('Invalid contact email address format');
@@ -315,10 +318,11 @@ export async function deleteDeals(ids) {
       throw new Error('At least one deal ID is required');
     }
     await getRequiredUserId();
+    await ensureOwnerTeamMember();
 
     const { error } = await supabase
       .from('deals')
-      .delete()
+      .update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .in('id', ids);
 
     if (error) throw error;
@@ -327,7 +331,7 @@ export async function deleteDeals(ids) {
     if (isMissingColumnError(error)) {
       const { error: legacyError } = await supabase
         .from('deals')
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .in('id', ids);
 
       if (!legacyError) return true;
@@ -347,11 +351,16 @@ export async function bulkUpdateDeals(ids, updates) {
       throw new Error('At least one deal ID is required');
     }
     await getRequiredUserId();
+    await ensureOwnerTeamMember();
+
+    let payload = Object.fromEntries(
+      Object.entries(updates).filter(([key]) => DEAL_COLUMNS.has(key))
+    );
 
     const { data, error } = await supabase
       .from('deals')
       .update({
-        ...updates,
+        ...payload,
         updated_at: new Date().toISOString()
       })
       .in('id', ids)
@@ -361,10 +370,13 @@ export async function bulkUpdateDeals(ids, updates) {
     return data;
   } catch (error) {
     if (isMissingColumnError(error)) {
+      let payload = Object.fromEntries(
+        Object.entries(updates).filter(([key]) => DEAL_COLUMNS.has(key))
+      );
       const { data, error: legacyError } = await supabase
         .from('deals')
         .update({
-          ...updates,
+          ...payload,
           updated_at: new Date().toISOString()
         })
         .in('id', ids)

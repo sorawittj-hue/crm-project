@@ -33,6 +33,20 @@ export async function callGeminiAPI(prompt, schema = null) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
+    const userId = session?.user?.id;
+
+    // Check if user disabled AI
+    if (userId) {
+      const { data: settings } = await supabase
+        .from('app_settings')
+        .select('disable_ai')
+        .eq('id', userId)
+        .single();
+        
+      if (settings?.disable_ai) {
+        return { disabled: true, text: null };
+      }
+    }
 
     const headers = {
       'Content-Type': 'application/json',

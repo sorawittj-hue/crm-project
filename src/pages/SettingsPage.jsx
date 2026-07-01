@@ -33,13 +33,13 @@ const BASE_SECTIONS = [
 
 export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState('targets');
-  const { isLoading: settingsLoading } = useSettings();
+  const { data: settings, isLoading: settingsLoading } = useSettings();
   const { isLoading: teamLoading } = useTeam();
   const { user } = useAuth();
   const { data: myProfile } = useMyProfile(user?.id);
   
-  const isAdmin = myProfile?.role === 'admin';
-  const isOwner = isAdmin;
+  const isAdmin = myProfile?.role === 'admin' || myProfile?.role === 'owner';
+  const isOwner = myProfile?.role === 'owner' || user?.id === settings?.owner_id;
 
   const SECTIONS = isOwner
     ? [

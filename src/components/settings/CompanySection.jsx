@@ -3,7 +3,7 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { useToast } from '../ui/Toast';
-import { Pencil, Save, Loader2, Building2, Briefcase, Banknote } from 'lucide-react';
+import { Pencil, Save, Loader2, Building2, Briefcase, Banknote, BotOff } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useSettings, useUpdateSettings } from '../../hooks/useSettings';
 
@@ -25,6 +25,7 @@ export function CompanySection() {
     company_name: settings?.company_name ?? '',
     company_industry: settings?.company_industry ?? '',
     currency: settings?.currency ?? 'THB',
+    disable_ai: settings?.disable_ai ?? false,
   });
 
   const handleSaveCompany = async (e) => {
@@ -114,6 +115,28 @@ export function CompanySection() {
               <option value="SGD">SGD — ดอลลาร์สิงคโปร์</option>
             </select>
           </div>
+          
+          <div className="flex items-center justify-between p-4 rounded-xl border border-rose-100 bg-rose-50/50 mt-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white text-rose-500 flex items-center justify-center shadow-sm border border-rose-100">
+                <BotOff size={20} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900">ปิดการใช้งาน AI</p>
+                <p className="text-xs font-medium text-slate-500">ระบบจะไม่ส่งข้อมูลและไม่สร้างเนื้อหาอัตโนมัติด้วย AI</p>
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="sr-only peer"
+                checked={companyForm.disable_ai}
+                onChange={(e) => setCompanyForm({ ...companyForm, disable_ai: e.target.checked })}
+              />
+              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-500"></div>
+            </label>
+          </div>
+          
           <div className="flex gap-3 pt-2">
             <Button
               type="button"

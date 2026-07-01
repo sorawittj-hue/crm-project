@@ -233,6 +233,41 @@ export default function AppLayout() {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [notifFilter, setNotifFilter] = useState('all');
   const notifRef = useRef(null);
+  const sidebarRef = useRef(null);
+
+  useEffect(() => {
+    if (!isDesktop && isSidebarOpen) {
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') {
+          closeSidebar();
+          return;
+        }
+        if (e.key === 'Tab' && sidebarRef.current) {
+          const focusableElements = sidebarRef.current.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusableElements.length === 0) return;
+          const firstElement = focusableElements[0];
+          const lastElement = focusableElements[focusableElements.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === firstElement) {
+              lastElement.focus();
+              e.preventDefault();
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              firstElement.focus();
+              e.preventDefault();
+            }
+          }
+        }
+      };
+      
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isSidebarOpen, isDesktop, closeSidebar]);
 
   const userId = user?.id;
 
@@ -414,6 +449,7 @@ export default function AppLayout() {
         )}
         {(isSidebarOpen || isDesktop) && (
           <motion.aside
+            ref={sidebarRef}
             {...mobileSidebarMotion}
             variants={sidebarVariants}
             className={cn(

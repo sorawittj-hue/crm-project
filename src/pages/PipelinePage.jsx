@@ -9,7 +9,8 @@ import { useAppStore } from '../store/useAppStore';
 
 import { useAddActivity } from '../hooks/useActivities';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
-import { Plus, Sliders, ScanLine, Download, User, Zap, Loader2, ChevronDown, Search, Briefcase, Calendar, Building2, Sparkles, UserCheck, Smile, DollarSign, Check, Phone, Mail, ArrowRight, ArrowLeft, TrendingUp, Mic } from 'lucide-react';
+import PipelineListView from '../components/pipeline/PipelineListView';
+import { Plus, Sliders, ScanLine, Download, User, Zap, Loader2, ChevronDown, Search, Briefcase, Calendar, Building2, Sparkles, UserCheck, Smile, DollarSign, Check, Phone, Mail, ArrowRight, ArrowLeft, TrendingUp, Mic, LayoutGrid, List } from 'lucide-react';
 
 // Lazy-load PDFImporter to avoid bundling pdfjs-dist (~5MB) in initial load
 const PDFImporter = lazy(() => import('../components/pipeline/PDFImporter'));
@@ -115,7 +116,8 @@ export default function PipelinePage() {
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
-  const [viewMode, setViewMode] = useState('pipeline'); // 'pipeline' | 'renewals'
+  const [boardType, setBoardType] = useState('pipeline'); // 'pipeline' | 'renewals'
+  const [viewMode, setViewMode] = useState('kanban'); // 'kanban' | 'list'
   const [quickDeal, setQuickDeal] = useState({ company: '', title: '', value: '', expected_close_date: '' });
   const [quickError, setQuickError] = useState(null);
 
@@ -323,10 +325,10 @@ export default function PipelinePage() {
         <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
           <div className="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/60 mr-2">
             <button
-              onClick={() => setViewMode('pipeline')}
+              onClick={() => setBoardType('pipeline')}
               className={cn(
                 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
-                viewMode === 'pipeline'
+                boardType === 'pipeline'
                   ? 'bg-white text-violet-700 shadow-sm'
                   : 'text-slate-500 hover:text-slate-700'
               )}
@@ -334,15 +336,40 @@ export default function PipelinePage() {
               <Briefcase size={14} /> Pipeline
             </button>
             <button
-              onClick={() => setViewMode('renewals')}
+              onClick={() => setBoardType('renewals')}
               className={cn(
                 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
-                viewMode === 'renewals'
+                boardType === 'renewals'
                   ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/20'
                   : 'text-slate-500 hover:text-slate-700'
               )}
             >
               <Calendar size={14} /> Renewals
+            </button>
+          </div>
+
+          <div className="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/60 mr-2">
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={cn(
+                'px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+                viewMode === 'kanban'
+                  ? 'bg-white text-violet-700 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              )}
+            >
+              <LayoutGrid size={14} /> Kanban
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={cn(
+                'px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+                viewMode === 'list'
+                  ? 'bg-white text-violet-700 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              )}
+            >
+              <List size={14} /> List
             </button>
           </div>
 
@@ -537,35 +564,57 @@ export default function PipelinePage() {
 
 
       <div id="pipeline-board">
-        <MonthlyPipeline
-          viewMode={viewMode}
-          deals={filteredDeals}
-          onAddDeal={async (data) => {
-            if (shouldBlockBasic) {
-              openPaywall(isGuestAccount ? 'default' : 'trial_ended');
-              return;
-            }
-            if (data) {
-              try {
-                await addDealMutation.mutateAsync(data);
-                
-              } catch (err) {
-                console.error(err);
+        {viewMode === 'kanban' ? (
+          <MonthlyPipeline
+            viewMode={boardType}
+            deals={filteredDeals}
+            onAddDeal={async (data) => {
+              if (shouldBlockBasic) {
+                openPaywall(isGuestAccount ? 'default' : 'trial_ended');
+                return;
               }
-            }
-            else setIsAddModalOpen(true);
-          }}
-          onUpdateDeal={handleUpdateDeal}
-          onDeleteDeal={(id) => {
-            if (shouldBlockBasic) {
-              openPaywall(isGuestAccount ? 'default' : 'trial_ended');
-              return;
-            }
-            deleteDealsMutation.mutate([id]);
-          }}
-          pendingOpenDeal={pendingOpenDeal}
-          onPendingOpenDealHandled={clearPendingOpenDeal}
-        />
+              if (data) {
+                try {
+                  await addDealMutation.mutateAsync(data);
+                  
+                } catch (err) {
+                  console.error(err);
+                }
+              }
+              else setIsAddModalOpen(true);
+            }}
+            onUpdateDeal={handleUpdateDeal}
+            onDeleteDeal={async (id) => {
+              if (shouldBlockBasic) {
+                openPaywall(isGuestAccount ? 'default' : 'trial_ended');
+                return;
+              }
+              try {
+                await deleteDealsMutation.mutateAsync([id]);
+              } catch (err) {
+                alert('Failed to delete deal: ' + err.message);
+              }
+            }}
+            pendingOpenDeal={pendingOpenDeal}
+            onPendingOpenDealHandled={clearPendingOpenDeal}
+          />
+        ) : (
+          <PipelineListView 
+            deals={filteredDeals} 
+            onUpdateDeal={handleUpdateDeal} 
+            onDeleteDeal={async (id) => {
+              if (shouldBlockBasic) {
+                openPaywall(isGuestAccount ? 'default' : 'trial_ended');
+                return;
+              }
+              try {
+                await deleteDealsMutation.mutateAsync([id]);
+              } catch (err) {
+                alert('Failed to delete deal: ' + err.message);
+              }
+            }}
+          />
+        )}
       </div>
 
       {/* ADD ASSET MODAL */}

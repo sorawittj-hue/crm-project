@@ -16,6 +16,7 @@ import { formatFullCurrency as formatCurrency } from '../../lib/formatters';
 import { callGeminiAPI } from '../../services/ai';
 import { useDealActivities, useAddActivity } from '../../hooks/useActivities';
 import { useEmailTemplates } from '../../hooks/useEmailTemplates';
+import ConfirmDialog from '../ui/ConfirmDialog';
 import { createPortal } from 'react-dom';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
@@ -132,7 +133,7 @@ const TABS = [
   { id: 'edit',        label: 'แก้ไข',      icon: Settings },
 ];
 
-export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onRequestDelete, onRequestCloseStage }) {
+export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onRequestDelete, onRequestCloseStage, onRequestCloneDeal }) {
   const { openPaywall } = useAppStore();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
 
@@ -148,6 +149,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
   const [copiedTemplate, setCopiedTemplate] = useState(false);
   const [nextActionRecommendation, setNextActionRecommendation] = useState(null);
   const [loadingRecommendation, setLoadingRecommendation] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
 
   const { data: emailTemplates = [] } = useEmailTemplates();
 
@@ -180,10 +183,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
 
   useEffect(() => {
     setNextActionRecommendation(null);
-    if (deal?.id && !['won', 'lost'].includes(deal?.stage)) {
-      handleFetchNextBestAction();
-    }
-  }, [deal?.id, deal?.stage, handleFetchNextBestAction]);
+  }, [deal?.id, deal?.stage]);
 
   const [localEdit, setLocalEdit] = useState({
     title: '', company: '', value: '', probability: '', stage: 'lead',
@@ -429,7 +429,6 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                 </div>
               </div>
 
-              {/* Quick action buttons */}
               <div className="relative z-10 flex gap-2 mt-5">
                 <Button
                   className="flex-1 h-11 rounded-xl text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white border-0 shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-1.5 transition-all hover:-translate-y-0.5"
@@ -447,7 +446,47 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                   <XCircle size={16} /> ปิดไม่ได้
                 </Button>
                 <button
-                  onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : onRequestDelete?.(deal.id)}
+                  onClick={async () => {
+                    if (shouldBlockBasic) {
+                      openPaywall(isGuestAccount ? 'default' : 'trial_ended');
+                      return;
+                    }
+                    setIsDuplicating(true);
+                    try {
+                      // Clone basic deal data
+                      const clonedData = {
+                        title: `${deal.title} (Copy)`,
+                        company_name: deal.company_name,
+                        value: deal.value,
+                        stage: deal.stage,
+                        probability: deal.probability,
+                        expected_close_date: deal.expected_close_date,
+                        contact_name: deal.contact_name,
+                        contact_email: deal.contact_email,
+                        contact_phone: deal.contact_phone,
+                        customer_id: deal.customer_id
+                      };
+                      
+                      // Using onUpdate pattern but we need to insert.
+                      // This requires a new prop onRequestClone?. We will just call it.
+                      if (onRequestCloneDeal) {
+                        await onRequestCloneDeal(clonedData);
+                        onClose();
+                      } else {
+                        console.warn("Clone function not available yet.");
+                      }
+                    } finally {
+                      setIsDuplicating(false);
+                    }
+                  }}
+                  disabled={isDuplicating}
+                  className="w-11 h-11 rounded-xl bg-white/60 backdrop-blur-sm border border-white/60 text-slate-400 hover:bg-indigo-500 hover:text-white hover:border-indigo-500 transition-all flex items-center justify-center shrink-0 shadow-sm"
+                  title="Duplicate Deal"
+                >
+                  <Sparkles size={18} />
+                </button>
+                <button
+                  onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setShowDeleteConfirm(true)}
                   className="w-11 h-11 rounded-xl bg-white/60 backdrop-blur-sm border border-white/60 text-slate-400 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all flex items-center justify-center shrink-0 shadow-sm"
                 >
                   <Trash2 size={18} />
@@ -628,7 +667,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                             <button
                               type="button"
                               onClick={handleFetchNextBestAction}
-                              className="text-xs font-bold text-indigo-600 hover:bg-indigo-105 px-3 py-1.5 rounded-lg border border-dashed border-indigo-300 bg-white"
+                              className="text-xs font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg border border-dashed border-indigo-300 bg-white"
                             >
                               วิเคราะห์ Next Best Action ✨
                             </button>
@@ -1016,6 +1055,19 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
 
               </AnimatePresence>
             </div>
+            
+            <ConfirmDialog
+              isOpen={showDeleteConfirm}
+              title="ยืนยันการลบดีล"
+              message="คุณต้องการลบดีลนี้ใช่หรือไม่? ข้อมูลทั้งหมดที่เกี่ยวข้องจะถูกลบและไม่สามารถกู้คืนได้"
+              confirmLabel="ลบดีล"
+              isDanger={true}
+              onConfirm={() => {
+                onRequestDelete?.(deal.id);
+                setShowDeleteConfirm(false);
+              }}
+              onCancel={() => setShowDeleteConfirm(false)}
+            />
           </motion.div>
         </div>
       )}

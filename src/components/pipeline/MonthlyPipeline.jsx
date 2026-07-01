@@ -170,6 +170,7 @@ export default function MonthlyPipeline({
         last_activity: new Date().toISOString(),
         actual_close_date: closeIsoString,
         lost_reason: isWon ? null : reason,
+        won_reason: isWon ? reason : null,
         metadata: {
           ...(winLossState.deal?.metadata || {}),
           close_reason: reason,
@@ -230,6 +231,9 @@ export default function MonthlyPipeline({
         onClose={() => setIsSidebarOpen(false)}
         onRequestDelete={(dealId) => setConfirmDeleteId(dealId)}
         onRequestCloseStage={(targetStage) => setWinLossState({ open: true, targetStage, deal: visibleDeal })}
+        onRequestCloneDeal={async (clonedData) => {
+          if (onAddDeal) await onAddDeal(clonedData);
+        }}
       />
 
       {/* CONFIRM DELETE DIALOG (Lifted) */}

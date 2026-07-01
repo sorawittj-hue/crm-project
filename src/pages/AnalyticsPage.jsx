@@ -24,7 +24,7 @@ import {
 import {
   Target, ArrowUpRight, ArrowDownRight, Loader2,
   Activity, DollarSign, ShieldCheck, ThumbsUp, ThumbsDown, AlertCircle,
-  Trophy, Clock, Sparkles, TrendingUp, Sliders, Info, Briefcase
+  Trophy, Clock, Sparkles, TrendingUp, Sliders, Info, Briefcase, Download
 } from 'lucide-react';
 
 // --- Premium Typewriter Effect Component ---
@@ -169,12 +169,36 @@ export default function AnalyticsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: myProfile } = useMyProfile(user?.id);
-  const { data: deals, isLoading: dealsLoading } = useDeals();
+  const { data: allDeals, isLoading: dealsLoading } = useDeals();
 
   const { data: teamMembers, isLoading: teamLoading } = useTeam();
   const { data: customers = [] } = useCustomers();
 
   const [timeRange, setTimeRange] = useState('6m');
+  const [dateRange, setDateRange] = useState('30days');
+
+  const deals = useMemo(() => {
+    if (!allDeals) return null;
+    const now = new Date();
+    let startDate = new Date();
+    if (dateRange === '7days') {
+      startDate.setDate(now.getDate() - 7);
+    } else if (dateRange === '30days') {
+      startDate.setDate(now.getDate() - 30);
+    } else if (dateRange === 'thisMonth') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (dateRange === 'thisYear') {
+      startDate = new Date(now.getFullYear(), 0, 1);
+    }
+
+    return allDeals.filter(deal => {
+      const dateToCheck = ['won', 'lost'].includes(deal.stage) 
+        ? new Date(deal.actual_close_date || deal.updated_at || deal.created_at) 
+        : new Date(deal.created_at);
+      return dateToCheck >= startDate;
+    });
+  }, [allDeals, dateRange]);
+
   const [activeTab, setActiveTab] = useState('overview'); // overview, funnel, performance, segments
   const [selectedPrompt, setSelectedPrompt] = useState(null); // high-risk, quota, bottleneck
 
@@ -518,19 +542,51 @@ export default function AnalyticsPage() {
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Analytics <span className="text-violet-600">Command Center</span></h1>
           <p className="text-sm text-slate-500 mt-1 font-medium">Deep insights and world-class pipeline intelligence.</p>
         </div>
-        <div className="flex items-center gap-1.5 bg-slate-100/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/60 shadow-sm">
-          {[['3m', '3 Months'], ['6m', '6 Months'], ['12m', '12 Months']].map(([val, label]) => (
-            <button
-              key={val}
-              onClick={() => setTimeRange(val)}
-              className={cn(
-                "px-5 py-2 rounded-xl text-xs font-bold transition-all duration-300",
-                timeRange === val ? "bg-white shadow-md text-violet-750" : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50"
-              )}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="flex flex-col md:flex-row items-center gap-3">
+          <div className="flex items-center gap-1.5 bg-slate-100/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/60 shadow-sm">
+            {[['7days', '7 Days'], ['30days', '30 Days'], ['thisMonth', 'This Month'], ['thisYear', 'This Year']].map(([val, label]) => (
+              <button
+                key={val}
+                onClick={() => setDateRange(val)}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
+                  dateRange === val ? "bg-white shadow-md text-violet-700" : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50"
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1.5 bg-slate-100/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/60 shadow-sm hidden lg:flex">
+            {[['3m', '3 Months Trend'], ['6m', '6 Months Trend'], ['12m', '12 Months Trend']].map(([val, label]) => (
+              <button
+                key={val}
+                onClick={() => setTimeRange(val)}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
+                  timeRange === val ? "bg-white shadow-md text-violet-700" : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50"
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => {
+              const csvContent = "data:text/csv;charset=utf-8,Deal Name,Company,Value,Stage,Date\n" 
+                + deals?.map(d => `${d.title},${d.company},${d.value},${d.stage},${d.created_at}`).join('\n');
+              const encodedUri = encodeURI(csvContent);
+              const link = document.createElement("a");
+              link.setAttribute("href", encodedUri);
+              link.setAttribute("download", `analytics_export_${dateRange}.csv`);
+              document.body.appendChild(link);
+              link.click();
+              link.remove();
+            }}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-sm"
+          >
+            <Download size={14} /> Export CSV
+          </button>
         </div>
       </motion.div>
 

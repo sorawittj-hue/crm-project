@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 
 import { useSubscription } from '../hooks/useSubscription';
+import { useCustomerContacts } from '../hooks/useCustomerContacts';
 import { useDebounce } from '../hooks/useDebounce';
 import { Card } from '../components/ui/Card';
 import MetricTooltip from '../components/ui/MetricTooltip';
@@ -21,10 +22,11 @@ import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { downloadCsv } from '../utils/exportUtils';
 import {
   Search, Plus, Users, Building2, Mail, Phone,
-  ChevronRight, Loader2, Download,
+  ChevronRight, Loader2, Download, Upload,
   TrendingUp, DollarSign, BarChart3, Trash2, AlertTriangle, HeartPulse,
-  Settings, Sparkles, Target, Filter
+  Settings, Sparkles, Target, Filter, Contact, Pencil, Star
 } from 'lucide-react';
+import CustomerCSVImport from '../components/CustomerCSVImport';
 
 
 const TIER_CONFIG = {
@@ -87,11 +89,30 @@ export default function CustomersPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, customerId: null });
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [newCustomer, setNewCustomer] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
 
-  const [activeDetailTab, setActiveDetailTab] = useState('profile'); // profile, playbook, deals
+  const [activeDetailTab, setActiveDetailTab] = useState('profile'); // profile, playbook, deals, contacts
   const [localCustomer, setLocalCustomer] = useState(null);
+
+  const { contacts, addContact, updateContact, deleteContact } = useCustomerContacts(selectedCustomer?.id);
+  const [isContactFormOpen, setIsContactFormOpen] = useState(false);
+  const [editingContact, setEditingContact] = useState(null);
+  const [contactForm, setContactForm] = useState({ full_name: '', role: '', email: '', phone: '', is_primary: false });
+
+  const handleContactSubmit = (e) => {
+    e.preventDefault();
+    if (editingContact) {
+      updateContact(editingContact.id, contactForm);
+    } else {
+      addContact(contactForm);
+    }
+    setIsContactFormOpen(false);
+    setEditingContact(null);
+    setContactForm({ full_name: '', role: '', email: '', phone: '', is_primary: false });
+  };
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -270,6 +291,25 @@ export default function CustomersPage() {
     downloadCsv(dataToExport, `customers_${new Date().toISOString().slice(0, 10)}`);
   };
 
+  const toggleSelection = (e, id) => {
+    e.stopPropagation();
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.length) return;
+    if (confirm(`คุณต้องการลบลูกค้า ${selectedIds.length} รายการที่เลือกใช่หรือไม่?`)) {
+      try {
+        await Promise.all(selectedIds.map(id => deleteCustomerMutation.mutateAsync(id)));
+        setSelectedIds([]);
+      } catch (e) {
+        console.error('Error deleting bulk', e);
+      }
+    }
+  };
+
   const isLoading = customersLoading || dealsLoading;
 
   // Generate gradient avatar color from name
@@ -325,6 +365,13 @@ export default function CustomersPage() {
             className="h-10 px-4 rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-semibold flex items-center gap-2"
           >
             <Download size={14} /> ส่งออก CSV
+          </Button>
+          <Button
+            onClick={() => setIsImportModalOpen(true)}
+            variant="outline"
+            className="h-10 px-4 rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-semibold flex items-center gap-2"
+          >
+            <Upload size={14} /> นำเข้า CSV
           </Button>
           <Button
             onClick={() => {
@@ -447,6 +494,32 @@ export default function CustomersPage() {
         </div>
       </div>
 
+      {/* BULK ACTION TOOLBAR */}
+      <AnimatePresence>
+        {selectedIds.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+            animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
+            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="flex items-center justify-between bg-violet-50 border border-violet-200 rounded-[1.25rem] p-3 shadow-sm">
+              <div className="flex items-center gap-3 pl-2">
+                <span className="text-sm font-bold text-violet-700">เลือกแล้ว {selectedIds.length} รายการ</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => setSelectedIds([])} className="h-8 text-xs border-violet-200 text-violet-600 hover:bg-violet-100">
+                  ยกเลิก
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleBulkDelete} className="h-8 text-xs border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700">
+                  <Trash2 size={14} className="mr-1" /> ลบที่เลือก
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* CUSTOMER GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         <AnimatePresence mode={filteredCustomers.length > 20 ? "sync" : "popLayout"}>
@@ -468,6 +541,15 @@ export default function CustomersPage() {
                   {/* Gradient left border accent */}
                   <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity"
                     style={{ background: `linear-gradient(to bottom, ${getAvatarGradient(customer.name)[0]}, ${getAvatarGradient(customer.name)[1]})` }} />
+
+                  <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(customer.id)}
+                      onChange={(e) => toggleSelection(e, customer.id)}
+                      className="w-5 h-5 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer accent-violet-600"
+                    />
+                  </div>
 
                   <div className="space-y-4">
                     {/* Header */}
@@ -642,6 +724,14 @@ export default function CustomersPage() {
         )}
       </div>
 
+      <CustomerCSVImport 
+        open={isImportModalOpen} 
+        onOpenChange={setIsImportModalOpen}
+        onImportSuccess={() => {
+          // In a real app we might refetch customers here
+        }}
+      />
+
       {/* CUSTOMER DETAIL DIALOG */}
       <Dialog open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
         <DialogContent className="p-0 border border-white/80 bg-white/95 backdrop-blur-3xl max-w-2xl overflow-y-auto max-h-[90vh] rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)]">
@@ -690,6 +780,7 @@ export default function CustomersPage() {
                   { id: 'profile', label: 'ข้อมูล & แก้ไข', icon: Users },
                   { id: 'playbook', label: 'คู่มือ AI & สุขภาพ', icon: Sparkles },
                   { id: 'deals', label: 'ประวัติดีลการขาย', icon: Target },
+                  { id: 'contacts', label: 'ผู้ติดต่อ', icon: Contact },
                 ].map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeDetailTab === tab.id;
@@ -1112,6 +1203,107 @@ export default function CustomersPage() {
                           )}
                         </div>
                       </div>
+                    </motion.div>
+                  )}
+
+                  {activeDetailTab === 'contacts' && (
+                    <motion.div
+                      key="detail-contacts"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.15 }}
+                      className="space-y-6"
+                    >
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-sm font-bold text-slate-800">ผู้ติดต่อทั้งหมด ({contacts.length})</h3>
+                        <Button
+                          onClick={() => {
+                            setEditingContact(null);
+                            setContactForm({ full_name: '', role: '', email: '', phone: '', is_primary: false });
+                            setIsContactFormOpen(true);
+                          }}
+                          className="h-9 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-md"
+                        >
+                          <Plus size={14} className="mr-1.5" /> เพิ่มผู้ติดต่อ
+                        </Button>
+                      </div>
+
+                      {isContactFormOpen ? (
+                        <Card className="rounded-[1.5rem] bg-slate-50 border-slate-200 p-5 mb-6">
+                          <form onSubmit={handleContactSubmit} className="space-y-4">
+                            <h4 className="text-xs font-bold text-slate-800">{editingContact ? 'แก้ไขผู้ติดต่อ' : 'เพิ่มผู้ติดต่อใหม่'}</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="col-span-2 md:col-span-1 space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">ชื่อ-นามสกุล *</label>
+                                <Input required value={contactForm.full_name} onChange={e => setContactForm(p => ({ ...p, full_name: e.target.value }))} className="h-10 text-sm bg-white" />
+                              </div>
+                              <div className="col-span-2 md:col-span-1 space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">ตำแหน่ง</label>
+                                <Input value={contactForm.role} onChange={e => setContactForm(p => ({ ...p, role: e.target.value }))} className="h-10 text-sm bg-white" />
+                              </div>
+                              <div className="col-span-2 md:col-span-1 space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">อีเมล</label>
+                                <Input type="email" value={contactForm.email} onChange={e => setContactForm(p => ({ ...p, email: e.target.value }))} className="h-10 text-sm bg-white" />
+                              </div>
+                              <div className="col-span-2 md:col-span-1 space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">เบอร์โทร</label>
+                                <Input value={contactForm.phone} onChange={e => setContactForm(p => ({ ...p, phone: e.target.value }))} className="h-10 text-sm bg-white" />
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                              <input type="checkbox" id="is_primary" checked={contactForm.is_primary} onChange={e => setContactForm(p => ({ ...p, is_primary: e.target.checked }))} className="rounded border-slate-300 text-violet-600 focus:ring-violet-500" />
+                              <label htmlFor="is_primary" className="text-xs font-semibold text-slate-700">ตั้งเป็นผู้ติดต่อหลัก</label>
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                              <Button type="button" variant="ghost" onClick={() => setIsContactFormOpen(false)} className="h-10 text-xs font-bold text-slate-500 hover:bg-slate-200 rounded-xl">ยกเลิก</Button>
+                              <Button type="submit" className="h-10 px-6 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold">บันทึก</Button>
+                            </div>
+                          </form>
+                        </Card>
+                      ) : (
+                        <div className="space-y-3">
+                          {contacts.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-10 bg-slate-50/50 rounded-3xl border border-slate-100 border-dashed">
+                              <Contact size={24} className="text-slate-400 mb-3" />
+                              <p className="text-xs text-slate-400 font-semibold">ยังไม่มีผู้ติดต่อ</p>
+                            </div>
+                          ) : (
+                            contacts.map(contact => (
+                              <Card key={contact.id} className="rounded-[1.5rem] bg-white border-slate-100 p-4 hover:border-violet-200 transition-all group shadow-sm flex flex-col md:flex-row md:items-center gap-4 justify-between">
+                                <div className="flex gap-4 items-center">
+                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center text-violet-700 font-bold shrink-0 shadow-inner">
+                                    {contact.full_name?.charAt(0) || <Contact size={18} />}
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                      <h4 className="text-sm font-bold text-slate-900">{contact.full_name}</h4>
+                                      {contact.is_primary && (
+                                        <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-[10px] font-bold flex items-center gap-1">
+                                          <Star size={10} className="fill-amber-500 text-amber-500" /> หลัก
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-xs font-semibold text-slate-500">{contact.role || 'ไม่มีตำแหน่งระบุ'}</p>
+                                    <div className="flex flex-wrap gap-3 mt-2 text-[11px] text-slate-600">
+                                      {contact.email && <span className="flex items-center gap-1"><Mail size={12} className="text-slate-400"/> {contact.email}</span>}
+                                      {contact.phone && <span className="flex items-center gap-1"><Phone size={12} className="text-slate-400"/> {contact.phone}</span>}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex gap-2 justify-end opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button variant="ghost" size="sm" onClick={() => { setEditingContact(contact); setContactForm(contact); setIsContactFormOpen(true); }} className="h-8 w-8 p-0 rounded-lg text-slate-500 hover:text-violet-600 hover:bg-violet-50">
+                                    <Pencil size={14} />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" onClick={() => { if(confirm('ต้องการลบผู้ติดต่อนี้หรือไม่?')) deleteContact(contact.id); }} className="h-8 w-8 p-0 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50">
+                                    <Trash2 size={14} />
+                                  </Button>
+                                </div>
+                              </Card>
+                            ))
+                          )}
+                        </div>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>

@@ -7,6 +7,7 @@ import {
   ChevronDown, ChevronUp, Search, Battery, HardDrive, Laptop, Sparkles, Cloud
 } from 'lucide-react';
 import { useEmailTemplates, useAddEmailTemplate, useUpdateEmailTemplate, useDeleteEmailTemplate } from '../hooks/useEmailTemplates';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import UPSCalculator from '../components/tools/UPSCalculator';
 
 import { useSubscription } from '../hooks/useSubscription';
@@ -37,6 +38,7 @@ function EmailTemplates() {
   const [editingId, setEditingId] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
   const [form, setForm] = useState({ name: '', subject: '', body: '', category: 'follow_up' });
   const [editForm, setEditForm] = useState({});
 
@@ -65,9 +67,13 @@ function EmailTemplates() {
       return;
     }
     if (!form.name || !form.body) return;
-    await addMutation.mutateAsync(form);
-    setForm({ name: '', subject: '', body: '', category: 'follow_up' });
-    setIsAdding(false);
+    try {
+      await addMutation.mutateAsync(form);
+      setForm({ name: '', subject: '', body: '', category: 'follow_up' });
+      setIsAdding(false);
+    } catch (err) {
+      alert('Failed to create template: ' + err.message);
+    }
   };
 
   const handleUpdate = async (id) => {
@@ -75,8 +81,12 @@ function EmailTemplates() {
       openPaywall(isGuestAccount ? 'default' : 'trial_ended');
       return;
     }
-    await updateMutation.mutateAsync({ id, ...editForm });
-    setEditingId(null);
+    try {
+      await updateMutation.mutateAsync({ id, ...editForm });
+      setEditingId(null);
+    } catch (err) {
+      alert('Failed to update template: ' + err.message);
+    }
   };
 
   const handleCopy = (text, id) => {
@@ -221,7 +231,7 @@ function EmailTemplates() {
                         className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
                         <Pencil size={14} />
                       </button>
-                      <button onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : deleteMutation.mutate(t.id)}
+                      <button onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setDeleteId(t.id)}
                         className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors">
                         <Trash2 size={14} />
                       </button>
@@ -288,6 +298,23 @@ function EmailTemplates() {
           );
         })}
       </div>
+
+      <ConfirmDialog
+        isOpen={!!deleteId}
+        title="ยืนยันการลบ Template"
+        message="คุณต้องการลบ template นี้ใช่หรือไม่? การกระทำนี้ไม่สามารถกู้คืนได้"
+        confirmLabel="ลบข้อมูล"
+        isDanger={true}
+        onConfirm={async () => {
+          try {
+            await deleteMutation.mutateAsync(deleteId);
+            setDeleteId(null);
+          } catch (err) {
+            alert('Failed to delete template: ' + err.message);
+          }
+        }}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }
@@ -412,6 +439,7 @@ const TOOLS = [
     title: 'Email Templates',
     subtitle: 'จัดการ template อีเมลสำหรับทุก stage',
     gradient: 'from-violet-500 to-purple-600',
+    shadowClass: 'shadow-violet-500/30',
     badges: [
       { label: 'Follow Up', color: 'bg-blue-50 border-blue-100 text-blue-700' },
       { label: 'Proposal', color: 'bg-violet-50 border-violet-100 text-violet-700' },
@@ -426,6 +454,7 @@ const TOOLS = [
     title: 'Deal Calculator',
     subtitle: 'คำนวณกำไร, Margin, ROI และ Forecast',
     gradient: 'from-emerald-500 to-teal-600',
+    shadowClass: 'shadow-emerald-500/30',
     badges: [
       { label: 'ROI Analysis', color: 'bg-emerald-50 border-emerald-100 text-emerald-700' },
       { label: 'Scenarios', color: 'bg-blue-50 border-blue-100 text-blue-700' },
@@ -439,6 +468,7 @@ const TOOLS = [
     title: 'คำนวณ UPS',
     subtitle: 'คำนวณ VA และ Ah ที่ต้องการสำหรับ UPS',
     gradient: 'from-blue-500 to-cyan-500',
+    shadowClass: 'shadow-blue-500/30',
     badges: [
       { label: 'VA Calculator', color: 'bg-blue-50 border-blue-100 text-blue-700' },
       { label: 'Battery Config', color: 'bg-amber-50 border-amber-100 text-amber-700' },
@@ -452,6 +482,7 @@ const TOOLS = [
     title: 'คำนวณ RAID',
     subtitle: 'คำนวณพื้นที่ใช้งานได้ vs ความทนทาน',
     gradient: 'from-amber-500 to-orange-500',
+    shadowClass: 'shadow-amber-500/30',
     badges: [
       { label: 'RAID 0/1/5/6/10', color: 'bg-emerald-50 border-emerald-100 text-emerald-700' },
       { label: 'Efficiency %', color: 'bg-purple-50 border-purple-100 text-purple-700' },
@@ -465,6 +496,7 @@ const TOOLS = [
     title: 'คู่มือ Hardware 2026',
     subtitle: 'อ้างอิง spec PC, Server และ Network',
     gradient: 'from-violet-500 to-purple-500',
+    shadowClass: 'shadow-violet-500/30',
     badges: [
       { label: 'Laptops', color: 'bg-violet-50 border-violet-100 text-violet-700' },
       { label: 'Servers', color: 'bg-slate-100 border-slate-200 text-slate-700' },
@@ -479,6 +511,7 @@ const TOOLS = [
     title: 'คู่มือ Software & Cloud 2026',
     subtitle: 'AWS, Azure, Backup, EDR และ VM',
     gradient: 'from-orange-500 to-rose-500',
+    shadowClass: 'shadow-orange-500/30',
     badges: [
       { label: 'Cloud/VM', color: 'bg-orange-50 border-orange-100 text-orange-700' },
       { label: 'Security', color: 'bg-rose-50 border-rose-100 text-rose-700' },
@@ -559,7 +592,7 @@ export default function ToolsPage() {
               <activeTool.icon size={160} />
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-6 relative z-10">
-              <div className={`w-16 h-16 rounded-3xl bg-gradient-to-br ${activeTool.gradient} flex items-center justify-center text-white shadow-xl shadow-${activeTool.gradient.split(' ')[0].split('-')[1]}/30 shrink-0 transform transition-transform hover:scale-105 hover:rotate-3`}>
+              <div className={cn("w-16 h-16 rounded-3xl bg-gradient-to-br flex items-center justify-center text-white shadow-xl shrink-0 transform transition-transform hover:scale-105 hover:rotate-3", activeTool.gradient, activeTool.shadowClass || "shadow-violet-500/30")}>
                 <activeTool.icon size={28} strokeWidth={2.5} />
               </div>
               <div className="flex-1 min-w-0">

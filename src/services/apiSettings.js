@@ -18,6 +18,7 @@ const DEFAULTS = {
   fiscal_month_start: 1,
   timezone: 'Asia/Bangkok',
   integrations: {},
+  disable_ai: false,
 };
 
 function toSettingsPayload(payload) {
@@ -105,6 +106,7 @@ export async function updateAppSettings(updates) {
     fiscal_month_start: Number(updates.fiscal_month_start) || 1,
     timezone: updates.timezone || 'Asia/Bangkok',
     integrations: updates.integrations,
+    disable_ai: updates.disable_ai ?? false,
     updated_at: new Date().toISOString(),
   };
 
