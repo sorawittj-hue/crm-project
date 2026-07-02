@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useMyProfile } from '../hooks/useUserProfiles';
 import { useCustomers } from '../hooks/useCustomers';
 import { Card } from '../components/ui/Card';
+import PageHeader from '../components/layout/PageHeader';
 import { motion, animate, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
@@ -546,62 +547,66 @@ export default function AnalyticsPage() {
       <motion.div 
         initial={{ opacity: 0, y: -10 }} 
         animate={{ opacity: 1, y: 0 }} 
-        className="flex flex-col md:flex-row md:items-end justify-between gap-6"
       >
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Analytics <span className="text-violet-600">Command Center</span></h1>
-          <p className="text-sm text-slate-500 mt-1 font-medium">Deep insights and world-class pipeline intelligence.</p>
-        </div>
-        <div className="flex flex-col md:flex-row items-center gap-3">
-          <div className="flex items-center gap-1.5 bg-slate-100/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/60 shadow-sm">
-            {[['7days', '7 Days'], ['30days', '30 Days'], ['thisMonth', 'This Month'], ['thisYear', 'This Year']].map(([val, label]) => (
+        <PageHeader
+          icon={Activity}
+          title={<>Analytics <span className="text-violet-600">Command Center</span></>}
+          description="Deep insights and world-class pipeline intelligence."
+          children={
+            <div className="flex flex-col md:flex-row items-center justify-between w-full gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-1.5 bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 shadow-inner">
+                  {[['7days', '7 Days'], ['30days', '30 Days'], ['thisMonth', 'This Month'], ['thisYear', 'This Year']].map(([val, label]) => (
+                    <button
+                      key={val}
+                      onClick={() => setDateRange(val)}
+                      className={cn(
+                        "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
+                        dateRange === val
+                          ? "bg-white text-violet-700 shadow-sm ring-1 ring-slate-200/60"
+                          : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1.5 bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 shadow-inner hidden lg:flex">
+                  {[['3m', '3 Months Trend'], ['6m', '6 Months Trend'], ['12m', '12 Months Trend']].map(([val, label]) => (
+                    <button
+                      key={val}
+                      onClick={() => setTimeRange(val)}
+                      className={cn(
+                        "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
+                        timeRange === val
+                          ? "bg-white text-violet-700 shadow-sm ring-1 ring-slate-200/60"
+                          : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <button
-                key={val}
-                onClick={() => setDateRange(val)}
-                className={cn(
-                  "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
-                  dateRange === val
-                    ? "bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/30 text-white ring-1 ring-white/20"
-                    : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50"
-                )}
+                onClick={() => {
+                  const csvContent = "data:text/csv;charset=utf-8,Deal Name,Company,Value,Stage,Date\n" 
+                    + deals?.map(d => `${d.title},${d.company},${d.value},${d.stage},${d.created_at}`).join('\n');
+                  const encodedUri = encodeURI(csvContent);
+                  const link = document.createElement("a");
+                  link.setAttribute("href", encodedUri);
+                  link.setAttribute("download", `analytics_export_${dateRange}.csv`);
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                }}
+                className="group/export flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-500 border border-slate-200 hover:bg-slate-50 hover:text-slate-700 transition-all shadow-sm"
               >
-                {label}
+                <Download size={14} className="group-hover/export:-translate-y-0.5 transition-transform" /> Export CSV
               </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-1.5 bg-slate-100/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/60 shadow-sm hidden lg:flex">
-            {[['3m', '3 Months Trend'], ['6m', '6 Months Trend'], ['12m', '12 Months Trend']].map(([val, label]) => (
-              <button
-                key={val}
-                onClick={() => setTimeRange(val)}
-                className={cn(
-                  "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
-                  timeRange === val
-                    ? "bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/30 text-white ring-1 ring-white/20"
-                    : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50"
-                )}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => {
-              const csvContent = "data:text/csv;charset=utf-8,Deal Name,Company,Value,Stage,Date\n" 
-                + deals?.map(d => `${d.title},${d.company},${d.value},${d.stage},${d.created_at}`).join('\n');
-              const encodedUri = encodeURI(csvContent);
-              const link = document.createElement("a");
-              link.setAttribute("href", encodedUri);
-              link.setAttribute("download", `analytics_export_${dateRange}.csv`);
-              document.body.appendChild(link);
-              link.click();
-              link.remove();
-            }}
-            className="group/export flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-br from-slate-800 to-slate-900 text-white hover:from-slate-700 hover:to-slate-800 transition-all shadow-sm shadow-slate-900/30 hover:shadow-md hover:shadow-slate-900/40 border border-slate-700/50"
-          >
-            <Download size={14} className="transition-transform duration-300 group-hover/export:-translate-y-0.5 group-hover/export:translate-x-0.5" /> Export CSV
-          </button>
-        </div>
+            </div>
+          }
+        />
       </motion.div>
 
       {/* TAB NAVIGATION */}

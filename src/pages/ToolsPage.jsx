@@ -21,6 +21,7 @@ import { Input } from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/formatters';
+import PageHeader from '../components/layout/PageHeader';
 
 // ─── Email Templates ───────────────────────────────────────────────────────────
 function EmailTemplates() {
@@ -538,16 +539,12 @@ export default function ToolsPage() {
       <div className="absolute top-0 right-0 w-full max-w-3xl h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-violet-300/30 via-indigo-100/10 to-transparent -z-10 pointer-events-none blur-3xl" />
       <div className="absolute top-1/2 left-0 w-full max-w-2xl h-1/2 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-emerald-200/20 via-teal-100/10 to-transparent -z-10 pointer-events-none blur-3xl" />
 
-      <header className="mb-6 flex items-center gap-3 relative z-10">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20 text-white shrink-0">
-          <Sparkles size={24} />
-        </div>
-        <div>
-          <p className="text-[10px] font-bold text-violet-500 uppercase tracking-widest mb-0.5">Nova Pipeline</p>
-          <h1 className="text-2xl font-black text-slate-900 leading-tight">เครื่องมือ</h1>
-          <p className="text-sm text-slate-400 mt-0.5 font-medium">คำนวณ คาดการณ์ และสร้างเนื้อหา</p>
-        </div>
-      </header>
+      <PageHeader
+        icon={Sparkles}
+        title="เครื่องมือ"
+        description="คำนวณ คาดการณ์ และสร้างเนื้อหา"
+        badge={<span className="text-[10px] font-bold text-violet-500 uppercase tracking-widest mt-1 ml-2">Nova Pipeline</span>}
+      />
 
       {/* Tab List */}
       <div className="mb-8 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 pb-1">

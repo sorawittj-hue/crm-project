@@ -21,8 +21,9 @@ import { useCommandCenterStats } from '../hooks/useCommandCenterStats';
 import FocusDealsCard from '../components/command-center/FocusDealsCard';
 import QuickWinModal from '../components/pipeline/QuickWinModal';
 import MetricTooltip from '../components/ui/MetricTooltip';
+import PageHeader from '../components/layout/PageHeader';
 import {
-  Users, AlertCircle,
+  Users, AlertCircle, LayoutDashboard,
   ArrowUpRight, ArrowDownRight, Briefcase,
   Target, Clock, CalendarClock, ChevronRight, CheckCircle2,
   Phone, Mail, FileText, MessageSquare, Activity, Trophy,
@@ -220,44 +221,46 @@ export default function CommandCenterPage() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col md:flex-row md:items-end justify-between gap-6"
       >
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles size={16} className="text-violet-500 animate-pulse" />
-            <span className="text-xs font-bold text-violet-600 uppercase tracking-widest">Nova Pipeline</span>
-            <div className="ml-4 flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-              <button onClick={() => setViewMode('team')} className={cn("px-3 py-1 text-[10px] font-bold rounded-md transition-all", viewMode === 'team' ? "bg-white text-violet-700 shadow-sm" : "text-slate-500 hover:text-slate-700")}>ทีม</button>
-              <button onClick={() => setViewMode('personal')} className={cn("px-3 py-1 text-[10px] font-bold rounded-md transition-all", viewMode === 'personal' ? "bg-white text-violet-700 shadow-sm" : "text-slate-500 hover:text-slate-700")}>ของฉัน</button>
+        <PageHeader
+          icon={LayoutDashboard}
+          title={<>{getGreeting()}, <span className="text-violet-600 bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600">{userName}</span></>}
+          description={<span className="flex items-center gap-1.5"><CalendarClock size={14} className="text-slate-400" /> {getDateString()}</span>}
+          badge={
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-violet-600 uppercase tracking-widest hidden md:inline-block ml-4">Nova Pipeline</span>
+              <div className="ml-2 flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                <button onClick={() => setViewMode('team')} className={cn("px-3 py-1 text-[10px] font-bold rounded-md transition-all", viewMode === 'team' ? "bg-white text-violet-700 shadow-sm" : "text-slate-500 hover:text-slate-700")}>ทีม</button>
+                <button onClick={() => setViewMode('personal')} className={cn("px-3 py-1 text-[10px] font-bold rounded-md transition-all", viewMode === 'personal' ? "bg-white text-violet-700 shadow-sm" : "text-slate-500 hover:text-slate-700")}>ของฉัน</button>
+              </div>
             </div>
-          </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-            {getGreeting()}, <span className="text-violet-600 bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600">{userName}</span>
-          </h1>
-          <p className="text-sm text-slate-500 mt-1 font-semibold flex items-center gap-1.5">
-            <CalendarClock size={14} className="text-slate-400" />
-            {getDateString()}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsQuickWinOpen(true)}
-            className="h-9 px-4 rounded-xl text-xs font-bold border shadow-sm transition-all hover:shadow-md bg-emerald-500 text-white shadow-emerald-500/20 border-emerald-400 hover:bg-emerald-600 active:scale-95">
-            <Zap size={14} className="mr-1.5" />
-            บันทึกยอดด่วน
-          </Button>
-          {[
-            { label: 'Pipeline', icon: Briefcase, to: '/pipeline', tone: 'bg-violet-600 text-white shadow-violet-500/20 hover:bg-violet-700' },
-            { label: 'ลูกค้า', icon: Users, to: '/customers', tone: 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300' },
-            { label: 'Analytics', icon: BarChart3, to: '/analytics', tone: 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300' },
-            { label: 'เครื่องมือ', icon: Wrench, to: '/tools', tone: 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300' },
-          ].map(btn => (
-            <Button key={btn.to} onClick={() => navigate(btn.to)}
-              className={cn("h-9 px-4 rounded-xl text-xs font-bold border shadow-sm transition-all hover:shadow-md active:scale-95", btn.tone)}>
-              <btn.icon size={14} className="mr-1.5" />
-              {btn.label}
-            </Button>
-          ))}
-        </div>
+          }
+          rightContent={
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsQuickWinOpen(true)}
+                className="h-9 px-4 rounded-xl text-xs font-bold border shadow-sm transition-all hover:shadow-md bg-emerald-500 text-white shadow-emerald-500/20 border-emerald-400 hover:bg-emerald-600 active:scale-95">
+                <Zap size={14} className="mr-1.5" />
+                บันทึกยอดด่วน
+              </Button>
+            </div>
+          }
+          children={
+            <div className="flex items-center gap-2 w-full overflow-x-auto pb-1">
+              {[
+                { label: 'Pipeline', icon: Briefcase, to: '/pipeline', tone: 'bg-violet-600 text-white shadow-violet-500/20 hover:bg-violet-700' },
+                { label: 'ลูกค้า', icon: Users, to: '/customers', tone: 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300' },
+                { label: 'Analytics', icon: BarChart3, to: '/analytics', tone: 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300' },
+                { label: 'เครื่องมือ', icon: Wrench, to: '/tools', tone: 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300' },
+              ].map(btn => (
+                <Button key={btn.to} onClick={() => navigate(btn.to)}
+                  className={cn("h-9 px-4 rounded-xl text-xs font-bold border shadow-sm transition-all hover:shadow-md active:scale-95 shrink-0", btn.tone)}>
+                  <btn.icon size={14} className="mr-1.5" />
+                  {btn.label}
+                </Button>
+              ))}
+            </div>
+          }
+        />
       </motion.div>
 
       {/* ONBOARDING CTA */}

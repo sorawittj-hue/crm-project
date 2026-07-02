@@ -19,6 +19,7 @@ import { formatCurrency } from '../lib/formatters';
 import { cn } from '../lib/utils';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+import PageHeader from '../components/layout/PageHeader';
 
 const MONTHS = [
   { value: 1, label: 'ม.ค.', full: 'มกราคม' },
@@ -178,31 +179,24 @@ export default function SalesTrackingPage() {
       <div className="pointer-events-none fixed bottom-0 right-0 w-[400px] h-[400px] bg-indigo-400/10 rounded-full blur-[100px] -z-10" />
 
       {/* ── HEADER ── */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-500/25">
-              <BadgeDollarSign size={22} strokeWidth={2.5} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">ยอดขายปี {currentYear}</h1>
-              <p className="text-sm font-medium text-slate-400">ติดตามเป้าหมายรายเดือนและรวมทั้งปี</p>
-            </div>
+      <PageHeader
+        icon={BadgeDollarSign}
+        title={`ยอดขายปี ${currentYear}`}
+        description="ติดตามเป้าหมายรายเดือนและรวมทั้งปี"
+        rightContent={
+          <div className="flex items-center gap-1 bg-slate-100/50 p-1 rounded-xl border border-slate-200/50 text-xs font-bold shadow-inner">
+            {[['bar', 'แท่ง'], ['area', 'พื้นที่']].map(([val, label]) => (
+              <button
+                key={val}
+                onClick={() => setChartType(val)}
+                className={cn('px-3 py-1.5 rounded-lg transition-all', chartType === val ? 'bg-white shadow text-violet-700 ring-1 ring-slate-200/60' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50')}
+              >
+                {label}
+              </button>
+            ))}
           </div>
-        </div>
-        {/* Chart type toggle */}
-        <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/60 text-xs font-bold">
-          {[['bar', 'แท่ง'], ['area', 'พื้นที่']].map(([val, label]) => (
-            <button
-              key={val}
-              onClick={() => setChartType(val)}
-              className={cn('px-3 py-1.5 rounded-lg transition-all', chartType === val ? 'bg-white shadow text-violet-700' : 'text-slate-500 hover:text-slate-800')}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+        }
+      />
 
       {/* ── KPI CARDS ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

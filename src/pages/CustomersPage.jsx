@@ -7,8 +7,8 @@ import { useAppStore } from '../store/useAppStore';
 import { useSubscription } from '../hooks/useSubscription';
 import { useCustomerContacts } from '../hooks/useCustomerContacts';
 import { useDebounce } from '../hooks/useDebounce';
-import { Card } from '../components/ui/Card';
 import MetricTooltip from '../components/ui/MetricTooltip';
+import PageHeader from '../components/layout/PageHeader';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../components/ui/Dialog';
@@ -353,42 +353,43 @@ export default function CustomersPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-[1600px] mx-auto space-y-6 pb-20 px-4 md:px-0">
       {/* HEADER */}
-      <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">ข้อมูลลูกค้า</h1>
-          <p className="text-sm text-slate-500 mt-1">จัดการข้อมูลลูกค้าครบวงจร พร้อมติดตามมูลค่าดีลและประวัติการขาย</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <Button
-            onClick={exportToCSV}
-            variant="outline"
-            className="h-10 px-4 rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-semibold flex items-center gap-2"
-          >
-            <Download size={14} /> ส่งออก CSV
-          </Button>
-          <Button
-            onClick={() => setIsImportModalOpen(true)}
-            variant="outline"
-            className="h-10 px-4 rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-semibold flex items-center gap-2"
-          >
-            <Upload size={14} /> นำเข้า CSV
-          </Button>
-          <Button
-            onClick={() => {
-              if (shouldBlockBasic) {
-                openPaywall(isGuestAccount ? 'default' : 'trial_ended');
-              } else {
-                setNewCustomer(EMPTY_FORM);
-                setFormError(null);
-                setIsAddModalOpen(true);
-              }
-            }}
-            className="h-10 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold shadow-md shadow-violet-500/20 border-0"
-          >
-            <Plus size={14} className="mr-2" /> เพิ่มลูกค้าใหม่
-          </Button>
-        </div>
-      </header>
+      <PageHeader
+        icon={Users}
+        title="ข้อมูลลูกค้า"
+        description="จัดการข้อมูลลูกค้าครบวงจร พร้อมติดตามมูลค่าดีลและประวัติการขาย"
+        rightContent={
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={exportToCSV}
+              variant="outline"
+              className="h-10 px-4 rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-semibold flex items-center gap-2 shadow-sm"
+            >
+              <Download size={14} /> ส่งออก CSV
+            </Button>
+            <Button
+              onClick={() => setIsImportModalOpen(true)}
+              variant="outline"
+              className="h-10 px-4 rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-semibold flex items-center gap-2 shadow-sm"
+            >
+              <Upload size={14} /> นำเข้า CSV
+            </Button>
+            <Button
+              onClick={() => {
+                if (shouldBlockBasic) {
+                  openPaywall(isGuestAccount ? 'default' : 'trial_ended');
+                } else {
+                  setNewCustomer(EMPTY_FORM);
+                  setFormError(null);
+                  setIsAddModalOpen(true);
+                }
+              }}
+              className="h-10 px-5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 hover:from-violet-500 hover:via-indigo-500 hover:to-purple-500 text-white text-sm font-bold shadow-[0_8px_20px_rgba(139,92,246,0.3)] hover:shadow-[0_12px_25px_rgba(139,92,246,0.4)] hover:-translate-y-0.5 border-0 flex items-center gap-2 transition-all duration-300 ring-1 ring-white/20 group"
+            >
+              <Plus size={16} strokeWidth={3} className="transition-transform duration-300 group-hover:rotate-90" /> เพิ่มลูกค้าใหม่
+            </Button>
+          </div>
+        }
+      />
 
       {/* KPI RIBBON */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

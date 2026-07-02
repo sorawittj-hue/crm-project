@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { Target, Users, ListTree, User, Building2, ShieldCheck, Loader2, Sparkles, Settings2, Plug, Crown, Shield, Bell, History, ChevronRight } from 'lucide-react';
 import { Database } from 'lucide-react';
+import PageHeader from '../components/layout/PageHeader';
 
 import { TargetsSection } from '../components/settings/TargetsSection';
 import { TeamSection } from '../components/settings/TeamSection';
@@ -89,63 +90,47 @@ export default function SettingsPage() {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="relative mb-10 overflow-hidden rounded-[2.5rem] bg-slate-900 border border-slate-800/60 p-8 md:p-12 shadow-2xl shadow-slate-950/20"
+      {/* HEADER SECTION */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
       >
-        {/* Grid mesh overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
-        {/* Glow orbs */}
-        <div className="absolute -top-32 -right-32 w-96 h-96 bg-violet-600/15 blur-[100px] rounded-full pointer-events-none" />
-        <div className="absolute -bottom-24 left-1/3 w-80 h-80 bg-indigo-500/10 blur-[80px] rounded-full pointer-events-none" />
-        {/* Floating dots */}
-        <motion.div animate={{ y: [0, -12, 0] }} transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-10 right-1/3 w-2.5 h-2.5 bg-violet-400/25 rounded-full blur-sm pointer-events-none" />
-        <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
-          className="absolute bottom-10 right-16 w-4 h-4 bg-indigo-400/15 rounded-full blur-sm pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div className="flex items-center gap-5">
-            {/* Icon */}
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600/30 to-indigo-600/20 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white shadow-xl shadow-violet-500/10 relative overflow-hidden group flex-shrink-0">
-              <div className="absolute inset-0 bg-gradient-to-tr from-violet-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <Settings2 size={30} className="relative z-10 text-violet-300" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5 mb-1">
-                <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">ตั้งค่าระบบ</h1>
-                <Sparkles size={18} className="text-amber-400" />
+        <PageHeader
+          icon={Settings2}
+          title="ตั้งค่าระบบ"
+          description="จัดการเป้าหมาย ทีมงาน และการตั้งค่าทั่วไปของแอปพลิเคชัน"
+          badge={<Sparkles size={18} className="text-amber-400" />}
+          breadcrumb={
+            activeItem && (
+              <div className="flex items-center gap-1.5 text-slate-500 text-xs font-semibold">
+                <span>Settings</span>
+                <ChevronRight size={12} />
+                <span className="text-violet-600">{activeItem.label}</span>
               </div>
-              <p className="text-violet-300/70 font-medium text-sm">จัดการเป้าหมาย ทีมงาน และการตั้งค่าทั่วไปของแอปพลิเคชัน</p>
-              {/* Breadcrumb */}
-              {activeItem && (
-                <div className="flex items-center gap-1.5 mt-2 text-violet-400/60 text-xs font-semibold">
-                  <span>Settings</span>
-                  <ChevronRight size={12} />
-                  <span className="text-violet-300">{activeItem.label}</span>
-                </div>
+            )
+          }
+          rightContent={
+            <div className="self-start sm:self-center shrink-0">
+              {isOwner ? (
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-50 border border-amber-200 text-xs font-black text-amber-700 shadow-sm backdrop-blur-sm">
+                  <Crown size={13} className="text-amber-500 fill-current" />
+                  Owner
+                </span>
+              ) : isAdmin ? (
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-black text-emerald-700 backdrop-blur-sm">
+                  <Shield size={13} className="text-emerald-500" />
+                  Admin
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 border border-slate-200 text-xs font-black text-slate-700 shadow-sm">
+                  <User size={13} className="text-slate-500" />
+                  Member
+                </span>
               )}
             </div>
-          </div>
-
-          {/* Role badge */}
-          <div className="self-start sm:self-center shrink-0">
-            {isOwner ? (
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-violet-500/15 to-indigo-500/15 border border-violet-500/20 text-xs font-black text-violet-300 shadow-sm backdrop-blur-sm">
-                <Crown size={13} className="text-amber-400 fill-current" />
-                Owner
-              </span>
-            ) : isAdmin ? (
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-black text-emerald-300 backdrop-blur-sm">
-                <Shield size={13} className="text-emerald-400" />
-                Admin
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-800 border border-slate-700 text-xs font-black text-slate-300">
-                <User size={13} className="text-slate-400" />
-                Member
-              </span>
-            )}
-          </div>
-        </div>
+          }
+        />
       </motion.div>
 
       <div className="flex flex-col lg:flex-row gap-6">

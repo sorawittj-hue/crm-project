@@ -21,6 +21,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
+import PageHeader from '../components/layout/PageHeader';
 
 import { Dialog, DialogContent } from '../components/ui/Dialog';
 
@@ -305,22 +306,11 @@ export default function PipelinePage() {
       <div className="absolute top-[20%] right-[-5%] w-[30%] h-[400px] rounded-full bg-amber-400/10 blur-[100px] pointer-events-none" />
       
       {/* HEADER */}
-      <header className="relative overflow-hidden rounded-[2.5rem] bg-white/70 backdrop-blur-2xl border border-white/80 p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
-        {/* Subtle mesh overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.08),transparent_50%),radial-gradient(circle_at_bottom_left,rgba(245,158,11,0.05),transparent_50%)] pointer-events-none" />
-        
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-500/20 relative overflow-hidden group flex-shrink-0">
-              <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform -translate-x-full group-hover:translate-x-full" />
-              <Briefcase size={26} className="relative z-10" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">ดีลทั้งหมด</h1>
-              <p className="text-sm text-slate-500 mt-0.5 font-medium">จัดการและติดตามดีลในทุกขั้นตอน</p>
-            </div>
-          </div>
-          {/* Search bar */}
+      <PageHeader
+        icon={Briefcase}
+        title="ดีลทั้งหมด"
+        description="จัดการและติดตามดีลในทุกขั้นตอน"
+        rightContent={
           <div className="relative w-full md:w-72">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
             <Input
@@ -333,9 +323,8 @@ export default function PipelinePage() {
               <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-violet-500 animate-spin" size={15} />
             )}
           </div>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap md:flex-nowrap relative z-10 mt-6 pt-6 border-t border-slate-100/60">
+        }
+      >
           <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 mr-2 shadow-inner">
             <button
               onClick={() => setBoardType('pipeline')}
@@ -484,12 +473,11 @@ export default function PipelinePage() {
 
           <Button
             onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsAddModalOpen(true)}
-            className="h-10 px-5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 hover:from-violet-500 hover:via-indigo-500 hover:to-purple-500 text-white text-sm font-bold shadow-[0_8px_20px_rgba(139,92,246,0.3)] hover:shadow-[0_12px_25px_rgba(139,92,246,0.4)] hover:-translate-y-0.5 border-0 flex items-center gap-2 transition-all duration-300 ring-1 ring-white/20 group"
+            className="h-10 px-5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 hover:from-violet-500 hover:via-indigo-500 hover:to-purple-500 text-white text-sm font-bold shadow-[0_8px_20px_rgba(139,92,246,0.3)] hover:shadow-[0_12px_25px_rgba(139,92,246,0.4)] hover:-translate-y-0.5 border-0 flex items-center gap-2 transition-all duration-300 ring-1 ring-white/20 group ml-auto"
           >
             <Plus size={16} strokeWidth={3} className="transition-transform duration-300 group-hover:rotate-90" /> เพิ่มดีลใหม่
           </Button>
-        </div>
-      </header>
+      </PageHeader>
 
       {/* QUICK ADD DIALOG */}
       <Dialog open={isQuickAddOpen} onOpenChange={(v) => { setIsQuickAddOpen(v); if (!v) { setQuickDeal({ company: '', title: '', value: '', expected_close_date: '' }); setQuickError(null); } }}>
