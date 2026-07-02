@@ -569,13 +569,14 @@ export default function PipelineBoard({
 
       {/* KANBAN BOARD (Desktop Only) */}
       {viewMode === 'kanban' && (
-        <div className="hidden md:block">
+        <div className="hidden md:block relative p-4 rounded-[2rem] bg-slate-100/30 backdrop-blur-2xl shadow-inner border border-white/60">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.05),transparent_40%),radial-gradient(circle_at_bottom_left,rgba(56,189,248,0.05),transparent_40%)] rounded-[2rem] pointer-events-none" />
           <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div
             ref={scrollRef}
             className="flex-1 min-h-[560px] relative overflow-x-auto overflow-y-hidden custom-scrollbar-horizontal"
           >
-            <div className="flex gap-3.5 h-full pb-4" style={{ minWidth: 'max-content' }}>
+            <div className="flex gap-4 h-full pb-4" style={{ minWidth: 'max-content' }}>
               {STAGES.map((stageId) => {
                 const stage = STAGE_CONFIG[stageId];
                 const stageDeals = dealsByStage[stageId] || [];
@@ -762,10 +763,10 @@ const InnerList = memo(({ deals, stageColor, selectedDealId, pinnedDealIds, STAG
               isPinned={pinnedDealIds.includes(deal.id)}
               canMoveLeft={STAGES.indexOf(deal.stage) > 0}
               canMoveRight={STAGES.indexOf(deal.stage) < STAGES.length - 1}
-              onSelect={() => setSelectedDealId(deal.id)}
-              onClick={() => onDealClick(deal)}
-              onPin={() => togglePin(deal.id)}
-              onMove={(dir) => handleMoveDeal(deal.id, dir)}
+              onSelect={setSelectedDealId}
+              onClick={onDealClick}
+              onPin={togglePin}
+              onMove={handleMoveDeal}
               stageColor={stageColor}
             />
           )}
@@ -851,8 +852,8 @@ const DealCard = memo(
                 className="pl-3.5 pr-11 py-3.5 space-y-2.5"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onSelect();
-                  onClick(deal);
+                  if (onSelect) onSelect(deal.id);
+                  if (onClick) onClick(deal);
                 }}
               >
                 {/* Top row: avatar + company + badges */}
@@ -936,7 +937,7 @@ const DealCard = memo(
             {/* Action row — hover reveal */}
             <div className="grid grid-cols-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-all duration-200 max-h-0 group-hover:max-h-10 overflow-hidden bg-slate-50/90">
               <button
-                onClick={(e) => { e.stopPropagation(); onMove('left'); }}
+                onClick={(e) => { e.stopPropagation(); if (onMove) onMove(deal.id, 'left'); }}
                 disabled={!canMoveLeft}
                 className={cn('h-9 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-bold', canMoveLeft ? 'hover:bg-slate-100 hover:text-slate-700' : 'opacity-20 cursor-not-allowed')}
                 title="ย้อนขั้นตอน"
@@ -945,15 +946,15 @@ const DealCard = memo(
                 <span className="text-[9px]">ย้อน</span>
               </button>
               <button
-                onClick={(e) => { e.stopPropagation(); onPin(); }}
+                onClick={(e) => { e.stopPropagation(); if (onPin) onPin(deal.id); }}
                 className={cn('h-9 flex items-center justify-center text-xs gap-1 transition-all border-x border-slate-100 font-bold', isPinned ? 'text-amber-500 hover:bg-amber-50/50' : 'text-slate-400 hover:bg-slate-100 hover:text-amber-500')}
                 title={isPinned ? 'เลิกปักหมุด' : 'ปักหมุด'}
               >
-                <Star size={12} strokeWidth={2.5} fill={isPinned ? 'currentColor' : 'none'} />
-                <span className="text-[9px]">{isPinned ? 'เลิก' : 'หมุด'}</span>
+                <Star size={12} strokeWidth={2.5} className={cn(isPinned && "fill-amber-500")} />
+                <span className="text-[9px]">ปักหมุด</span>
               </button>
               <button
-                onClick={(e) => { e.stopPropagation(); onMove('right'); }}
+                onClick={(e) => { e.stopPropagation(); if (onMove) onMove(deal.id, 'right'); }}
                 disabled={!canMoveRight}
                 className={cn('h-9 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-bold', canMoveRight ? 'hover:bg-violet-50 hover:text-violet-600' : 'opacity-20 cursor-not-allowed')}
                 title="ไปขั้นตอนถัดไป"
