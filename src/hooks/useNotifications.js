@@ -19,7 +19,8 @@ function playNotificationChime() {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
     const ctx = new AudioContext();
-    
+    // Resume context to satisfy Chrome autoplay policy (requires user gesture)
+    ctx.resume().then(() => {
     // Double tone sine wave chime (F5 -> A5)
     const now = ctx.currentTime;
     
@@ -49,6 +50,7 @@ function playNotificationChime() {
     osc1.stop(now + 0.4);
     osc2.start(now + 0.08);
     osc2.stop(now + 0.5);
+    }).catch(() => {}); // ignore if still blocked
   } catch (e) {
     console.warn('Audio context chime blocked or failed:', e);
   }
