@@ -81,11 +81,19 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
   };
   
   const glowStyles = {
-    primary: "group-hover:shadow-violet-500/10",
-    emerald: "group-hover:shadow-emerald-500/10",
-    rose: "group-hover:shadow-rose-500/10",
-    amber: "group-hover:shadow-amber-500/10",
-    slate: "group-hover:shadow-slate-500/10"
+    primary: "group-hover:shadow-violet-500/20",
+    emerald: "group-hover:shadow-emerald-500/20",
+    rose: "group-hover:shadow-rose-500/20",
+    amber: "group-hover:shadow-amber-500/20",
+    slate: "group-hover:shadow-slate-500/20"
+  };
+
+  const topBarStyles = {
+    primary: "from-violet-400 to-indigo-500",
+    emerald: "from-emerald-400 to-teal-500",
+    rose: "from-rose-400 to-pink-500",
+    amber: "from-amber-400 to-orange-500",
+    slate: "from-slate-400 to-slate-500"
   };
 
   return (
@@ -95,13 +103,15 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
       transition={{ delay, duration: 0.5, ease: "easeOut" }}
       className="group"
     >
-      <Card className={cn("p-6 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] ring-1 ring-slate-900/5 hover:-translate-y-1.5 transition-all duration-500 relative overflow-hidden group", glowStyles[color])}>
+      <Card className={cn("p-6 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_24px_48px_rgb(0,0,0,0.12)] ring-1 ring-slate-900/5 hover:-translate-y-1.5 transition-all duration-500 relative overflow-hidden group", glowStyles[color])}>
+        {/* Top accent gradient bar */}
+        <div className={cn("absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r opacity-70 group-hover:opacity-100 transition-opacity duration-500", topBarStyles[color])} />
         {/* Subtle background glow */}
         <div className={cn("absolute -top-10 -right-10 w-32 h-32 blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-full", colorStyles[color].split(' ')[1])} />
         
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-4">
-            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center backdrop-blur-sm", colorStyles[color])}>
+            <div className={cn("w-11 h-11 rounded-2xl flex items-center justify-center backdrop-blur-sm", colorStyles[color])}>
               <Icon size={18} strokeWidth={2.5} />
             </div>
             {trend !== undefined && (
@@ -550,7 +560,9 @@ export default function AnalyticsPage() {
                 onClick={() => setDateRange(val)}
                 className={cn(
                   "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
-                  dateRange === val ? "bg-white shadow-md text-violet-700" : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50"
+                  dateRange === val
+                    ? "bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/30 text-white ring-1 ring-white/20"
+                    : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50"
                 )}
               >
                 {label}
@@ -564,7 +576,9 @@ export default function AnalyticsPage() {
                 onClick={() => setTimeRange(val)}
                 className={cn(
                   "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
-                  timeRange === val ? "bg-white shadow-md text-violet-700" : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50"
+                  timeRange === val
+                    ? "bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/30 text-white ring-1 ring-white/20"
+                    : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50"
                 )}
               >
                 {label}
@@ -583,9 +597,9 @@ export default function AnalyticsPage() {
               link.click();
               link.remove();
             }}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-sm"
+            className="group/export flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-br from-slate-800 to-slate-900 text-white hover:from-slate-700 hover:to-slate-800 transition-all shadow-sm shadow-slate-900/30 hover:shadow-md hover:shadow-slate-900/40 border border-slate-700/50"
           >
-            <Download size={14} /> Export CSV
+            <Download size={14} className="transition-transform duration-300 group-hover/export:-translate-y-0.5 group-hover/export:translate-x-0.5" /> Export CSV
           </button>
         </div>
       </motion.div>
@@ -607,9 +621,12 @@ export default function AnalyticsPage() {
                 onClick={() => { setActiveTab(tab.id); setSelectedPrompt(null); }}
                 className={cn(
                   'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap',
-                  isActive ? 'bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-[0_8px_20px_rgba(139,92,246,0.3)] ring-1 ring-white/20' : 'text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-sm'
+                  isActive ? 'bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-[0_8px_24px_rgba(139,92,246,0.4)] ring-1 ring-white/20' : 'text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-sm'
                 )}
               >
+                {isActive && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)] animate-pulse" />
+                )}
                 <Icon size={14} strokeWidth={2.5} />
                 {tab.label}
               </button>
@@ -733,7 +750,7 @@ export default function AnalyticsPage() {
                 <Card className="lg:col-span-2 p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 relative overflow-hidden group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-8">
                     <div>
-                      <h3 className="text-base font-bold text-slate-900 tracking-tight">Revenue Trend</h3>
+                      <h3 className="text-base font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Revenue Trend</h3>
                       <p className="text-xs text-slate-400 mt-1 font-medium">Actuals vs Forecast vs Goal</p>
                     </div>
                     <div className="flex items-center gap-5 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
@@ -782,7 +799,7 @@ export default function AnalyticsPage() {
 
                 <Card className="lg:col-span-1 p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 flex flex-col items-center group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
                   <div className="w-full mb-6">
-                    <h3 className="text-base font-bold text-slate-900 tracking-tight">Stage Distribution</h3>
+                    <h3 className="text-base font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Stage Distribution</h3>
                     <p className="text-xs text-slate-400 mt-1 font-medium">Pipeline health by volume</p>
                   </div>
                   <div className="relative w-full aspect-square max-w-[260px] min-w-0 min-h-0">
@@ -881,7 +898,7 @@ export default function AnalyticsPage() {
                       transition={{ duration: 0.25 }}
                       className="overflow-hidden relative z-10"
                     >
-                      <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mt-2 text-xs leading-relaxed text-slate-200 backdrop-blur-sm">
+                      <div className="relative bg-white/5 border border-white/10 rounded-2xl p-5 mt-2 text-xs leading-relaxed text-slate-200 backdrop-blur-sm overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:p-[1px] before:bg-gradient-to-r before:from-violet-500/0 before:via-violet-400/40 before:to-indigo-500/0 before:animate-[shimmer_3s_ease-in-out_infinite] before:pointer-events-none">
                         <TypewriterEffect text={aiConsultantResponses[selectedPrompt]} />
                         
                         {/* Quick-Action Buttons based on selected prompt */}
@@ -929,7 +946,7 @@ export default function AnalyticsPage() {
                       <Target size={22} className="text-indigo-500" strokeWidth={2.5} />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-slate-900 tracking-tight">Forecast Accuracy</h3>
+                      <h3 className="text-lg font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Forecast Accuracy</h3>
                       <p className="text-xs text-slate-500 mt-1 font-medium">ความแม่นยำของการคาดการณ์ยอดขายเทียบกับยอดจริง</p>
                     </div>
                   </div>
@@ -988,7 +1005,7 @@ export default function AnalyticsPage() {
                     <TrendingUp size={22} className="text-amber-500" strokeWidth={2.5} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 tracking-tight">Conversion Funnel & Velocity</h3>
+                    <h3 className="text-lg font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Conversion Funnel & Velocity</h3>
                     <p className="text-xs text-slate-500 mt-1 font-medium">Analyze drop-offs and stage bottlenecks</p>
                   </div>
                 </div>
@@ -1175,7 +1192,7 @@ export default function AnalyticsPage() {
               {/* Monthly contribution chart */}
               <Card className="p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
                 <div className="mb-6">
-                  <h3 className="text-base font-bold text-slate-900 tracking-tight">Monthly Revenue Contribution</h3>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Monthly Revenue Contribution</h3>
                   <p className="text-xs text-slate-400 mt-1 font-medium">Monthly won deal values by team member</p>
                 </div>
                 <div className="h-[320px] w-full min-w-0 min-h-0">
@@ -1210,7 +1227,7 @@ export default function AnalyticsPage() {
                     <Trophy size={22} className="text-amber-600" strokeWidth={2.5} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 tracking-tight">Elite Leaderboard</h3>
+                    <h3 className="text-lg font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Elite Leaderboard</h3>
                     <p className="text-xs text-slate-500 mt-1 font-medium">Top performers & Quota attainment</p>
                   </div>
                 </div>
@@ -1332,7 +1349,7 @@ export default function AnalyticsPage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-1 p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 flex flex-col items-center group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
                   <div className="w-full mb-6">
-                    <h3 className="text-base font-bold text-slate-900 tracking-tight">Revenue by Customer Grade</h3>
+                    <h3 className="text-base font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Revenue by Customer Grade</h3>
                     <p className="text-xs text-slate-400 mt-1 font-medium">Won deal values across VIP to At-risk groups</p>
                   </div>
                   <div className="relative w-full aspect-square max-w-[220px] min-w-0 min-h-0">
@@ -1379,7 +1396,7 @@ export default function AnalyticsPage() {
 
                 <Card className="lg:col-span-2 p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
                   <div className="mb-6">
-                    <h3 className="text-base font-bold text-slate-900 tracking-tight">Revenue & Pipeline by Customer Tier</h3>
+                    <h3 className="text-base font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Revenue & Pipeline by Customer Tier</h3>
                     <p className="text-xs text-slate-400 mt-1 font-medium">Comparison of closed revenue vs active pipeline per tier</p>
                   </div>
                   <div className="h-[280px] w-full min-w-0 min-h-0">
@@ -1411,7 +1428,7 @@ export default function AnalyticsPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
                   <div className="mb-6">
-                    <h3 className="text-base font-bold text-slate-900 tracking-tight">Top Industries by Revenue</h3>
+                    <h3 className="text-base font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Top Industries by Revenue</h3>
                     <p className="text-xs text-slate-400 mt-1 font-medium">Won deal volumes in top 5 market sectors</p>
                   </div>
                   <div className="h-[280px] w-full min-w-0 min-h-0">
@@ -1445,7 +1462,7 @@ export default function AnalyticsPage() {
                   <div>
                     <div className="flex items-center gap-2.5 mb-5">
                       <Sliders size={18} className="text-violet-650" />
-                      <h3 className="text-base font-bold text-slate-900 tracking-tight">AI Sales Quota Simulator</h3>
+                      <h3 className="text-base font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">AI Sales Quota Simulator</h3>
                     </div>
                     
                     <div className="space-y-4">
