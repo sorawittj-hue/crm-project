@@ -305,19 +305,19 @@ export default function PipelinePage() {
       <div className="absolute top-[20%] right-[-5%] w-[30%] h-[400px] rounded-full bg-amber-400/10 blur-[100px] pointer-events-none" />
       
       {/* HEADER */}
-      <header className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 border border-slate-800/60 p-6 md:p-8 shadow-2xl shadow-slate-950/20">
-        {/* Grid mesh overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+      <header className="relative overflow-hidden rounded-[2.5rem] bg-white/70 backdrop-blur-2xl border border-white/80 p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+        {/* Subtle mesh overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.08),transparent_50%),radial-gradient(circle_at_bottom_left,rgba(245,158,11,0.05),transparent_50%)] pointer-events-none" />
         
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-600/30 to-indigo-600/20 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white shadow-xl shadow-violet-500/10 relative overflow-hidden group flex-shrink-0">
-              <div className="absolute inset-0 bg-gradient-to-tr from-violet-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <Briefcase size={26} className="relative z-10 text-violet-300" />
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-500/20 relative overflow-hidden group flex-shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform -translate-x-full group-hover:translate-x-full" />
+              <Briefcase size={26} className="relative z-10" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-white tracking-tight">ดีลทั้งหมด</h1>
-              <p className="text-sm text-violet-300/70 mt-1 font-medium">จัดการและติดตามดีลในทุกขั้นตอน</p>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight">ดีลทั้งหมด</h1>
+              <p className="text-sm text-slate-500 mt-0.5 font-medium">จัดการและติดตามดีลในทุกขั้นตอน</p>
             </div>
           </div>
           {/* Search bar */}
@@ -327,23 +327,23 @@ export default function PipelinePage() {
               placeholder="ค้นหาดีล บริษัท หรือผู้ติดต่อ..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-11 w-full rounded-2xl border-white/10 bg-white/5 text-white placeholder:text-slate-400 focus:bg-white/10 focus:border-violet-500/50 shadow-inner transition-all"
+              className="pl-10 h-11 w-full rounded-2xl border-slate-200 bg-white/50 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-violet-400 shadow-sm transition-all"
             />
             {searchTerm !== debouncedSearchTerm && (
-              <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-violet-400 animate-spin" size={15} />
+              <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-violet-500 animate-spin" size={15} />
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap md:flex-nowrap relative z-10">
-          <div className="flex bg-white/5 backdrop-blur-md p-1 rounded-2xl border border-white/10 mr-2 shadow-inner">
+        <div className="flex items-center gap-2 flex-wrap md:flex-nowrap relative z-10 mt-6 pt-6 border-t border-slate-100/60">
+          <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 mr-2 shadow-inner">
             <button
               onClick={() => setBoardType('pipeline')}
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5',
                 boardType === 'pipeline'
-                  ? 'bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25 ring-1 ring-white/20'
-                  : 'text-slate-300 hover:text-white hover:bg-white/10'
+                  ? 'bg-white text-violet-700 shadow-sm ring-1 ring-slate-200/60'
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
               )}
             >
               <Briefcase size={14} /> Pipeline
@@ -353,22 +353,22 @@ export default function PipelinePage() {
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5',
                 boardType === 'renewals'
-                  ? 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/25 ring-1 ring-white/20'
-                  : 'text-slate-300 hover:text-white hover:bg-white/10'
+                  ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-slate-200/60'
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
               )}
             >
               <Calendar size={14} /> Renewals
             </button>
           </div>
 
-          <div className="flex bg-white/5 backdrop-blur-md p-1 rounded-2xl border border-white/10 mr-2 shadow-inner">
+          <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 mr-2 shadow-inner">
             <button
               onClick={() => setViewMode('kanban')}
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5',
                 viewMode === 'kanban'
-                  ? 'bg-white text-slate-900 shadow-md ring-1 ring-white/20'
-                  : 'text-slate-300 hover:text-white hover:bg-white/10'
+                  ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/60'
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
               )}
             >
               <LayoutGrid size={14} /> Kanban
@@ -378,8 +378,8 @@ export default function PipelinePage() {
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5',
                 viewMode === 'list'
-                  ? 'bg-white text-slate-900 shadow-md ring-1 ring-white/20'
-                  : 'text-slate-300 hover:text-white hover:bg-white/10'
+                  ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/60'
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
               )}
             >
               <List size={14} /> List
@@ -392,32 +392,32 @@ export default function PipelinePage() {
             className={cn(
               'h-10 px-4 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5',
               myDealsOnly
-                ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white border-transparent shadow-lg shadow-blue-500/25 ring-1 ring-white/20'
-                : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:text-white'
+                ? 'bg-violet-100 text-violet-700 border-violet-200 shadow-sm'
+                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700 shadow-sm'
             )}
           >
             <User size={14} /> ดีลของฉัน
           </button>
           <button
             onClick={exportToCSV}
-            className="h-10 px-4 rounded-xl text-xs font-bold border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white transition-all flex items-center gap-1.5"
+            className="h-10 px-4 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all flex items-center gap-1.5 shadow-sm"
           >
             <Download size={14} /> CSV
           </button>
 
           {/* Divider */}
-          <div className="w-px h-8 bg-white/10 hidden md:block" />
+          <div className="w-px h-8 bg-slate-200 hidden md:block" />
 
           {/* Dropdown Menu for secondary tools (Quick Add & Scan PDF) */}
           <div className="relative">
             <button
               onClick={() => setIsToolsOpen(!isToolsOpen)}
               className={cn(
-                'h-10 px-4 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:text-white',
-                isToolsOpen && 'bg-white/15 text-white border-white/20 shadow-inner'
+                'h-10 px-4 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-800 shadow-sm',
+                isToolsOpen && 'bg-slate-100 text-slate-900 shadow-inner'
               )}
             >
-              <Zap size={14} className="text-amber-400 fill-amber-400 animate-pulse" />
+              <Zap size={14} className="text-amber-500 fill-amber-500" />
               <span>เครื่องมือ AI</span>
               <ChevronDown size={14} className={cn('transition-transform', isToolsOpen && 'rotate-180')} />
             </button>
