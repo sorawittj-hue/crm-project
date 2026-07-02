@@ -1057,16 +1057,16 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
             </div>
             
             <ConfirmDialog
-              isOpen={showDeleteConfirm}
+              open={showDeleteConfirm}
+              onOpenChange={(v) => !v && setShowDeleteConfirm(false)}
               title="ยืนยันการลบดีล"
-              message="คุณต้องการลบดีลนี้ใช่หรือไม่? ข้อมูลทั้งหมดที่เกี่ยวข้องจะถูกลบและไม่สามารถกู้คืนได้"
+              description="คุณต้องการลบดีลนี้ใช่หรือไม่? ข้อมูลทั้งหมดที่เกี่ยวข้องจะถูกลบและไม่สามารถกู้คืนได้"
               confirmLabel="ลบดีล"
-              isDanger={true}
+              variant="danger"
               onConfirm={() => {
                 onRequestDelete?.(deal.id);
                 setShowDeleteConfirm(false);
               }}
-              onCancel={() => setShowDeleteConfirm(false)}
             />
           </motion.div>
         </div>
