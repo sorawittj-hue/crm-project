@@ -85,11 +85,6 @@ export default function SettingsPage() {
       <div className="fixed top-20 left-1/4 w-[500px] h-[500px] bg-violet-600/5 rounded-full blur-[130px] pointer-events-none -z-10" />
       <div className="fixed bottom-20 right-10 w-80 h-80 bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none -z-10" />
 
-      {/* ── PREMIUM HEADER ── */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
       {/* HEADER SECTION */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
