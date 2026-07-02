@@ -298,39 +298,52 @@ export default function PipelinePage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="max-w-[1600px] mx-auto space-y-6 pb-20 px-4 md:px-0"
+      className="max-w-[1600px] mx-auto space-y-6 pb-20 px-4 md:px-6 mt-4 relative overflow-hidden"
     >
+      {/* Ambient Glowing Orbs */}
+      <div className="absolute top-[-5%] left-[-10%] w-[40%] h-[500px] rounded-full bg-violet-400/15 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[20%] right-[-5%] w-[30%] h-[400px] rounded-full bg-amber-400/10 blur-[100px] pointer-events-none" />
+      
       {/* HEADER */}
-      <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex flex-col md:flex-row md:items-center gap-4 w-full md:w-auto">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">ดีลทั้งหมด</h1>
-            <p className="text-sm text-slate-500 mt-1">จัดการและติดตามดีลในทุกขั้นตอน</p>
+      <header className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 border border-slate-800/60 p-6 md:p-8 shadow-2xl shadow-slate-950/20">
+        {/* Grid mesh overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-600/30 to-indigo-600/20 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white shadow-xl shadow-violet-500/10 relative overflow-hidden group flex-shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-tr from-violet-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <Briefcase size={26} className="relative z-10 text-violet-300" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black text-white tracking-tight">ดีลทั้งหมด</h1>
+              <p className="text-sm text-violet-300/70 mt-1 font-medium">จัดการและติดตามดีลในทุกขั้นตอน</p>
+            </div>
           </div>
           {/* Search bar */}
-          <div className="relative w-full md:w-64">
+          <div className="relative w-full md:w-72">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
             <Input
               placeholder="ค้นหาดีล บริษัท หรือผู้ติดต่อ..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-10 w-full rounded-xl border-slate-200 bg-white shadow-sm text-sm"
+              className="pl-10 h-11 w-full rounded-2xl border-white/10 bg-white/5 text-white placeholder:text-slate-400 focus:bg-white/10 focus:border-violet-500/50 shadow-inner transition-all"
             />
             {searchTerm !== debouncedSearchTerm && (
-              <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-violet-500 animate-spin" size={15} />
+              <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-violet-400 animate-spin" size={15} />
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
-          <div className="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/60 mr-2">
+        <div className="flex items-center gap-2 flex-wrap md:flex-nowrap relative z-10">
+          <div className="flex bg-white/5 backdrop-blur-md p-1 rounded-2xl border border-white/10 mr-2 shadow-inner">
             <button
               onClick={() => setBoardType('pipeline')}
               className={cn(
-                'px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+                'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5',
                 boardType === 'pipeline'
-                  ? 'bg-white text-violet-700 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
+                  ? 'bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25 ring-1 ring-white/20'
+                  : 'text-slate-300 hover:text-white hover:bg-white/10'
               )}
             >
               <Briefcase size={14} /> Pipeline
@@ -338,24 +351,24 @@ export default function PipelinePage() {
             <button
               onClick={() => setBoardType('renewals')}
               className={cn(
-                'px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+                'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5',
                 boardType === 'renewals'
-                  ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/20'
-                  : 'text-slate-500 hover:text-slate-700'
+                  ? 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/25 ring-1 ring-white/20'
+                  : 'text-slate-300 hover:text-white hover:bg-white/10'
               )}
             >
               <Calendar size={14} /> Renewals
             </button>
           </div>
 
-          <div className="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/60 mr-2">
+          <div className="flex bg-white/5 backdrop-blur-md p-1 rounded-2xl border border-white/10 mr-2 shadow-inner">
             <button
               onClick={() => setViewMode('kanban')}
               className={cn(
-                'px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+                'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5',
                 viewMode === 'kanban'
-                  ? 'bg-white text-violet-700 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
+                  ? 'bg-white text-slate-900 shadow-md ring-1 ring-white/20'
+                  : 'text-slate-300 hover:text-white hover:bg-white/10'
               )}
             >
               <LayoutGrid size={14} /> Kanban
@@ -363,10 +376,10 @@ export default function PipelinePage() {
             <button
               onClick={() => setViewMode('list')}
               className={cn(
-                'px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+                'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5',
                 viewMode === 'list'
-                  ? 'bg-white text-violet-700 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
+                  ? 'bg-white text-slate-900 shadow-md ring-1 ring-white/20'
+                  : 'text-slate-300 hover:text-white hover:bg-white/10'
               )}
             >
               <List size={14} /> List
@@ -377,36 +390,36 @@ export default function PipelinePage() {
           <button
             onClick={() => setMyDealsOnly(v => !v)}
             className={cn(
-              'h-9 px-3 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5',
+              'h-10 px-4 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5',
               myDealsOnly
-                ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
-                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white border-transparent shadow-lg shadow-blue-500/25 ring-1 ring-white/20'
+                : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:text-white'
             )}
           >
-            <User size={13} /> ดีลของฉัน
+            <User size={14} /> ดีลของฉัน
           </button>
           <button
             onClick={exportToCSV}
-            className="h-9 px-3 rounded-xl text-xs font-semibold border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all flex items-center gap-1.5"
+            className="h-10 px-4 rounded-xl text-xs font-bold border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white transition-all flex items-center gap-1.5"
           >
-            <Download size={13} /> CSV
+            <Download size={14} /> CSV
           </button>
 
           {/* Divider */}
-          <div className="w-px h-6 bg-slate-200 hidden md:block" />
+          <div className="w-px h-8 bg-white/10 hidden md:block" />
 
           {/* Dropdown Menu for secondary tools (Quick Add & Scan PDF) */}
           <div className="relative">
             <button
               onClick={() => setIsToolsOpen(!isToolsOpen)}
               className={cn(
-                'h-9 px-3 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 bg-white text-slate-600 border-slate-200 hover:bg-slate-50',
-                isToolsOpen && 'border-slate-350 bg-slate-50 text-slate-900 shadow-sm'
+                'h-10 px-4 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:text-white',
+                isToolsOpen && 'bg-white/15 text-white border-white/20 shadow-inner'
               )}
             >
-              <Zap size={13} className="text-amber-500 fill-amber-500 animate-pulse" />
+              <Zap size={14} className="text-amber-400 fill-amber-400 animate-pulse" />
               <span>เครื่องมือ AI</span>
-              <ChevronDown size={12} className={cn('transition-transform', isToolsOpen && 'rotate-180')} />
+              <ChevronDown size={14} className={cn('transition-transform', isToolsOpen && 'rotate-180')} />
             </button>
 
             <AnimatePresence>
@@ -471,9 +484,9 @@ export default function PipelinePage() {
 
           <Button
             onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsAddModalOpen(true)}
-            className="h-9 px-4 rounded-xl text-xs bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20 flex items-center gap-1.5 font-bold"
+            className="h-10 px-5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 hover:from-violet-500 hover:via-indigo-500 hover:to-purple-500 text-white text-sm font-bold shadow-[0_8px_20px_rgba(139,92,246,0.3)] hover:shadow-[0_12px_25px_rgba(139,92,246,0.4)] hover:-translate-y-0.5 border-0 flex items-center gap-2 transition-all duration-300 ring-1 ring-white/20 group"
           >
-            <Plus size={13} /> เพิ่มดีลใหม่
+            <Plus size={16} strokeWidth={3} className="transition-transform duration-300 group-hover:rotate-90" /> เพิ่มดีลใหม่
           </Button>
         </div>
       </header>

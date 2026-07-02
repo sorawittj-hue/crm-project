@@ -824,16 +824,16 @@ const DealCard = memo(
             transition={{ type: 'spring', stiffness: 480, damping: 30 }}
             className={cn(
               'group relative rounded-2xl border overflow-hidden transition-all duration-300 bg-white/95 backdrop-blur-md cursor-pointer hover:shadow-lg hover:-translate-y-0.5',
-              isDragging ? 'border-violet-400 ring-4 ring-violet-500/20 z-50 shadow-2xl scale-105'
-                : isSelected ? 'border-violet-500 ring-2 ring-violet-500/20 shadow-md bg-violet-50/30'
-                : isPinned ? 'border-blue-200 bg-gradient-to-br from-white to-blue-50/40 shadow-sm hover:border-blue-300'
-                : isHighValue ? 'border-amber-300/80 bg-gradient-to-br from-white to-amber-50/40 shadow-sm hover:border-amber-400/80'
-                : isStagnant ? 'border-rose-200 bg-gradient-to-br from-white to-rose-50/40 shadow-sm hover:border-rose-300'
-                : 'border-slate-200/70 shadow-sm hover:border-violet-200/80'
+              isDragging ? 'border-violet-400 ring-4 ring-violet-500/20 z-50 shadow-2xl shadow-violet-500/20 scale-105'
+                : isSelected ? 'border-violet-500 ring-2 ring-violet-500/20 shadow-md shadow-violet-500/10 bg-violet-50/30'
+                : isPinned ? 'border-blue-200 bg-gradient-to-br from-white to-blue-50/40 shadow-sm hover:shadow-md hover:shadow-blue-500/10 hover:border-blue-300'
+                : isHighValue ? 'border-amber-300/80 bg-gradient-to-br from-white to-amber-50/40 shadow-sm hover:shadow-md hover:shadow-amber-500/10 hover:border-amber-400/80'
+                : isStagnant ? 'border-rose-200 bg-gradient-to-br from-white to-rose-50/40 shadow-sm hover:shadow-md hover:shadow-rose-500/10 hover:border-rose-300'
+                : 'border-slate-200/70 shadow-sm hover:shadow-md hover:shadow-slate-300/50 hover:border-violet-200/80'
             )}
           >
             {/* Colored left accent bar */}
-            <div className="absolute top-0 left-0 bottom-0 w-0.5" style={{ backgroundColor: isHighValue ? '#f59e0b' : stageColor }} />
+            <div className="absolute top-0 left-0 bottom-0 w-1 shadow-[2px_0_10px_rgba(0,0,0,0.1)]" style={{ backgroundColor: isHighValue ? '#f59e0b' : stageColor }} />
 
             <div className="relative">
               {/* === DRAG HANDLE ZONE === */}
