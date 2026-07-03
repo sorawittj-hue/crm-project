@@ -24,7 +24,7 @@ import {
   Search, Plus, Users, Building2, Mail, Phone,
   ChevronRight, Loader2, Download, Upload,
   TrendingUp, DollarSign, BarChart3, Trash2, AlertTriangle, HeartPulse,
-  Settings, Sparkles, Target, Filter, Contact, Pencil, Star
+  Settings, Sparkles, Target, Filter, Contact, Pencil, Star, LayoutGrid, List, ArrowUpDown
 } from 'lucide-react';
 import CustomerCSVImport from '../components/CustomerCSVImport';
 
@@ -93,6 +93,10 @@ export default function CustomersPage() {
   const [newCustomer, setNewCustomer] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
+
+  const [viewMode, setViewMode] = useState('grid'); // grid, list
+  const [sortBy, setSortBy] = useState('name'); // name, clv, health, date
+  const [sortOrder, setSortOrder] = useState('asc'); // asc, desc
 
   const [activeDetailTab, setActiveDetailTab] = useState('profile'); // profile, playbook, deals, contacts
   const [localCustomer, setLocalCustomer] = useState(null);
@@ -264,8 +268,32 @@ export default function CustomersPage() {
       result = result.filter(c => c.tier === tierFilter);
     }
     if (industryFilter !== 'all') result = result.filter(c => c.industry === industryFilter);
+
+    // Apply Sorting
+    result = [...result].sort((a, b) => {
+      let valA, valB;
+      if (sortBy === 'clv') {
+        valA = a.dealStats.wonValue + (a.dealStats.activeValue || 0);
+        valB = b.dealStats.wonValue + (b.dealStats.activeValue || 0);
+      } else if (sortBy === 'health') {
+        valA = a.health?.score ?? 0;
+        valB = b.health?.score ?? 0;
+      } else if (sortBy === 'date') {
+        valA = new Date(a.updated_at || a.created_at || 0).getTime();
+        valB = new Date(b.updated_at || b.created_at || 0).getTime();
+      } else {
+        // default by name
+        valA = (a.name || '').toLowerCase();
+        valB = (b.name || '').toLowerCase();
+      }
+
+      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
     return result;
-  }, [enrichedCustomers, debouncedSearchTerm, tierFilter, industryFilter]);
+  }, [enrichedCustomers, debouncedSearchTerm, tierFilter, industryFilter, sortBy, sortOrder]);
 
   const totalStats = useMemo(() => {
     const total = filteredCustomers.length;
@@ -444,21 +472,21 @@ export default function CustomersPage() {
       </div>
 
       {/* SEARCH & FILTERS */}
-      <div className="flex flex-col xl:flex-row gap-4 bg-white/60 backdrop-blur-xl p-4 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80">
+      <div className="flex flex-col xl:flex-row gap-4 bg-white/60 backdrop-blur-xl p-4 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80">
         <div className="relative flex-1">
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <Input
             placeholder="ค้นหาลูกค้าด้วยชื่อ, บริษัท, อีเมล, อุตสาหกรรม..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-14 pl-12 bg-white/80 border-slate-200/60 rounded-[1.25rem] text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-violet-500/20 focus:border-violet-300 shadow-inner transition-all"
+            className="h-14 pl-12 bg-white/80 border-slate-200/60 rounded-2xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-violet-500/20 focus:border-violet-300 shadow-inner transition-all"
           />
           {searchTerm !== debouncedSearchTerm && (
             <Loader2 className="absolute right-5 top-1/2 -translate-y-1/2 text-violet-500 animate-spin" size={18} />
           )}
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1 bg-slate-100/50 backdrop-blur-sm border border-slate-200/50 p-1.5 rounded-[1.25rem] shadow-inner overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1 bg-slate-100/50 backdrop-blur-sm border border-slate-200/50 p-1.5 rounded-2xl shadow-inner overflow-x-auto no-scrollbar">
             {[
               { val: 'all', label: 'ทั้งหมด', count: gradeCounts.all, activeClass: 'bg-violet-600 text-white shadow-[0_4px_15px_rgba(124,58,237,0.3)]' },
               { val: 'grade-A', label: 'A', count: gradeCounts.A, activeClass: 'bg-emerald-600 text-white shadow-[0_4px_15px_rgba(16,185,129,0.3)]' },
@@ -468,6 +496,7 @@ export default function CustomersPage() {
             ].map(({ val, label, count, activeClass }) => (
               <button
                 key={val}
+                type="button"
                 onClick={() => setTierFilter(val)}
                 className={cn(
                   'flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 whitespace-nowrap',
@@ -486,12 +515,61 @@ export default function CustomersPage() {
             <select
               value={industryFilter}
               onChange={e => setIndustryFilter(e.target.value)}
-              className="h-14 px-4 bg-white/80 border border-slate-200/60 rounded-[1.25rem] text-xs font-bold text-slate-600 outline-none cursor-pointer focus:bg-white focus:border-violet-300 transition-all shadow-sm shrink-0"
+              className="h-14 px-4 bg-white/80 border border-slate-200/60 rounded-2xl text-xs font-bold text-slate-600 outline-none cursor-pointer focus:bg-white focus:border-violet-300 transition-all shadow-sm shrink-0"
             >
               <option value="all">🏭 อุตสาหกรรม: ทั้งหมด</option>
               {industries.map(ind => <option key={ind} value={ind}>{ind}</option>)}
             </select>
           )}
+
+          {/* Sort Dropdown */}
+          <div className="flex items-center gap-1.5 bg-white/80 border border-slate-200/60 p-1.5 rounded-2xl shadow-sm shrink-0 h-14">
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value)}
+              className="px-2 bg-transparent text-xs font-bold text-slate-600 outline-none cursor-pointer"
+            >
+              <option value="name">🔤 เรียงตาม: ชื่อ</option>
+              <option value="clv">💰 เรียงตาม: ยอดซื้อ (CLV)</option>
+              <option value="health">❤️ เรียงตาม: สุขภาพ (Health)</option>
+              <option value="date">📅 เรียงตาม: กิจกรรมล่าสุด</option>
+            </select>
+            <button
+              onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+              className="p-2 hover:bg-slate-100 rounded-xl text-slate-500 hover:text-slate-800 transition-colors"
+              title={sortOrder === 'asc' ? 'เรียงลำดับจากน้อยไปมาก' : 'เรียงลำดับจากมากไปน้อย'}
+            >
+              <ArrowUpDown size={15} />
+            </button>
+          </div>
+
+          {/* View Toggle */}
+          <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 shadow-inner shrink-0 h-14 items-center">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={cn(
+                "p-2 rounded-xl transition-all duration-300",
+                viewMode === 'grid'
+                  ? "bg-white text-violet-600 shadow-sm"
+                  : "text-slate-400 hover:text-slate-600"
+              )}
+              title="มุมมองการ์ด (Grid)"
+            >
+              <LayoutGrid size={16} />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={cn(
+                "p-2 rounded-xl transition-all duration-300",
+                viewMode === 'list'
+                  ? "bg-white text-violet-600 shadow-sm"
+                  : "text-slate-400 hover:text-slate-600"
+              )}
+              title="มุมมองตาราง (List)"
+            >
+              <List size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -522,208 +600,364 @@ export default function CustomersPage() {
       </AnimatePresence>
 
       {/* CUSTOMER GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-        <AnimatePresence mode={filteredCustomers.length > 20 ? "sync" : "popLayout"}>
-          {filteredCustomers.map((customer) => {
-            return (
-              <motion.div
-                key={customer.id}
-                layout={filteredCustomers.length <= 20}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
-              >
-                <div
-                  className="p-6 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 cursor-pointer group relative overflow-hidden transition-all duration-500 hover:shadow-[0_15px_35px_rgb(0,0,0,0.08)] hover:-translate-y-1.5"
-                  onClick={() => { setSelectedCustomer(customer); setIsSidebarOpen(true); }}
+      {viewMode === 'grid' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          <AnimatePresence mode={filteredCustomers.length > 20 ? "sync" : "popLayout"}>
+            {filteredCustomers.map((customer) => {
+              return (
+                <motion.div
+                  key={customer.id}
+                  layout={filteredCustomers.length <= 20}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                  {/* Gradient left border accent */}
-                  <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ background: `linear-gradient(to bottom, ${getAvatarGradient(customer.name)[0]}, ${getAvatarGradient(customer.name)[1]})` }} />
+                  <div
+                    className="p-6 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 cursor-pointer group relative overflow-hidden transition-all duration-500 hover:shadow-[0_15px_35px_rgb(0,0,0,0.08)] hover:-translate-y-1.5"
+                    onClick={() => { setSelectedCustomer(customer); setIsSidebarOpen(true); }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                    {/* Gradient left border accent */}
+                    <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ background: `linear-gradient(to bottom, ${getAvatarGradient(customer.name)[0]}, ${getAvatarGradient(customer.name)[1]})` }} />
 
-                  <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(customer.id)}
-                      onChange={(e) => toggleSelection(e, customer.id)}
-                      className="w-5 h-5 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer accent-violet-600"
-                    />
-                  </div>
+                    <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(customer.id)}
+                        onChange={(e) => toggleSelection(e, customer.id)}
+                        className="w-5 h-5 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer accent-violet-600"
+                      />
+                    </div>
 
-                  <div className="space-y-4">
-                    {/* Header */}
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-[1.25rem] flex items-center justify-center text-white text-lg font-black shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 relative"
-                          style={{ background: `linear-gradient(135deg, ${getAvatarGradient(customer.name)[0]}, ${getAvatarGradient(customer.name)[1]})` }}>
-                          <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-[1.25rem]" />
-                          <span className="relative z-10 drop-shadow-md">{customer.name?.charAt(0).toUpperCase() || '?'}</span>
+                    <div className="space-y-4">
+                      {/* Header */}
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-[1.25rem] flex items-center justify-center text-white text-lg font-black shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 relative"
+                            style={{ background: `linear-gradient(135deg, ${getAvatarGradient(customer.name)[0]}, ${getAvatarGradient(customer.name)[1]})` }}>
+                            <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-[1.25rem]" />
+                            <span className="relative z-10 drop-shadow-md">{customer.name?.charAt(0).toUpperCase() || '?'}</span>
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-slate-900 leading-tight group-hover:text-violet-700 transition-colors">{customer.name}</h3>
+                            {customer.company && (
+                              <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                                <Building2 size={11} /> {customer.company}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="text-sm font-bold text-slate-900 leading-tight group-hover:text-violet-700 transition-colors">{customer.name}</h3>
-                          {customer.company && (
-                            <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                              <Building2 size={11} /> {customer.company}
-                            </p>
+                        <div className="flex flex-col items-end gap-1.5 shrink-0">
+                          {customer._fromDeals && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border border-blue-200 bg-blue-50 text-blue-600">
+                              จากดีล
+                            </span>
+                          )}
+                          {customer.grade ? (
+                            <span className={cn('px-2.5 py-1 rounded-xl text-xs font-black border', GRADE_CONFIG[customer.grade]?.color)}>
+                              {customer.grade}
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 text-slate-400">
+                              —
+                            </span>
                           )}
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-1.5 shrink-0">
-                        {customer._fromDeals && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border border-blue-200 bg-blue-50 text-blue-600">
-                            จากดีล
+
+                      {/* Contact chips */}
+                      <div className="flex flex-wrap gap-1.5 text-xs text-slate-500">
+                        {customer.email && (
+                          <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 truncate max-w-[180px]">
+                            <Mail size={10} className="text-slate-400 shrink-0" /> <span className="truncate">{customer.email}</span>
                           </span>
                         )}
-                        {customer.grade ? (
-                          <span className={cn('px-2.5 py-1 rounded-xl text-xs font-black border', GRADE_CONFIG[customer.grade]?.color)}>
-                            {customer.grade}
+                        {customer.phone && (
+                          <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+                            <Phone size={10} className="text-slate-400" /> {customer.phone}
                           </span>
-                        ) : (
-                          <span className="px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 text-slate-400">
-                            —
+                        )}
+                        {customer.industry && (
+                          <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+                            <BarChart3 size={10} className="text-slate-400" /> {customer.industry}
                           </span>
                         )}
                       </div>
-                    </div>
 
-                    {/* Contact chips */}
-                    <div className="flex flex-wrap gap-1.5 text-xs text-slate-500">
-                      {customer.email && (
-                        <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 truncate max-w-[180px]">
-                          <Mail size={10} className="text-slate-400 shrink-0" /> <span className="truncate">{customer.email}</span>
-                        </span>
-                      )}
-                      {customer.phone && (
-                        <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
-                          <Phone size={10} className="text-slate-400" /> {customer.phone}
-                        </span>
-                      )}
-                      {customer.industry && (
-                        <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
-                          <BarChart3 size={10} className="text-slate-400" /> {customer.industry}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Health bar */}
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-medium text-slate-400">
-                          <MetricTooltip 
-                            label="Health Score" 
-                            explanation="ค่าคะแนนสุขภาพประเมินผลจากความถี่ในการติดต่อ และจำนวนวันนับตั้งแต่กิจกรรมล่าสุด ยิ่งกิจกรรมขาดช่วงนาน คะแนนจะยิ่งลดลง"
-                          />
-                        </span>
-                        <span className={cn(
-                          'text-xs font-bold tabular-nums px-2 py-0.5 rounded-full',
-                          customer.health?.status === 'at_risk' ? 'bg-rose-50 text-rose-600'
-                            : customer.health?.status === 'watch' ? 'bg-amber-50 text-amber-600'
-                            : customer.health?.status === 'growth' ? 'bg-blue-50 text-blue-600'
-                            : 'bg-emerald-50 text-emerald-600'
-                        )}>{customer.health?.score ?? 0}%</span>
-                      </div>
-                      <div className="h-2.5 bg-slate-100/60 rounded-full overflow-hidden shadow-inner border border-slate-200/50">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${Math.max(0, Math.min(100, customer.health?.score || 0))}%` }}
-                          transition={{ duration: 0.5, ease: 'easeOut' }}
-                          className="h-full rounded-full relative"
-                          style={{ 
-                            background: customer.health?.status === 'at_risk' ? 'linear-gradient(to right, #fda4af, #f43f5e)'
-                              : customer.health?.status === 'watch' ? 'linear-gradient(to right, #fcd34d, #f59e0b)'
-                              : customer.health?.status === 'growth' ? 'linear-gradient(to right, #93c5fd, #3b82f6)'
-                              : 'linear-gradient(to right, #6ee7b7, #10b981)',
-                            boxShadow: `0 0 10px ${customer.health?.status === 'at_risk' ? 'rgba(244,63,94,0.4)' : customer.health?.status === 'watch' ? 'rgba(245,158,11,0.4)' : customer.health?.status === 'growth' ? 'rgba(59,130,246,0.4)' : 'rgba(16,185,129,0.4)'}`
-                          }}
-                        >
-                          <div className="absolute inset-0 bg-white/20 w-1/2 skew-x-12 -translate-x-full animate-[shimmer_2s_infinite]" />
-                        </motion.div>
-                      </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100">
-                      <div className="text-center p-2 rounded-xl bg-slate-50">
-                        <p className="text-[10px] text-slate-400 mb-0.5">ดีลทั้งหมด</p>
-                        <p className="text-lg font-black text-slate-900 tabular-nums">{customer.dealStats.total}</p>
-                      </div>
-                      <div className="text-center p-2 rounded-xl bg-emerald-50">
-                        <p className="text-[10px] text-emerald-500 mb-0.5">ปิดได้</p>
-                        <p className="text-lg font-black text-emerald-600 tabular-nums">{customer.dealStats.won}</p>
-                      </div>
-                      <div className="text-center p-2 rounded-xl bg-violet-50">
-                        <p className="text-[10px] text-violet-500 mb-0.5">มูลค่า</p>
-                        <p className="text-sm font-black text-violet-700 tabular-nums leading-tight">{formatCurrency(customer.dealStats.wonValue)}</p>
-                      </div>
-                    </div>
-
-                    {/* CLV */}
-                    <div className="flex items-center justify-between pt-1">
-                      {(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0)) > 0 ? (
-                        <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-1.5 flex-1 mr-2">
-                          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                      {/* Health bar */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-medium text-slate-400">
                             <MetricTooltip 
-                              label="CLV" 
-                              explanation="Customer Lifetime Value: มูลค่าดีลรวมสะสมทั้งหมดของลูกค้ารายนี้ที่อยู่ในระบบ"
+                              label="Health Score" 
+                              explanation="ค่าคะแนนสุขภาพประเมินผลจากความถี่ในการติดต่อ และจำนวนวันนับตั้งแต่กิจกรรมล่าสุด ยิ่งกิจกรรมขาดช่วงนาน คะแนนจะยิ่งลดลง"
                             />
                           </span>
-                          <span className="text-xs font-black text-slate-700 tabular-nums">
-                            {formatCurrency(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0))}
-                          </span>
+                          <span className={cn(
+                            'text-xs font-bold tabular-nums px-2 py-0.5 rounded-full',
+                            customer.health?.status === 'at_risk' ? 'bg-rose-50 text-rose-600'
+                              : customer.health?.status === 'watch' ? 'bg-amber-50 text-amber-600'
+                              : customer.health?.status === 'growth' ? 'bg-blue-50 text-blue-600'
+                              : 'bg-emerald-50 text-emerald-600'
+                          )}>{customer.health?.score ?? 0}%</span>
                         </div>
-                      ) : <div />}
-                      {/* Hover CTA */}
-                      <span className="flex items-center gap-1 text-xs font-semibold text-violet-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                        ดูข้อมูล <ChevronRight size={13} />
-                      </span>
+                        <div className="h-2.5 bg-slate-100/60 rounded-full overflow-hidden shadow-inner border border-slate-200/50">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.max(0, Math.min(100, customer.health?.score || 0))}%` }}
+                            transition={{ duration: 0.5, ease: 'easeOut' }}
+                            className="h-full rounded-full relative"
+                            style={{ 
+                              background: customer.health?.status === 'at_risk' ? 'linear-gradient(to right, #fda4af, #f43f5e)'
+                                : customer.health?.status === 'watch' ? 'linear-gradient(to right, #fcd34d, #f59e0b)'
+                                : customer.health?.status === 'growth' ? 'linear-gradient(to right, #93c5fd, #3b82f6)'
+                                : 'linear-gradient(to right, #6ee7b7, #10b981)',
+                              boxShadow: `0 0 10px ${customer.health?.status === 'at_risk' ? 'rgba(244,63,94,0.4)' : customer.health?.status === 'watch' ? 'rgba(245,158,11,0.4)' : customer.health?.status === 'growth' ? 'rgba(59,130,246,0.4)' : 'rgba(16,185,129,0.4)'}`
+                            }}
+                          >
+                            <div className="absolute inset-0 bg-white/20 w-1/2 skew-x-12 -translate-x-full animate-[shimmer_2s_infinite]" />
+                          </motion.div>
+                        </div>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100">
+                        <div className="text-center p-2 rounded-xl bg-slate-50">
+                          <p className="text-[10px] text-slate-400 mb-0.5">ดีลทั้งหมด</p>
+                          <p className="text-lg font-black text-slate-900 tabular-nums">{customer.dealStats.total}</p>
+                        </div>
+                        <div className="text-center p-2 rounded-xl bg-emerald-50">
+                          <p className="text-[10px] text-emerald-500 mb-0.5">ปิดได้</p>
+                          <p className="text-lg font-black text-emerald-600 tabular-nums">{customer.dealStats.won}</p>
+                        </div>
+                        <div className="text-center p-2 rounded-xl bg-violet-50">
+                          <p className="text-[10px] text-violet-500 mb-0.5">มูลค่า</p>
+                          <p className="text-sm font-black text-violet-700 tabular-nums leading-tight">{formatCurrency(customer.dealStats.wonValue)}</p>
+                        </div>
+                      </div>
+
+                      {/* CLV */}
+                      <div className="flex items-center justify-between pt-1">
+                        {(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0)) > 0 ? (
+                          <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-1.5 flex-1 mr-2">
+                            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                              <MetricTooltip 
+                                label="CLV" 
+                                explanation="Customer Lifetime Value: มูลค่าดีลรวมสะสมทั้งหมดของลูกค้ารายนี้ที่อยู่ในระบบ"
+                              />
+                            </span>
+                            <span className="text-xs font-black text-slate-700 tabular-nums">
+                              {formatCurrency(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0))}
+                            </span>
+                          </div>
+                        ) : <div />}
+                        {/* Hover CTA */}
+                        <span className="flex items-center gap-1 text-xs font-semibold text-violet-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          ดูข้อมูล <ChevronRight size={13} />
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+      )}
 
-        {filteredCustomers.length === 0 && (
-          <div className="col-span-full flex flex-col items-center justify-center py-32 text-center bg-white/40 backdrop-blur-3xl rounded-[3rem] border border-white/60 shadow-[0_8px_40px_rgb(0,0,0,0.03)] relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-violet-50/50 via-white/50 to-purple-50/50" />
-            <div className="relative z-10 max-w-md mx-auto flex flex-col items-center">
-              <div className="w-28 h-28 bg-white/60 backdrop-blur-md rounded-[2rem] flex items-center justify-center mb-8 shadow-xl shadow-violet-500/10 border border-white/80 hover:scale-110 transition-transform duration-500">
-                <Users size={48} className="text-violet-600 drop-shadow-md" />
-              </div>
-              <h3 className="text-2xl font-black text-slate-800 tracking-tight mb-3">
-                {searchTerm ? 'ไม่พบข้อมูลลูกค้าที่ค้นหา' : 'ยังไม่มีฐานลูกค้า'}
-              </h3>
-              <p className="text-sm text-slate-500 mb-8 leading-relaxed font-medium">
-                {searchTerm 
-                  ? 'ลองเปลี่ยนคำค้นหา หรือล้างตัวกรองเพื่อดูลูกค้าทั้งหมด'
-                  : 'เริ่มต้นสร้างฐานลูกค้าของคุณ เพื่อติดตามสถานะและวิเคราะห์สุขภาพของลูกค้าอย่างมืออาชีพ'}
-              </p>
-              <button
-                onClick={() => {
-                  if (shouldBlockBasic) {
-                    openPaywall(isGuestAccount ? 'default' : 'trial_ended');
-                  } else {
-                    if (searchTerm) {
-                      setSearchTerm('');
-                    } else {
-                      setNewCustomer(EMPTY_FORM);
-                      setFormError(null);
-                      setIsAddModalOpen(true);
-                    }
-                  }
-                }}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-violet-600 text-white text-base font-bold rounded-2xl hover:bg-violet-700 hover:scale-105 transition-all shadow-lg shadow-violet-500/20"
-              >
-                {searchTerm ? <Filter size={18} /> : <Plus size={18} />}
-                {searchTerm ? 'ล้างการค้นหา' : 'เพิ่มลูกค้าใหม่'}
-              </button>
-            </div>
+      {/* CUSTOMER LIST / TABLE VIEW */}
+      {viewMode === 'list' && filteredCustomers.length > 0 && (
+        <div className="overflow-hidden rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-100 bg-slate-50/50">
+                  <th className="p-4 w-12 text-center">
+                    <input
+                      type="checkbox"
+                      checked={filteredCustomers.length > 0 && filteredCustomers.every(c => selectedIds.includes(c.id))}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedIds(filteredCustomers.map(c => c.id));
+                        } else {
+                          setSelectedIds([]);
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer accent-violet-600"
+                    />
+                  </th>
+                  <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">ลูกค้า</th>
+                  <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">บริษัท</th>
+                  <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">ระดับ / เกรด</th>
+                  <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">สุขภาพบัญชี</th>
+                  <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">มูลค่าดีลรวม (CLV)</th>
+                  <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">จำนวนดีล</th>
+                  <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">ติดต่อ</th>
+                  <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">การจัดการ</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100/60">
+                {filteredCustomers.map((customer) => {
+                  const avatarColors = getAvatarGradient(customer.name);
+                  const isSelected = selectedIds.includes(customer.id);
+                  return (
+                    <tr 
+                      key={customer.id} 
+                      onClick={() => { setSelectedCustomer(customer); setIsSidebarOpen(true); }}
+                      className={cn(
+                        "group hover:bg-slate-50/50 transition-colors cursor-pointer",
+                        isSelected && "bg-violet-50/20 hover:bg-violet-50/30"
+                      )}
+                    >
+                      <td className="p-4 text-center" onClick={e => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => toggleSelection(e, customer.id)}
+                          className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer accent-violet-600"
+                        />
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-sm shrink-0"
+                            style={{ background: `linear-gradient(135deg, ${avatarColors[0]}, ${avatarColors[1]})` }}
+                          >
+                            {customer.name?.charAt(0).toUpperCase() || '?'}
+                          </div>
+                          <div>
+                            <span className="text-sm font-bold text-slate-900 group-hover:text-violet-700 transition-colors block">{customer.name}</span>
+                            {customer._fromDeals && (
+                              <span className="inline-block px-1.5 py-0.5 rounded text-[8px] font-black bg-blue-50 text-blue-600 border border-blue-100 mt-0.5">
+                                จากดีล
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <span className="text-xs font-semibold text-slate-600">{customer.company || '—'}</span>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-1.5">
+                          {customer.grade ? (
+                            <span className={cn('px-2 py-0.5 rounded-lg text-[10px] font-black border uppercase', GRADE_CONFIG[customer.grade]?.color)}>
+                              Grade {customer.grade}
+                            </span>
+                          ) : null}
+                          <span className={cn("px-2 py-0.5 rounded-lg text-[10px] font-bold border", TIER_CONFIG[customer.tier]?.color || 'bg-slate-100 text-slate-500 border-slate-200')}>
+                            {customer.tier || 'Silver'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 shadow-inner">
+                            <div 
+                              className="h-full rounded-full"
+                              style={{ 
+                                width: `${customer.health?.score ?? 0}%`,
+                                background: customer.health?.status === 'at_risk' ? '#f43f5e'
+                                  : customer.health?.status === 'watch' ? '#f59e0b'
+                                  : customer.health?.status === 'growth' ? '#3b82f6'
+                                  : '#10b981'
+                              }}
+                            />
+                          </div>
+                          <span className={cn(
+                            "text-[10px] font-black px-1.5 py-0.5 rounded-md",
+                            customer.health?.status === 'at_risk' ? 'bg-rose-50 text-rose-600'
+                              : customer.health?.status === 'watch' ? 'bg-amber-50 text-amber-600'
+                              : customer.health?.status === 'growth' ? 'bg-blue-50 text-blue-600'
+                              : 'bg-emerald-50 text-emerald-600'
+                          )}>
+                            {customer.health?.score ?? 0}%
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <span className="text-sm font-black text-slate-800 tabular-nums">
+                          {formatCurrency(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0))}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+                          <span>ดีลรวม: <strong className="text-slate-800">{customer.dealStats.total}</strong></span>
+                          {customer.dealStats.won > 0 && (
+                            <span className="text-emerald-600">(Won: {customer.dealStats.won})</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex flex-col gap-0.5">
+                          {customer.email && (
+                            <span className="text-xs text-slate-500 font-medium truncate max-w-[150px]" title={customer.email}>{customer.email}</span>
+                          )}
+                          {customer.phone && (
+                            <span className="text-[10px] text-slate-400 font-mono">{customer.phone}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-4 text-right" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => { setSelectedCustomer(customer); setIsSidebarOpen(true); }}
+                            className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-slate-900"
+                          >
+                            <ChevronRight size={16} />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {filteredCustomers.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-32 text-center bg-white/40 backdrop-blur-3xl rounded-[3rem] border border-white/60 shadow-[0_8px_40px_rgb(0,0,0,0.03)] relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-50/50 via-white/50 to-purple-50/50" />
+          <div className="relative z-10 max-w-md mx-auto flex flex-col items-center">
+            <div className="w-28 h-28 bg-white/60 backdrop-blur-md rounded-[2rem] flex items-center justify-center mb-8 shadow-xl shadow-violet-500/10 border border-white/80 hover:scale-110 transition-transform duration-500">
+              <Users size={48} className="text-violet-600 drop-shadow-md" />
+            </div>
+            <h3 className="text-2xl font-black text-slate-800 tracking-tight mb-3">
+              {searchTerm ? 'ไม่พบข้อมูลลูกค้าที่ค้นหา' : 'ยังไม่มีฐานลูกค้า'}
+            </h3>
+            <p className="text-sm text-slate-500 mb-8 leading-relaxed font-medium">
+              {searchTerm 
+                ? 'ลองเปลี่ยนคำค้นหา หรือล้างตัวกรองเพื่อดูลูกค้าทั้งหมด'
+                : 'เริ่มต้นสร้างฐานลูกค้าของคุณ เพื่อติดตามสถานะและวิเคราะห์สุขภาพของลูกค้าอย่างมืออาชีพ'}
+            </p>
+            <button
+              onClick={() => {
+                if (shouldBlockBasic) {
+                  openPaywall(isGuestAccount ? 'default' : 'trial_ended');
+                } else {
+                  if (searchTerm) {
+                    setSearchTerm('');
+                  } else {
+                    setNewCustomer(EMPTY_FORM);
+                    setFormError(null);
+                    setIsAddModalOpen(true);
+                  }
+                }
+              }}
+              className="inline-flex items-center gap-2 px-8 py-4 bg-violet-600 text-white text-base font-bold rounded-2xl hover:bg-violet-700 hover:scale-105 transition-all shadow-lg shadow-violet-500/20"
+            >
+              {searchTerm ? <Filter size={18} /> : <Plus size={18} />}
+              {searchTerm ? 'ล้างการค้นหา' : 'เพิ่มลูกค้าใหม่'}
+            </button>
+          </div>
+        </div>
+      )}
 
       <CustomerCSVImport 
         open={isImportModalOpen} 
