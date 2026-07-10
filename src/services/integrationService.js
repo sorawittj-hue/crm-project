@@ -14,12 +14,15 @@ export async function dispatchNotification(eventType, data) {
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
 
+    if (!token) {
+      // Skip server dispatch if not authenticated (e.g., Guest/Sandbox mode)
+      return;
+    }
+
     const headers = {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
     };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
 
     const response = await fetch('/api/integrations', {
       method: 'POST',
