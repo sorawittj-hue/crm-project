@@ -18,7 +18,7 @@ export function useActivities() {
       }
       return fetchActivities();
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id || isGuestAccount,
     retry: 2,
     staleTime: 5 * 60 * 1000,
   });
@@ -36,7 +36,7 @@ export function useDealActivities(dealId) {
       }
       return fetchActivitiesByDeal(dealId);
     },
-    enabled: !!user?.id && !!dealId,
+    enabled: (!!user?.id || isGuestAccount) && !!dealId,
     retry: 2,
     staleTime: 2 * 60 * 1000,
   });

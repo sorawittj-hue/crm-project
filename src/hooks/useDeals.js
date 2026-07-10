@@ -66,7 +66,7 @@ export function useDeals() {
       }
       return fetchDeals();
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id || isGuestAccount,
     retry: 2,
     staleTime: 30 * 60 * 1000, // 30 minutes
     gcTime: 60 * 60 * 1000, // 1 hour

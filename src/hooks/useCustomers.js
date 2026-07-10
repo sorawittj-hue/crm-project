@@ -61,7 +61,7 @@ export function useCustomers() {
       }
       return fetchCustomers();
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id || isGuestAccount,
     retry: 2,
     staleTime: 30 * 60 * 1000,
     gcTime: 60 * 60 * 1000,

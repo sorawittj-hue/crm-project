@@ -110,18 +110,24 @@ export default function LoginPage() {
           {/* New Showcase Card for Desktop */}
           <div className="mt-8 bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur-md relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-150" />
-            <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-2 relative z-10">
-              <Sparkles className="text-amber-300" size={20} />
-              ทดลองใช้งานระบบ (Showcase Mode)
-            </h3>
-            <p className="text-violet-200 text-sm mb-6 leading-relaxed relative z-10">
-              สัมผัสประสบการณ์ใช้งานแบบจัดเต็มด้วยข้อมูลจำลอง (Mock Data) โดยไม่ต้องสมัครสมาชิก หรือใช้รหัสผ่านใดๆ
+            <div className="flex items-center gap-2 mb-1 relative z-10">
+              <Sparkles className="text-amber-300" size={18} />
+              <h3 className="text-lg font-bold text-white">ทดลองใช้งานระบบ</h3>
+              <span className="text-xs bg-amber-400/20 text-amber-200 border border-amber-400/30 px-2 py-0.5 rounded-full font-bold">ฟรี 100%</span>
+            </div>
+            <p className="text-violet-200 text-sm mb-4 leading-relaxed relative z-10">
+              สัมผัสระบบ CRM เต็มรูปแบบด้วยข้อมูลจำลอง ไม่ต้องสมัคร ไม่ต้องใส่บัตรเครดิต
             </p>
+            {/* Feature pills */}
+            <div className="flex flex-wrap gap-1.5 mb-5 relative z-10">
+              {['📊 Dashboard', '🎯 Pipeline', '👥 Customers', '📈 Analytics', '🤖 AI Copilot'].map(f => (
+                <span key={f} className="text-xs bg-white/10 text-violet-200 px-2.5 py-1 rounded-full border border-white/10 font-medium">{f}</span>
+              ))}
+            </div>
             <button
               type="button"
               onClick={handleGuestLogin}
-              disabled={loading}
-              className="w-full bg-white hover:bg-violet-50 text-violet-700 font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-black/10 active:scale-95 disabled:opacity-60 relative z-10"
+              className="w-full bg-white hover:bg-violet-50 text-violet-700 font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-black/10 active:scale-95 relative z-10"
             >
               เข้าสู่โหมดทดลองเล่น <ArrowRight size={18} />
             </button>
@@ -151,19 +157,18 @@ export default function LoginPage() {
             <span className="font-bold text-xl text-slate-900">Nova Pipeline</span>
           </div>
 
-          {/* Mobile Showcase Card */}
           <div className="lg:hidden bg-gradient-to-br from-violet-600 to-indigo-800 rounded-3xl p-5 mb-8 shadow-xl shadow-violet-500/20 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-amber-400/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
-            <h3 className="font-bold flex items-center gap-2 mb-1.5 relative z-10">
-              <Sparkles className="text-amber-300" size={16} /> Showcase Mode
-            </h3>
-            <p className="text-xs text-violet-200 mb-4 opacity-90 leading-relaxed relative z-10">
-              ทดลองเล่นระบบด้วยข้อมูลจำลอง ไม่ต้องสมัครสมาชิก
+            <div className="flex items-center gap-2 mb-1.5 relative z-10">
+              <Sparkles className="text-amber-300" size={15} />
+              <h3 className="font-bold text-sm">ทดลองใช้ฟรี — Sandbox Mode</h3>
+            </div>
+            <p className="text-xs text-violet-200 mb-3 opacity-90 leading-relaxed relative z-10">
+              ทดลองระบบ CRM เต็มรูปแบบ · ไม่ต้องสมัครสมาชิก · ไม่ต้องใส่บัตรเครดิต
             </p>
             <button
               type="button"
               onClick={handleGuestLogin}
-              disabled={loading}
               className="w-full bg-white text-violet-700 font-bold py-3 rounded-xl text-sm transition-all active:scale-95 shadow-md relative z-10 flex items-center justify-center gap-2"
             >
               ทดลองเล่นเลย <ArrowRight size={14} />

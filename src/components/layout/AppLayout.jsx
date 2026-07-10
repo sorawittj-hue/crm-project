@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, Suspense } from 'react';
+import { useState, useEffect, useMemo, useRef, Suspense, useCallback } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
@@ -8,6 +8,7 @@ import {
   ChevronRight, Target, TrendingUp,
   AlertCircle, Clock, CheckCircle2, CalendarClock, Briefcase,
   BarChart2, Trash2, CheckCheck, Plus, Sparkles, Lock, Crown,
+  Timer, RotateCcw, ChevronDown,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useDeals } from '../../hooks/useDeals';
@@ -171,40 +172,138 @@ function SystemStatusBanner({ deals, customers, activities, effectiveTarget, nav
   );
 }
 
-function TrialBanner({ isTrialActive, isExpired, trialDaysLeft, isGuestAccount, openPaywall }) {
+function TrialBanner({ isTrialActive, isExpired, trialDaysLeft, trialMsLeft, isGuestAccount, openPaywall }) {
+  const [dismissed, setDismissed] = useState(() => {
+    // Restore dismiss state only for current session
+    return sessionStorage.getItem('nova_banner_dismissed') === '1';
+  });
+  const [countdown, setCountdown] = useState(trialMsLeft);
+
+  // Real-time countdown update (every 1 second)
+  useEffect(() => {
+    if (!isGuestAccount || !isTrialActive) return;
+    setCountdown(trialMsLeft);
+    const interval = setInterval(() => {
+      setCountdown(prev => Math.max(0, prev - 1000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isGuestAccount, isTrialActive, trialMsLeft]);
+
+  const handleDismiss = useCallback(() => {
+    sessionStorage.setItem('nova_banner_dismissed', '1');
+    setDismissed(true);
+  }, []);
+
+  if (dismissed && !isExpired) return null;
   if (!isTrialActive && !isExpired && !isGuestAccount) return null;
-  
+
+  // Format countdown to h:mm:ss or d days h hrs
+  const formatCountdown = (ms) => {
+    if (ms <= 0) return 'หมดเวลา';
+    const totalSecs = Math.floor(ms / 1000);
+    const days = Math.floor(totalSecs / 86400);
+    const hrs = Math.floor((totalSecs % 86400) / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+    if (days > 0) return `${days} วัน ${hrs} ชม. ${mins} นาที`;
+    if (hrs > 0) return `${hrs}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')} ชม.`;
+    return `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')} นาที`;
+  };
+
+  // Progress (0–1) = time elapsed / total
+  const TOTAL_MS = 3 * 24 * 60 * 60 * 1000;
+  const progressRatio = isGuestAccount ? Math.max(0, Math.min(1, 1 - countdown / TOTAL_MS)) : 0;
+
+  // Urgency level drives color theme
+  const urgency = countdown < 3600000 ? 'critical' // < 1 hr
+    : countdown < 86400000 ? 'warning' // < 1 day
+    : 'normal';
+
+  const themes = {
+    normal:   { bg: 'from-indigo-900 to-violet-900',   bar: 'bg-emerald-400', text: 'text-emerald-300',  badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
+    warning:  { bg: 'from-amber-800 to-orange-900',    bar: 'bg-amber-400',   text: 'text-amber-300',   badge: 'bg-amber-500/20 text-amber-200 border-amber-500/30' },
+    critical: { bg: 'from-rose-900 to-red-900',        bar: 'bg-rose-400',    text: 'text-rose-300',    badge: 'bg-rose-500/20 text-rose-200 border-rose-500/30' },
+  };
+  const theme = isExpired ? themes.critical : themes[urgency];
+
   return (
     <motion.section
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mb-6 rounded-2xl bg-gradient-to-r from-indigo-900 to-violet-900 p-5 shadow-lg relative overflow-hidden"
+      initial={{ opacity: 0, y: -10, height: 0 }}
+      animate={{ opacity: 1, y: 0, height: 'auto' }}
+      exit={{ opacity: 0, y: -10, height: 0 }}
+      className={cn(
+        'mb-6 rounded-2xl bg-gradient-to-r p-0 shadow-lg relative overflow-hidden',
+        theme.bg
+      )}
     >
-      <div className="absolute -top-24 -right-24 w-64 h-64 bg-violet-500/30 blur-[80px] rounded-full pointer-events-none" />
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
-            <Sparkles className="text-amber-400" size={24} />
+      {/* Animated glow orb */}
+      <div className="absolute -top-24 -right-24 w-64 h-64 bg-violet-500/20 blur-[80px] rounded-full pointer-events-none" />
+      <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-indigo-500/20 blur-[60px] rounded-full pointer-events-none" />
+
+      {/* Progress bar along the top */}
+      {isGuestAccount && isTrialActive && (
+        <div className="h-1 w-full bg-white/10">
+          <motion.div
+            className={cn('h-full', theme.bar)}
+            initial={{ width: 0 }}
+            animate={{ width: `${progressRatio * 100}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+          />
+        </div>
+      )}
+
+      <div className="relative z-10 p-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            {/* Icon */}
+            <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center border border-white/15 shrink-0 mt-0.5">
+              {isExpired ? <AlertCircle className="text-rose-300" size={22} /> : <Timer className={theme.text} size={22} />}
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-white font-black text-base tracking-tight">
+                  {isExpired
+                    ? 'หมดเวลาทดลองใช้งาน'
+                    : isGuestAccount
+                      ? 'โหมด Sandbox (ทดลองใช้ฟรี)'
+                      : `ช่วงทดลองใช้งาน — เหลือ ${trialDaysLeft} วัน`}
+                </h3>
+                {isGuestAccount && isTrialActive && (
+                  <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full border', theme.badge)}>
+                    {formatCountdown(countdown)}
+                  </span>
+                )}
+              </div>
+              <p className="text-white/60 text-xs font-medium mt-1 leading-relaxed">
+                {isExpired
+                  ? 'สมัครสมาชิกเพื่อเข้าถึงฐานข้อมูลส่วนตัวและฟีเจอร์ Pro อย่างต่อเนื่อง'
+                  : isGuestAccount
+                    ? 'ข้อมูลทดลองเล่นบันทึกชั่วคราวในเบราว์เซอร์ · สมัครสมาชิกเพื่อบันทึก Cloud และรับสิทธิ์ Pro'
+                    : 'ทดลองใช้ครบ 3 วันฟรี! ปลดล็อคระบบ Premium ไม่มีข้อผูกมัด'}
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-white font-black text-lg tracking-tight">
-              {isExpired ? 'หมดเวลาทดลองใช้งาน' : isGuestAccount ? 'โหมดกระบะทราย (Sandbox Mode)' : `เหลือเวลาทดลองใช้ ${trialDaysLeft} วัน`}
-            </h3>
-            <p className="text-indigo-200 text-sm font-medium mt-0.5">
-              {isExpired 
-                ? 'อัปเกรดเพื่อใช้งานฐานข้อมูลส่วนตัวและฟีเจอร์ระดับ Pro ต่อเนื่อง' 
-                : isGuestAccount
-                  ? 'ข้อมูลทดลองเล่นทั้งหมดจะถูกบันทึกชั่วคราวในเบราว์เซอร์ สมัครสมาชิกเพื่อบันทึกข้อมูลขึ้นระบบ Cloud'
-                  : 'ทดลองใช้ 3 วันฟรี! ปลดล็อคระบบ Premium เพียง 299 บาท/รอบบิล'}
-            </p>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => openPaywall(isExpired ? 'trial_ended' : isGuestAccount ? 'guest_upgrade' : 'default')}
+              className="whitespace-nowrap px-5 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-amber-950 font-black rounded-xl shadow-lg transition-all active:scale-95 text-sm"
+            >
+              {isGuestAccount ? '✨ สมัครสมาชิก' : isExpired ? 'อัปเกรดทันที' : 'อัปเกรด Pro'}
+            </button>
+            {!isExpired && (
+              <button
+                onClick={handleDismiss}
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/50 hover:text-white transition-all"
+                title="ซ่อนแบนเนอร์"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
         </div>
-        <button
-          onClick={() => openPaywall(isExpired ? 'trial_ended' : isGuestAccount ? 'guest_upgrade' : 'default')}
-          className="whitespace-nowrap px-6 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-amber-950 font-black rounded-xl shadow-lg transition-all active:scale-95 text-sm"
-        >
-          {isGuestAccount ? 'สมัครใช้งานระบบ' : 'อัปเกรดเป็น Premium'}
-        </button>
       </div>
     </motion.section>
   );
@@ -272,7 +371,7 @@ export default function AppLayout() {
   const userId = user?.id;
 
   const { data: myProfile } = useMyProfile(userId);
-  const { isGuestAccount, isTrialActive, isExpired, trialDaysLeft, isPro, isSuspended } = useSubscription();
+  const { isGuestAccount, isTrialActive, isExpired, trialDaysLeft, trialMsLeft, isPro, isSuspended } = useSubscription();
   const hasPersonalTarget = myProfile?.personal_target > 0 && !isGuestAccount;
   const effectiveTarget = hasPersonalTarget ? myProfile.personal_target : 0;
 
@@ -881,7 +980,8 @@ export default function AppLayout() {
             <TrialBanner 
               isTrialActive={isTrialActive} 
               isExpired={isExpired} 
-              trialDaysLeft={trialDaysLeft} 
+              trialDaysLeft={trialDaysLeft}
+              trialMsLeft={trialMsLeft}
               isGuestAccount={isGuestAccount} 
               openPaywall={openPaywall} 
             />

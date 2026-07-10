@@ -17,8 +17,6 @@ export default function PaywallModal() {
   const [success, setSuccess] = useState(false);
   const [successType, setSuccessType] = useState('premium'); // 'premium' or 'trial'
   
-
-  
   const [registering, setRegistering] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [registerError, setRegisterError] = useState('');
@@ -37,6 +35,10 @@ export default function PaywallModal() {
     e?.preventDefault();
     if (!formData.name || !formData.email || !formData.password) {
       setRegisterError('กรุณากรอกข้อมูลให้ครบถ้วน');
+      return;
+    }
+    if (formData.password.length < 6) {
+      setRegisterError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
       return;
     }
     setRegistering(true);
@@ -65,7 +67,6 @@ export default function PaywallModal() {
       setSuccess(false);
       setConfirming(false);
       setRegistering(false);
-
       setFormData({ name: '', email: '', password: '' });
       setRegisterError('');
     }, 300);
@@ -101,7 +102,9 @@ export default function PaywallModal() {
                       ? 'หมดเวลาทดลองใช้แล้ว กรุณาอัปเกรดเพื่อทำงานต่อ' 
                       : paywallReason === 'premium_only'
                         ? 'ฟีเจอร์นี้เปิดให้เฉพาะผู้ใช้ Pro เท่านั้น'
-                        : 'ปลดล็อคพลังการขายเต็มรูปแบบ'
+                        : paywallReason === 'guest_upgrade'
+                          ? 'บันทึกข้อมูล Sandbox ขึ้น Cloud และรับสิทธิ์ Pro ฟรี 3 วัน'
+                          : 'ปลดล็อคพลังการขายเต็มรูปแบบ'
                     }
                   </p>
 
@@ -131,80 +134,100 @@ export default function PaywallModal() {
                 </div>
               </div>
 
-              {/* Right Column: Payment */}
+              {/* Right Column: Payment / Registration */}
               <div className="w-full md:w-7/12 p-8 lg:p-10 bg-white relative">
                 
                 {paywallReason === 'guest_upgrade' ? (
-                  <div className="flex flex-col h-full items-center justify-center">
-                    {/* Trial Registration Form for Sandbox Migration */}
-                    <div className="flex flex-col w-full max-w-md mx-auto animate-in fade-in slide-in-from-bottom-2 duration-300">
-                      <div className="mb-6 text-center">
-                        <div className="w-16 h-16 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center mb-4 mx-auto shadow-lg shadow-violet-500/10">
-                          <User size={32} />
+                  /* ── GUEST UPGRADE: Registration + Feature Comparison ── */
+                  <div className="flex flex-col h-full">
+                    {/* Header */}
+                    <div className="mb-5">
+                      <span className="text-xs font-black text-violet-600 uppercase tracking-widest bg-violet-50 px-2 py-1 rounded-md">Sandbox → Cloud</span>
+                      <h2 className="text-2xl font-black text-slate-900 mt-3 tracking-tight">สมัครสมาชิก Nova Pipeline</h2>
+                      <p className="text-sm text-slate-500 mt-1 leading-relaxed">ข้อมูลที่ทดลองเล่นจะถูกย้ายขึ้น Cloud อัตโนมัติ ไม่มีข้อมูลสูญหาย</p>
+                    </div>
+
+                    {/* Feature comparison mini-table */}
+                    <div className="mb-5 rounded-xl border border-slate-100 overflow-hidden text-xs">
+                      <div className="grid grid-cols-3 font-black uppercase tracking-wider">
+                        <div className="bg-slate-50 px-3 py-2 text-slate-400">ฟีเจอร์</div>
+                        <div className="bg-slate-100 px-3 py-2 text-slate-500 text-center">Sandbox</div>
+                        <div className="bg-violet-600 px-3 py-2 text-white text-center">หลังสมัคร ✓</div>
+                      </div>
+                      {[
+                        { feature: 'ที่เก็บข้อมูล', sandbox: '🌐 เบราว์เซอร์', pro: '☁️ Cloud' },
+                        { feature: 'ข้อมูลคงอยู่', sandbox: '❌ ปิด tab = หาย', pro: '✅ ถาวร' },
+                        { feature: 'Real-time Sync', sandbox: '❌', pro: '✅ ทุกอุปกรณ์' },
+                        { feature: 'Export / Backup', sandbox: '❌', pro: '✅ (Pro)' },
+                      ].map((row, i) => (
+                        <div key={i} className="grid grid-cols-3 border-t border-slate-100">
+                          <div className="px-3 py-2 font-semibold text-slate-700">{row.feature}</div>
+                          <div className="px-3 py-2 text-slate-500 text-center bg-slate-50/50">{row.sandbox}</div>
+                          <div className="px-3 py-2 text-violet-700 font-bold text-center bg-violet-50/40">{row.pro}</div>
                         </div>
-                        <h2 className="text-2xl font-black text-slate-900">บันทึกข้อมูล Sandbox ขึ้น Cloud</h2>
-                        <p className="text-sm text-slate-500 mt-2 leading-relaxed">ข้อมูลที่ทดลองเล่นจะไม่สูญหาย สร้างบัญชีเพื่อใช้งานต่อได้ทันที</p>
+                      ))}
+                    </div>
+
+                    {/* Registration form */}
+                    <form onSubmit={(e) => handleRegister(e, false)} className="space-y-3 flex-1 flex flex-col">
+                      {registerError && (
+                        <div className="p-3 bg-red-50 text-red-600 text-xs font-bold rounded-xl flex items-center gap-2">
+                          <AlertCircle size={15} />
+                          {registerError}
+                        </div>
+                      )}
+                      <div className="relative">
+                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                        <input
+                          type="text"
+                          value={formData.name}
+                          onChange={e => setFormData({ ...formData, name: e.target.value })}
+                          className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all text-sm font-medium"
+                          placeholder="ชื่อ-นามสกุล"
+                        />
+                      </div>
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                        <input
+                          type="email"
+                          value={formData.email}
+                          onChange={e => setFormData({ ...formData, email: e.target.value })}
+                          className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all text-sm font-medium"
+                          placeholder="อีเมล (you@example.com)"
+                        />
+                      </div>
+                      <div className="relative">
+                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                        <input
+                          type="password"
+                          value={formData.password}
+                          onChange={e => setFormData({ ...formData, password: e.target.value })}
+                          className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all text-sm font-medium"
+                          placeholder="รหัสผ่านอย่างน้อย 6 ตัว"
+                        />
                       </div>
 
-                      <form onSubmit={(e) => handleRegister(e, false)} className="space-y-4">
-                        {registerError && (
-                          <div className="p-3 bg-red-50 text-red-600 text-xs font-bold rounded-lg flex items-center gap-2">
-                            <AlertCircle size={16} />
-                            {registerError}
-                          </div>
-                        )}
-                        <div>
-                          <div className="relative">
-                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                            <input
-                              type="text"
-                              value={formData.name}
-                              onChange={e => setFormData({ ...formData, name: e.target.value })}
-                              className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all text-sm font-medium"
-                              placeholder="ชื่อ-นามสกุล"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <div className="relative">
-                            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                            <input
-                              type="email"
-                              value={formData.email}
-                              onChange={e => setFormData({ ...formData, email: e.target.value })}
-                              className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all text-sm font-medium"
-                              placeholder="อีเมล (you@example.com)"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <div className="relative">
-                            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                            <input
-                              type="password"
-                              value={formData.password}
-                              onChange={e => setFormData({ ...formData, password: e.target.value })}
-                              className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all text-sm font-medium"
-                              placeholder="รหัสผ่าน"
-                            />
-                          </div>
-                        </div>
-                        
+                      <div className="mt-auto pt-3">
                         <button
                           type="submit"
                           disabled={registering}
-                          className="w-full h-14 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 mt-6 transition-all shadow-xl shadow-violet-500/25 disabled:opacity-50 active:scale-95 text-base"
+                          className="w-full h-12 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-xl shadow-violet-500/25 disabled:opacity-50 active:scale-95 text-sm"
                         >
                           {registering ? (
-                            <Loader2 size={20} className="animate-spin" />
+                            <><Loader2 size={18} className="animate-spin" /> กำลังสร้างบัญชีและย้ายข้อมูล...</>
                           ) : (
-                            'สร้างบัญชีและย้ายข้อมูล'
+                            <><User size={16} /> สร้างบัญชีฟรี — ย้ายข้อมูลขึ้น Cloud</>
                           )}
                         </button>
-                      </form>
-                    </div>
+                        <p className="text-center text-[10px] text-slate-400 mt-2">
+                          ✓ ไม่ต้องใช้บัตรเครดิต · ✓ ทดลองฟรี 3 วัน · ✓ ข้อมูล Sandbox ย้ายให้อัตโนมัติ
+                        </p>
+                      </div>
+                    </form>
                   </div>
+
                 ) : paywallReason === 'default' ? (
+                  /* ── DEFAULT: Go to login ── */
                   <div className="h-full flex flex-col justify-center items-center text-center">
                     <div className="w-20 h-20 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center mb-6">
                       <Sparkles size={40} />
@@ -228,7 +251,9 @@ export default function PaywallModal() {
                       ปิดหน้าต่างนี้
                     </button>
                   </div>
+
                 ) : (
+                  /* ── TRIAL ENDED / PREMIUM ONLY: PromptPay payment ── */
                   <div className="flex flex-col h-full">
                     <div className="flex justify-between items-end mb-8 pb-6 border-b border-slate-100">
                       <div>
@@ -370,7 +395,7 @@ export default function PaywallModal() {
                     <CheckCircle2 size={40} />
                   </div>
                   <span className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-2 block">
-                    {successType === 'premium' ? 'Upgrade Successful' : 'Trial Started'}
+                    {successType === 'premium' ? 'Upgrade Successful' : 'Account Created!'}
                   </span>
                   <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-3">
                     {successType === 'premium' ? 'ขอต้อนรับสู่ Premium!' : 'เริ่มทดลองใช้ 3 วัน!'}
@@ -378,7 +403,7 @@ export default function PaywallModal() {
                   <p className="text-sm text-slate-500 font-medium max-w-md mx-auto leading-relaxed">
                     {successType === 'premium' 
                       ? 'ระบบได้ทำการปรับปรุงสิทธิ์ของคุณเรียบร้อยแล้ว คุณสามารถเข้าถึงฐานข้อมูลส่วนตัวและฟีเจอร์ขั้นสูงได้ทันที'
-                      : 'ระบบได้สร้างบัญชีและย้ายข้อมูลของคุณเรียบร้อยแล้ว คุณสามารถใช้งานฟีเจอร์ Pro ได้เต็มรูปแบบ 3 วัน'
+                      : 'ระบบได้สร้างบัญชีและย้ายข้อมูล Sandbox ของคุณขึ้น Cloud เรียบร้อยแล้ว คุณสามารถใช้งานฟีเจอร์ Pro ได้เต็มรูปแบบ 3 วัน'
                     }
                   </p>
                   <button
