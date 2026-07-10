@@ -11,6 +11,7 @@ import MetricTooltip from '../components/ui/MetricTooltip';
 import PageHeader from '../components/layout/PageHeader';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { Card } from '../components/ui/Card';
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../components/ui/Dialog';
 import { Textarea } from '../components/ui/Textarea';
 import { motion, AnimatePresence } from 'framer-motion';
