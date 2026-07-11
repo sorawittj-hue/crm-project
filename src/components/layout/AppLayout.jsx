@@ -33,6 +33,7 @@ import { springSmooth } from '../../lib/motion';
 import CommandPalette from '../ui/CommandPalette';
 import PaywallModal from '../ui/PaywallModal';
 import WelcomeModal from '../ui/WelcomeModal';
+import OnboardingChecklist from '../ui/OnboardingChecklist';
 import GlobalAddDealModal from '../pipeline/GlobalAddDealModal';
 
 
@@ -489,7 +490,7 @@ export default function AppLayout() {
           <div className="space-y-2">
             <h2 className="text-2xl font-black text-white tracking-tight">บัญชีของคุณถูกระงับการใช้งาน</h2>
             <p className="text-slate-400 text-sm leading-relaxed">
-              ขออภัย บัญชีนี้ถูกสั่งระงับการเข้าใช้งานโดยผู้ดูแลระบบสูงสุด กรุณาติดต่อคุณสรวิศ เพื่อขอข้อมูลเพิ่มเติม
+              ขออภัย บัญชีนี้ถูกสั่งระงับการเข้าใช้งานโดยผู้ดูแลระบบ กรุณาติดต่อผู้ดูแลระบบของคุณเพื่อขอข้อมูลเพิ่มเติม
             </p>
           </div>
           <div className="pt-4 border-t border-slate-800 flex flex-col gap-3">
@@ -634,7 +635,10 @@ export default function AppLayout() {
               })}
             </nav>
 
-            {!isPro && !isGuestAccount && (
+            {/* Onboarding checklist for new registered members (non-guest) */}
+            {!isGuestAccount && <OnboardingChecklist />}
+
+            {!isPro && (
               <div className="px-3 mt-4 mb-2">
                 <button
                   onClick={() => openPaywall(isGuestAccount ? 'upgrade' : 'default')}

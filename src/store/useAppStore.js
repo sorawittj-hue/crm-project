@@ -39,7 +39,11 @@ export const useAppStore = create(
         let finalReason = reason;
         if (reason === 'default' || reason === 'upgrade') {
           try {
-            const raw = localStorage.getItem('nova_trial_state');
+            // Use session-scoped key (matches localDb.js getSessionKeys())
+            const sessionId = sessionStorage.getItem('nova_guest_session_id');
+            const raw = sessionId
+              ? localStorage.getItem(`nova_trial_state_${sessionId}`)
+              : localStorage.getItem('nova_trial_state'); // backward compat
             if (raw) {
               const parsed = JSON.parse(raw);
               if (parsed.isActive) {

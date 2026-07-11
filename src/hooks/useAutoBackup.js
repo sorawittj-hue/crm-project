@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import localforage from 'localforage';
 import { exportWorkspaceData } from '../services/apiBackup';
 import { useAuth } from './useAuth';
+import { useSubscription } from './useSubscription';
 import { useQueryClient } from '@tanstack/react-query';
 
 // Configure localforage for our backups
@@ -15,11 +16,13 @@ const MAX_BACKUPS = 7; // Keep last 7 days
 
 export function useAutoBackup() {
   const { user } = useAuth();
+  const { isPro } = useSubscription();
   const queryClient = useQueryClient();
   const [lastBackupTime, setLastBackupTime] = useState(null);
 
   useEffect(() => {
-    if (!user?.id) return;
+    // Only run for authenticated Pro users — trial/guest users don't get cloud backup
+    if (!user?.id || !isPro) return;
 
     const checkAndRunBackup = async () => {
       try {

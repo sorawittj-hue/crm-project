@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
 import { migrateLocalToSupabase } from '../lib/migration';
-import { isLocalTrialActive } from '../lib/localDb';
+import { isLocalTrialActive, startLocalTrial } from '../lib/localDb';
 import { touchLastSeen } from '../services/apiUserProfiles';
 
 // Global shared auth state to avoid independent Supabase network calls & state sets across 34 hook instances
@@ -147,8 +147,12 @@ export function useAuth() {
 
   const getUserId = () => globalSession?.user?.id ?? null;
 
-  const signInAsGuest = async () => {
-    return signIn('demo@novapipeline.com', 'demo123456');
+  // Pure Local Guest Mode — zero Supabase dependency
+  // Initializes a session-scoped sandbox trial in localStorage
+  const signInAsGuest = () => {
+    startLocalTrial();
+    // Force re-evaluation of isLocalTrialActive() across all subscribers
+    window.dispatchEvent(new StorageEvent('storage', { key: 'nova_guest_session_id' }));
   };
 
   return {
