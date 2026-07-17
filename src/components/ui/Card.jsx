@@ -1,20 +1,17 @@
 import * as React from "react"
 import { cn } from "../../lib/utils"
-import { motion, useReducedMotion } from "framer-motion"
-import { getCardMotion } from "../../lib/motion"
 
-const Card = React.forwardRef(({ className, asChild = false, hover = true, ...props }, ref) => {
-  const shouldReduceMotion = useReducedMotion()
-  const Comp = asChild ? motion.div : "div"
-  const motionProps = asChild ? getCardMotion(shouldReduceMotion) : {}
-
+const Card = React.forwardRef(({ className, hover = true, glow = false, glass = false, ...props }, ref) => {
   return (
-    <Comp
+    <div
       ref={ref}
-      {...motionProps}
       className={cn(
-        "rounded-2xl border border-slate-100 bg-white text-card-foreground shadow-sm",
-        hover && "transition-all duration-200 ease-out hover:shadow-md hover:border-violet-200",
+        "rounded-[1.5rem] border bg-white text-card-foreground",
+        "border-violet-100/60",
+        "shadow-[0_2px_16px_rgba(100,80,200,0.04),0_1px_0_rgba(255,255,255,1)_inset]",
+        hover && "transition-all duration-300 ease-out hover:shadow-[0_12px_40px_rgba(100,80,200,0.10),0_1px_0_rgba(255,255,255,1)_inset] hover:border-violet-200/80 hover:-translate-y-0.5",
+        glow && "shadow-[0_2px_16px_rgba(100,80,200,0.04),0_0_0_1px_rgba(139,92,246,0.08),0_1px_0_rgba(255,255,255,1)_inset]",
+        glass && "bg-white/70 backdrop-blur-xl border-white/80",
         className
       )}
       {...props}
@@ -26,7 +23,7 @@ Card.displayName = "Card"
 const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-3 p-6", className)}
+    className={cn("flex flex-col space-y-2 p-6", className)}
     {...props}
   />
 ))
@@ -36,8 +33,7 @@ const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
   <h3
     ref={ref}
     className={cn(
-      "text-lg font-bold leading-tight tracking-tight",
-      "transition-colors duration-300",
+      "text-lg font-bold leading-tight tracking-tight text-slate-900",
       className
     )}
     {...props}
@@ -48,7 +44,7 @@ CardTitle.displayName = "CardTitle"
 const CardDescription = React.forwardRef(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-sm text-slate-500 font-medium", className)}
     {...props}
   />
 ))

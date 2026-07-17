@@ -1,5 +1,6 @@
 import { useState, useMemo, forwardRef, useRef, memo, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
+
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
   Search, Filter, Star, TrendingUp, AlertTriangle,
@@ -135,6 +136,7 @@ export default function PipelineBoard({
   const [reasonModal, setReasonModal] = useState({ open: false, dealId: null, targetStage: null });
   const [localDeals, setLocalDeals] = useState(deals);
   const isDraggingRef = useRef(false);
+  const [isDraggingAny, setIsDraggingAny] = useState(false);
 
   // Sync external deals into local state — but never interrupt an ongoing drag
   useEffect(() => {
@@ -255,10 +257,15 @@ export default function PipelineBoard({
 
   const handleDragStart = useCallback(() => {
     isDraggingRef.current = true;
+    setIsDraggingAny(true);
+    // Disable pointer events on all text during drag to prevent jank
+    document.body.style.userSelect = 'none';
   }, []);
 
   const handleDragEnd = useCallback((result) => {
     isDraggingRef.current = false;
+    setIsDraggingAny(false);
+    document.body.style.userSelect = '';
 
     if (shouldBlockBasic) {
       openPaywall(isGuestAccount ? 'guest_upgrade' : 'trial_ended');
@@ -593,14 +600,18 @@ export default function PipelineBoard({
                     {(provided, snapshot) => (
                       <div
                         className={cn(
-                          'flex-shrink-0 flex flex-col w-[290px] h-full rounded-[1.25rem] transition-all duration-300 border overflow-hidden backdrop-blur-md',
+                          'flex-shrink-0 flex flex-col w-[290px] h-full rounded-[1.25rem] border overflow-hidden',
+                          // Only apply expensive styles when NOT dragging
+                          !isDraggingAny && 'backdrop-blur-sm',
                           snapshot.isDraggingOver
-                            ? `ring-2 ${stage.dragOverClass}`
+                            ? `ring-2 ${stage.dragOverClass} transition-none`
                             : isCritical
-                              ? 'border-rose-350 shadow-[0_4px_20px_rgba(244,63,94,0.08)] bg-rose-50/10 hover:shadow-[0_8px_30px_rgba(244,63,94,0.12)]'
+                              ? 'border-rose-200 bg-rose-50/20'
                               : isWarning
-                                ? 'border-amber-300 shadow-[0_4px_20px_rgba(245,158,11,0.06)] bg-amber-50/10 hover:shadow-[0_8px_30px_rgba(245,158,11,0.1)]'
-                                : `${stage.glassBg} ${stage.columnBorder} shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)]`
+                                ? 'border-amber-200 bg-amber-50/15'
+                                : `${stage.glassBg} ${stage.columnBorder}`,
+                          // Transitions only when not dragging to prevent jank
+                          !isDraggingAny && 'transition-colors duration-200'
                         )}
                       >
                         {/* Column header */}
@@ -660,6 +671,7 @@ export default function PipelineBoard({
                             onDealClick={onDealClick}
                             togglePin={togglePin}
                             handleMoveDeal={handleMoveDeal}
+                            isDraggingAny={isDraggingAny}
                           />
                           {provided.placeholder}
                           {stageDeals.length === 0 && !snapshot.isDraggingOver && (
@@ -747,7 +759,7 @@ export default function PipelineBoard({
   );
 }
 
-const InnerList = memo(({ deals, stageColor, selectedDealId, pinnedDealIds, STAGES, setSelectedDealId, onDealClick, togglePin, handleMoveDeal }) => {
+const InnerList = memo(({ deals, stageColor, selectedDealId, pinnedDealIds, STAGES, setSelectedDealId, onDealClick, togglePin, handleMoveDeal, isDraggingAny }) => {
   return (
     <>
       {deals.map((deal, index) => (
@@ -758,6 +770,7 @@ const InnerList = memo(({ deals, stageColor, selectedDealId, pinnedDealIds, STAG
               draggableProps={dragProvided.draggableProps}
               dragHandleProps={dragProvided.dragHandleProps}
               isDragging={dragSnapshot.isDragging}
+              isDraggingAny={isDraggingAny}
               deal={deal}
               isSelected={selectedDealId === deal.id}
               isPinned={pinnedDealIds.includes(deal.id)}
@@ -785,6 +798,7 @@ const DealCard = memo(
         isSelected,
         isPinned,
         isDragging,
+        isDraggingAny,
         canMoveLeft,
         canMoveRight,
         onSelect,
@@ -818,19 +832,23 @@ const DealCard = memo(
           className="mb-2.5 last:mb-0"
           {...draggableProps}
         >
-          <motion.div
-            initial={false}
-            animate={isDragging ? { boxShadow: '0 20px 40px rgba(124, 58, 237, 0.18)', scale: 1.02, rotate: 1 } : { boxShadow: 'none', scale: 1, rotate: 0 }}
-            whileHover={{ y: -2, boxShadow: '0 8px 20px rgba(0, 0, 0, 0.06)' }}
-            transition={{ type: 'spring', stiffness: 480, damping: 30 }}
+          {/* Use plain div during drag — Framer Motion fights dnd transforms causing jank */}
+          <div
+            style={isDragging ? {
+              boxShadow: '0 20px 40px rgba(124, 58, 237, 0.22)',
+              transform: 'rotate(1.5deg)',
+              opacity: 0.98,
+            } : {}}
             className={cn(
-              'group relative rounded-2xl border overflow-hidden transition-all duration-300 bg-white/95 backdrop-blur-md cursor-pointer hover:shadow-lg hover:-translate-y-0.5',
-              isDragging ? 'border-violet-400 ring-4 ring-violet-500/20 z-50 shadow-2xl shadow-violet-500/20 scale-105'
-                : isSelected ? 'border-violet-500 ring-2 ring-violet-500/20 shadow-md shadow-violet-500/10 bg-violet-50/30'
-                : isPinned ? 'border-blue-200 bg-gradient-to-br from-white to-blue-50/40 shadow-sm hover:shadow-md hover:shadow-blue-500/10 hover:border-blue-300'
-                : isHighValue ? 'border-amber-300/80 bg-gradient-to-br from-white to-amber-50/40 shadow-sm hover:shadow-md hover:shadow-amber-500/10 hover:border-amber-400/80'
-                : isStagnant ? 'border-rose-200 bg-gradient-to-br from-white to-rose-50/40 shadow-sm hover:shadow-md hover:shadow-rose-500/10 hover:border-rose-300'
-                : 'border-slate-200/70 shadow-sm hover:shadow-md hover:shadow-slate-300/50 hover:border-violet-200/80'
+              'group relative rounded-2xl border overflow-hidden bg-white cursor-pointer',
+              // Only show hover effects when not dragging any card
+              !isDraggingAny && 'transition-shadow duration-200 hover:shadow-lg',
+              isDragging ? 'border-violet-400 ring-4 ring-violet-500/25 shadow-2xl shadow-violet-500/20 z-50'
+                : isSelected ? 'border-violet-500 ring-2 ring-violet-500/20 shadow-md'
+                : isPinned ? 'border-blue-200 bg-gradient-to-br from-white to-blue-50/40 shadow-sm'
+                : isHighValue ? 'border-amber-300/80 bg-gradient-to-br from-white to-amber-50/40 shadow-sm'
+                : isStagnant ? 'border-rose-200 bg-gradient-to-br from-white to-rose-50/30 shadow-sm'
+                : 'border-slate-200/70 shadow-sm'
             )}
           >
             {/* Colored left accent bar */}
@@ -963,7 +981,7 @@ const DealCard = memo(
                 <ChevronRight size={12} strokeWidth={2.5} />
               </button>
             </div>
-          </motion.div>
+          </div>
         </div>
       );
     }

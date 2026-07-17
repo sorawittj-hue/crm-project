@@ -25,8 +25,8 @@ export function SkeletonLine({ width = '100%', height = '16px', style = {} }) {
       style={{
         width,
         height,
-        borderRadius: '6px',
-        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+        borderRadius: '8px',
+        background: 'linear-gradient(90deg, rgba(139,92,246,0.05) 25%, rgba(139,92,246,0.12) 50%, rgba(139,92,246,0.05) 75%)',
         backgroundSize: '200% 100%',
         ...style,
       }}

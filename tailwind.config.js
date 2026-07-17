@@ -126,6 +126,16 @@ export default {
         'pink-glow': '0 0 20px hsl(350 100% 67% / 0.3)',
         'mint-glow': '0 0 20px hsl(150 70% 60% / 0.3)',
         'lavender-glow': '0 0 20px hsl(262 80% 70% / 0.3)',
+        // Premium nova shadows
+        'nova-sm': '0 2px 16px rgba(100,80,200,0.06), 0 1px 0 rgba(255,255,255,1) inset',
+        'nova-md': '0 8px 32px rgba(100,80,200,0.09), 0 1px 0 rgba(255,255,255,1) inset',
+        'nova-lg': '0 16px 48px rgba(100,80,200,0.14), 0 1px 0 rgba(255,255,255,1) inset',
+        'nova-violet': '0 8px 24px rgba(124,58,237,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
+        'nova-fuchsia': '0 8px 24px rgba(236,72,153,0.30), inset 0 1px 0 rgba(255,255,255,0.2)',
+        'nova-emerald': '0 8px 24px rgba(52,211,153,0.30), inset 0 1px 0 rgba(255,255,255,0.2)',
+        'nova-amber': '0 8px 24px rgba(245,158,11,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
+        'sidebar': '8px 0 48px rgba(0,0,0,0.4)',
+        'glass-card': '0 8px 40px rgba(100,80,220,0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
       },
       keyframes: {
         "accordion-down": {
@@ -191,6 +201,17 @@ export default {
         "slide-up": "slide-up 0.4s ease-out forwards",
         "fade-in": "fade-in 0.3s ease-out forwards",
         "scale-in": "scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
+        // Premium nova animations
+        "reveal": "reveal 0.7s cubic-bezier(0.16,1,0.3,1) both",
+        "glow-breathe": "glow-breathe 3s ease-in-out infinite",
+        "aurora": "aurora 8s ease infinite",
+        "pulse-ring": "pulse-ring 2.5s ease-in-out infinite",
+        "gradient-shift": "gradient-shift 6s ease infinite",
+      },
+      transitionDuration: {
+        '400': '400ms',
+        '600': '600ms',
+        '800': '800ms',
       },
     },
   },

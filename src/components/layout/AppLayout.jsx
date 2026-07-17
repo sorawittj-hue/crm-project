@@ -531,12 +531,13 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="flex h-screen w-screen bg-slate-50 text-slate-900 overflow-hidden font-sans selection:bg-primary/10">
+    <div className="flex h-screen w-screen overflow-hidden font-sans" style={{background: '#0f0a2e'}}>
 
-      {/* SIDEBAR */}
+      {/* SIDEBAR — backdrop (mobile only, own AnimatePresence) */}
       <AnimatePresence>
         {isSidebarOpen && !isDesktop && (
           <motion.button
+            key="sidebar-backdrop"
             type="button"
             aria-label="ปิดเมนู"
             className="fixed inset-0 z-40 bg-slate-900/25 backdrop-blur-sm lg:hidden"
@@ -547,49 +548,62 @@ export default function AppLayout() {
             onClick={closeSidebar}
           />
         )}
-        {(isSidebarOpen || isDesktop) && (
-          <motion.aside
-            ref={sidebarRef}
-            {...mobileSidebarMotion}
-            variants={sidebarVariants}
-            className={cn(
-              "fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-100/80 px-5 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)]",
-              "lg:static lg:translate-x-0 lg:opacity-100",
-            )}
-          >
+      </AnimatePresence>
+
+      {/* SIDEBAR — desktop: static aside | mobile: animated via own AnimatePresence */}
+      {isDesktop ? (
+        <aside
+          ref={sidebarRef}
+          className="w-72 flex flex-col flex-shrink-0 relative"
+          style={{
+            background: 'linear-gradient(180deg, #13083a 0%, #0f0829 50%, #0a0520 100%)',
+            borderRight: '1px solid rgba(139,92,246,0.12)',
+            boxShadow: '8px 0 48px rgba(0,0,0,0.4)'
+          }}
+        >
+            {/* Ambient glow orbs */}
+            <div className="absolute top-0 left-0 w-full h-64 pointer-events-none overflow-hidden">
+              <div className="absolute -top-16 -left-8 w-48 h-48 rounded-full" style={{background: 'radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%)'}} />
+              <div className="absolute top-20 right-0 w-32 h-32 rounded-full" style={{background: 'radial-gradient(circle, rgba(236,72,153,0.10) 0%, transparent 70%)'}} />
+            </div>
+
             {/* Logo */}
-            <div className="h-20 flex items-center justify-between px-2 mb-2 relative">
-              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
-              <div className="flex items-center gap-4">
-                <img 
-                  src="/icon.svg" 
-                  className="w-10 h-10 rounded-[14px] shadow-lg shadow-violet-500/15 object-cover shrink-0 select-none pointer-events-none" 
-                  alt="Nova Pipeline Logo" 
-                />
+            <div className="h-20 flex items-center justify-between px-5 mb-1 relative shrink-0">
+              <div className="absolute bottom-0 left-4 right-4 h-px" style={{background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.25), transparent)'}} />
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="absolute inset-0 rounded-[14px] blur-md" style={{background: 'rgba(139,92,246,0.4)'}} />
+                  <img 
+                    src="/icon.svg" 
+                    className="w-10 h-10 rounded-[14px] object-cover shrink-0 select-none pointer-events-none relative z-10" 
+                    style={{boxShadow: '0 0 20px rgba(139,92,246,0.5)'}}
+                    alt="Nova Pipeline Logo" 
+                  />
+                </div>
                 <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-black text-slate-900 text-lg tracking-tight leading-none">Nova</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-white text-lg tracking-tight leading-none">Nova</span>
                     {isPro ? (
-                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-gradient-to-br from-amber-500 to-orange-500 text-white leading-none shadow-sm uppercase tracking-wider flex items-center gap-0.5">
-                        <Crown size={8} className="fill-current" /> PRO
+                      <span className="text-[8px] font-extrabold px-2 py-0.5 rounded-md leading-none uppercase tracking-wider flex items-center gap-0.5" style={{background: 'linear-gradient(135deg, #f59e0b, #f97316)', color: 'white', boxShadow: '0 2px 8px rgba(245,158,11,0.4)'}}>
+                        <Crown size={7} className="fill-current" /> PRO
                       </span>
                     ) : (isGuestAccount || isTrialActive) ? (
-                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200 leading-none shadow-sm uppercase tracking-wider">
+                      <span className="text-[8px] font-extrabold px-2 py-0.5 rounded-md leading-none uppercase tracking-wider" style={{background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)'}}>
                         ทดลอง
                       </span>
                     ) : null}
                   </div>
-                  <p className="text-[10px] text-violet-600 font-bold leading-none mt-1.5 uppercase tracking-[0.2em]">Pipeline</p>
+                  <p className="text-[10px] font-bold leading-none mt-1.5 uppercase tracking-[0.2em]" style={{color: 'rgba(167,139,250,0.7)'}}>Pipeline</p>
                 </div>
               </div>
-              <button onClick={closeSidebar} aria-label="ปิดเมนู" className="lg:hidden p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100/50 rounded-xl transition-all">
+              <button onClick={closeSidebar} aria-label="ปิดเมนู" className="lg:hidden p-2 rounded-xl transition-all" style={{color: 'rgba(255,255,255,0.4)'}} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                 <X size={18} />
               </button>
             </div>
 
             {/* Navigation */}
-            <nav id="sidebar-nav" className="flex-1 py-4 space-y-0.5 overflow-y-auto overflow-x-hidden no-scrollbar">
-              {navItems.map((item) => {
+            <nav id="sidebar-nav" className="flex-1 px-4 py-3 space-y-0.5 overflow-y-auto overflow-x-hidden no-scrollbar">
+              {navItems.map((item, idx) => {
                 const isActive = location.pathname === item.to;
                 return (
                   <NavLink
@@ -597,38 +611,50 @@ export default function AppLayout() {
                     to={item.to}
                     onClick={() => !isDesktop && closeSidebar()}
                     className={cn(
-                      "group flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm transition-all duration-300 relative",
-                      isActive
-                        ? "text-white shadow-sm"
-                        : "text-slate-500 hover:text-violet-700 hover:bg-violet-50/50"
+                      "group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 relative overflow-hidden",
                     )}
+                    style={isActive ? {
+                      background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(99,102,241,0.2))',
+                      border: '1px solid rgba(139,92,246,0.3)',
+                      boxShadow: '0 4px 16px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.08)'
+                    } : {
+                      border: '1px solid transparent'
+                    }}
                   >
                     {isActive && (
                       <>
                         <motion.span
-                          layoutId="activeNavBackground"
-                          className="absolute inset-0 bg-violet-600 shadow-sm rounded-xl"
-                          transition={springSmooth}
-                        />
-                        <motion.span
                           layoutId="activeNavRail"
-                          className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-white rounded-r-full z-20"
+                          className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r-full z-20"
+                          style={{background: 'linear-gradient(to bottom, #a78bfa, #818cf8)'}}
                           transition={springSmooth}
                         />
+                        {/* Subtle shimmer on active */}
+                        <div className="absolute inset-0 opacity-30" style={{
+                          background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%)'
+                        }} />
                       </>
                     )}
-                    <item.icon
-                      size={18}
-                      strokeWidth={isActive ? 2.5 : 2}
-                      className={cn('relative z-10 transition-colors', isActive ? 'text-white' : 'text-slate-400 group-hover:text-violet-600')}
-                    />
-                    <div className="relative z-10 flex flex-col">
-                      <span className={cn('font-bold tracking-tight', isActive ? 'text-white' : 'text-slate-700 group-hover:text-violet-700')}>
+                    {/* Icon */}
+                    <div className="relative z-10 w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200" style={isActive ? {
+                      background: 'rgba(139,92,246,0.4)',
+                      boxShadow: '0 0 12px rgba(139,92,246,0.3)'
+                    } : {
+                      background: 'rgba(255,255,255,0.05)'
+                    }}>
+                      <item.icon
+                        size={16}
+                        strokeWidth={isActive ? 2.5 : 2}
+                        style={{color: isActive ? '#c4b5fd' : 'rgba(255,255,255,0.4)', transition: 'color 0.2s'}}
+                      />
+                    </div>
+                    <div className="relative z-10 flex flex-col min-w-0">
+                      <span className="font-semibold text-sm tracking-tight" style={{color: isActive ? 'white' : 'rgba(255,255,255,0.6)', transition: 'color 0.2s'}}>
                         {item.label}
                       </span>
                     </div>
                     {!isActive && (
-                      <ChevronRight size={14} className="relative z-10 ml-auto opacity-0 -translate-x-2 group-hover:translate-x-0 group-hover:opacity-40 transition-all duration-300" />
+                      <ChevronRight size={13} className="relative z-10 ml-auto opacity-0 -translate-x-1 group-hover:translate-x-0 group-hover:opacity-30 transition-all duration-200" style={{color: 'rgba(255,255,255,0.4)'}} />
                     )}
                   </NavLink>
                 );
@@ -639,85 +665,216 @@ export default function AppLayout() {
             {!isGuestAccount && <OnboardingChecklist />}
 
             {!isPro && (
-              <div className="px-3 mt-4 mb-2">
+              <div className="px-4 mt-2 mb-3">
                 <button
                   onClick={() => openPaywall(isGuestAccount ? 'upgrade' : 'default')}
-                  className="w-full relative overflow-hidden bg-gradient-to-br from-amber-400 to-orange-500 p-[1px] rounded-2xl group shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5 active:scale-95"
+                  className="w-full relative overflow-hidden rounded-2xl group transition-all duration-300 hover:-translate-y-0.5 active:scale-95"
+                  style={{background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(249,115,22,0.15))', border: '1px solid rgba(245,158,11,0.25)'}}
                 >
-                  <div className="bg-gradient-to-br from-amber-50 to-orange-50/90 w-full rounded-2xl py-3 px-3 flex items-center justify-between relative z-10">
+                  <div className="w-full py-3 px-3 flex items-center justify-between relative z-10">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-inner">
-                        <Sparkles size={16} className="text-white" />
+                      <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{background: 'linear-gradient(135deg, #f59e0b, #f97316)'}}>
+                        <Sparkles size={14} className="text-white" />
                       </div>
                       <div className="text-left">
-                        <p className="text-xs font-bold text-orange-900 leading-none mb-1">Nova Pro</p>
-                        <p className="text-[10px] font-semibold text-orange-700/70 leading-none">
+                        <p className="text-xs font-bold leading-none mb-0.5" style={{color: '#fbbf24'}}>Nova Pro</p>
+                        <p className="text-[10px] font-medium leading-none" style={{color: 'rgba(251,191,36,0.6)'}}>
                           {isGuestAccount ? 'อัปเกรดเพื่อใช้งานจริง' : (isExpired ? 'ต่ออายุการใช้งาน' : 'อัปเกรดแบบรายเดือน')}
                         </p>
                       </div>
                     </div>
-                    <ChevronRight size={16} className="text-orange-500 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight size={14} style={{color: 'rgba(251,191,36,0.6)'}} className="group-hover:translate-x-1 transition-transform" />
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] z-20" />
                 </button>
               </div>
             )}
 
             {/* Monthly Goal */}
-            <div className="pb-5 pt-5 relative mt-2 mb-1">
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
-              <div className="bg-gradient-to-br from-violet-50 to-indigo-50/50 border border-violet-100/60 rounded-2xl p-3.5 space-y-3 relative overflow-hidden group">
-                <div className="absolute -top-10 -right-10 w-24 h-24 bg-gradient-to-br from-violet-300/20 to-indigo-300/20 rounded-full transition-all group-hover:scale-110 duration-500" />
+            <div className="px-4 pb-4 pt-2 relative">
+              <div className="absolute top-0 left-6 right-6 h-px" style={{background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.2), transparent)'}} />
+              <div className="rounded-2xl p-3.5 space-y-2.5 relative overflow-hidden" style={{
+                background: 'linear-gradient(135deg, rgba(139,92,246,0.12), rgba(99,102,241,0.08))',
+                border: '1px solid rgba(139,92,246,0.15)'
+              }}>
+                <div className="absolute -top-8 -right-8 w-20 h-20 rounded-full pointer-events-none" style={{background: 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)'}} />
                 <div className="flex items-center justify-between relative z-10">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">เป้าหมายส่วนตัว</p>
-                  <span className="text-xs font-black text-violet-600 bg-white px-2 py-0.5 rounded-full shadow-sm">{goalProgress}%</span>
+                  <p className="text-[10px] font-bold uppercase tracking-wider" style={{color: 'rgba(167,139,250,0.6)'}}>เป้าหมายส่วนตัว</p>
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full" style={{background: 'rgba(139,92,246,0.2)', color: '#c4b5fd'}}>{goalProgress}%</span>
                 </div>
                 <div className="flex justify-between items-center relative z-10">
-                  <p className="text-lg font-black text-slate-800 tracking-tight">{hasPersonalTarget ? formatCurrency(effectiveTarget) : 'ยังไม่ได้ตั้ง'}</p>
-                  <TrendingUp size={16} className={goalProgress >= 75 ? 'text-emerald-500' : 'text-slate-300'} strokeWidth={2.5} />
+                  <p className="text-base font-black tracking-tight" style={{color: 'rgba(255,255,255,0.9)'}}>{hasPersonalTarget ? formatCurrency(effectiveTarget) : 'ยังไม่ได้ตั้ง'}</p>
+                  <TrendingUp size={14} style={{color: goalProgress >= 75 ? '#34d399' : 'rgba(255,255,255,0.2)'}} strokeWidth={2.5} />
                 </div>
-                <div className="h-2 w-full bg-white/60 rounded-full overflow-hidden shadow-inner relative z-10">
+                <div className="h-1.5 w-full rounded-full overflow-hidden relative z-10" style={{background: 'rgba(255,255,255,0.08)'}}>
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${goalProgress}%` }}
-                    transition={{ duration: 1, ease: [0.19, 1, 0.22, 1] }}
-                    className={cn(
-                      "h-full rounded-full shadow-sm",
-                      goalProgress >= 100 ? "bg-gradient-to-r from-emerald-400 to-emerald-500" :
-                      goalProgress >= 75  ? "bg-gradient-to-r from-emerald-400 to-emerald-500" :
-                      goalProgress >= 50  ? "bg-gradient-to-r from-violet-500 to-indigo-500"  : "bg-gradient-to-r from-violet-400 to-indigo-400"
-                    )}
+                    transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
+                    className="h-full rounded-full"
+                    style={{
+                      background: goalProgress >= 75
+                        ? 'linear-gradient(90deg, #34d399, #10b981)'
+                        : 'linear-gradient(90deg, #7c3aed, #818cf8)',
+                      boxShadow: goalProgress >= 75 ? '0 0 8px rgba(52,211,153,0.4)' : '0 0 8px rgba(124,58,237,0.4)'
+                    }}
                   />
                 </div>
               </div>
             </div>
 
             {/* Developer credit */}
-            <div className="px-2 pb-6 pt-3 text-center relative mt-auto">
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
-              <div className="flex flex-col items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Developed by</p>
+            <div className="px-4 pb-5 pt-2 text-center relative">
+              <div className="flex flex-col items-center gap-1 transition-opacity" style={{opacity: 0.4}}>
+                <p className="text-[8px] font-bold uppercase tracking-widest" style={{color: 'rgba(255,255,255,0.4)'}}>Developed by</p>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
-                  <p className="text-[11px] font-black text-slate-700 tracking-tight">Sorawit Thunthakij</p>
+                  <div className="w-1 h-1 rounded-full bg-violet-400 animate-pulse" />
+                  <p className="text-[10px] font-black" style={{color: 'rgba(255,255,255,0.6)'}}>Sorawit Thunthakij</p>
                 </div>
               </div>
             </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
+        </aside>
+      ) : (
+        <AnimatePresence>
+          {isSidebarOpen && (
+            <motion.aside
+              key="sidebar-mobile"
+              ref={sidebarRef}
+              {...mobileSidebarMotion}
+              variants={sidebarVariants}
+              className="fixed inset-y-0 left-0 z-50 w-72 flex flex-col"
+              style={{
+                background: 'linear-gradient(180deg, #13083a 0%, #0f0829 50%, #0a0520 100%)',
+                borderRight: '1px solid rgba(139,92,246,0.12)',
+                boxShadow: '8px 0 48px rgba(0,0,0,0.4)'
+              }}
+            >
+              {/* Ambient glow orbs */}
+              <div className="absolute top-0 left-0 w-full h-64 pointer-events-none overflow-hidden">
+                <div className="absolute -top-16 -left-8 w-48 h-48 rounded-full" style={{background: 'radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%)'}} />
+                <div className="absolute top-20 right-0 w-32 h-32 rounded-full" style={{background: 'radial-gradient(circle, rgba(236,72,153,0.10) 0%, transparent 70%)'}} />
+              </div>
+
+              {/* Logo */}
+              <div className="h-20 flex items-center justify-between px-5 mb-1 relative shrink-0">
+                <div className="absolute bottom-0 left-4 right-4 h-px" style={{background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.25), transparent)'}} />
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-[14px] blur-md" style={{background: 'rgba(139,92,246,0.4)'}} />
+                    <img src="/icon.svg" className="w-10 h-10 rounded-[14px] object-cover shrink-0 select-none pointer-events-none relative z-10" style={{boxShadow: '0 0 20px rgba(139,92,246,0.5)'}} alt="Nova Pipeline Logo" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-white text-lg tracking-tight leading-none">Nova</span>
+                      {isPro ? (
+                        <span className="text-[8px] font-extrabold px-2 py-0.5 rounded-md leading-none uppercase tracking-wider flex items-center gap-0.5" style={{background: 'linear-gradient(135deg, #f59e0b, #f97316)', color: 'white', boxShadow: '0 2px 8px rgba(245,158,11,0.4)'}}>
+                          <Crown size={7} className="fill-current" /> PRO
+                        </span>
+                      ) : (isGuestAccount || isTrialActive) ? (
+                        <span className="text-[8px] font-extrabold px-2 py-0.5 rounded-md leading-none uppercase tracking-wider" style={{background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)'}}>ทดลอง</span>
+                      ) : null}
+                    </div>
+                    <p className="text-[10px] font-bold leading-none mt-1.5 uppercase tracking-[0.2em]" style={{color: 'rgba(167,139,250,0.7)'}}>Pipeline</p>
+                  </div>
+                </div>
+                <button onClick={closeSidebar} aria-label="ปิดเมนู" className="p-2 rounded-xl transition-all" style={{color: 'rgba(255,255,255,0.4)'}} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Navigation */}
+              <nav className="flex-1 px-4 py-3 space-y-0.5 overflow-y-auto overflow-x-hidden no-scrollbar">
+                {navItems.map((item) => {
+                  const isActive = location.pathname === item.to;
+                  return (
+                    <NavLink key={item.to} to={item.to} onClick={() => closeSidebar()}
+                      className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 relative overflow-hidden"
+                      style={isActive ? {background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(99,102,241,0.2))', border: '1px solid rgba(139,92,246,0.3)', boxShadow: '0 4px 16px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.08)'} : {border: '1px solid transparent'}}
+                    >
+                      {isActive && (
+                        <motion.span layoutId="activeNavRailMobile" className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r-full z-20" style={{background: 'linear-gradient(to bottom, #a78bfa, #818cf8)'}} transition={springSmooth} />
+                      )}
+                      <div className="relative z-10 w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={isActive ? {background: 'rgba(139,92,246,0.4)', boxShadow: '0 0 12px rgba(139,92,246,0.3)'} : {background: 'rgba(255,255,255,0.05)'}}>
+                        <item.icon size={16} strokeWidth={isActive ? 2.5 : 2} style={{color: isActive ? '#c4b5fd' : 'rgba(255,255,255,0.4)'}} />
+                      </div>
+                      <span className="relative z-10 font-semibold text-sm tracking-tight" style={{color: isActive ? 'white' : 'rgba(255,255,255,0.6)'}}>
+                        {item.label}
+                      </span>
+                    </NavLink>
+                  );
+                })}
+              </nav>
+
+              {!isGuestAccount && <OnboardingChecklist />}
+
+              {!isPro && (
+                <div className="px-4 mt-2 mb-3">
+                  <button onClick={() => openPaywall(isGuestAccount ? 'upgrade' : 'default')}
+                    className="w-full relative overflow-hidden rounded-2xl group transition-all duration-300 hover:-translate-y-0.5 active:scale-95"
+                    style={{background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(249,115,22,0.15))', border: '1px solid rgba(245,158,11,0.25)'}}
+                  >
+                    <div className="w-full py-3 px-3 flex items-center justify-between relative z-10">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{background: 'linear-gradient(135deg, #f59e0b, #f97316)'}}>
+                          <Sparkles size={14} className="text-white" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-xs font-bold leading-none mb-0.5" style={{color: '#fbbf24'}}>Nova Pro</p>
+                          <p className="text-[10px] font-medium leading-none" style={{color: 'rgba(251,191,36,0.6)'}}>{isGuestAccount ? 'อัปเกรดเพื่อใช้งานจริง' : (isExpired ? 'ต่ออายุการใช้งาน' : 'อัปเกรดแบบรายเดือน')}</p>
+                        </div>
+                      </div>
+                      <ChevronRight size={14} style={{color: 'rgba(251,191,36,0.6)'}} className="group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </button>
+                </div>
+              )}
+
+              {/* Monthly Goal */}
+              <div className="px-4 pb-4 pt-2 relative">
+                <div className="absolute top-0 left-6 right-6 h-px" style={{background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.2), transparent)'}} />
+                <div className="rounded-2xl p-3.5 space-y-2.5 relative overflow-hidden" style={{background: 'linear-gradient(135deg, rgba(139,92,246,0.12), rgba(99,102,241,0.08))', border: '1px solid rgba(139,92,246,0.15)'}}>
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-bold uppercase tracking-wider" style={{color: 'rgba(167,139,250,0.6)'}}>เป้าหมายส่วนตัว</p>
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full" style={{background: 'rgba(139,92,246,0.2)', color: '#c4b5fd'}}>{goalProgress}%</span>
+                  </div>
+                  <div className="h-1.5 w-full rounded-full overflow-hidden" style={{background: 'rgba(255,255,255,0.08)'}}>
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${goalProgress}%` }} transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1] }} className="h-full rounded-full" style={{background: goalProgress >= 75 ? 'linear-gradient(90deg, #34d399, #10b981)' : 'linear-gradient(90deg, #7c3aed, #818cf8)'}} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Developer credit */}
+              <div className="px-4 pb-5 pt-2 text-center relative">
+                <div className="flex flex-col items-center gap-1" style={{opacity: 0.4}}>
+                  <p className="text-[8px] font-bold uppercase tracking-widest" style={{color: 'rgba(255,255,255,0.4)'}}>Developed by</p>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1 h-1 rounded-full bg-violet-400 animate-pulse" />
+                    <p className="text-[10px] font-black" style={{color: 'rgba(255,255,255,0.6)'}}>Sorawit Thunthakij</p>
+                  </div>
+                </div>
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
+      )}
 
       {/* MAIN AREA */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden" style={{background: '#f5f4fb'}}>
         {/* Header */}
-        <header className="h-16 flex items-center justify-between px-8 bg-white border-b border-slate-100/80 z-20 shrink-0">
+        <header className="h-16 flex items-center justify-between px-6 z-20 shrink-0" style={{
+          background: 'rgba(245,244,251,0.85)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderBottom: '1px solid rgba(139,92,246,0.08)',
+          boxShadow: '0 1px 0 rgba(255,255,255,0.8), 0 4px 24px rgba(100,80,200,0.04)'
+        }}>
           <div className="flex items-center gap-3">
-            <button onClick={toggleSidebar} aria-label="เปิด/ปิดเมนู" className="lg:hidden p-1.5 text-slate-400 hover:bg-slate-100 rounded-lg">
+            <button onClick={toggleSidebar} aria-label="เปิด/ปิดเมนู" className="lg:hidden p-2 rounded-xl transition-all" style={{color: '#64748b'}} onMouseOver={e => e.currentTarget.style.background='rgba(139,92,246,0.08)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
               <Menu size={20} />
             </button>
             <button
               onClick={() => setIsCommandPaletteOpen(true)}
-              className="hidden md:flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-all group text-sm"
+              className="hidden md:flex items-center gap-2.5 px-3.5 py-2 rounded-xl transition-all group text-sm"
+              style={{background: 'rgba(255,255,255,0.8)', border: '1px solid rgba(139,92,246,0.1)', boxShadow: '0 1px 4px rgba(100,80,200,0.06)'}}
             >
               <Search size={14} className="text-slate-400" />
               <span className="text-slate-400 text-xs">ค้นหา...</span>
@@ -729,10 +886,17 @@ export default function AppLayout() {
             {/* Global Quick Add Button */}
             <button
               onClick={() => openQuickAdd()}
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl shadow-sm hover:shadow-md shadow-violet-500/20 transition-all font-semibold text-xs"
+              className="hidden md:flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs transition-all active:scale-95"
+              style={{
+                background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+                color: 'white',
+                boxShadow: '0 4px 14px rgba(124,58,237,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
+              }}
               title="สร้างดีลใหม่ (กด C)"
+              onMouseOver={e => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseOut={e => { e.currentTarget.style.boxShadow = '0 4px 14px rgba(124,58,237,0.35), inset 0 1px 0 rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'translateY(0)'; }}
             >
-              <Plus size={14} />
+              <Plus size={13} />
               <span>สร้างดีล</span>
             </button>
 
@@ -979,7 +1143,14 @@ export default function AppLayout() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto bg-slate-50">
+        <main className="flex-1 overflow-y-auto" style={{
+          background: 'linear-gradient(180deg, #f5f4fb 0%, #f8f7fe 100%)',
+          backgroundImage: `
+            radial-gradient(ellipse 80% 40% at 50% -5%, rgba(139,92,246,0.05) 0%, transparent 60%),
+            radial-gradient(circle at 1px 1px, rgba(148,163,184,0.06) 1px, transparent 0)
+          `,
+          backgroundSize: '100% 100%, 28px 28px',
+        }}>
           <div className="p-6 min-h-full">
             <TrialBanner 
               isTrialActive={isTrialActive} 
@@ -996,7 +1167,19 @@ export default function AppLayout() {
               effectiveTarget={effectiveTarget}
               navigate={navigate}
             />
-            <Suspense fallback={<div className="flex-1 flex items-center justify-center min-h-[400px]"><Loader2 className="animate-spin text-violet-500" size={32} /></div>}>
+            <Suspense fallback={
+              <div className="flex-1 flex items-center justify-center min-h-[400px]">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="relative">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.12)'}}>
+                      <Loader2 className="animate-spin" size={24} style={{color: '#7c3aed'}} />
+                    </div>
+                    <div className="absolute inset-0 rounded-2xl" style={{background: 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)', filter: 'blur(8px)'}} />
+                  </div>
+                  <p className="text-sm font-semibold" style={{color: 'rgba(124,58,237,0.6)'}}>กำลังโหลด...</p>
+                </div>
+              </div>
+            }>
               <Outlet />
             </Suspense>
           </div>
