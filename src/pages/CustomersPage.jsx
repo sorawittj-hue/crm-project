@@ -362,7 +362,7 @@ export default function CustomersPage() {
   if (isLoading) return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="bg-white rounded-2xl border border-slate-100 p-5 space-y-4 animate-pulse">
+        <div key={i} className="bg-white rounded-2xl border border-violet-100/50 p-5 space-y-4 animate-pulse">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 bg-slate-200 rounded-xl" />
             <div className="space-y-2 flex-1">
@@ -380,7 +380,10 @@ export default function CustomersPage() {
   );
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-[1600px] mx-auto space-y-6 pb-20 px-4 md:px-0">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-[1600px] mx-auto space-y-6 pb-20 px-4 md:px-0 relative">
+      {/* Ambient glows */}
+      <div className="fixed top-20 right-0 w-[500px] h-[500px] bg-violet-400/5 rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-fuchsia-400/5 rounded-full blur-[100px] pointer-events-none -z-10" />
       {/* HEADER */}
       <PageHeader
         icon={Users}
@@ -473,14 +476,14 @@ export default function CustomersPage() {
       </div>
 
       {/* SEARCH & FILTERS */}
-      <div className="flex flex-col xl:flex-row gap-4 bg-white/60 backdrop-blur-xl p-4 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80">
+      <div className="flex flex-col xl:flex-row gap-4 bg-white/60 backdrop-blur-xl p-4 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-violet-100/40">
         <div className="relative flex-1">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-violet-400" size={18} />
           <Input
             placeholder="ค้นหาลูกค้าด้วยชื่อ, บริษัท, อีเมล, อุตสาหกรรม..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-14 pl-12 bg-white/80 border-slate-200/60 rounded-2xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-violet-500/20 focus:border-violet-300 shadow-inner transition-all"
+            className="h-14 pl-12 bg-white/80 border-slate-200 rounded-2xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-violet-400/20 focus:border-violet-400 shadow-inner transition-all"
           />
           {searchTerm !== debouncedSearchTerm && (
             <Loader2 className="absolute right-5 top-1/2 -translate-y-1/2 text-violet-500 animate-spin" size={18} />
@@ -615,7 +618,7 @@ export default function CustomersPage() {
                   transition={{ duration: 0.2, ease: 'easeOut' }}
                 >
                   <div
-                    className="p-6 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 cursor-pointer group relative overflow-hidden transition-all duration-500 hover:shadow-[0_15px_35px_rgb(0,0,0,0.08)] hover:-translate-y-1.5"
+                    className="p-6 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-violet-100/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 cursor-pointer group relative overflow-hidden transition-all duration-500 hover:border-violet-200 hover:shadow-[0_8px_24px_rgba(139,92,246,0.12)] hover:-translate-y-1.5"
                     onClick={() => { setSelectedCustomer(customer); setIsSidebarOpen(true); }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
@@ -671,17 +674,17 @@ export default function CustomersPage() {
                       {/* Contact chips */}
                       <div className="flex flex-wrap gap-1.5 text-xs text-slate-500">
                         {customer.email && (
-                          <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 truncate max-w-[180px]">
-                            <Mail size={10} className="text-slate-400 shrink-0" /> <span className="truncate">{customer.email}</span>
+                          <span className="flex items-center gap-1 bg-violet-50/60 px-2.5 py-1 rounded-lg border border-violet-100/60 truncate max-w-[180px]">
+                            <Mail size={10} className="text-violet-400 shrink-0" /> <span className="truncate">{customer.email}</span>
                           </span>
                         )}
                         {customer.phone && (
-                          <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
-                            <Phone size={10} className="text-slate-400" /> {customer.phone}
+                          <span className="flex items-center gap-1 bg-violet-50/60 px-2.5 py-1 rounded-lg border border-violet-100/60">
+                            <Phone size={10} className="text-violet-400" /> {customer.phone}
                           </span>
                         )}
                         {customer.industry && (
-                          <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+                          <span className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-violet-100/50">
                             <BarChart3 size={10} className="text-slate-400" /> {customer.industry}
                           </span>
                         )}
@@ -724,17 +727,17 @@ export default function CustomersPage() {
                       </div>
 
                       {/* Stats */}
-                      <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100">
-                        <div className="text-center p-2 rounded-xl bg-slate-50">
+                      <div className="grid grid-cols-3 gap-2 pt-3 border-t border-violet-100/50">
+                        <div className="text-center p-2 rounded-xl bg-slate-50 border border-violet-100/50">
                           <p className="text-[10px] text-slate-400 mb-0.5">ดีลทั้งหมด</p>
                           <p className="text-lg font-black text-slate-900 tabular-nums">{customer.dealStats.total}</p>
                         </div>
-                        <div className="text-center p-2 rounded-xl bg-emerald-50">
-                          <p className="text-[10px] text-emerald-500 mb-0.5">ปิดได้</p>
-                          <p className="text-lg font-black text-emerald-600 tabular-nums">{customer.dealStats.won}</p>
+                        <div className="text-center p-2 rounded-xl bg-emerald-50 border border-emerald-200">
+                          <p className="text-[10px] text-emerald-700 mb-0.5 font-bold">ปิดได้</p>
+                          <p className="text-lg font-black text-emerald-700 tabular-nums">{customer.dealStats.won}</p>
                         </div>
-                        <div className="text-center p-2 rounded-xl bg-violet-50">
-                          <p className="text-[10px] text-violet-500 mb-0.5">มูลค่า</p>
+                        <div className="text-center p-2 rounded-xl bg-violet-50 border border-violet-200">
+                          <p className="text-[10px] text-violet-600 mb-0.5 font-bold">มูลค่า</p>
                           <p className="text-sm font-black text-violet-700 tabular-nums leading-tight">{formatCurrency(customer.dealStats.wonValue)}</p>
                         </div>
                       </div>
@@ -770,11 +773,11 @@ export default function CustomersPage() {
 
       {/* CUSTOMER LIST / TABLE VIEW */}
       {viewMode === 'list' && filteredCustomers.length > 0 && (
-        <div className="overflow-hidden rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5">
+        <div className="overflow-hidden rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-violet-100/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/50">
+                <tr className="border-b border-violet-100/50 bg-slate-50/50">
                   <th className="p-4 w-12 text-center">
                     <input
                       type="checkbox"
@@ -808,7 +811,7 @@ export default function CustomersPage() {
                       key={customer.id} 
                       onClick={() => { setSelectedCustomer(customer); setIsSidebarOpen(true); }}
                       className={cn(
-                        "group hover:bg-slate-50/50 transition-colors cursor-pointer",
+                        "group hover:bg-violet-50/20 hover:border-violet-200 hover:shadow-[0_8px_24px_rgba(139,92,246,0.12)] hover:-translate-y-[1px] transition-all duration-300 transition-colors cursor-pointer",
                         isSelected && "bg-violet-50/20 hover:bg-violet-50/30"
                       )}
                     >
@@ -823,8 +826,8 @@ export default function CustomersPage() {
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <div 
-                            className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-sm shrink-0"
-                            style={{ background: `linear-gradient(135deg, ${avatarColors[0]}, ${avatarColors[1]})` }}
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black shrink-0 shadow-[0_4px_12px_rgba(124,58,237,0.3)]"
+                            style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)' }}
                           >
                             {customer.name?.charAt(0).toUpperCase() || '?'}
                           </div>
@@ -973,10 +976,10 @@ export default function CustomersPage() {
         <DialogContent className="p-0 border border-white/80 bg-white/95 backdrop-blur-3xl max-w-2xl overflow-y-auto max-h-[90vh] rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)]">
           {selectedCustomer && (
             <div className="p-8 space-y-6 pb-8">
-              <DialogHeader className="space-y-4 border-b border-slate-100/80 pb-6 mb-2 relative">
+              <DialogHeader className="space-y-4 border-b border-violet-100/50/80 pb-6 mb-2 relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-violet-100/40 to-fuchsia-100/40 rounded-t-[2.5rem] -z-10 -mx-8 -mt-8 px-8 pt-8 pb-6 border-b border-violet-100/50" />
                 <div className="flex items-center gap-5">
-                  <div className="w-20 h-20 rounded-[1.5rem] bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-white text-3xl font-black shadow-xl ring-4 ring-white relative">
+                  <div className="w-20 h-20 rounded-[1.5rem] flex items-center justify-center text-white text-3xl font-black shadow-[0_8px_24px_rgba(124,58,237,0.4)] ring-4 ring-white relative" style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)' }}>
                     <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-[1.5rem]" />
                     <span className="relative z-10 drop-shadow-md">{selectedCustomer.name?.charAt(0)}</span>
                   </div>
@@ -1003,7 +1006,7 @@ export default function CustomersPage() {
                     {TIER_CONFIG[selectedCustomer.tier]?.icon || '🥈'} {selectedCustomer.tier || 'Silver'}
                   </span>
                   {selectedCustomer.industry && (
-                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-50 text-slate-500 border border-slate-100">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-50 text-slate-500 border border-violet-100/50">
                       {selectedCustomer.industry}
                     </span>
                   )}
@@ -1199,7 +1202,7 @@ export default function CustomersPage() {
                       className="space-y-6"
                     >
                       {/* Account Health Meter */}
-                      <Card className="rounded-[2rem] bg-white border border-slate-100 shadow-sm">
+                      <Card className="rounded-[2rem] bg-white border border-violet-100/60 shadow-sm hover:border-violet-200 transition-colors">
                         <div className="p-6 space-y-4">
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2.5">
@@ -1234,15 +1237,15 @@ export default function CustomersPage() {
                             />
                           </div>
                           <div className="grid grid-cols-3 gap-3 pt-2">
-                            <div className="rounded-2xl bg-slate-50 p-3">
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Win rate</p>
-                              <p className="text-base font-black text-slate-900 tabular-nums">{selectedCustomer.health?.winRate || 0}%</p>
+                            <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3">
+                              <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">Win rate</p>
+                              <p className="text-base font-black text-emerald-700 tabular-nums">{selectedCustomer.health?.winRate || 0}%</p>
                             </div>
-                            <div className="rounded-2xl bg-slate-50 p-3">
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Risks</p>
-                              <p className="text-base font-black text-rose-500 tabular-nums">{selectedCustomer.health?.riskCount || 0}</p>
+                            <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3">
+                              <p className="text-[10px] font-bold text-rose-700 uppercase tracking-widest">Risks</p>
+                              <p className="text-base font-black text-rose-600 tabular-nums">{selectedCustomer.health?.riskCount || 0}</p>
                             </div>
-                            <div className="rounded-2xl bg-slate-50 p-3">
+                            <div className="rounded-2xl bg-slate-50 border border-slate-200 p-3">
                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Idle Days</p>
                               <p className="text-base font-black text-slate-900 tabular-nums">
                                 {selectedCustomer.health?.inactiveDays ?? 0} วัน
@@ -1328,7 +1331,7 @@ export default function CustomersPage() {
                                 'ทำความคุ้นเคยสอบถามธุรกิจเบื้องต้น',
                                 'แนะนำความเชี่ยวชาญของทีมงานและบริการหลัก'
                               ],
-                              cardColor: 'bg-slate-50 text-slate-800 border-slate-100',
+                              cardColor: 'bg-slate-50 text-slate-800 border-violet-100/50',
                               iconColor: 'text-slate-400'
                             };
 
@@ -1391,13 +1394,13 @@ export default function CustomersPage() {
 
                       {/* Deal Values Summary */}
                       <div className="grid grid-cols-2 gap-4">
-                        <Card className="rounded-[2rem] bg-slate-50 border-none p-6">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">มูลค่ารวมที่ปิดได้</p>
-                          <p className="text-xl font-black text-emerald-600 tabular-nums">{formatFullCurrency(selectedCustomer.dealStats.wonValue)}</p>
+                        <Card className="rounded-[2rem] bg-emerald-50 border border-emerald-200 p-6">
+                          <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest mb-1.5">มูลค่ารวมที่ปิดได้</p>
+                          <p className="text-xl font-black text-emerald-700 tabular-nums">{formatFullCurrency(selectedCustomer.dealStats.wonValue)}</p>
                         </Card>
-                        <Card className="rounded-[2rem] bg-slate-50 border-none p-6">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">ดีลที่กำลังดำเนินการ</p>
-                          <p className="text-xl font-black text-violet-750 tabular-nums">{formatFullCurrency(selectedCustomer.dealStats.activeValue)}</p>
+                        <Card className="rounded-[2rem] bg-violet-50 border border-violet-200 p-6">
+                          <p className="text-[10px] font-bold text-violet-600 uppercase tracking-widest mb-1.5">ดีลที่กำลังดำเนินการ</p>
+                          <p className="text-xl font-black text-violet-700 tabular-nums">{formatFullCurrency(selectedCustomer.dealStats.activeValue)}</p>
                         </Card>
                       </div>
 
@@ -1409,7 +1412,7 @@ export default function CustomersPage() {
                         </h3>
                         <div className="space-y-2.5 max-h-[40vh] overflow-y-auto no-scrollbar pr-1">
                           {selectedCustomer.dealStats.deals.map(deal => (
-                            <Card key={deal.id} className="rounded-2xl bg-white border-slate-100 p-4 border hover:border-violet-200 hover:shadow-md hover:shadow-violet-500/5 transition-all duration-300 group cursor-pointer">
+                            <Card key={deal.id} className="rounded-2xl bg-white border border-violet-100/50 p-4 hover:border-violet-200 hover:shadow-[0_8px_24px_rgba(139,92,246,0.12)] transition-all duration-300 group cursor-pointer">
                               <div className="flex justify-between items-center gap-3">
                                 <div className="min-w-0">
                                   <p className="text-sm font-bold text-slate-900 truncate leading-snug group-hover:text-violet-700 transition-colors">{deal.title}</p>
@@ -1430,7 +1433,7 @@ export default function CustomersPage() {
                             </Card>
                           ))}
                           {selectedCustomer.dealStats.deals.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-10 bg-slate-50/50 rounded-3xl border border-slate-100 border-dashed">
+                            <div className="flex flex-col items-center justify-center py-10 bg-slate-50/50 rounded-3xl border border-violet-100/50 border-dashed">
                               <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
                                 <Target size={20} />
                               </div>
@@ -1500,15 +1503,15 @@ export default function CustomersPage() {
                       ) : (
                         <div className="space-y-3">
                           {contacts.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-10 bg-slate-50/50 rounded-3xl border border-slate-100 border-dashed">
+                            <div className="flex flex-col items-center justify-center py-10 bg-slate-50/50 rounded-3xl border border-violet-100/50 border-dashed">
                               <Contact size={24} className="text-slate-400 mb-3" />
                               <p className="text-xs text-slate-400 font-semibold">ยังไม่มีผู้ติดต่อ</p>
                             </div>
                           ) : (
                             contacts.map(contact => (
-                              <Card key={contact.id} className="rounded-[1.5rem] bg-white border-slate-100 p-4 hover:border-violet-200 transition-all group shadow-sm flex flex-col md:flex-row md:items-center gap-4 justify-between">
+                              <Card key={contact.id} className="rounded-[1.5rem] bg-white border border-violet-100/50 p-4 hover:border-violet-200 hover:shadow-[0_8px_24px_rgba(139,92,246,0.10)] transition-all group shadow-sm flex flex-col md:flex-row md:items-center gap-4 justify-between">
                                 <div className="flex gap-4 items-center">
-                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center text-violet-700 font-bold shrink-0 shadow-inner">
+                                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shrink-0 shadow-[0_4px_12px_rgba(124,58,237,0.3)]" style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)' }}>
                                     {contact.full_name?.charAt(0) || <Contact size={18} />}
                                   </div>
                                   <div>
@@ -1567,7 +1570,7 @@ export default function CustomersPage() {
             </DialogHeader>
 
           <form onSubmit={handleAddSubmit} className="space-y-6">
-            <div className="grid grid-cols-2 gap-5 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+            <div className="grid grid-cols-2 gap-5 bg-slate-50/50 p-6 rounded-[2rem] border border-violet-100/50">
               <div className="col-span-2 space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">ชื่อลูกค้า *</label>
                 <Input

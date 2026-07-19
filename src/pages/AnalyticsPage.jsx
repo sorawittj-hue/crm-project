@@ -538,6 +538,9 @@ export default function AnalyticsPage() {
 
   return (
     <div className="max-w-[1600px] mx-auto space-y-8 pb-24 px-4 md:px-6 mt-4 bg-slate-50/50 min-h-screen relative overflow-hidden">
+      {/* Fixed Premium Ambient Glow Blobs */}
+      <div className="fixed top-0 right-0 w-[600px] h-[600px] bg-violet-500/4 rounded-full blur-[130px] pointer-events-none -z-10" />
+      <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/4 rounded-full blur-[130px] pointer-events-none -z-10" />
       {/* Ambient Glowing Orbs */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[500px] rounded-full bg-violet-400/20 blur-[120px] pointer-events-none" />
       <div className="absolute top-[30%] right-[-5%] w-[30%] h-[400px] rounded-full bg-blue-400/10 blur-[100px] pointer-events-none" />
@@ -752,10 +755,10 @@ export default function AnalyticsPage() {
 
               {/* REVENUE CHART + STAGE DONUT */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2 p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 relative overflow-hidden group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
+                <Card className="lg:col-span-2 p-7 rounded-[2rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 relative overflow-hidden group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 transition-shadow duration-500">
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-8">
                     <div>
-                      <h3 className="text-base font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Revenue Trend</h3>
+                      <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Revenue Trend</h3></div>
                       <p className="text-xs text-slate-400 mt-1 font-medium">Actuals vs Forecast vs Goal</p>
                     </div>
                     <div className="flex items-center gap-5 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
@@ -802,9 +805,9 @@ export default function AnalyticsPage() {
                   </div>
                 </Card>
 
-                <Card className="lg:col-span-1 p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 flex flex-col items-center group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
+                <Card className="lg:col-span-1 p-7 rounded-[2rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 flex flex-col items-center group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 transition-shadow duration-500">
                   <div className="w-full mb-6">
-                    <h3 className="text-base font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Stage Distribution</h3>
+                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Stage Distribution</h3></div>
                     <p className="text-xs text-slate-400 mt-1 font-medium">Pipeline health by volume</p>
                   </div>
                   <div className="relative w-full aspect-square max-w-[260px] min-w-0 min-h-0">
@@ -944,14 +947,14 @@ export default function AnalyticsPage() {
               </div>
               
               {/* FORECAST ACCURACY DASHBOARD */}
-              <Card className="p-8 rounded-[2.5rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 relative overflow-hidden group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500 mt-8">
+              <Card className="p-8 rounded-[2.5rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 relative overflow-hidden group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 mt-8">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100/50">
-                      <Target size={22} className="text-indigo-500" strokeWidth={2.5} />
+                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}>
+                      <Target size={18} strokeWidth={2.5} />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Forecast Accuracy</h3>
+                      <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Forecast Accuracy</h3></div>
                       <p className="text-xs text-slate-500 mt-1 font-medium">ความแม่นยำของการคาดการณ์ยอดขายเทียบกับยอดจริง</p>
                     </div>
                   </div>
@@ -1003,14 +1006,14 @@ export default function AnalyticsPage() {
 
           {/* TAB 2: FUNNEL */}
           {activeTab === 'funnel' && (
-            <Card className="p-8 rounded-[2.5rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 space-y-10">
+            <Card className="p-8 rounded-[2.5rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 space-y-10 hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300">
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100/50">
-                    <TrendingUp size={22} className="text-amber-500" strokeWidth={2.5} />
+                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}>
+                    <TrendingUp size={18} strokeWidth={2.5} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Conversion Funnel & Velocity</h3>
+                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Conversion Funnel & Velocity</h3></div>
                     <p className="text-xs text-slate-500 mt-1 font-medium">Analyze drop-offs and stage bottlenecks</p>
                   </div>
                 </div>
@@ -1071,12 +1074,14 @@ export default function AnalyticsPage() {
                 {/* Velocity Grid */}
                 <div className="col-span-1 bg-slate-50/50 rounded-3xl p-6 border border-slate-100">
                   <div className="flex items-center gap-2.5 mb-6">
-                    <Clock size={16} className="text-slate-400" strokeWidth={2.5} />
+                    <div className="w-7 h-7 rounded-xl flex items-center justify-center text-white shadow-sm" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}>
+                      <Clock size={13} strokeWidth={2.5} />
+                    </div>
                     <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Stage Velocity</p>
                   </div>
                   <div className="space-y-4">
                     {analytics?.velocityData.map((v) => (
-                      <div key={v.name} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                      <div key={v.name} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-[0_4px_16px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300">
                         <div>
                           <p className="text-sm font-bold text-slate-700">{v.name}</p>
                           <p className="text-xs text-slate-400 font-medium mt-0.5">{v.count} active deals</p>
@@ -1101,11 +1106,11 @@ export default function AnalyticsPage() {
                 <div className="space-y-5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100/50">
-                        <ThumbsUp size={16} className="text-emerald-500" />
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md" style={{background: 'linear-gradient(135deg, #10b981, #059669)'}}>
+                        <ThumbsUp size={16} />
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-slate-900">Win Reasons</h4>
+                        <h4 className="text-sm font-black tracking-tight text-slate-800">Win Reasons</h4>
                         <p className="text-xs text-slate-400 font-semibold">เหตุผลเด่นที่ชนะดีลการขาย</p>
                       </div>
                     </div>
@@ -1146,11 +1151,11 @@ export default function AnalyticsPage() {
                 <div className="space-y-5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center border border-rose-100/50">
-                        <ThumbsDown size={16} className="text-rose-500" />
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md" style={{background: 'linear-gradient(135deg, #f43f5e, #e11d48)'}}>
+                        <ThumbsDown size={16} />
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-slate-900">Loss Reasons</h4>
+                        <h4 className="text-sm font-black tracking-tight text-slate-800">Loss Reasons</h4>
                         <p className="text-xs text-slate-400 font-semibold">เหตุผลและปัญหาที่เสียดีล</p>
                       </div>
                     </div>
@@ -1195,9 +1200,9 @@ export default function AnalyticsPage() {
           {activeTab === 'performance' && (
             <div className="space-y-8">
               {/* Monthly contribution chart */}
-              <Card className="p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
+              <Card className="p-7 rounded-[2rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300">
                 <div className="mb-6">
-                  <h3 className="text-base font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Monthly Revenue Contribution</h3>
+                  <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Monthly Revenue Contribution</h3></div>
                   <p className="text-xs text-slate-400 mt-1 font-medium">Monthly won deal values by team member</p>
                 </div>
                 <div className="h-[320px] w-full min-w-0 min-h-0">
@@ -1228,11 +1233,11 @@ export default function AnalyticsPage() {
               {/* Leaderboard Cards */}
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-200">
-                    <Trophy size={22} className="text-amber-600" strokeWidth={2.5} />
+                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md" style={{background: 'linear-gradient(135deg, #f59e0b, #d97706)'}}>
+                    <Trophy size={18} strokeWidth={2.5} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Elite Leaderboard</h3>
+                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Elite Leaderboard</h3></div>
                     <p className="text-xs text-slate-500 mt-1 font-medium">Top performers & Quota attainment</p>
                   </div>
                 </div>
@@ -1330,9 +1335,9 @@ export default function AnalyticsPage() {
                             transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
                             className={cn(
                               "h-full rounded-full relative",
-                              m.goalAchievement >= 100 ? "bg-gradient-to-r from-emerald-400 to-emerald-500" :
-                              m.goalAchievement >= 70 ? "bg-gradient-to-r from-amber-400 to-amber-500" : 
-                              "bg-gradient-to-r from-rose-400 to-rose-500"
+                              m.goalAchievement >= 100 ? "bg-gradient-to-r from-emerald-400 to-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" :
+                              m.goalAchievement >= 70 ? "bg-gradient-to-r from-amber-400 to-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" : 
+                              "bg-gradient-to-r from-rose-400 to-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
                             )}
                           >
                             <div className="absolute inset-0 bg-white/20 w-1/2 skew-x-12 -translate-x-full animate-[shimmer_2s_infinite]" />
@@ -1352,9 +1357,9 @@ export default function AnalyticsPage() {
             <div className="space-y-8">
               {/* Row 1: Grade distribution & Tier distribution */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-1 p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 flex flex-col items-center group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
+                <Card className="lg:col-span-1 p-7 rounded-[2rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 flex flex-col items-center group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300">
                   <div className="w-full mb-6">
-                    <h3 className="text-base font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Revenue by Customer Grade</h3>
+                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Revenue by Customer Grade</h3></div>
                     <p className="text-xs text-slate-400 mt-1 font-medium">Won deal values across VIP to At-risk groups</p>
                   </div>
                   <div className="relative w-full aspect-square max-w-[220px] min-w-0 min-h-0">
@@ -1399,9 +1404,9 @@ export default function AnalyticsPage() {
                   </div>
                 </Card>
 
-                <Card className="lg:col-span-2 p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
+                <Card className="lg:col-span-2 p-7 rounded-[2rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300">
                   <div className="mb-6">
-                    <h3 className="text-base font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Revenue & Pipeline by Customer Tier</h3>
+                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Revenue & Pipeline by Customer Tier</h3></div>
                     <p className="text-xs text-slate-400 mt-1 font-medium">Comparison of closed revenue vs active pipeline per tier</p>
                   </div>
                   <div className="h-[280px] w-full min-w-0 min-h-0">
@@ -1431,9 +1436,9 @@ export default function AnalyticsPage() {
 
               {/* Row 2: Revenue by industry & Quota simulator */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
+                <Card className="p-7 rounded-[2rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300">
                   <div className="mb-6">
-                    <h3 className="text-base font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">Top Industries by Revenue</h3>
+                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Top Industries by Revenue</h3></div>
                     <p className="text-xs text-slate-400 mt-1 font-medium">Won deal volumes in top 5 market sectors</p>
                   </div>
                   <div className="h-[280px] w-full min-w-0 min-h-0">
@@ -1442,8 +1447,8 @@ export default function AnalyticsPage() {
                         <BarChart data={analytics.industryData} layout="vertical">
                           <defs>
                             <linearGradient id="colorIndustryRevenue" x1="0" y1="0" x2="1" y2="0">
-                              <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.95} />
-                              <stop offset="95%" stopColor="#2563eb" stopOpacity={0.45} />
+                              <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.95} />
+                              <stop offset="95%" stopColor="#6d28d9" stopOpacity={0.55} />
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="4 4" horizontal={false} stroke="#f1f5f9" />
@@ -1463,11 +1468,13 @@ export default function AnalyticsPage() {
                 </Card>
 
                 {/* AI Sales Quota Simulator */}
-                <Card className="p-7 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 flex flex-col justify-between group hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)] transition-shadow duration-500">
+                <Card className="p-7 rounded-[2rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 flex flex-col justify-between group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300">
                   <div>
                     <div className="flex items-center gap-2.5 mb-5">
-                      <Sliders size={18} className="text-violet-650" />
-                      <h3 className="text-base font-bold text-slate-900 tracking-tight pl-3 border-l-2 border-violet-500">AI Sales Quota Simulator</h3>
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}>
+                        <Sliders size={16} />
+                      </div>
+                      <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">AI Sales Quota Simulator</h3></div>
                     </div>
                     
                     <div className="space-y-4">

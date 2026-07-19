@@ -317,7 +317,7 @@ export default function PipelinePage() {
               placeholder="ค้นหาดีล บริษัท หรือผู้ติดต่อ..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-11 w-full rounded-2xl border-slate-200 bg-white/50 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-violet-400 shadow-sm transition-all"
+              className="pl-10 h-11 w-full rounded-2xl border-violet-100 bg-white/50 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-violet-400 shadow-sm transition-all"
             />
             {searchTerm !== debouncedSearchTerm && (
               <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-violet-500 animate-spin" size={15} />
@@ -325,7 +325,7 @@ export default function PipelinePage() {
           </div>
         }
       >
-          <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 mr-2 shadow-inner">
+          <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-violet-100/50 mr-2 shadow-inner">
             <button
               onClick={() => setBoardType('pipeline')}
               className={cn(
@@ -350,7 +350,7 @@ export default function PipelinePage() {
             </button>
           </div>
 
-          <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 mr-2 shadow-inner">
+          <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-violet-100/50 mr-2 shadow-inner">
             <button
               onClick={() => setViewMode('kanban')}
               className={cn(
@@ -382,14 +382,14 @@ export default function PipelinePage() {
               'h-10 px-4 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5',
               myDealsOnly
                 ? 'bg-violet-100 text-violet-700 border-violet-200 shadow-sm'
-                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700 shadow-sm'
+                : 'bg-white text-slate-500 border-violet-100 hover:bg-slate-50 hover:text-slate-700 shadow-sm'
             )}
           >
             <User size={14} /> ดีลของฉัน
           </button>
           <button
             onClick={exportToCSV}
-            className="h-10 px-4 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all flex items-center gap-1.5 shadow-sm"
+            className="h-10 px-4 rounded-xl text-xs font-bold border border-violet-100 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all flex items-center gap-1.5 shadow-sm"
           >
             <Download size={14} /> CSV
           </button>
@@ -402,7 +402,7 @@ export default function PipelinePage() {
             <button
               onClick={() => setIsToolsOpen(!isToolsOpen)}
               className={cn(
-                'h-10 px-4 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-800 shadow-sm',
+                'h-10 px-4 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 bg-white text-slate-600 border-violet-100 hover:bg-slate-50 hover:text-slate-800 shadow-sm',
                 isToolsOpen && 'bg-slate-100 text-slate-900 shadow-inner'
               )}
             >
@@ -502,7 +502,7 @@ export default function PipelinePage() {
                   placeholder="เช่น บริษัท ABC จำกัด"
                   value={quickDeal.company}
                   onChange={e => setQuickDeal(q => ({ ...q, company: e.target.value }))}
-                  className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm font-semibold"
+                  className="h-11 rounded-xl bg-slate-50 border-violet-100 text-sm font-semibold"
                   autoFocus
                 />
               </div>
@@ -513,7 +513,7 @@ export default function PipelinePage() {
                   placeholder="500,000"
                   value={quickDeal.value}
                   onChange={e => setQuickDeal(q => ({ ...q, value: e.target.value }))}
-                  className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm font-bold text-amber-700"
+                  className="h-11 rounded-xl bg-slate-50 border-violet-100 text-sm font-bold text-amber-700"
                 />
               </div>
               <div className="space-y-1.5">
@@ -522,7 +522,7 @@ export default function PipelinePage() {
                   type="date"
                   value={quickDeal.expected_close_date}
                   onChange={e => setQuickDeal(q => ({ ...q, expected_close_date: e.target.value }))}
-                  className="w-full h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-amber-400 focus:bg-white transition-all text-sm font-semibold"
+                  className="w-full h-11 rounded-xl border border-violet-100 bg-slate-50 px-3 outline-none focus:border-amber-400 focus:bg-white transition-all text-sm font-semibold"
                 />
               </div>
               {quickError && (
@@ -533,7 +533,7 @@ export default function PipelinePage() {
                   type="button"
                   variant="ghost"
                   onClick={() => setIsQuickAddOpen(false)}
-                  className="flex-1 h-11 rounded-xl text-sm text-slate-500 border border-slate-200 hover:bg-slate-50"
+                  className="flex-1 h-11 rounded-xl text-sm text-slate-500 border border-violet-100 hover:bg-slate-50"
                 >
                   ยกเลิก
                 </Button>
@@ -625,7 +625,7 @@ export default function PipelinePage() {
           <div className="h-2 bg-gradient-to-r from-violet-600 via-indigo-600 to-fuchsia-600" />
           
           <div className="p-8 overflow-y-auto max-h-[88vh]">
-            <div className="flex items-center gap-4 mb-6 pb-5 border-b border-slate-100">
+            <div className="flex items-center gap-4 mb-6 pb-5 border-b border-violet-100/50">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-100 flex items-center justify-center shrink-0 shadow-sm shadow-violet-500/5">
                 <Plus size={22} className="text-violet-600" />
               </div>
@@ -639,7 +639,7 @@ export default function PipelinePage() {
             </div>
 
             {/* Wizard Steps Header */}
-            <div className="flex items-center gap-6 border-b border-slate-100 pb-4 mb-6">
+            <div className="flex items-center gap-6 border-b border-violet-100/50 pb-4 mb-6">
               <button
                 type="button"
                 onClick={() => setFormTab('details')}
@@ -694,7 +694,7 @@ export default function PipelinePage() {
                       className="space-y-5"
                     >
                       {/* Customer Selector / Linkage */}
-                      <div className="space-y-1.5 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 relative z-50">
+                      <div className="space-y-1.5 bg-slate-50/50 p-4 rounded-2xl border border-violet-100/50 relative z-50">
                         {newDeal.customer_id ? (
                           <div className="bg-gradient-to-br from-violet-50/80 to-indigo-50/80 border border-violet-100 rounded-2xl p-4 flex items-center justify-between gap-4 shadow-sm shadow-violet-500/5 transition-all duration-300">
                             <div className="flex items-center gap-3">
@@ -726,7 +726,7 @@ export default function PipelinePage() {
                                   contact_email: '',
                                 }));
                               }}
-                              className="h-8 px-2.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 border-slate-100 hover:border-rose-100 text-xs font-bold border transition-all"
+                              className="h-8 px-2.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 border-violet-100/50 hover:border-rose-100 text-xs font-bold border transition-all"
                             >
                               ยกเลิกเชื่อมโยง
                             </Button>
@@ -749,7 +749,7 @@ export default function PipelinePage() {
                                 }}
                                 onClick={() => setIsCustomerDropdownOpen(true)}
                                 onFocus={() => setIsCustomerDropdownOpen(true)}
-                                className="w-full h-11 rounded-xl border border-slate-200 bg-white pl-10 pr-10 outline-none focus:border-violet-400 transition-all text-sm font-semibold cursor-pointer"
+                                className="w-full h-11 rounded-xl border border-violet-100 bg-white pl-10 pr-10 outline-none focus:border-violet-400 transition-all text-sm font-semibold cursor-pointer"
                               />
                               <button
                                 type="button"
@@ -766,7 +766,7 @@ export default function PipelinePage() {
                             {isCustomerDropdownOpen && (
                               <>
                                 <div className="fixed inset-0 z-10" onClick={() => setIsCustomerDropdownOpen(false)} />
-                                <div className="absolute left-0 right-0 mt-2 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-2xl z-50 py-2 custom-scrollbar">
+                                <div className="absolute left-0 right-0 mt-2 max-h-56 overflow-y-auto bg-white border border-violet-100 rounded-xl shadow-2xl z-50 py-2 custom-scrollbar">
                                   {filteredCustomers.length === 0 ? (
                                     <div className="px-4 py-6 text-sm text-slate-400 text-center font-medium flex flex-col items-center gap-2">
                                       <span>ไม่มีชื่อลูกค้านี้ในระบบ</span>
@@ -823,7 +823,7 @@ export default function PipelinePage() {
                             placeholder="เช่น โปรเจกต์ติดตั้งระบบ"
                             value={newDeal.title}
                             onChange={(e) => setNewDeal({...newDeal, title: e.target.value})}
-                            className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
+                            className="h-11 pl-10 rounded-xl border-violet-100 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
                           />
                         </div>
                       </div>
@@ -852,7 +852,7 @@ export default function PipelinePage() {
                                   customer_id: matched ? matched.id : "",
                                 });
                               }}
-                              className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
+                              className="h-11 pl-10 rounded-xl border-violet-100 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
                             />
                           </div>
                         </div>
@@ -868,7 +868,7 @@ export default function PipelinePage() {
                               placeholder="0"
                               value={newDeal.value}
                               onChange={(e) => setNewDeal({...newDeal, value: e.target.value})}
-                              className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-black focus:bg-white text-violet-700 focus:border-violet-400"
+                              className="h-11 pl-10 rounded-xl border-violet-100 bg-slate-50 text-sm font-black focus:bg-white text-violet-700 focus:border-violet-400"
                             />
                           </div>
                         </div>
@@ -913,7 +913,7 @@ export default function PipelinePage() {
                                   "flex items-center justify-center gap-1.5 min-h-[2.5rem] py-1.5 px-2 h-auto flex-wrap rounded-xl border text-center transition-all duration-200 text-xs font-semibold relative overflow-hidden",
                                   isActive
                                     ? cn("border-2 shadow-sm", stage.activeBg)
-                                    : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                                    : "border-violet-100 bg-white text-slate-500 hover:bg-slate-50"
                                 )}
                               >
                                 {isActive && (
@@ -947,7 +947,7 @@ export default function PipelinePage() {
                               placeholder="50"
                               value={newDeal.probability}
                               onChange={(e) => setNewDeal({...newDeal, probability: e.target.value})}
-                              className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
+                              className="h-11 pl-10 rounded-xl border-violet-100 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
                             />
                           </div>
                         </div>
@@ -961,7 +961,7 @@ export default function PipelinePage() {
                               type="date"
                               value={newDeal.expected_close_date}
                               onChange={(e) => setNewDeal({...newDeal, expected_close_date: e.target.value})}
-                              className="w-full h-11 pl-10 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-bold text-slate-800"
+                              className="w-full h-11 pl-10 rounded-xl border border-violet-100 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-bold text-slate-800"
                             />
                           </div>
                         </div>
@@ -992,7 +992,7 @@ export default function PipelinePage() {
                                 type="date"
                                 value={newDeal.renewal_date}
                                 onChange={(e) => setNewDeal({ ...newDeal, renewal_date: e.target.value })}
-                                className="w-full h-11 pl-10 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-bold text-slate-800"
+                                className="w-full h-11 pl-10 rounded-xl border border-violet-100 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-bold text-slate-800"
                               />
                             </div>
                           </div>
@@ -1000,7 +1000,7 @@ export default function PipelinePage() {
                       </div>
 
                       {/* Nav Buttons Tab 1 */}
-                      <div className="pt-6 flex gap-3 border-t border-slate-100 mt-6">
+                      <div className="pt-6 flex gap-3 border-t border-violet-100/50 mt-6">
                         <Button
                           type="button"
                           variant="ghost"
@@ -1038,7 +1038,7 @@ export default function PipelinePage() {
                             <select
                               value={newDeal.assigned_to}
                               onChange={(e) => setNewDeal({ ...newDeal, assigned_to: e.target.value })}
-                              className="w-full h-11 pl-10 rounded-xl border border-slate-200 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-semibold appearance-none"
+                              className="w-full h-11 pl-10 rounded-xl border border-violet-100 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-semibold appearance-none"
                             >
                               <option value="">— ไม่ระบุ —</option>
                               {teamMembers.map(m => (
@@ -1054,7 +1054,7 @@ export default function PipelinePage() {
 
                       {/* Contacts block */}
                       <div className="space-y-4 pt-2">
-                        <div className="border-b border-slate-100 pb-2">
+                        <div className="border-b border-violet-100/50 pb-2">
                           <h4 className="text-xs font-black uppercase tracking-wider text-violet-600">ข้อมูลผู้ติดต่อประสานงาน</h4>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1068,7 +1068,7 @@ export default function PipelinePage() {
                                 placeholder="ระบุชื่อจริง/ชื่อเล่น"
                                 value={newDeal.contact}
                                 onChange={(e) => setNewDeal({...newDeal, contact: e.target.value})}
-                                className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
+                                className="h-11 pl-10 rounded-xl border-violet-100 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
                               />
                             </div>
                           </div>
@@ -1082,7 +1082,7 @@ export default function PipelinePage() {
                                 placeholder="เช่น 089-XXX-XXXX"
                                 value={newDeal.contact_phone}
                                 onChange={(e) => setNewDeal({...newDeal, contact_phone: e.target.value})}
-                                className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
+                                className="h-11 pl-10 rounded-xl border-violet-100 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
                               />
                             </div>
                           </div>
@@ -1097,7 +1097,7 @@ export default function PipelinePage() {
                                 placeholder="เช่น name@company.com"
                                 value={newDeal.contact_email}
                                 onChange={(e) => setNewDeal({...newDeal, contact_email: e.target.value})}
-                                className="h-11 pl-10 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
+                                className="h-11 pl-10 rounded-xl border-violet-100 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
                               />
                             </div>
                           </div>
@@ -1111,7 +1111,7 @@ export default function PipelinePage() {
                       )}
 
                       {/* Nav Buttons Tab 2 */}
-                      <div className="pt-6 flex gap-3 border-t border-slate-100 mt-6">
+                      <div className="pt-6 flex gap-3 border-t border-violet-100/50 mt-6">
                         <Button
                           type="button"
                           variant="ghost"
@@ -1135,7 +1135,7 @@ export default function PipelinePage() {
               </div>
 
               {/* Right Column: Live Card Preview & AI Guidance (5 cols) */}
-              <div className="xl:col-span-5 bg-gradient-to-br from-slate-50 to-slate-100/50 p-6 rounded-3xl border border-slate-200/60 flex flex-col justify-between space-y-6 max-h-[78vh] overflow-y-auto">
+              <div className="xl:col-span-5 bg-gradient-to-br from-slate-50 to-slate-100/50 p-6 rounded-3xl border border-violet-100/60 flex flex-col justify-between space-y-6 max-h-[78vh] overflow-y-auto">
                 <div className="space-y-6">
                   <div>
                     <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
@@ -1150,7 +1150,7 @@ export default function PipelinePage() {
                     "rounded-[1.25rem] shadow-sm p-5 space-y-4 pointer-events-none relative overflow-hidden group transition-all",
                     Number(newDeal.value) >= 1000000 
                       ? "bg-gradient-to-br from-amber-50/80 via-white to-yellow-50/40 border border-amber-200/80 shadow-amber-500/5" 
-                      : "bg-white border border-slate-200/65"
+                      : "bg-white border border-violet-100/65"
                   )}>
                     {Number(newDeal.value) >= 1000000 && (
                        <div className="absolute top-0 right-0 px-2.5 py-0.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-amber-950 text-[9px] font-black tracking-widest rounded-bl-xl uppercase shadow-sm shadow-amber-500/20">
@@ -1192,7 +1192,7 @@ export default function PipelinePage() {
                       )}>
                         {new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(Number(newDeal.value) || 0)}
                       </span>
-                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200/50">
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 border border-violet-100/50">
                         <TrendingUp size={11} className={Number(newDeal.probability) >= 70 ? 'text-emerald-500' : 'text-slate-400'} />
                         <span className="text-[10px] font-black text-slate-600">{newDeal.probability || '50'}%</span>
                       </div>

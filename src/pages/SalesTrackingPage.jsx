@@ -46,7 +46,7 @@ const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-slate-100 flex flex-col gap-1 z-50 min-w-[160px]">
+      <div className="bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-violet-100/50 flex flex-col gap-1 z-50 min-w-[160px]">
         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{data.fullMonth} {data.year}</p>
         <p className="text-xl font-black text-violet-600 mt-0.5">{formatCurrency(data.amount)}</p>
         {data.isCurrentMonth && (
@@ -173,6 +173,10 @@ export default function SalesTrackingPage() {
 
   return (
     <motion.div {...pageMotion} className="max-w-6xl mx-auto space-y-6 pb-20 relative">
+        {/* Ambient Glows */}
+        <div className="fixed top-20 right-0 w-[500px] h-[500px] bg-violet-400/5 rounded-full blur-[120px] pointer-events-none -z-10" />
+        <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none -z-10" />
+      >
 
       {/* Ambient Orbs */}
       <div className="pointer-events-none fixed top-10 left-1/4 w-[500px] h-[500px] bg-violet-400/10 rounded-full blur-[120px] -z-10" />
@@ -184,7 +188,7 @@ export default function SalesTrackingPage() {
         title={`ยอดขายปี ${currentYear}`}
         description="ติดตามเป้าหมายรายเดือนและรวมทั้งปี"
         rightContent={
-          <div className="flex items-center gap-1 bg-slate-100/50 p-1 rounded-xl border border-slate-200/50 text-xs font-bold shadow-inner">
+          <div className="flex items-center gap-1 bg-slate-100/50 p-1 rounded-xl border border-violet-100/50 text-xs font-bold shadow-inner">
             {[['bar', 'แท่ง'], ['area', 'พื้นที่']].map(([val, label]) => (
               <button
                 key={val}
@@ -203,7 +207,7 @@ export default function SalesTrackingPage() {
 
         {/* Card 1: Total */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-          className="bg-white p-6 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col justify-between overflow-hidden relative group hover:shadow-[0_8px_32px_rgba(139,92,246,0.12)] transition-shadow duration-300">
+          className="bg-white/90 backdrop-blur-xl p-6 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.05)] border border-violet-100/50 flex flex-col justify-between overflow-hidden relative group hover:shadow-[0_8px_32px_rgba(139,92,246,0.12)] hover:-translate-y-1 transition-all duration-300 transition-shadow duration-300">
           <div className="absolute -right-10 -top-10 w-32 h-32 bg-gradient-to-br from-violet-200/40 to-indigo-200/30 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700 pointer-events-none" />
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -232,7 +236,7 @@ export default function SalesTrackingPage() {
 
         {/* Card 2: Current Month */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="bg-white p-6 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col justify-between overflow-hidden relative group hover:shadow-[0_8px_32px_rgba(16,185,129,0.12)] transition-shadow duration-300">
+          className="bg-white/90 backdrop-blur-xl p-6 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.05)] border border-violet-100/50 flex flex-col justify-between overflow-hidden relative group hover:shadow-[0_8px_32px_rgba(139,92,246,0.12)] hover:-translate-y-1 transition-all duration-300 transition-shadow duration-300">
           <div className="absolute -right-10 -top-10 w-32 h-32 bg-gradient-to-br from-emerald-200/40 to-cyan-200/30 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700 pointer-events-none" />
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -298,7 +302,7 @@ export default function SalesTrackingPage() {
 
       {/* ── QUARTERLY BREAKDOWN ── */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-        className="bg-white p-6 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-slate-100">
+        className="bg-white p-6 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-violet-100/50">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest">สรุปรายไตรมาส</h3>
           <span className="text-xs text-slate-400 font-medium">Q{Math.floor((currentMonth - 1) / 3) + 1} กำลังดำเนินอยู่</span>
@@ -311,7 +315,7 @@ export default function SalesTrackingPage() {
             const pct = Math.round((q.amount / maxQuarter) * 100);
             return (
               <motion.div key={q.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * idx }}
-                className={cn('p-4 rounded-2xl border flex flex-col gap-3 relative overflow-hidden transition-all', isCurrentQ ? `${c.bg} ${c.border} ring-1 ring-offset-1 ring-violet-200` : 'bg-slate-50/50 border-slate-100')}>
+                className={cn('p-4 rounded-2xl border flex flex-col gap-3 relative overflow-hidden transition-all', isCurrentQ ? `${c.bg} ${c.border} ring-1 ring-offset-1 ring-violet-200` : 'bg-slate-50/50 border-violet-100/50')}>
                 {isCurrentQ && <div className={cn('absolute top-0 right-0 w-20 h-20 rounded-full -mr-10 -mt-10 blur-2xl opacity-30', c.bar)} />}
                 <div className="flex items-center justify-between relative z-10">
                   <div>
@@ -322,7 +326,7 @@ export default function SalesTrackingPage() {
                 </div>
                 <div className="relative z-10">
                   <p className={cn('text-lg font-black tracking-tight', isCurrentQ ? c.text : 'text-slate-800')}>{formatCurrency(q.amount)}</p>
-                  <div className="mt-2 h-1.5 bg-white/70 rounded-full overflow-hidden border border-slate-100">
+                  <div className="mt-2 h-1.5 bg-white/70 rounded-full overflow-hidden border border-violet-100/50">
                     <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.15 * idx }}
                       className={cn('h-full rounded-full', c.bar)} />
                   </div>
@@ -338,7 +342,7 @@ export default function SalesTrackingPage() {
 
         {/* Chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-          className="xl:col-span-8 bg-white p-6 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-slate-100">
+          className="xl:col-span-8 bg-white p-6 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-violet-100/50">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest">เทรนด์ยอดขายรายเดือน</h3>
@@ -393,7 +397,7 @@ export default function SalesTrackingPage() {
                 )}
               </SafeResponsiveContainer>
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50/50 rounded-2xl border border-slate-100 border-dashed">
+              <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50/50 rounded-2xl border border-violet-100/50 border-dashed">
                 <Loader2 className="w-6 h-6 text-violet-300 animate-spin mb-2" />
                 <p className="text-xs font-semibold text-slate-400">กำลังโหลดกราฟ...</p>
               </div>
@@ -403,7 +407,7 @@ export default function SalesTrackingPage() {
 
         {/* Manual Entry Table */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-          className="xl:col-span-4 bg-white p-6 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col">
+          className="xl:col-span-4 bg-white p-6 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-violet-100/50 flex flex-col">
           <div className="mb-4">
             <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest">บันทึกยอดขาย</h3>
             <p className="text-xs text-slate-400 font-medium mt-0.5">กดไอคอนดินสอเพื่อแก้ไขรายเดือน</p>
@@ -417,14 +421,14 @@ export default function SalesTrackingPage() {
                   className={cn(
                     'p-3 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-2',
                     data.isCurrentMonth ? 'bg-gradient-to-r from-emerald-50 to-cyan-50/50 border-emerald-100' :
-                      isEditing ? 'bg-violet-50 border-violet-200 ring-2 ring-violet-100' : 'bg-slate-50/40 border-slate-100 hover:border-slate-200 hover:bg-slate-50'
+                      isEditing ? 'bg-violet-50 border-violet-200 ring-2 ring-violet-100' : 'bg-slate-50/40 border-violet-100/50 hover:border-violet-100 hover:bg-slate-50'
                   )}>
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className={cn(
                       'w-9 h-9 rounded-xl flex items-center justify-center text-[10px] font-black shrink-0',
                       data.isCurrentMonth ? 'bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-md shadow-emerald-500/25'
                         : data.amount > 0 ? 'bg-gradient-to-br from-violet-100 to-indigo-100 text-violet-700'
-                        : 'bg-white text-slate-400 shadow-sm border border-slate-100'
+                        : 'bg-white text-slate-400 shadow-sm border border-violet-100/50'
                     )}>
                       {data.shortMonth}
                     </div>

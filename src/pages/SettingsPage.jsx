@@ -118,7 +118,7 @@ export default function SettingsPage() {
                   Admin
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 border border-slate-200 text-xs font-black text-slate-700 shadow-sm">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 border border-violet-100 text-xs font-black text-slate-700 shadow-sm">
                   <User size={13} className="text-slate-500" />
                   Member
                 </span>
