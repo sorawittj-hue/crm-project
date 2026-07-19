@@ -176,7 +176,6 @@ export default function SalesTrackingPage() {
         {/* Ambient Glows */}
         <div className="fixed top-20 right-0 w-[500px] h-[500px] bg-violet-400/5 rounded-full blur-[120px] pointer-events-none -z-10" />
         <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none -z-10" />
-      >
 
       {/* Ambient Orbs */}
       <div className="pointer-events-none fixed top-10 left-1/4 w-[500px] h-[500px] bg-violet-400/10 rounded-full blur-[120px] -z-10" />
