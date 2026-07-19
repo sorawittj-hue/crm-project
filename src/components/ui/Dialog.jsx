@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback } from "react"
 import { createPortal } from "react-dom"
 import { X } from "lucide-react"
@@ -6,7 +5,7 @@ import { cn } from "../../lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 
 /**
- * Dialog — fully-animated modal with:
+ * Dialog — fully-animated premium modal with:
  * - AnimatePresence for smooth open/close transitions
  * - Scroll lock on body when open
  * - Escape key to close
@@ -43,7 +42,7 @@ const Dialog = ({ open, onOpenChange, children, className }) => {
 
   return createPortal(
     <AnimatePresence>
-        {open && (
+      {open && (
         <motion.div
           key="dialog-wrapper"
           className="fixed inset-0 z-[100] flex items-center justify-center p-4"
@@ -54,23 +53,26 @@ const Dialog = ({ open, onOpenChange, children, className }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm"
+            transition={{ duration: 0.22 }}
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-md"
             onClick={() => onOpenChange?.(false)}
           />
           {/* Panel */}
           <motion.div
             key="dialog-panel"
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.94, y: 24 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className={cn("relative z-[101] w-full max-w-lg max-h-[90vh] overflow-y-auto", className)}
+            exit={{ opacity: 0, scale: 0.94, y: 12 }}
+            transition={{ type: "spring", damping: 28, stiffness: 350 }}
+            className={cn(
+              "relative z-[101] w-full max-w-lg max-h-[90vh] overflow-y-auto",
+              className
+            )}
           >
             {children}
             <button
               onClick={() => onOpenChange?.(false)}
-              className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all focus:outline-none focus:ring-2 focus:ring-slate-300 z-10"
+              className="absolute right-4 top-4 w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-violet-300 z-10"
               aria-label="ปิด"
             >
               <X className="h-4 w-4" />
@@ -88,25 +90,29 @@ const DialogHeader = ({ className, ...props }) => (
 )
 
 const DialogTitle = ({ className, ...props }) => (
-  <h2 className={cn("text-xl font-bold tracking-tight text-slate-900", className)} {...props} />
+  <h2 className={cn("text-xl font-black tracking-tight text-slate-900", className)} {...props} />
 )
 
 const DialogDescription = ({ className, ...props }) => (
-  <p className={cn("text-sm text-slate-500", className)} {...props} />
+  <p className={cn("text-sm text-slate-500 font-medium leading-relaxed", className)} {...props} />
 )
 
 const DialogFooter = ({ className, ...props }) => (
-  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6", className)} {...props} />
+  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 mt-6", className)} {...props} />
 )
 
 const DialogContent = ({ className, children, ...props }) => (
   <div
     className={cn(
-      "relative w-full bg-white rounded-2xl border border-slate-100 shadow-2xl shadow-slate-900/10 p-6",
+      "relative w-full bg-white/95 backdrop-blur-xl rounded-3xl border border-violet-100/50",
+      "shadow-[0_24px_64px_rgba(0,0,0,0.12),0_8px_24px_rgba(139,92,246,0.08)]",
+      "p-6",
       className
     )}
     {...props}
   >
+    {/* Top shimmer */}
+    <div className="absolute top-0 left-8 right-8 h-px rounded-full bg-gradient-to-r from-transparent via-violet-300/50 to-transparent" />
     {children}
   </div>
 )

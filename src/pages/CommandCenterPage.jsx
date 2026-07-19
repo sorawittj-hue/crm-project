@@ -677,6 +677,20 @@ export default function CommandCenterPage() {
                 {/* SVG Radial Gauge */}
                 <div className="relative w-20 h-20 shrink-0">
                   <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
+                    <defs>
+                      <linearGradient id="goalSuccessGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#34d399" />
+                        <stop offset="100%" stopColor="#10b981" />
+                      </linearGradient>
+                      <linearGradient id="goalWarnGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#fbbf24" />
+                        <stop offset="100%" stopColor="#f59e0b" />
+                      </linearGradient>
+                      <linearGradient id="goalProgressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#a78bfa" />
+                        <stop offset="100%" stopColor="#7c3aed" />
+                      </linearGradient>
+                    </defs>
                     <circle cx="40" cy="40" r="34" stroke="rgba(255,255,255,0.06)" strokeWidth="6.5" fill="transparent" />
                     <motion.circle cx="40" cy="40" r="34"
                       stroke={stats?.achievementPercent >= 100 ? "url(#goalSuccessGradient)" : stats?.achievementPercent >= 70 ? "url(#goalWarnGradient)" : "url(#goalProgressGradient)"}
@@ -712,14 +726,19 @@ export default function CommandCenterPage() {
               { label: 'ปิดได้สัปดาห์นี้', value: stats?.wonThisWeek || 0, icon: Trophy, iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50', valueColor: 'text-emerald-600', bgClass: 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-100 hover:border-emerald-200' },
               { label: 'มูลค่าปิดสัปดาห์นี้', value: formatCurrency(stats?.wonThisWeekValue), icon: Star, iconColor: 'text-blue-600', iconBg: 'bg-blue-50', valueColor: 'text-blue-600', isText: true, bgClass: 'bg-gradient-to-br from-blue-50 to-sky-50 border-blue-100 hover:border-blue-200' },
             ].map((item) => (
-              <motion.div key={item.label} whileHover={{ y: -1, scale: 1.01 }}>
-                <Card className={cn("p-3.5 rounded-2xl border shadow-xs flex items-center gap-3 transition-all cursor-pointer", item.bgClass || "bg-white border-slate-100")}>
-                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", item.iconBg)}>
-                    <item.icon size={14} className={item.iconColor} />
+              <motion.div key={item.label} whileHover={{ y: -2, scale: 1.015 }}>
+                <Card className={cn("p-3.5 rounded-2xl border shadow-xs flex items-center gap-3 transition-all duration-200 cursor-pointer", item.bgClass || "bg-white border-slate-100")}>
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
+                    item.label === 'ดีลใหม่สัปดาห์นี้' ? 'bg-gradient-to-br from-violet-500 to-purple-600' :
+                    item.label === 'ปิดได้สัปดาห์นี้'  ? 'bg-gradient-to-br from-emerald-500 to-green-600' :
+                                                          'bg-gradient-to-br from-blue-500 to-sky-600'
+                  )}>
+                    <item.icon size={16} className="text-white" />
                   </div>
                   <div>
                     <p className="text-[10px] text-slate-400 font-semibold">{item.label}</p>
-                    <p className={cn("text-base font-black tabular-nums leading-none mt-0.5", item.valueColor)}>
+                    <p className={cn("text-xl font-black tabular-nums leading-none mt-0.5", item.valueColor)}>
                       {item.isText ? item.value : <AnimatedNumber value={item.value} />}
                     </p>
                   </div>
@@ -736,16 +755,17 @@ export default function CommandCenterPage() {
               { title: 'Avg Velocity', value: stats?.avgDaysToClose, formatter: v => `${Math.round(v)} วัน`, sub: 'ระยะเวลาเฉลี่ยถึงปิดดีล', icon: Zap, color: 'amber', sparkline: [24, 22, 25, 20, 21, stats?.avgDaysToClose || 20] },
             ].map((kpi) => (
               <Card key={kpi.title} className={cn(
-                "p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden",
-                kpi.color === 'violet' && 'hover:border-violet-200',
-                kpi.color === 'emerald' && 'hover:border-emerald-200',
-                kpi.color === 'amber' && 'hover:border-amber-200'
+                "p-4 rounded-2xl bg-white border-l-4 border border-slate-100 shadow-sm transition-all duration-300 relative overflow-hidden",
+                kpi.color === 'violet' && 'border-l-violet-500 hover:border-violet-200 hover:shadow-[0_4px_20px_rgba(139,92,246,0.15)]',
+                kpi.color === 'emerald' && 'border-l-emerald-500 hover:border-emerald-200 hover:shadow-[0_4px_20px_rgba(16,185,129,0.15)]',
+                kpi.color === 'amber'  && 'border-l-amber-500  hover:border-amber-200  hover:shadow-[0_4px_20px_rgba(245,158,11,0.15)]'
               )}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0",
-                      kpi.color === 'violet' ? 'text-violet-600 bg-violet-50' :
-                      kpi.color === 'emerald' ? 'text-emerald-600 bg-emerald-50' : 'text-amber-600 bg-amber-50')}>
+                    <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
+                      kpi.color === 'violet' ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white' :
+                      kpi.color === 'emerald' ? 'bg-gradient-to-br from-emerald-500 to-green-600 text-white' :
+                                               'bg-gradient-to-br from-amber-500 to-orange-500 text-white')}>
                       <kpi.icon size={15} strokeWidth={2.5} />
                     </div>
                     <div>
@@ -763,7 +783,7 @@ export default function CommandCenterPage() {
                           }
                         />
                       </span>
-                      <p className="text-lg font-black text-slate-900 tabular-nums leading-none mt-0.5">
+                      <p className="text-2xl font-black text-slate-900 tabular-nums leading-none mt-0.5">
                         <AnimatedNumber value={kpi.value || 0} formatter={kpi.formatter} />
                       </p>
                     </div>
@@ -915,30 +935,47 @@ export default function CommandCenterPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                {teamLeaderboard.slice(0, 4).map((m, i) => (
-                  <div key={m.id} className={cn("p-2.5 rounded-xl border flex items-center justify-between gap-3",
-                    i === 0 ? "bg-amber-50/30 border-amber-200" : "bg-slate-50/40 border-slate-100"
-                  )}>
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="relative">
-                        <div className={cn("w-6 h-6 rounded-lg text-white font-black text-[10px] flex items-center justify-center shadow-inner",
-                          m.color?.split(' ')[0] || 'bg-violet-600'
-                        )}>{m.name.charAt(0)}</div>
-                        <div className={cn("absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full text-white text-[8px] font-black flex items-center justify-center shadow-md",
-                          i === 0 ? "bg-amber-500" : "bg-slate-800"
-                        )}>{i + 1}</div>
+                {teamLeaderboard.slice(0, 4).map((m, i) => {
+                  const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
+                  const goalPct = Math.min(100, m.goalAchievement || 0);
+                  const barColor = i === 0 ? 'bg-amber-400' : i === 1 ? 'bg-slate-400' : i === 2 ? 'bg-orange-400' : 'bg-violet-400';
+                  return (
+                    <div key={m.id} className={cn("p-2.5 rounded-xl border transition-all duration-200",
+                      i === 0 ? "bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 shadow-amber-100 shadow-sm" : "bg-slate-50/40 border-slate-100"
+                    )}>
+                      <div className="flex items-center justify-between gap-3 mb-1.5">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="relative shrink-0">
+                            <div className={cn("w-8 h-8 rounded-full text-white font-black text-xs flex items-center justify-center shadow-md",
+                              m.color?.split(' ')[0] || 'bg-violet-600'
+                            )}>{m.name.charAt(0)}</div>
+                            {medal && (
+                              <span className="absolute -top-1.5 -right-1.5 text-sm leading-none">{medal}</span>
+                            )}
+                            {!medal && (
+                              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-700 text-white text-[8px] font-black flex items-center justify-center shadow">{i + 1}</div>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-slate-800 text-xs truncate leading-none">{m.name}</h4>
+                            <p className="text-[8px] text-slate-400 font-semibold mt-0.5">{m.role}</p>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="text-xs font-black text-slate-800 tabular-nums">{formatCurrency(m.wonThisMonthValue)}</span>
+                          <span className="text-[9px] text-slate-400 block font-bold">{m.goalAchievement}% Goal</span>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <h4 className="font-bold text-slate-800 text-xs truncate leading-none">{m.name}</h4>
-                        <p className="text-[8px] text-slate-400 font-semibold mt-0.5">{m.role}</p>
+                      {/* Progress bar */}
+                      <div className="h-1 rounded-full bg-slate-200/70 overflow-hidden">
+                        <div
+                          className={cn("h-full rounded-full transition-all duration-700", barColor)}
+                          style={{ width: `${goalPct}%` }}
+                        />
                       </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <span className="text-xs font-black text-slate-800 tabular-nums">{formatCurrency(m.wonThisMonthValue)}</span>
-                      <span className="text-[9px] text-slate-400 block font-bold">{m.goalAchievement}% Goal</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </Card>
           )}

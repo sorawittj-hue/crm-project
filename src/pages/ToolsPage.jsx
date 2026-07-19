@@ -548,7 +548,7 @@ export default function ToolsPage() {
 
       {/* Tab List */}
       <div className="mb-8 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 pb-1">
-        <div className="inline-flex gap-2 bg-white/80 backdrop-blur-md border border-slate-200 p-1.5 rounded-2xl shadow-sm min-w-max">
+        <div className="inline-flex gap-1.5 bg-white/90 backdrop-blur-xl border border-slate-100 p-1.5 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] min-w-max">
           {TOOLS.map(tool => {
             const Icon = tool.icon;
             const isActive = activeTab === tool.key;
@@ -557,12 +557,17 @@ export default function ToolsPage() {
                 key={tool.key}
                 onClick={() => setActiveTab(tool.key)}
                 className={cn(
-                  'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 whitespace-nowrap',
-                  isActive ? `bg-gradient-to-r ${tool.gradient} text-white shadow-md` : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                  'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap',
+                  isActive
+                    ? `bg-gradient-to-r ${tool.gradient} text-white shadow-lg ${tool.shadowClass}`
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800 hover:shadow-sm'
                 )}
               >
                 <Icon size={14} strokeWidth={2.5} />
                 {tool.title}
+                {isActive && (
+                  <span className="absolute inset-0 rounded-xl ring-1 ring-white/20" />
+                )}
               </button>
             );
           })}
@@ -577,7 +582,7 @@ export default function ToolsPage() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -16, scale: 0.98 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/50 bg-white/80 backdrop-blur-3xl overflow-hidden relative"
+          className="rounded-[2.5rem] border border-violet-100/40 shadow-2xl shadow-slate-300/30 bg-white/90 backdrop-blur-3xl overflow-hidden relative"
         >
           {/* Glass glare effect */}
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-80 z-10" />
