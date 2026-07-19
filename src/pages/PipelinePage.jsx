@@ -181,21 +181,7 @@ export default function PipelinePage() {
     );
   }, [customers, customerSearch]);
 
-  // CSV export helper
-  const exportToCSV = () => {
-    const headers = ['ชื่อดีล', 'บริษัท', 'มูลค่า', 'ขั้นตอน', 'โอกาสปิด%', 'ผู้ติดต่อ', 'วันสร้าง', 'วันคาดปิด'];
-    const rows = filteredDeals.map(d => [
-      d.title || '', d.company || '', d.value || 0, d.stage || '',
-      d.probability || 0, d.contact || '',
-      d.created_at ? new Date(d.created_at).toLocaleDateString('th-TH') : '',
-      d.expected_close_date ? new Date(d.expected_close_date).toLocaleDateString('th-TH') : '',
-    ]);
-    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `deals_${new Date().toISOString().slice(0,10)}.csv`; a.click();
-    URL.revokeObjectURL(url);
-  };
+
 
   // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const filteredDeals = useMemo(() => {
@@ -302,8 +288,9 @@ export default function PipelinePage() {
       className="max-w-[1600px] mx-auto space-y-6 pb-20 px-4 md:px-6 mt-4 relative overflow-hidden"
     >
       {/* Ambient Glowing Orbs */}
-      <div className="absolute top-[-5%] left-[-10%] w-[40%] h-[500px] rounded-full bg-violet-400/15 blur-[120px] pointer-events-none" />
-      <div className="absolute top-[20%] right-[-5%] w-[30%] h-[400px] rounded-full bg-amber-400/10 blur-[100px] pointer-events-none" />
+      <div className="absolute top-[-5%] left-[-10%] w-[50%] h-[600px] rounded-full bg-violet-500/10 blur-[130px] pointer-events-none" />
+      <div className="absolute top-[20%] right-[-5%] w-[40%] h-[500px] rounded-full bg-indigo-500/10 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[20%] w-[30%] h-[400px] rounded-full bg-amber-400/5 blur-[100px] pointer-events-none" />
       
       {/* HEADER */}
       <PageHeader
@@ -386,12 +373,6 @@ export default function PipelinePage() {
             )}
           >
             <User size={14} /> ดีลของฉัน
-          </button>
-          <button
-            onClick={exportToCSV}
-            className="h-10 px-4 rounded-xl text-xs font-bold border border-violet-100 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all flex items-center gap-1.5 shadow-sm"
-          >
-            <Download size={14} /> CSV
           </button>
 
           {/* Divider */}

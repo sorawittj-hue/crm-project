@@ -615,44 +615,43 @@ export default function PipelineBoard({
                         )}
                       >
                         {/* Column header */}
-                        <div className={cn('px-4 pt-4 pb-3.5 border-b border-slate-100', stage.headerBg)}>
-                          <div className="flex items-center justify-between mb-2.5">
+                        <div className={cn('px-4 pt-4 pb-3.5 border-b border-slate-100/80', stage.headerBg)}>
+                          <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2.5">
-                              <div className="w-7 h-7 rounded-xl flex items-center justify-center text-white shadow-sm shrink-0"
-                                style={{ backgroundColor: stage.dotColor }}>
-                                <span className="text-[10px]">{stage.icon}</span>
+                              <div
+                                className="w-8 h-8 rounded-2xl flex items-center justify-center text-white shadow-md shrink-0"
+                                style={{ background: `linear-gradient(135deg, ${stage.dotColor}dd, ${stage.dotColor})`, boxShadow: `0 4px 10px ${stage.dotColor}40` }}
+                              >
+                                <span className="text-[11px]">{stage.icon}</span>
                               </div>
-                              <h3 className="text-sm font-bold text-slate-800">{stage.label}</h3>
+                              <div>
+                                <h3 className="text-sm font-black text-slate-800 leading-tight">{stage.label}</h3>
+                                <p className="text-[10px] font-black tabular-nums leading-none mt-0.5" style={{ color: stage.dotColor }}>
+                                  {formatCurrency(totalValue)}
+                                </p>
+                              </div>
                             </div>
-                            <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white shadow-sm"
-                              style={{ backgroundColor: stage.dotColor }}>
+                            <span
+                              className="text-xs font-black px-2 py-1 rounded-xl text-white shadow-sm min-w-[28px] text-center"
+                              style={{ background: `linear-gradient(135deg, ${stage.dotColor}cc, ${stage.dotColor})` }}
+                            >
                               {stageDeals.length}
                             </span>
                           </div>
-                          <div className="flex items-end justify-between">
-                            <p className="text-sm font-black tabular-nums shrink-0" style={{ color: stage.dotColor }}>
-                              {formatCurrency(totalValue)}
-                            </p>
-                            
-                            {/* Stagnation Heatmap indicators */}
-                            {!['won', 'lost'].includes(stageId) && activeCount > 0 && (
-                              isCritical ? (
-                                <span className="text-[9px] font-bold text-rose-600 bg-rose-100/70 border border-rose-200/50 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
-                                  <AlertTriangle size={8} className="animate-pulse shrink-0" />
-                                  นิ่งเฉลี่ย: {avgInactive} วัน
-                                </span>
-                              ) : isWarning ? (
-                                <span className="text-[9px] font-bold text-amber-700 bg-amber-100/70 border border-amber-200/50 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
-                                  <Clock size={8} className="shrink-0" />
-                                  นิ่งเฉลี่ย: {avgInactive} วัน
-                                </span>
-                              ) : (
-                                <span className="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full shrink-0">
-                                  นิ่งเฉลี่ย: {avgInactive} วัน
-                                </span>
-                              )
-                            )}
-                          </div>
+
+                          {/* Stagnation indicator */}
+                          {!['won', 'lost'].includes(stageId) && activeCount > 0 && (
+                            <div className={cn(
+                              'flex items-center gap-1 px-2 py-1 rounded-xl text-[9px] font-bold w-fit',
+                              isCritical ? 'bg-rose-100 text-rose-600 border border-rose-200' :
+                              isWarning ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                              'bg-slate-100 text-slate-500 border border-slate-200'
+                            )}>
+                              {isCritical ? <AlertTriangle size={8} className="animate-pulse" /> :
+                               isWarning ? <Clock size={8} /> : null}
+                              นิ่งเฉลี่ย {avgInactive} วัน
+                            </div>
+                          )}
                         </div>
 
                         {/* Cards */}
@@ -829,116 +828,106 @@ const DealCard = memo(
       return (
         <div
           ref={ref}
-          className="mb-2.5 last:mb-0"
+          className="mb-2 last:mb-0"
           {...draggableProps}
         >
-          {/* Use plain div during drag — Framer Motion fights dnd transforms causing jank */}
           <div
             style={isDragging ? {
-              boxShadow: '0 20px 40px rgba(124, 58, 237, 0.22)',
-              transform: 'rotate(1.5deg)',
-              opacity: 0.98,
+              boxShadow: '0 24px 48px rgba(124, 58, 237, 0.25)',
+              transform: 'rotate(2deg) scale(1.02)',
+              opacity: 0.97,
             } : {}}
             className={cn(
               'group relative rounded-2xl border overflow-hidden bg-white cursor-pointer',
-              // Only show hover effects when not dragging any card
-              !isDraggingAny && 'transition-shadow duration-200 hover:shadow-lg',
-              isDragging ? 'border-violet-400 ring-4 ring-violet-500/25 shadow-2xl shadow-violet-500/20 z-50'
-                : isSelected ? 'border-violet-500 ring-2 ring-violet-500/20 shadow-md'
-                : isPinned ? 'border-blue-200 bg-gradient-to-br from-white to-blue-50/40 shadow-sm'
-                : isHighValue ? 'border-amber-300/80 bg-gradient-to-br from-white to-amber-50/40 shadow-sm'
-                : isStagnant ? 'border-rose-200 bg-gradient-to-br from-white to-rose-50/30 shadow-sm'
-                : 'border-slate-200/70 shadow-sm'
+              !isDraggingAny && 'transition-all duration-200 hover:shadow-[0_8px_24px_rgba(139,92,246,0.12)] hover:-translate-y-0.5',
+              isDragging ? 'border-violet-400 ring-4 ring-violet-500/25 shadow-2xl z-50'
+                : isSelected ? 'border-violet-400 ring-2 ring-violet-500/15 shadow-md'
+                : isPinned ? 'border-amber-200 bg-gradient-to-br from-white to-amber-50/30 shadow-sm'
+                : isHighValue ? 'border-amber-300/80 bg-gradient-to-br from-amber-50/20 to-white shadow-sm'
+                : isStagnant ? 'border-rose-200 bg-gradient-to-br from-rose-50/20 to-white shadow-sm'
+                : 'border-slate-200/60 shadow-sm hover:border-violet-200'
             )}
           >
-            {/* Colored left accent bar */}
-            <div className="absolute top-0 left-0 bottom-0 w-1 shadow-[2px_0_10px_rgba(0,0,0,0.1)]" style={{ backgroundColor: isHighValue ? '#f59e0b' : stageColor }} />
+            {/* Left accent bar */}
+            <div
+              className="absolute top-0 left-0 bottom-0 w-[3px] rounded-l-2xl"
+              style={{ background: `linear-gradient(to bottom, ${isHighValue ? '#f59e0b' : stageColor}bb, ${isHighValue ? '#f59e0b' : stageColor})` }}
+            />
 
-            <div className="relative">
-              {/* === DRAG HANDLE ZONE === */}
-              <div
-                {...dragHandleProps}
-                className="absolute top-0 right-0 w-9 h-full flex items-center justify-center cursor-grab active:cursor-grabbing z-10 bg-slate-50/50 group-hover:bg-violet-50/80 border-l border-slate-100/70 transition-all duration-300 text-slate-400 hover:text-violet-600"
-                title="ลากเพื่อย้ายขั้นตอน"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <GripVertical size={14} className="opacity-60 hover:opacity-100 transition-opacity" />
-              </div>
+            {/* Drag handle */}
+            <div
+              {...dragHandleProps}
+              className="absolute top-0 right-0 w-8 h-full flex items-center justify-center cursor-grab active:cursor-grabbing z-10 text-slate-300 group-hover:text-violet-400 transition-colors border-l border-slate-100"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <GripVertical size={13} />
+            </div>
 
-              {/* Main content (clickable) */}
-              <div
-                className="pl-3.5 pr-11 py-3.5 space-y-2.5"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (onSelect) onSelect(deal.id);
-                  if (onClick) onClick(deal);
-                }}
-              >
-                {/* Top row: avatar + company + badges */}
-                <div className="flex items-start gap-2.5">
-                  <div
-                    className={cn(
-                      "w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black text-white shrink-0 shadow-sm mt-0.5",
-                      isHighValue ? "bg-gradient-to-br from-amber-400 to-yellow-500" : ""
-                    )}
-                    style={isHighValue ? {} : { backgroundColor: avatarColor }}
-                  >
-                    {isHighValue ? '👑' : (deal.company || 'D').charAt(0).toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <p className={cn(
-                      "text-xs font-bold truncate leading-tight",
-                      isHighValue ? "text-amber-800" : "text-slate-800"
-                    )}>
+            {/* Main clickable area */}
+            <div
+              className="pl-4 pr-10 py-3.5 space-y-2.5"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onSelect) onSelect(deal.id);
+                if (onClick) onClick(deal);
+              }}
+            >
+              {/* Header: avatar + info */}
+              <div className="flex items-start gap-2.5">
+                <div
+                  className={cn(
+                    'w-9 h-9 rounded-2xl flex items-center justify-center text-sm font-black text-white shrink-0 shadow-md',
+                    isHighValue ? 'bg-gradient-to-br from-amber-400 to-orange-500' : ''
+                  )}
+                  style={isHighValue ? { boxShadow: '0 4px 12px rgba(245,158,11,0.35)' } : { backgroundColor: avatarColor, boxShadow: `0 4px 12px ${avatarColor}40` }}
+                >
+                  {isHighValue ? '👑' : (deal.company || 'D').charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1 pt-0.5">
+                  <div className="flex items-center gap-1 flex-wrap mb-0.5">
+                    <p className={cn('text-xs font-black truncate leading-tight', isHighValue ? 'text-amber-800' : 'text-slate-800')}>
                       {deal.company || 'ไม่ระบุบริษัท'}
                     </p>
-                    {isHighValue && (
-                      <span className="text-[8px] font-black bg-amber-100 text-amber-700 px-1 py-0.5 rounded uppercase tracking-wider shrink-0">
-                        VIP
+                    {isHighValue && <span className="text-[8px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-lg uppercase tracking-wide shrink-0">VIP</span>}
+                    {isPinned && <Star size={9} className="text-amber-500 fill-amber-400 shrink-0" />}
+                    {isStagnant && (
+                      <span className="inline-flex items-center gap-0.5 text-[8px] font-black bg-rose-50 text-rose-500 px-1.5 py-0.5 rounded-lg border border-rose-100 shrink-0">
+                        <Clock size={7} />{deal.agingDays}ว
                       </span>
                     )}
-                    {isPinned && <Star size={10} className="text-amber-500 fill-current shrink-0" />}
                   </div>
-                  <p className="text-[11px] text-slate-400 truncate mt-0.5 leading-snug font-medium">
+                  <p className="text-[11px] text-slate-400 truncate leading-snug font-medium">
                     {deal.title || 'ไม่มีชื่อดีล'}
                   </p>
                 </div>
               </div>
 
-              {/* Value + probability + aging */}
-              <div className="flex items-center justify-between gap-2">
+              {/* Value row */}
+              <div className="flex items-center justify-between">
                 <span className={cn(
-                  "text-sm font-black tabular-nums leading-none tracking-tight",
-                  isHighValue ? "text-amber-700" : "text-slate-900"
+                  'text-base font-black tabular-nums tracking-tight',
+                  isHighValue ? 'text-amber-700' : 'text-slate-900'
                 )}>
                   {formatCurrency(deal.value)}
                 </span>
-                <div className="flex items-center gap-1.5">
-                  {isStagnant && (
-                    <span className="inline-flex items-center gap-0.5 text-[9px] font-black bg-rose-50 text-rose-500 px-1.5 py-0.5 rounded-full border border-rose-100" title="ไม่มีความเคลื่อนไหวเกิน 7 วัน">
-                      <Clock size={8} />{deal.agingDays}ว
-                    </span>
-                  )}
-                  {deal.probability !== undefined && deal.probability !== null && (
-                    <span
-                      className="text-[10px] font-bold tabular-nums px-1.5 py-0.5 rounded-full border"
-                      style={{
-                        backgroundColor: deal.probability >= 70 ? '#dcfce7' : deal.probability >= 40 ? '#ede9fe' : '#f1f5f9',
-                        color: deal.probability >= 70 ? '#16a34a' : deal.probability >= 40 ? '#7c3aed' : '#94a3b8',
-                        borderColor: deal.probability >= 70 ? '#bbf7d0' : deal.probability >= 40 ? '#ddd6fe' : '#e2e8f0',
-                      }}
-                    >
-                      {deal.probability}%
-                    </span>
-                  )}
-                </div>
+                {deal.probability !== undefined && deal.probability !== null && (
+                  <span
+                    className="text-[10px] font-black tabular-nums px-2 py-0.5 rounded-xl border"
+                    style={{
+                      backgroundColor: deal.probability >= 70 ? '#dcfce7' : deal.probability >= 40 ? '#ede9fe' : '#f1f5f9',
+                      color: deal.probability >= 70 ? '#16a34a' : deal.probability >= 40 ? '#7c3aed' : '#94a3b8',
+                      borderColor: deal.probability >= 70 ? '#bbf7d0' : deal.probability >= 40 ? '#ddd6fe' : '#e2e8f0',
+                    }}
+                  >
+                    {deal.probability}%
+                  </span>
+                )}
               </div>
 
-              {/* Probability progress bar */}
-              <div className="h-0.5 bg-slate-100 rounded-full overflow-hidden">
+              {/* Progress bar */}
+              <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full transition-all duration-500 ease-out"
+                  className="h-full rounded-full transition-all duration-500"
                   style={{
                     width: `${Math.max(0, Math.min(100, deal.probability || 0))}%`,
                     background: deal.probability >= 70
@@ -949,36 +938,42 @@ const DealCard = memo(
                   }}
                 />
               </div>
+
+              {/* Contact chip */}
+              {deal.contact && (
+                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium">
+                  <div className="w-4 h-4 rounded-full bg-slate-100 flex items-center justify-center text-[8px] font-black text-slate-500">
+                    {deal.contact.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="truncate max-w-[120px]">{deal.contact}</span>
+                </div>
+              )}
             </div>
-          </div>
 
             {/* Action row — hover reveal */}
-            <div className="grid grid-cols-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-all duration-200 max-h-0 group-hover:max-h-10 overflow-hidden bg-slate-50/90">
+            <div className="grid grid-cols-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-all duration-200 max-h-0 group-hover:max-h-10 overflow-hidden bg-gradient-to-r from-slate-50 to-white">
               <button
                 onClick={(e) => { e.stopPropagation(); if (onMove) onMove(deal.id, 'left'); }}
                 disabled={!canMoveLeft}
-                className={cn('h-9 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-bold', canMoveLeft ? 'hover:bg-slate-100 hover:text-slate-700' : 'opacity-20 cursor-not-allowed')}
-                title="ย้อนขั้นตอน"
+                className={cn('h-8 flex items-center justify-center text-xs gap-1 transition-all font-bold rounded-bl-2xl', canMoveLeft ? 'text-slate-400 hover:bg-slate-100 hover:text-slate-700' : 'opacity-20 cursor-not-allowed')}
               >
-                <ArrowLeft size={12} strokeWidth={2.5} />
+                <ArrowLeft size={11} strokeWidth={2.5} />
                 <span className="text-[9px]">ย้อน</span>
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); if (onPin) onPin(deal.id); }}
-                className={cn('h-9 flex items-center justify-center text-xs gap-1 transition-all border-x border-slate-100 font-bold', isPinned ? 'text-amber-500 hover:bg-amber-50/50' : 'text-slate-400 hover:bg-slate-100 hover:text-amber-500')}
-                title={isPinned ? 'เลิกปักหมุด' : 'ปักหมุด'}
+                className={cn('h-8 flex items-center justify-center text-xs gap-1 transition-all border-x border-slate-100 font-bold', isPinned ? 'text-amber-500 hover:bg-amber-50' : 'text-slate-400 hover:bg-slate-100 hover:text-amber-500')}
               >
-                <Star size={12} strokeWidth={2.5} className={cn(isPinned && "fill-amber-500")} />
+                <Star size={11} strokeWidth={2.5} className={cn(isPinned && 'fill-amber-400')} />
                 <span className="text-[9px]">ปักหมุด</span>
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); if (onMove) onMove(deal.id, 'right'); }}
                 disabled={!canMoveRight}
-                className={cn('h-9 flex items-center justify-center text-slate-400 text-xs gap-1 transition-all font-bold', canMoveRight ? 'hover:bg-violet-50 hover:text-violet-600' : 'opacity-20 cursor-not-allowed')}
-                title="ไปขั้นตอนถัดไป"
+                className={cn('h-8 flex items-center justify-center text-xs gap-1 transition-all font-bold rounded-br-2xl', canMoveRight ? 'text-slate-400 hover:bg-violet-50 hover:text-violet-600' : 'opacity-20 cursor-not-allowed')}
               >
                 <span className="text-[9px]">ถัดไป</span>
-                <ChevronRight size={12} strokeWidth={2.5} />
+                <ChevronRight size={11} strokeWidth={2.5} />
               </button>
             </div>
           </div>
