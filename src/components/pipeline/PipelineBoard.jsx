@@ -1,5 +1,5 @@
 import { useState, useMemo, forwardRef, useRef, memo, useCallback, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
