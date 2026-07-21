@@ -790,17 +790,11 @@ export default function PipelineBoard({
         )}
       </div>
 
-      {/* WIN/LOSS REASON MODAL & AI FOLLOW-UP MODAL */}
+      {/* AI FOLLOW-UP MODAL */}
       <AIFollowUpModal
         open={!!aiModalDeal}
         onOpenChange={(v) => !v && setAiModalDeal(null)}
         deal={aiModalDeal}
-      />
-      <WinLossModal
-        open={reasonModal.open}
-        targetStage={reasonModal.targetStage}
-        onClose={closeReasonModal}
-        onConfirm={submitReason}
       />
     </div>
   );
