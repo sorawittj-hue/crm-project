@@ -550,188 +550,129 @@ export default function AppLayout() {
         )}
       </AnimatePresence>
 
-      {/* SIDEBAR — desktop: static aside | mobile: animated via own AnimatePresence */}
+      {/* SIDEBAR — desktop: static aside */}
       {isDesktop ? (
         <aside
           ref={sidebarRef}
-          className="w-72 flex flex-col flex-shrink-0 relative"
-          style={{
-            background: 'linear-gradient(180deg, #13083a 0%, #0f0829 50%, #0a0520 100%)',
-            borderRight: '1px solid rgba(139,92,246,0.12)',
-            boxShadow: '8px 0 48px rgba(0,0,0,0.4)'
-          }}
+          className="w-72 flex flex-col flex-shrink-0 relative bg-slate-950 border-r border-slate-800/80 shadow-[8px_0_36px_rgba(0,0,0,0.4)] z-30 select-none"
         >
-            {/* Ambient glow orbs */}
-            <div className="absolute top-0 left-0 w-full h-64 pointer-events-none overflow-hidden">
-              <div className="absolute -top-16 -left-8 w-48 h-48 rounded-full" style={{background: 'radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%)'}} />
-              <div className="absolute top-20 right-0 w-32 h-32 rounded-full" style={{background: 'radial-gradient(circle, rgba(236,72,153,0.10) 0%, transparent 70%)'}} />
-            </div>
+          {/* Ambient Glows */}
+          <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-violet-600/15 via-indigo-600/5 to-transparent pointer-events-none" />
+          <div className="absolute top-12 -left-12 w-40 h-40 rounded-full bg-violet-500/10 blur-3xl pointer-events-none" />
 
-            {/* Logo */}
-            <div className="h-20 flex items-center justify-between px-5 mb-1 relative shrink-0">
-              <div className="absolute bottom-0 left-4 right-4 h-px" style={{background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.25), transparent)'}} />
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="absolute inset-0 rounded-[14px] blur-md" style={{background: 'rgba(139,92,246,0.4)'}} />
-                  <img 
-                    src="/icon.svg" 
-                    className="w-10 h-10 rounded-[14px] object-cover shrink-0 select-none pointer-events-none relative z-10" 
-                    style={{boxShadow: '0 0 20px rgba(139,92,246,0.5)'}}
-                    alt="Nova Pipeline Logo" 
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-black text-white text-lg tracking-tight leading-none">Nova</span>
-                    {isPro ? (
-                      <span className="text-[8px] font-extrabold px-2 py-0.5 rounded-md leading-none uppercase tracking-wider flex items-center gap-0.5" style={{background: 'linear-gradient(135deg, #f59e0b, #f97316)', color: 'white', boxShadow: '0 2px 8px rgba(245,158,11,0.4)'}}>
-                        <Crown size={7} className="fill-current" /> PRO
-                      </span>
-                    ) : (isGuestAccount || isTrialActive) ? (
-                      <span className="text-[8px] font-extrabold px-2 py-0.5 rounded-md leading-none uppercase tracking-wider" style={{background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)'}}>
-                        ทดลอง
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="text-[10px] font-bold leading-none mt-1.5 uppercase tracking-[0.2em]" style={{color: 'rgba(167,139,250,0.7)'}}>Pipeline</p>
-                </div>
+          {/* Logo / Brand Header */}
+          <div className="h-20 flex items-center justify-between px-5 mb-2 relative shrink-0 border-b border-slate-800/60">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-violet-500/30 ring-2 ring-white/10 shrink-0">
+                <Zap size={20} className="fill-current text-white" />
               </div>
-              <button onClick={closeSidebar} aria-label="ปิดเมนู" className="lg:hidden p-2 rounded-xl transition-all" style={{color: 'rgba(255,255,255,0.4)'}} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
-                <X size={18} />
-              </button>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-white text-lg tracking-tight leading-none">Nova Sales</span>
+                  {isPro ? (
+                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-white shadow-sm shadow-amber-500/30 uppercase tracking-widest">
+                      PRO
+                    </span>
+                  ) : (
+                    <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                      FREE
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] font-extrabold text-violet-400 leading-none mt-1 uppercase tracking-widest">
+                  CRM Enterprise
+                </p>
+              </div>
             </div>
+          </div>
 
-            {/* Navigation */}
-            <nav id="sidebar-nav" className="flex-1 px-4 py-3 space-y-0.5 overflow-y-auto overflow-x-hidden no-scrollbar">
-              {navItems.map((item, idx) => {
-                const isActive = location.pathname === item.to;
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => !isDesktop && closeSidebar()}
-                    className={cn(
-                      "group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 relative overflow-hidden",
-                    )}
-                    style={isActive ? {
-                      background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(99,102,241,0.2))',
-                      border: '1px solid rgba(139,92,246,0.3)',
-                      boxShadow: '0 4px 16px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.08)'
-                    } : {
-                      border: '1px solid transparent'
-                    }}
-                  >
-                    {isActive && (
-                      <>
-                        <motion.span
-                          layoutId="activeNavRail"
-                          className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r-full z-20"
-                          style={{background: 'linear-gradient(to bottom, #a78bfa, #818cf8)'}}
-                          transition={springSmooth}
-                        />
-                        {/* Subtle shimmer on active */}
-                        <div className="absolute inset-0 opacity-30" style={{
-                          background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%)'
-                        }} />
-                      </>
-                    )}
-                    {/* Icon */}
-                    <div className="relative z-10 w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200" style={isActive ? {
-                      background: 'rgba(139,92,246,0.4)',
-                      boxShadow: '0 0 12px rgba(139,92,246,0.3)'
-                    } : {
-                      background: 'rgba(255,255,255,0.05)'
-                    }}>
-                      <item.icon
-                        size={16}
-                        strokeWidth={isActive ? 2.5 : 2}
-                        style={{color: isActive ? '#c4b5fd' : 'rgba(255,255,255,0.4)', transition: 'color 0.2s'}}
-                      />
-                    </div>
-                    <div className="relative z-10 flex flex-col min-w-0">
-                      <span className="font-semibold text-sm tracking-tight" style={{color: isActive ? 'white' : 'rgba(255,255,255,0.6)', transition: 'color 0.2s'}}>
-                        {item.label}
-                      </span>
-                    </div>
-                    {!isActive && (
-                      <ChevronRight size={13} className="relative z-10 ml-auto opacity-0 -translate-x-1 group-hover:translate-x-0 group-hover:opacity-30 transition-all duration-200" style={{color: 'rgba(255,255,255,0.4)'}} />
-                    )}
-                  </NavLink>
-                );
-              })}
-            </nav>
-
-            {/* Onboarding checklist for new registered members (non-guest) */}
-            {!isGuestAccount && <OnboardingChecklist />}
-
-            {!isPro && (
-              <div className="px-4 mt-2 mb-3">
-                <button
-                  onClick={() => openPaywall(isGuestAccount ? 'upgrade' : 'default')}
-                  className="w-full relative overflow-hidden rounded-2xl group transition-all duration-300 hover:-translate-y-0.5 active:scale-95"
-                  style={{background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(249,115,22,0.15))', border: '1px solid rgba(245,158,11,0.25)'}}
+          {/* Navigation */}
+          <nav id="sidebar-nav" className="flex-1 px-3.5 py-4 space-y-1.5 overflow-y-auto custom-scrollbar-thin relative z-10">
+            <p className="px-3 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">เมนูหลัก</p>
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.to;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => !isDesktop && closeSidebar()}
+                  className={cn(
+                    "group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-300 relative overflow-hidden",
+                    isActive
+                      ? "bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 text-white font-extrabold shadow-lg shadow-violet-600/30 border border-violet-400/30 scale-[1.02]"
+                      : "text-slate-400 hover:text-white hover:bg-slate-900/80 border border-transparent"
+                  )}
                 >
-                  <div className="w-full py-3 px-3 flex items-center justify-between relative z-10">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{background: 'linear-gradient(135deg, #f59e0b, #f97316)'}}>
-                        <Sparkles size={14} className="text-white" />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-xs font-bold leading-none mb-0.5" style={{color: '#fbbf24'}}>Nova Pro</p>
-                        <p className="text-[10px] font-medium leading-none" style={{color: 'rgba(251,191,36,0.6)'}}>
-                          {isGuestAccount ? 'อัปเกรดเพื่อใช้งานจริง' : (isExpired ? 'ต่ออายุการใช้งาน' : 'อัปเกรดแบบรายเดือน')}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight size={14} style={{color: 'rgba(251,191,36,0.6)'}} className="group-hover:translate-x-1 transition-transform" />
+                  <div className={cn(
+                    "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
+                    isActive
+                      ? "bg-white/20 backdrop-blur-md text-white shadow-inner"
+                      : "bg-slate-900 text-slate-400 group-hover:text-violet-300 group-hover:bg-slate-800"
+                  )}>
+                    <item.icon size={16} strokeWidth={isActive ? 2.5 : 2} />
                   </div>
-                </button>
-              </div>
-            )}
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className="leading-tight text-sm tracking-tight">{item.label}</span>
+                    <span className={cn("text-[10px] font-medium leading-none mt-0.5", isActive ? "text-violet-200" : "text-slate-500 group-hover:text-slate-400")}>
+                      {item.sub}
+                    </span>
+                  </div>
+                  {!isActive && (
+                    <ChevronRight size={13} className="text-slate-600 opacity-0 -translate-x-1 group-hover:translate-x-0 group-hover:opacity-100 transition-all" />
+                  )}
+                </NavLink>
+              );
+            })}
+          </nav>
 
-            {/* Monthly Goal */}
-            <div className="px-4 pb-4 pt-2 relative">
-              <div className="absolute top-0 left-6 right-6 h-px" style={{background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.2), transparent)'}} />
-              <div className="rounded-2xl p-3.5 space-y-2.5 relative overflow-hidden" style={{
-                background: 'linear-gradient(135deg, rgba(139,92,246,0.12), rgba(99,102,241,0.08))',
-                border: '1px solid rgba(139,92,246,0.15)'
-              }}>
-                <div className="absolute -top-8 -right-8 w-20 h-20 rounded-full pointer-events-none" style={{background: 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)'}} />
-                <div className="flex items-center justify-between relative z-10">
-                  <p className="text-[10px] font-bold uppercase tracking-wider" style={{color: 'rgba(167,139,250,0.6)'}}>เป้าหมายส่วนตัว</p>
-                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full" style={{background: 'rgba(139,92,246,0.2)', color: '#c4b5fd'}}>{goalProgress}%</span>
+          {/* Onboarding checklist */}
+          {!isGuestAccount && <OnboardingChecklist />}
+
+          {/* Monthly Goal Card */}
+          <div className="px-3.5 pb-3 pt-2 relative z-10">
+            <div className="rounded-2xl p-4 bg-slate-900/90 border border-slate-800/80 space-y-2.5 shadow-inner">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">เป้าหมายเดือนนี้</p>
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                  {goalProgress}%
+                </span>
+              </div>
+              <div className="flex justify-between items-baseline">
+                <p className="text-base font-black tracking-tight text-white tabular-nums">
+                  {hasPersonalTarget ? formatCurrency(effectiveTarget) : 'ยังไม่ได้ตั้ง'}
+                </p>
+                <TrendingUp size={14} className={goalProgress >= 75 ? 'text-emerald-400' : 'text-slate-500'} />
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${goalProgress}%` }}
+                  transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
+                  className={cn(
+                    'h-full rounded-full transition-all duration-500',
+                    goalProgress >= 75
+                      ? 'bg-gradient-to-r from-emerald-400 to-teal-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]'
+                      : 'bg-gradient-to-r from-violet-500 to-indigo-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]'
+                  )}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* User Profile Footer */}
+          <div className="px-3.5 pb-4 pt-2 border-t border-slate-800/80 relative z-10">
+            <div className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-900/60 border border-slate-800/60">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white font-black text-sm flex items-center justify-center shadow-md shrink-0">
+                  {displayInitial}
                 </div>
-                <div className="flex justify-between items-center relative z-10">
-                  <p className="text-base font-black tracking-tight" style={{color: 'rgba(255,255,255,0.9)'}}>{hasPersonalTarget ? formatCurrency(effectiveTarget) : 'ยังไม่ได้ตั้ง'}</p>
-                  <TrendingUp size={14} style={{color: goalProgress >= 75 ? '#34d399' : 'rgba(255,255,255,0.2)'}} strokeWidth={2.5} />
-                </div>
-                <div className="h-1.5 w-full rounded-full overflow-hidden relative z-10" style={{background: 'rgba(255,255,255,0.08)'}}>
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${goalProgress}%` }}
-                    transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
-                    className="h-full rounded-full"
-                    style={{
-                      background: goalProgress >= 75
-                        ? 'linear-gradient(90deg, #34d399, #10b981)'
-                        : 'linear-gradient(90deg, #7c3aed, #818cf8)',
-                      boxShadow: goalProgress >= 75 ? '0 0 8px rgba(52,211,153,0.4)' : '0 0 8px rgba(124,58,237,0.4)'
-                    }}
-                  />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-black text-white truncate leading-tight">{displayName}</p>
+                  <p className="text-[10px] text-slate-400 truncate leading-none mt-0.5">{user?.email || 'sales@company.com'}</p>
                 </div>
               </div>
             </div>
-
-            {/* Developer credit */}
-            <div className="px-4 pb-5 pt-2 text-center relative">
-              <div className="flex flex-col items-center gap-1 transition-opacity" style={{opacity: 0.4}}>
-                <p className="text-[8px] font-bold uppercase tracking-widest" style={{color: 'rgba(255,255,255,0.4)'}}>Developed by</p>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-1 h-1 rounded-full bg-violet-400 animate-pulse" />
-                  <p className="text-[10px] font-black" style={{color: 'rgba(255,255,255,0.6)'}}>Sorawit Thunthakij</p>
-                </div>
-              </div>
-            </div>
+          </div>
         </aside>
       ) : (
         <AnimatePresence>
@@ -741,64 +682,67 @@ export default function AppLayout() {
               ref={sidebarRef}
               {...mobileSidebarMotion}
               variants={sidebarVariants}
-              className="fixed inset-y-0 left-0 z-50 w-72 flex flex-col"
-              style={{
-                background: 'linear-gradient(180deg, #13083a 0%, #0f0829 50%, #0a0520 100%)',
-                borderRight: '1px solid rgba(139,92,246,0.12)',
-                boxShadow: '8px 0 48px rgba(0,0,0,0.4)'
-              }}
+              className="fixed inset-y-0 left-0 z-50 w-72 flex flex-col bg-slate-950 border-r border-slate-800/80 shadow-2xl select-none"
             >
-              {/* Ambient glow orbs */}
-              <div className="absolute top-0 left-0 w-full h-64 pointer-events-none overflow-hidden">
-                <div className="absolute -top-16 -left-8 w-48 h-48 rounded-full" style={{background: 'radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%)'}} />
-                <div className="absolute top-20 right-0 w-32 h-32 rounded-full" style={{background: 'radial-gradient(circle, rgba(236,72,153,0.10) 0%, transparent 70%)'}} />
-              </div>
+              {/* Ambient Glows */}
+              <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-violet-600/15 via-indigo-600/5 to-transparent pointer-events-none" />
 
-              {/* Logo */}
-              <div className="h-20 flex items-center justify-between px-5 mb-1 relative shrink-0">
-                <div className="absolute bottom-0 left-4 right-4 h-px" style={{background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.25), transparent)'}} />
+              {/* Logo / Brand Header */}
+              <div className="h-20 flex items-center justify-between px-5 mb-2 relative shrink-0 border-b border-slate-800/60">
                 <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <div className="absolute inset-0 rounded-[14px] blur-md" style={{background: 'rgba(139,92,246,0.4)'}} />
-                    <img src="/icon.svg" className="w-10 h-10 rounded-[14px] object-cover shrink-0 select-none pointer-events-none relative z-10" style={{boxShadow: '0 0 20px rgba(139,92,246,0.5)'}} alt="Nova Pipeline Logo" />
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-violet-500/30 ring-2 ring-white/10 shrink-0">
+                    <Zap size={20} className="fill-current text-white" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-black text-white text-lg tracking-tight leading-none">Nova</span>
-                      {isPro ? (
-                        <span className="text-[8px] font-extrabold px-2 py-0.5 rounded-md leading-none uppercase tracking-wider flex items-center gap-0.5" style={{background: 'linear-gradient(135deg, #f59e0b, #f97316)', color: 'white', boxShadow: '0 2px 8px rgba(245,158,11,0.4)'}}>
-                          <Crown size={7} className="fill-current" /> PRO
+                      <span className="font-black text-white text-lg tracking-tight leading-none">Nova Sales</span>
+                      {isPro && (
+                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-white shadow-sm shadow-amber-500/30 uppercase tracking-widest">
+                          PRO
                         </span>
-                      ) : (isGuestAccount || isTrialActive) ? (
-                        <span className="text-[8px] font-extrabold px-2 py-0.5 rounded-md leading-none uppercase tracking-wider" style={{background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)'}}>ทดลอง</span>
-                      ) : null}
+                      )}
                     </div>
-                    <p className="text-[10px] font-bold leading-none mt-1.5 uppercase tracking-[0.2em]" style={{color: 'rgba(167,139,250,0.7)'}}>Pipeline</p>
+                    <p className="text-[10px] font-extrabold text-violet-400 leading-none mt-1 uppercase tracking-widest">
+                      CRM Enterprise
+                    </p>
                   </div>
                 </div>
-                <button onClick={closeSidebar} aria-label="ปิดเมนู" className="p-2 rounded-xl transition-all" style={{color: 'rgba(255,255,255,0.4)'}} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.08)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                <button onClick={closeSidebar} aria-label="ปิดเมนู" className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
                   <X size={18} />
                 </button>
               </div>
 
               {/* Navigation */}
-              <nav className="flex-1 px-4 py-3 space-y-0.5 overflow-y-auto overflow-x-hidden no-scrollbar">
+              <nav className="flex-1 px-3.5 py-4 space-y-1.5 overflow-y-auto custom-scrollbar-thin relative z-10">
+                <p className="px-3 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">เมนูหลัก</p>
                 {navItems.map((item) => {
                   const isActive = location.pathname === item.to;
                   return (
-                    <NavLink key={item.to} to={item.to} onClick={() => closeSidebar()}
-                      className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 relative overflow-hidden"
-                      style={isActive ? {background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(99,102,241,0.2))', border: '1px solid rgba(139,92,246,0.3)', boxShadow: '0 4px 16px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.08)'} : {border: '1px solid transparent'}}
-                    >
-                      {isActive && (
-                        <motion.span layoutId="activeNavRailMobile" className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r-full z-20" style={{background: 'linear-gradient(to bottom, #a78bfa, #818cf8)'}} transition={springSmooth} />
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => closeSidebar()}
+                      className={cn(
+                        "group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-300 relative overflow-hidden",
+                        isActive
+                          ? "bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 text-white font-extrabold shadow-lg shadow-violet-600/30 border border-violet-400/30"
+                          : "text-slate-400 hover:text-white hover:bg-slate-900/80 border border-transparent"
                       )}
-                      <div className="relative z-10 w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={isActive ? {background: 'rgba(139,92,246,0.4)', boxShadow: '0 0 12px rgba(139,92,246,0.3)'} : {background: 'rgba(255,255,255,0.05)'}}>
-                        <item.icon size={16} strokeWidth={isActive ? 2.5 : 2} style={{color: isActive ? '#c4b5fd' : 'rgba(255,255,255,0.4)'}} />
+                    >
+                      <div className={cn(
+                        "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
+                        isActive
+                          ? "bg-white/20 backdrop-blur-md text-white shadow-inner"
+                          : "bg-slate-900 text-slate-400 group-hover:text-violet-300 group-hover:bg-slate-800"
+                      )}>
+                        <item.icon size={16} strokeWidth={isActive ? 2.5 : 2} />
                       </div>
-                      <span className="relative z-10 font-semibold text-sm tracking-tight" style={{color: isActive ? 'white' : 'rgba(255,255,255,0.6)'}}>
-                        {item.label}
-                      </span>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="leading-tight text-sm tracking-tight">{item.label}</span>
+                        <span className={cn("text-[10px] font-medium leading-none mt-0.5", isActive ? "text-violet-200" : "text-slate-500 group-hover:text-slate-400")}>
+                          {item.sub}
+                        </span>
+                      </div>
                     </NavLink>
                   );
                 })}
@@ -806,49 +750,48 @@ export default function AppLayout() {
 
               {!isGuestAccount && <OnboardingChecklist />}
 
-              {!isPro && (
-                <div className="px-4 mt-2 mb-3">
-                  <button onClick={() => openPaywall(isGuestAccount ? 'upgrade' : 'default')}
-                    className="w-full relative overflow-hidden rounded-2xl group transition-all duration-300 hover:-translate-y-0.5 active:scale-95"
-                    style={{background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(249,115,22,0.15))', border: '1px solid rgba(245,158,11,0.25)'}}
-                  >
-                    <div className="w-full py-3 px-3 flex items-center justify-between relative z-10">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{background: 'linear-gradient(135deg, #f59e0b, #f97316)'}}>
-                          <Sparkles size={14} className="text-white" />
-                        </div>
-                        <div className="text-left">
-                          <p className="text-xs font-bold leading-none mb-0.5" style={{color: '#fbbf24'}}>Nova Pro</p>
-                          <p className="text-[10px] font-medium leading-none" style={{color: 'rgba(251,191,36,0.6)'}}>{isGuestAccount ? 'อัปเกรดเพื่อใช้งานจริง' : (isExpired ? 'ต่ออายุการใช้งาน' : 'อัปเกรดแบบรายเดือน')}</p>
-                        </div>
-                      </div>
-                      <ChevronRight size={14} style={{color: 'rgba(251,191,36,0.6)'}} className="group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </button>
-                </div>
-              )}
-
-              {/* Monthly Goal */}
-              <div className="px-4 pb-4 pt-2 relative">
-                <div className="absolute top-0 left-6 right-6 h-px" style={{background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.2), transparent)'}} />
-                <div className="rounded-2xl p-3.5 space-y-2.5 relative overflow-hidden" style={{background: 'linear-gradient(135deg, rgba(139,92,246,0.12), rgba(99,102,241,0.08))', border: '1px solid rgba(139,92,246,0.15)'}}>
+              {/* Monthly Goal Card */}
+              <div className="px-3.5 pb-3 pt-2 relative z-10">
+                <div className="rounded-2xl p-4 bg-slate-900/90 border border-slate-800/80 space-y-2.5 shadow-inner">
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-bold uppercase tracking-wider" style={{color: 'rgba(167,139,250,0.6)'}}>เป้าหมายส่วนตัว</p>
-                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full" style={{background: 'rgba(139,92,246,0.2)', color: '#c4b5fd'}}>{goalProgress}%</span>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">เป้าหมายเดือนนี้</p>
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                      {goalProgress}%
+                    </span>
                   </div>
-                  <div className="h-1.5 w-full rounded-full overflow-hidden" style={{background: 'rgba(255,255,255,0.08)'}}>
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${goalProgress}%` }} transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1] }} className="h-full rounded-full" style={{background: goalProgress >= 75 ? 'linear-gradient(90deg, #34d399, #10b981)' : 'linear-gradient(90deg, #7c3aed, #818cf8)'}} />
+                  <div className="flex justify-between items-baseline">
+                    <p className="text-base font-black tracking-tight text-white tabular-nums">
+                      {hasPersonalTarget ? formatCurrency(effectiveTarget) : 'ยังไม่ได้ตั้ง'}
+                    </p>
+                    <TrendingUp size={14} className={goalProgress >= 75 ? 'text-emerald-400' : 'text-slate-500'} />
+                  </div>
+                  <div className="h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${goalProgress}%` }}
+                      transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
+                      className={cn(
+                        'h-full rounded-full transition-all duration-500',
+                        goalProgress >= 75
+                          ? 'bg-gradient-to-r from-emerald-400 to-teal-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]'
+                          : 'bg-gradient-to-r from-violet-500 to-indigo-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]'
+                      )}
+                    />
                   </div>
                 </div>
               </div>
 
-              {/* Developer credit */}
-              <div className="px-4 pb-5 pt-2 text-center relative">
-                <div className="flex flex-col items-center gap-1" style={{opacity: 0.4}}>
-                  <p className="text-[8px] font-bold uppercase tracking-widest" style={{color: 'rgba(255,255,255,0.4)'}}>Developed by</p>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1 h-1 rounded-full bg-violet-400 animate-pulse" />
-                    <p className="text-[10px] font-black" style={{color: 'rgba(255,255,255,0.6)'}}>Sorawit Thunthakij</p>
+              {/* User Profile Footer */}
+              <div className="px-3.5 pb-4 pt-2 border-t border-slate-800/80 relative z-10">
+                <div className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-900/60 border border-slate-800/60">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white font-black text-sm flex items-center justify-center shadow-md shrink-0">
+                      {displayInitial}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-black text-white truncate leading-tight">{displayName}</p>
+                      <p className="text-[10px] text-slate-400 truncate leading-none mt-0.5">{user?.email || 'sales@company.com'}</p>
+                    </div>
                   </div>
                 </div>
               </div>
