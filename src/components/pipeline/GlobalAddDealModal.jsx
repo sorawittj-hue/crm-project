@@ -1,5 +1,4 @@
 import { useState } from 'react';
-
 import { CheckCircle2, DollarSign, Calendar, Building2, AlignLeft, Loader2, Zap } from 'lucide-react';
 import { useAddDeal } from '../../hooks/useDeals';
 import { useAppStore } from '../../store/useAppStore';
@@ -53,42 +52,44 @@ export default function GlobalAddDealModal() {
 
   return (
     <Dialog open={isQuickAddOpen} onOpenChange={closeQuickAdd}>
-      <DialogContent className="max-w-md p-0 overflow-hidden bg-white/95 backdrop-blur-xl border-violet-100 shadow-2xl">
+      <DialogContent className="max-w-md p-0 overflow-hidden bg-white/95 backdrop-blur-3xl border-0 shadow-2xl rounded-[2rem] relative">
         {/* Header Ribbon */}
-        <div className="h-2 bg-gradient-to-r from-violet-400 to-indigo-600" />
+        <div className="h-1.5 bg-gradient-to-r from-violet-500 via-indigo-500 to-purple-600" />
         
-        <div className="p-6">
+        <div className="p-7">
           <DialogHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-violet-500/20 shrink-0">
                 <Zap size={20} className="fill-current" />
               </div>
               <div>
-                <DialogTitle className="text-xl">เพิ่มข้อมูลด่วน (Quick Add)</DialogTitle>
-                <DialogDescription>สร้าง Deal ใหม่เข้าสู่ Pipeline ได้ทันทีจากทุกที่</DialogDescription>
+                <DialogTitle className="text-xl font-black tracking-tight">สร้างดีลใหม่ด่วน (Quick Add)</DialogTitle>
+                <DialogDescription className="text-xs font-semibold text-slate-400">
+                  เพิ่มข้อมูล Deal ใหม่เข้าสู่ Pipeline ได้ทันที
+                </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4 mt-6">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">ชื่อรายการ / สินค้า *</label>
+          <form onSubmit={handleSubmit} className="space-y-4 mt-5">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ชื่อรายการ / สินค้า *</label>
               <div className="relative">
-                <AlignLeft className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <AlignLeft className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
                 <Input
                   required
                   placeholder="เช่น ซื้อไลเซนส์ 5 User, ลูกค้า Walk-in"
                   value={form.title}
                   onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                  className="pl-9 h-11 bg-slate-50/50 border-slate-200"
+                  className="pl-10 h-11 bg-slate-50/60 border-slate-200/80 rounded-xl text-xs font-semibold focus:bg-white focus:border-violet-400"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">มูลค่ายอดขาย *</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">มูลค่ายอดขาย *</label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500" size={16} />
+                <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-500" size={15} />
                 <Input
                   required
                   type="number"
@@ -97,84 +98,75 @@ export default function GlobalAddDealModal() {
                   placeholder="0.00"
                   value={form.value}
                   onChange={e => setForm(f => ({ ...f, value: e.target.value }))}
-                  className="pl-9 h-11 bg-slate-50/50 border-slate-200 font-bold text-lg text-emerald-700"
+                  className="pl-10 h-11 bg-slate-50/60 border-slate-200/80 rounded-xl font-black text-base text-slate-900 focus:bg-white focus:border-emerald-400"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">สถานะเริ่มต้น</label>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ขั้นตอนเริ่มต้น</label>
                 <select
                   value={form.stage}
                   onChange={e => setForm(f => ({ ...f, stage: e.target.value }))}
-                  className="w-full h-11 bg-slate-50/50 border border-slate-200 rounded-xl px-3 text-sm font-semibold outline-none focus:border-violet-400"
+                  className="w-full h-11 bg-slate-50/60 border border-slate-200/80 rounded-xl px-3 text-xs font-semibold outline-none focus:border-violet-400 focus:bg-white"
                 >
-                  <option value="lead">Lead</option>
-                  <option value="contact">Contact</option>
-                  <option value="proposal">Proposal</option>
-                  <option value="negotiation">Negotiation</option>
-                  <option value="won">Won</option>
+                  <option value="lead">ลูกค้าใหม่ (Lead)</option>
+                  <option value="contact">นัดเจอ (Contact)</option>
+                  <option value="proposal">เสนอราคา (Proposal)</option>
+                  <option value="negotiation">กำลังปิด (Negotiation)</option>
+                  <option value="won">ปิดได้ (Won)</option>
                 </select>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">วันปิดดีลโดยประมาณ</label>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">คาดว่าจะปิด</label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
                   <Input
                     type="date"
                     required
                     value={form.actual_close_date}
                     onChange={e => setForm(f => ({ ...f, actual_close_date: e.target.value }))}
-                    className="pl-9 h-11 bg-slate-50/50 border-slate-200"
+                    className="pl-10 h-11 bg-slate-50/60 border-slate-200/80 rounded-xl text-xs font-semibold"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">ชื่อลูกค้า / บริษัท</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ชื่อลูกค้า / บริษัท</label>
               <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
                 <Input
-                  placeholder="บริษัทลูกค้า"
+                  placeholder="เช่น บริษัท เอสซีจี จำกัด"
                   value={form.company}
                   onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
-                  className="pl-9 h-11 bg-slate-50/50 border-slate-200"
+                  className="pl-10 h-11 bg-slate-50/60 border-slate-200/80 rounded-xl text-xs font-semibold"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">หมายเหตุ (ถ้ามี)</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">หมายเหตุ (ถ้ามี)</label>
               <Textarea
                 rows={2}
                 placeholder="รายละเอียดเพิ่มเติม..."
                 value={form.description}
                 onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                className="bg-slate-50/50 border-slate-200 resize-none"
+                className="bg-slate-50/60 border-slate-200/80 rounded-xl text-xs font-medium resize-none focus:bg-white"
               />
             </div>
 
             <DialogFooter className="pt-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={closeQuickAdd}
-                className="text-slate-500"
-              >
+              <Button type="button" variant="outline" className="rounded-xl text-xs font-bold" onClick={closeQuickAdd}>
                 ยกเลิก
               </Button>
               <Button
                 type="submit"
                 disabled={addDealMutation.isPending || !form.title || !form.value}
-                className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20"
+                className="bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-violet-500/20"
               >
-                {addDealMutation.isPending ? (
-                  <Loader2 size={16} className="animate-spin mr-2" />
-                ) : (
-                  <CheckCircle2 size={16} className="mr-2" />
-                )}
+                {addDealMutation.isPending ? <Loader2 className="animate-spin mr-1.5" size={15} /> : <CheckCircle2 className="mr-1.5" size={15} />}
                 สร้างดีลใหม่
               </Button>
             </DialogFooter>
