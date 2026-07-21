@@ -21,6 +21,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 import { Button } from '../ui/Button';
 import { normalizeDealForIntelligence } from '../../utils/salesIntelligence';
+import AIFollowUpModal from './AIFollowUpModal';
 
 const STAGE_CONFIG = {
   lead: {
@@ -131,9 +132,8 @@ export default function PipelineBoard({
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedDealId, setSelectedDealId] = useState(null);
   const [pinnedDealIds, setPinnedDealIds] = useState([]);
-
-  // Win/Loss Reason State
-  const [reasonModal, setReasonModal] = useState({ open: false, dealId: null, targetStage: null });
+  const [selectedDealIds, setSelectedDealIds] = useState([]);
+  const [aiModalDeal, setAiModalDeal] = useState(null);
   const [localDeals, setLocalDeals] = useState(deals);
   const isDraggingRef = useRef(false);
   const [isDraggingAny, setIsDraggingAny] = useState(false);
@@ -465,6 +465,44 @@ export default function PipelineBoard({
         </div>
       </div>
 
+      {/* FLOATING BATCH ACTION BAR */}
+      <AnimatePresence>
+        {selectedDealIds.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.95 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] bg-slate-900/95 text-white backdrop-blur-xl border border-slate-700/80 px-6 py-3.5 rounded-2xl shadow-2xl flex items-center gap-4 text-xs font-bold"
+          >
+            <span>เลือกแล้ว {selectedDealIds.length} ดีล</span>
+            <div className="h-4 w-px bg-slate-700" />
+            
+            <div className="flex items-center gap-2">
+              <span className="text-slate-400 text-[10px] uppercase font-black">ย้ายด่าน:</span>
+              {STAGES.map(sId => (
+                <button
+                  key={sId}
+                  onClick={() => {
+                    selectedDealIds.forEach(id => onUpdateDeal(id, { stage: sId }));
+                    setSelectedDealIds([]);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-violet-600 transition-colors text-[10px] font-black"
+                >
+                  {STAGE_CONFIG[sId].label}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setSelectedDealIds([])}
+              className="ml-2 text-slate-400 hover:text-white text-[10px] font-bold underline"
+            >
+              ยกเลิก
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* LIST VIEW (Desktop Only) */}
       {viewMode === 'list' && (
         <div className="hidden md:block overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -752,7 +790,12 @@ export default function PipelineBoard({
         )}
       </div>
 
-      {/* WIN/LOSS REASON MODAL — shared component */}
+      {/* WIN/LOSS REASON MODAL & AI FOLLOW-UP MODAL */}
+      <AIFollowUpModal
+        open={!!aiModalDeal}
+        onOpenChange={(v) => !v && setAiModalDeal(null)}
+        deal={aiModalDeal}
+      />
       <WinLossModal
         open={reasonModal.open}
         targetStage={reasonModal.targetStage}

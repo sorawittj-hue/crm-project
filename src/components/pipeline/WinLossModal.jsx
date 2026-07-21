@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogFooter } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { Textarea } from '../ui/Textarea';
 import { cn } from '../../lib/utils';
+import ConfettiFX from '../ui/ConfettiFX';
 
 const WIN_PRESETS = [
   'ราคาดีกว่าคู่แข่ง',
@@ -72,12 +73,13 @@ export default function WinLossModal({ open, targetStage, onClose, onConfirm }) 
       else if (preset === 'เลือกเจ้าอื่น / คู่แข่งราคาถูกกว่า') setLostReason('คู่แข่ง');
       else if (preset === 'ยกเลิก/เลื่อนโปรเจกต์') setLostReason('timing');
       else if (preset === 'ติดต่อไม่ได้ / ไม่มีการตอบรับ') setLostReason('timing');
-      else if (preset === 'ข้อกำหนดเงื่อนไขไม่ตรงกัน') setLostReason('อื่นๆ');
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <>
+      {open && isWon && <ConfettiFX key="confetti" />}
+      <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md p-0 overflow-hidden border-0 shadow-2xl">
         {/* Gradient Header */}
         <div className={cn(
@@ -221,5 +223,6 @@ export default function WinLossModal({ open, targetStage, onClose, onConfirm }) 
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
