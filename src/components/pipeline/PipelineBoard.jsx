@@ -420,15 +420,17 @@ export default function PipelineBoard({
                 onClick={() => setActiveFilter(filter.id)}
                 whileTap={{ scale: 0.95 }}
                 className={cn(
-                  'flex items-center gap-2 px-4 h-9 rounded-full text-xs font-semibold transition-all duration-300 whitespace-nowrap border shadow-sm',
-                  isActive ? colors.active : colors.inactive
+                  'flex items-center gap-2 px-4 h-9 rounded-full text-xs font-bold transition-all duration-300 whitespace-nowrap border',
+                  isActive
+                    ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-transparent shadow-md shadow-violet-500/25 ring-2 ring-violet-400/20'
+                    : 'bg-white/80 backdrop-blur-md text-slate-600 border-slate-200/80 hover:bg-violet-50/50 hover:text-violet-700 hover:border-violet-200'
                 )}
               >
                 <filter.icon size={13} strokeWidth={2.5} />
                 <span>{filter.label}</span>
                 <span className={cn(
-                  'text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center',
-                  isActive ? 'bg-white/25 text-white' : 'bg-slate-100 text-slate-500'
+                  'text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center',
+                  isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
                 )}>
                   {count}
                 </span>
@@ -600,40 +602,43 @@ export default function PipelineBoard({
                     {(provided, snapshot) => (
                       <div
                         className={cn(
-                          'flex-shrink-0 flex flex-col w-[290px] h-full rounded-[1.25rem] border overflow-hidden',
-                          // Only apply expensive styles when NOT dragging
-                          !isDraggingAny && 'backdrop-blur-sm',
+                          'flex-shrink-0 flex flex-col w-[300px] h-full rounded-[1.5rem] border overflow-hidden bg-white/70 backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.03)]',
                           snapshot.isDraggingOver
-                            ? `ring-2 ${stage.dragOverClass} transition-none`
+                            ? `ring-2 ${stage.dragOverClass} transition-none bg-violet-50/40`
                             : isCritical
-                              ? 'border-rose-200 bg-rose-50/20'
+                              ? 'border-rose-200/80 bg-rose-50/20'
                               : isWarning
-                                ? 'border-amber-200 bg-amber-50/15'
-                                : `${stage.glassBg} ${stage.columnBorder}`,
-                          // Transitions only when not dragging to prevent jank
-                          !isDraggingAny && 'transition-colors duration-200'
+                                ? 'border-amber-200/80 bg-amber-50/15'
+                                : `${stage.columnBorder}`,
+                          !isDraggingAny && 'transition-all duration-300'
                         )}
                       >
+                        {/* Top gradient accent line */}
+                        <div
+                          className="h-1.5 w-full"
+                          style={{ background: `linear-gradient(90deg, ${stage.dotColor}, ${stage.dotColor}88)` }}
+                        />
+
                         {/* Column header */}
-                        <div className={cn('px-4 pt-4 pb-3.5 border-b border-slate-100/80', stage.headerBg)}>
-                          <div className="flex items-center justify-between mb-3">
+                        <div className={cn('px-4.5 pt-3.5 pb-3 border-b border-slate-100/80', stage.headerBg)}>
+                          <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2.5">
                               <div
-                                className="w-8 h-8 rounded-2xl flex items-center justify-center text-white shadow-md shrink-0"
-                                style={{ background: `linear-gradient(135deg, ${stage.dotColor}dd, ${stage.dotColor})`, boxShadow: `0 4px 10px ${stage.dotColor}40` }}
+                                className="w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-md shrink-0"
+                                style={{ background: `linear-gradient(135deg, ${stage.dotColor}, ${stage.dotColor}dd)`, boxShadow: `0 4px 12px ${stage.dotColor}35` }}
                               >
                                 <span className="text-[11px]">{stage.icon}</span>
                               </div>
                               <div>
-                                <h3 className="text-sm font-black text-slate-800 leading-tight">{stage.label}</h3>
-                                <p className="text-[10px] font-black tabular-nums leading-none mt-0.5" style={{ color: stage.dotColor }}>
+                                <h3 className="text-sm font-black text-slate-900 leading-tight tracking-tight">{stage.label}</h3>
+                                <p className="text-[11px] font-extrabold tabular-nums leading-none mt-0.5" style={{ color: stage.dotColor }}>
                                   {formatCurrency(totalValue)}
                                 </p>
                               </div>
                             </div>
                             <span
-                              className="text-xs font-black px-2 py-1 rounded-xl text-white shadow-sm min-w-[28px] text-center"
-                              style={{ background: `linear-gradient(135deg, ${stage.dotColor}cc, ${stage.dotColor})` }}
+                              className="text-xs font-black px-2.5 py-1 rounded-xl text-white shadow-sm min-w-[28px] text-center"
+                              style={{ background: `linear-gradient(135deg, ${stage.dotColor}, ${stage.dotColor}cc)` }}
                             >
                               {stageDeals.length}
                             </span>
@@ -642,10 +647,10 @@ export default function PipelineBoard({
                           {/* Stagnation indicator */}
                           {!['won', 'lost'].includes(stageId) && activeCount > 0 && (
                             <div className={cn(
-                              'flex items-center gap-1 px-2 py-1 rounded-xl text-[9px] font-bold w-fit',
+                              'flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-extrabold w-fit mt-1',
                               isCritical ? 'bg-rose-100 text-rose-600 border border-rose-200' :
                               isWarning ? 'bg-amber-100 text-amber-700 border border-amber-200' :
-                              'bg-slate-100 text-slate-500 border border-slate-200'
+                              'bg-slate-100/80 text-slate-500 border border-slate-200/60'
                             )}>
                               {isCritical ? <AlertTriangle size={8} className="animate-pulse" /> :
                                isWarning ? <Clock size={8} /> : null}
@@ -826,38 +831,34 @@ const DealCard = memo(
       const avatarColor = getAvatarColor(deal.company);
 
       return (
-        <div
-          ref={ref}
-          className="mb-2 last:mb-0"
-          {...draggableProps}
-        >
+        <div ref={ref} className="mb-2 last:mb-0" {...draggableProps}>
           <div
             style={isDragging ? {
-              boxShadow: '0 24px 48px rgba(124, 58, 237, 0.25)',
-              transform: 'rotate(2deg) scale(1.02)',
-              opacity: 0.97,
+              boxShadow: '0 25px 50px -12px rgba(124, 58, 237, 0.3)',
+              transform: 'rotate(2.5deg) scale(1.03)',
+              opacity: 0.98,
             } : {}}
             className={cn(
-              'group relative rounded-2xl border overflow-hidden bg-white cursor-pointer',
-              !isDraggingAny && 'transition-all duration-200 hover:shadow-[0_8px_24px_rgba(139,92,246,0.12)] hover:-translate-y-0.5',
-              isDragging ? 'border-violet-400 ring-4 ring-violet-500/25 shadow-2xl z-50'
-                : isSelected ? 'border-violet-400 ring-2 ring-violet-500/15 shadow-md'
-                : isPinned ? 'border-amber-200 bg-gradient-to-br from-white to-amber-50/30 shadow-sm'
-                : isHighValue ? 'border-amber-300/80 bg-gradient-to-br from-amber-50/20 to-white shadow-sm'
-                : isStagnant ? 'border-rose-200 bg-gradient-to-br from-rose-50/20 to-white shadow-sm'
-                : 'border-slate-200/60 shadow-sm hover:border-violet-200'
+              'group relative rounded-2xl border overflow-hidden bg-white/95 backdrop-blur-sm cursor-pointer',
+              !isDraggingAny && 'transition-all duration-300 hover:shadow-[0_12px_36px_rgba(139,92,246,0.14)] hover:-translate-y-1 hover:border-violet-300/80',
+              isDragging ? 'border-violet-500 ring-4 ring-violet-500/25 shadow-2xl z-50'
+                : isSelected ? 'border-violet-400 ring-2 ring-violet-500/20 shadow-md'
+                : isPinned ? 'border-amber-300 bg-gradient-to-br from-amber-50/30 to-white shadow-sm'
+                : isHighValue ? 'border-amber-300/90 bg-gradient-to-br from-amber-50/20 via-white to-white shadow-sm'
+                : isStagnant ? 'border-rose-200/90 bg-gradient-to-br from-rose-50/20 via-white to-white shadow-sm'
+                : 'border-slate-200/70 shadow-sm'
             )}
           >
-            {/* Left accent bar */}
+            {/* Left accent bar with gradient glow */}
             <div
-              className="absolute top-0 left-0 bottom-0 w-[3px] rounded-l-2xl"
-              style={{ background: `linear-gradient(to bottom, ${isHighValue ? '#f59e0b' : stageColor}bb, ${isHighValue ? '#f59e0b' : stageColor})` }}
+              className="absolute top-0 left-0 bottom-0 w-[4px] rounded-l-2xl"
+              style={{ background: `linear-gradient(to bottom, ${isHighValue ? '#f59e0b' : stageColor}, ${isHighValue ? '#d97706' : stageColor}bb)` }}
             />
 
             {/* Drag handle */}
             <div
               {...dragHandleProps}
-              className="absolute top-0 right-0 w-8 h-full flex items-center justify-center cursor-grab active:cursor-grabbing z-10 text-slate-300 group-hover:text-violet-400 transition-colors border-l border-slate-100"
+              className="absolute top-0 right-0 w-8 h-full flex items-center justify-center cursor-grab active:cursor-grabbing z-10 text-slate-300 group-hover:text-violet-500 transition-colors border-l border-slate-100/60"
               onClick={(e) => e.stopPropagation()}
             >
               <GripVertical size={13} />
@@ -865,7 +866,7 @@ const DealCard = memo(
 
             {/* Main clickable area */}
             <div
-              className="pl-4 pr-10 py-3.5 space-y-2.5"
+              className="pl-4 pr-10 py-3.5 space-y-3"
               onClick={(e) => {
                 e.stopPropagation();
                 if (onSelect) onSelect(deal.id);
@@ -876,27 +877,31 @@ const DealCard = memo(
               <div className="flex items-start gap-2.5">
                 <div
                   className={cn(
-                    'w-9 h-9 rounded-2xl flex items-center justify-center text-sm font-black text-white shrink-0 shadow-md',
-                    isHighValue ? 'bg-gradient-to-br from-amber-400 to-orange-500' : ''
+                    'w-9 h-9 rounded-2xl flex items-center justify-center text-xs font-black text-white shrink-0 shadow-md ring-2 ring-white',
+                    isHighValue ? 'bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500' : ''
                   )}
-                  style={isHighValue ? { boxShadow: '0 4px 12px rgba(245,158,11,0.35)' } : { backgroundColor: avatarColor, boxShadow: `0 4px 12px ${avatarColor}40` }}
+                  style={isHighValue ? { boxShadow: '0 4px 14px rgba(245,158,11,0.4)' } : { backgroundColor: avatarColor, boxShadow: `0 4px 14px ${avatarColor}40` }}
                 >
                   {isHighValue ? '👑' : (deal.company || 'D').charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1 pt-0.5">
                   <div className="flex items-center gap-1 flex-wrap mb-0.5">
-                    <p className={cn('text-xs font-black truncate leading-tight', isHighValue ? 'text-amber-800' : 'text-slate-800')}>
+                    <p className={cn('text-xs font-black truncate leading-tight tracking-tight', isHighValue ? 'text-amber-900' : 'text-slate-900')}>
                       {deal.company || 'ไม่ระบุบริษัท'}
                     </p>
-                    {isHighValue && <span className="text-[8px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-lg uppercase tracking-wide shrink-0">VIP</span>}
-                    {isPinned && <Star size={9} className="text-amber-500 fill-amber-400 shrink-0" />}
+                    {isHighValue && (
+                      <span className="text-[8px] font-black bg-gradient-to-r from-amber-400 to-amber-500 text-white px-1.5 py-0.5 rounded-full uppercase tracking-widest shadow-sm shadow-amber-500/30 shrink-0">
+                        VIP
+                      </span>
+                    )}
+                    {isPinned && <Star size={10} className="text-amber-500 fill-amber-400 shrink-0" />}
                     {isStagnant && (
-                      <span className="inline-flex items-center gap-0.5 text-[8px] font-black bg-rose-50 text-rose-500 px-1.5 py-0.5 rounded-lg border border-rose-100 shrink-0">
+                      <span className="inline-flex items-center gap-0.5 text-[8px] font-black bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded-full border border-rose-200/80 shrink-0">
                         <Clock size={7} />{deal.agingDays}ว
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-400 truncate leading-snug font-medium">
+                  <p className="text-[11px] text-slate-500 truncate leading-snug font-medium">
                     {deal.title || 'ไม่มีชื่อดีล'}
                   </p>
                 </div>
@@ -912,10 +917,10 @@ const DealCard = memo(
                 </span>
                 {deal.probability !== undefined && deal.probability !== null && (
                   <span
-                    className="text-[10px] font-black tabular-nums px-2 py-0.5 rounded-xl border"
+                    className="text-[10px] font-black tabular-nums px-2.5 py-0.5 rounded-full border shadow-2xs"
                     style={{
                       backgroundColor: deal.probability >= 70 ? '#dcfce7' : deal.probability >= 40 ? '#ede9fe' : '#f1f5f9',
-                      color: deal.probability >= 70 ? '#16a34a' : deal.probability >= 40 ? '#7c3aed' : '#94a3b8',
+                      color: deal.probability >= 70 ? '#15803d' : deal.probability >= 40 ? '#6d28d9' : '#64748b',
                       borderColor: deal.probability >= 70 ? '#bbf7d0' : deal.probability >= 40 ? '#ddd6fe' : '#e2e8f0',
                     }}
                   >
@@ -924,8 +929,8 @@ const DealCard = memo(
                 )}
               </div>
 
-              {/* Progress bar */}
-              <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
+              {/* Progress bar with neon glow */}
+              <div className="h-1 bg-slate-100/80 rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{
@@ -933,36 +938,41 @@ const DealCard = memo(
                     background: deal.probability >= 70
                       ? 'linear-gradient(to right, #10b981, #059669)'
                       : deal.probability >= 40
-                      ? 'linear-gradient(to right, #8b5cf6, #7c3aed)'
+                      ? 'linear-gradient(to right, #8b5cf6, #6366f1)'
                       : '#cbd5e1',
+                    boxShadow: deal.probability >= 70
+                      ? '0 0 8px rgba(16,185,129,0.5)'
+                      : deal.probability >= 40
+                      ? '0 0 8px rgba(139,92,246,0.5)'
+                      : 'none',
                   }}
                 />
               </div>
 
               {/* Contact chip */}
               {deal.contact && (
-                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium">
-                  <div className="w-4 h-4 rounded-full bg-slate-100 flex items-center justify-center text-[8px] font-black text-slate-500">
+                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold pt-0.5">
+                  <div className="w-4 h-4 rounded-full bg-slate-100 flex items-center justify-center text-[8px] font-black text-slate-600">
                     {deal.contact.charAt(0).toUpperCase()}
                   </div>
-                  <span className="truncate max-w-[120px]">{deal.contact}</span>
+                  <span className="truncate max-w-[130px]">{deal.contact}</span>
                 </div>
               )}
             </div>
 
             {/* Action row — hover reveal */}
-            <div className="grid grid-cols-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-all duration-200 max-h-0 group-hover:max-h-10 overflow-hidden bg-gradient-to-r from-slate-50 to-white">
+            <div className="grid grid-cols-3 border-t border-slate-100/80 opacity-0 group-hover:opacity-100 transition-all duration-200 max-h-0 group-hover:max-h-10 overflow-hidden bg-slate-50/90 backdrop-blur-sm">
               <button
                 onClick={(e) => { e.stopPropagation(); if (onMove) onMove(deal.id, 'left'); }}
                 disabled={!canMoveLeft}
-                className={cn('h-8 flex items-center justify-center text-xs gap-1 transition-all font-bold rounded-bl-2xl', canMoveLeft ? 'text-slate-400 hover:bg-slate-100 hover:text-slate-700' : 'opacity-20 cursor-not-allowed')}
+                className={cn('h-8 flex items-center justify-center text-xs gap-1 transition-all font-bold rounded-bl-2xl', canMoveLeft ? 'text-slate-500 hover:bg-slate-200/60 hover:text-slate-800' : 'opacity-20 cursor-not-allowed')}
               >
                 <ArrowLeft size={11} strokeWidth={2.5} />
                 <span className="text-[9px]">ย้อน</span>
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); if (onPin) onPin(deal.id); }}
-                className={cn('h-8 flex items-center justify-center text-xs gap-1 transition-all border-x border-slate-100 font-bold', isPinned ? 'text-amber-500 hover:bg-amber-50' : 'text-slate-400 hover:bg-slate-100 hover:text-amber-500')}
+                className={cn('h-8 flex items-center justify-center text-xs gap-1 transition-all border-x border-slate-100/80 font-bold', isPinned ? 'text-amber-500 hover:bg-amber-50' : 'text-slate-500 hover:bg-slate-200/60 hover:text-amber-500')}
               >
                 <Star size={11} strokeWidth={2.5} className={cn(isPinned && 'fill-amber-400')} />
                 <span className="text-[9px]">ปักหมุด</span>
@@ -970,7 +980,7 @@ const DealCard = memo(
               <button
                 onClick={(e) => { e.stopPropagation(); if (onMove) onMove(deal.id, 'right'); }}
                 disabled={!canMoveRight}
-                className={cn('h-8 flex items-center justify-center text-xs gap-1 transition-all font-bold rounded-br-2xl', canMoveRight ? 'text-slate-400 hover:bg-violet-50 hover:text-violet-600' : 'opacity-20 cursor-not-allowed')}
+                className={cn('h-8 flex items-center justify-center text-xs gap-1 transition-all font-bold rounded-br-2xl', canMoveRight ? 'text-slate-500 hover:bg-violet-100/70 hover:text-violet-700' : 'opacity-20 cursor-not-allowed')}
               >
                 <span className="text-[9px]">ถัดไป</span>
                 <ChevronRight size={11} strokeWidth={2.5} />
