@@ -134,7 +134,7 @@ export function useUpdateDeal() {
           // Fallback to data if the backend returned the full row.
           const mergedData = { ...(data || {}), ...variables };
           dispatchNotification('DEAL_WON', {
-            customerName: mergedData.company_name || 'ไม่ระบุชื่อบริษัท',
+            customerName: mergedData.company || mergedData.company_name || 'ไม่ระบุชื่อบริษัท',
             value: mergedData.value || 0,
             userEmail: mergedData.contact_name || 'เซลส์'
           });
@@ -182,7 +182,7 @@ export function useAddDeal() {
       
       const mergedData = { ...(data?.[0] || data || {}), ...variables };
       dispatchNotification('DEAL_CREATED', {
-        customerName: mergedData.company_name || 'ไม่ระบุชื่อบริษัท',
+        customerName: mergedData.company || mergedData.company_name || 'ไม่ระบุชื่อบริษัท',
         value: mergedData.value || 0
       });
     },

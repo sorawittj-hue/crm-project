@@ -158,3 +158,20 @@ export const buildCustomerHealth = (customers = [], deals = [], options = {}) =>
 
   return [...enrichedCustomers, ...syntheticCustomers];
 };
+
+/**
+ * Suggests a tier upgrade for a customer based on their won value
+ * @param {number} wonValue
+ * @param {string} currentTier - 'Silver' | 'Gold' | 'Platinum'
+ * @returns {{ shouldUpgrade: boolean, suggestedTier: string } | null}
+ */
+export const suggestTierUpgrade = (wonValue, currentTier) => {
+  if (currentTier === 'Platinum') return null;
+  if (wonValue >= 2_000_000 && currentTier !== 'Platinum') {
+    return { shouldUpgrade: true, suggestedTier: 'Platinum' };
+  }
+  if (wonValue >= 500_000 && currentTier === 'Silver') {
+    return { shouldUpgrade: true, suggestedTier: 'Gold' };
+  }
+  return null;
+};

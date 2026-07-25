@@ -17,15 +17,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { formatCurrency, formatFullCurrency } from '../lib/formatters';
 import { STAGE_LABELS } from '../lib/constants';
-import { buildCustomerHealth } from '../utils/customerIntelligence';
+import { buildCustomerHealth, suggestTierUpgrade } from '../utils/customerIntelligence';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { downloadCsv } from '../utils/exportUtils';
+import { useActivities } from '../hooks/useActivities';
+import CustomerTimeline from '../components/customers/CustomerTimeline';
+import { callGeminiAPI } from '../services/ai';
 import {
   Search, Plus, Users, Building2, Mail, Phone,
   ChevronRight, Loader2, Download, Upload,
   TrendingUp, DollarSign, BarChart3, Trash2, AlertTriangle, HeartPulse,
   Settings, Sparkles, Target, Filter, Contact, Pencil, Star, LayoutGrid, List,
-  ArrowUpDown, X, CheckCircle2, ExternalLink, ChevronDown
+  ArrowUpDown, X, CheckCircle2, ExternalLink, ChevronDown, Activity, History
 } from 'lucide-react';
 import CustomerCSVImport from '../components/CustomerCSVImport';
 
@@ -158,6 +161,11 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
           {customer.industry && (
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-slate-50 text-slate-500 border border-slate-100 truncate max-w-[100px]">
               {customer.industry}
+            </span>
+          )}
+          {suggestTierUpgrade(customer.dealStats?.wonValue || 0, customer.tier)?.shouldUpgrade && (
+            <span className="inline-flex items-center gap-1 text-[9px] font-black text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">
+              ⬆️ แนะนำ {suggestTierUpgrade(customer.dealStats?.wonValue || 0, customer.tier)?.suggestedTier}
             </span>
           )}
         </div>
@@ -337,15 +345,51 @@ function CustomerDetailPanel({
   deleteContact, localCustomer, setLocalCustomer, handleSaveCustomer, updateCustomerMutation,
   createCustomerMutation, deleteCustomerMutation, handleConvertSynthetic,
   setConfirmDelete, setPendingNewDealCustomer, navigate, setIsSidebarOpen, shouldBlockBasic, openPaywall, isGuestAccount,
+  deals, allActivities
 }) {
   const [activeTab, setActiveTab] = useState('profile');
   const [g1, g2] = getAvatarGradient(customer.name);
   const gradeConf = GRADE_CONFIG[customer.grade];
   const healthConf = HEALTH_BADGE[customer.health?.status] || HEALTH_BADGE.healthy;
 
+  const [aiPlaybook, setAiPlaybook] = useState(null);
+  const [aiPlaybookLoading, setAiPlaybookLoading] = useState(false);
+
+  useEffect(() => {
+    setAiPlaybook(null);
+    setAiPlaybookLoading(false);
+  }, [customer?.id]);
+
+  const generateAIPlaybook = async (customer) => {
+    if (!customer) return;
+    setAiPlaybookLoading(true);
+    setAiPlaybook(null);
+    try {
+      const prompt = `คุณเป็นที่ปรึกษาการขาย B2B มืออาชีพ วิเคราะห์ลูกค้ารายนี้และให้กลยุทธ์เฉพาะเจาะจง:
+
+ชื่อลูกค้า: ${customer.name || customer.company}
+บริษัท: ${customer.company || '-'}
+เกรดลูกค้า: ${customer.grade || 'C'}
+CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonValue || 0).toLocaleString('th-TH')} บาท
+ดีล Active: ${customer.dealStats?.total || 0} ดีล
+สถานะสุขภาพ: ${customer.health?.status || 'unknown'}
+วันที่ไม่ได้ติดต่อ: ${customer.health?.inactiveDays || 0} วัน
+ระดับ Tier: ${customer.tier || 'Silver'}
+
+ให้กลยุทธ์การดูแลลูกค้า 4 ข้อ เฉพาะเจาะจงสำหรับลูกค้ารายนี้ ภาษาไทย กระชับ แต่ละข้อไม่เกิน 2 บรรทัด ตอบเป็นรายการหมายเลข`;
+      const response = await callGeminiAPI(prompt);
+      setAiPlaybook(response);
+    } catch (e) {
+      setAiPlaybook('ไม่สามารถโหลด AI Playbook ได้ในขณะนี้');
+    } finally {
+      setAiPlaybookLoading(false);
+    }
+  };
+
   const tabs = [
     { id: 'profile', label: 'ข้อมูล', icon: Users },
     { id: 'playbook', label: 'AI Playbook', icon: Sparkles },
+    { id: 'timeline', label: 'Timeline', icon: History },
     { id: 'deals', label: 'ดีล', icon: Target },
     { id: 'contacts', label: 'ผู้ติดต่อ', icon: Contact },
   ];
@@ -641,30 +685,49 @@ function CustomerDetailPanel({
               </div>
 
               {/* AI Playbook */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
-                    <Sparkles size={14} className="text-white" />
+              <div className="space-y-4">
+                {!aiPlaybook && !aiPlaybookLoading && (
+                  <button
+                    onClick={() => generateAIPlaybook(customer)}
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all"
+                  >
+                    <Sparkles size={16} />
+                    วิเคราะห์ด้วย AI
+                  </button>
+                )}
+                {aiPlaybookLoading && (
+                  <div className="flex items-center justify-center py-8 gap-3">
+                    <Loader2 className="animate-spin text-violet-500" size={20} />
+                    <span className="text-sm text-slate-500">AI กำลังวิเคราะห์...</span>
                   </div>
-                  <div>
-                    <p className="text-sm font-black text-slate-800">AI Care Playbook</p>
-                    <p className="text-[10px] text-slate-400">{playbookData.strategy}</p>
+                )}
+                {aiPlaybook && (
+                  <div className="bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-100 rounded-2xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Sparkles size={14} className="text-violet-500" />
+                      <p className="text-xs font-black text-violet-600 uppercase tracking-wide">AI Playbook</p>
+                    </div>
+                    <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{aiPlaybook}</p>
+                    <button
+                      onClick={() => generateAIPlaybook(customer)}
+                      className="mt-3 text-xs text-violet-500 font-bold hover:text-violet-700"
+                    >
+                      🔄 สร้างใหม่
+                    </button>
                   </div>
-                </div>
-                <div className={cn('p-4 rounded-2xl border bg-gradient-to-br mb-4', playbookData.colorClass)}>
-                  <p className="text-xs font-semibold text-slate-700 leading-relaxed">{playbookData.detail}</p>
-                </div>
-                <ul className="space-y-2.5">
-                  {playbookData.actions.map((action, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm">
-                      <span className={cn('w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5', playbookData.badge)}>
-                        {i + 1}
-                      </span>
-                      <span className="text-slate-700 leading-snug font-medium">{action}</span>
-                    </li>
-                  ))}
-                </ul>
+                )}
               </div>
+            </motion.div>
+          )}
+
+          {/* ── TIMELINE tab ── */}
+          {activeTab === 'timeline' && (
+            <motion.div key="timeline" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="p-6 space-y-4">
+              <CustomerTimeline 
+                customer={customer}
+                deals={deals || []}
+                allActivities={allActivities || []}
+              />
             </motion.div>
           )}
 
@@ -815,6 +878,7 @@ function CustomerDetailPanel({
 export default function CustomersPage() {
   const { data: customers, isLoading: customersLoading } = useCustomers();
   const { data: deals, isLoading: dealsLoading } = useDeals();
+  const { data: allActivities = [] } = useActivities();
   const deleteCustomerMutation = useDeleteCustomer();
   const createCustomerMutation = useCreateCustomer();
   const updateCustomerMutation = useUpdateCustomer();
@@ -1082,6 +1146,19 @@ export default function CustomersPage() {
               ))}
             </div>
 
+            {industries.length > 0 && (
+              <select
+                value={industryFilter}
+                onChange={e => setIndustryFilter(e.target.value)}
+                className="h-10 px-3 rounded-xl border border-slate-200 bg-white/80 text-xs font-semibold text-slate-600 cursor-pointer"
+              >
+                <option value="all">ทุก Industry</option>
+                {industries.map(ind => (
+                  <option key={ind} value={ind}>{ind}</option>
+                ))}
+              </select>
+            )}
+
             {/* Sort + View */}
             <div className="flex items-center gap-2">
               <select value={`${sortBy}-${sortOrder}`} onChange={e => { const [by, ord] = e.target.value.split('-'); setSortBy(by); setSortOrder(ord); }}
@@ -1225,6 +1302,8 @@ export default function CustomersPage() {
                 shouldBlockBasic={shouldBlockBasic}
                 openPaywall={openPaywall}
                 isGuestAccount={isGuestAccount}
+                deals={deals || []}
+                allActivities={allActivities || []}
               />
             </motion.div>
           )}

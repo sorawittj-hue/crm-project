@@ -384,5 +384,51 @@ export const buildPipelineIntelligence = (deals = [], options = {}) => {
   };
 };
 
+/**
+ * Returns urgency level for a deal's close date
+ * @param {NormalizedDeal} deal - Must have daysUntilClose computed
+ * @returns {'overdue'|'critical'|'warning'|'upcoming'|null}
+ */
+export const getCloseDateUrgency = (deal) => {
+  if (!deal || deal.daysUntilClose === null) return null;
+  if (deal.daysUntilClose < 0) return 'overdue';
+  if (deal.daysUntilClose <= 3) return 'critical';
+  if (deal.daysUntilClose <= 7) return 'warning';
+  if (deal.daysUntilClose <= 14) return 'upcoming';
+  return null;
+};
+
+/**
+ * Returns aging tier based on days inactive
+ * @param {number} daysInactive
+ * @returns {'fresh'|'watch'|'stale'|'critical'}
+ */
+export const getAgingTier = (daysInactive) => {
+  if (daysInactive <= 3) return 'fresh';
+  if (daysInactive <= 7) return 'watch';
+  if (daysInactive <= 14) return 'stale';
+  return 'critical';
+};
+
+/**
+ * Calculates win rate for deals closed in the last N months (rolling)
+ * @param {Array} deals - Raw deal array
+ * @param {number} months - Number of months to look back (default 12)
+ * @param {Date} now - Reference date
+ * @returns {number} Win rate percentage 0-100
+ */
+export const calculateRollingWinRate = (deals, months = 12, now = new Date()) => {
+  const cutoff = new Date(now);
+  cutoff.setMonth(cutoff.getMonth() - months);
+  const closedInWindow = deals.filter(d => {
+    if (d.stage !== 'won' && d.stage !== 'lost') return false;
+    const closeDate = new Date(d.actual_close_date || d.updated_at || d.created_at);
+    return closeDate >= cutoff;
+  });
+  if (!closedInWindow.length) return 0;
+  const won = closedInWindow.filter(d => d.stage === 'won').length;
+  return Math.round((won / closedInWindow.length) * 100);
+};
+
 // Note: Customer-related intelligence functions (buildCustomerHealth, getCustomerGrade, etc.) 
 // have been refactored and extracted to customerIntelligence.js.

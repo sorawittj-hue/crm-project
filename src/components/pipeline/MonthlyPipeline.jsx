@@ -99,7 +99,7 @@ export default function MonthlyPipeline({
   // ── KPI stats ──────────────────────────────────────────────────────────────
   // Use actual_close_date for won deals to measure monthly revenue correctly.
   // Active deal count is total in-flight deals (regardless of creation month).
-  const { monthlyTotal, monthlyCount, lastMonthTotal, atRiskValue, atRiskCount } = useMemo(() => {
+  const { monthlyTotal, monthlyCount, lastMonthTotal, atRiskValue, atRiskCount, weightedPipelineValue } = useMemo(() => {
     const allDeals = deals || [];
     // eslint-disable-next-line react-hooks/purity
     const nowMs = Date.now();
@@ -130,12 +130,16 @@ export default function MonthlyPipeline({
       return agingDays > 7;
     });
 
+    const activeDeals = allDeals.filter(d => !['won', 'lost'].includes(d.stage));
+    const weightedPipelineValue = activeDeals.reduce((s, d) => s + (Number(d.value) * (Number(d.probability) || 0) / 100), 0);
+
     return {
       monthlyTotal: wonThisMonth.reduce((s, d) => s + (Number(d.value) || 0), 0),
       monthlyCount: wonThisMonth.length,
       lastMonthTotal: wonPrevMonth.reduce((s, d) => s + (Number(d.value) || 0), 0),
       atRiskValue: atRiskDeals.reduce((s, d) => s + (Number(d.value) || 0), 0),
       atRiskCount: atRiskDeals.length,
+      weightedPipelineValue,
     };
   }, [deals, selectedMonth, selectedYear]);
 
@@ -198,6 +202,7 @@ export default function MonthlyPipeline({
         lastMonthTotal={lastMonthTotal}
         atRiskValue={atRiskValue}
         atRiskCount={atRiskCount}
+        weightedPipelineValue={weightedPipelineValue}
         onAddDeal={onAddDeal}
       />
 

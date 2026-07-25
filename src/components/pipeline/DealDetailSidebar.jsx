@@ -6,7 +6,7 @@ import {
   Phone, Mail, FileText, Clock,
   Sparkles, Activity, Target, Zap,
   Loader2, Send, CalendarClock, ListTodo, AlertTriangle, Settings,
-  Building2, User, TrendingUp, X
+  Building2, User, TrendingUp, X, MessageSquare
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -108,6 +108,7 @@ const ACTIVITY_TYPES = [
   { id: 'meeting', label: 'ประชุม',    icon: Clock,         color: 'bg-amber-50 text-amber-600 border-amber-200' },
   { id: 'note',    label: 'บันทึก',    icon: FileText,      color: 'bg-slate-50 text-slate-600 border-slate-200' },
   { id: 'task',    label: 'นัดติดตาม', icon: CalendarClock, color: 'bg-orange-50 text-orange-700 border-orange-200' },
+  { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, color: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
 ];
 
 function timeAgo(dateStr) {
@@ -151,6 +152,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
   const [loadingRecommendation, setLoadingRecommendation] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
+  const [checkedItems, setCheckedItems] = useState(() => deal?.metadata?.checklist_progress || {});
+  const [editingField, setEditingField] = useState(null);
 
   const { data: emailTemplates = [] } = useEmailTemplates();
 
@@ -277,9 +280,10 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
         is_recurring: !!deal.is_recurring,
         renewal_date: deal.renewal_date ? deal.renewal_date.slice(0, 10) : '',
       });
+      setCheckedItems(deal.metadata?.checklist_progress || {});
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deal?.id]);
+  }, [deal?.id, deal?.metadata?.checklist_progress]);
 
   const handleScheduleFollowUp = async () => {
     if (shouldBlockBasic) {
@@ -400,13 +404,65 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                 {/* Value */}
                 <div className="bg-white/60 backdrop-blur-md rounded-2xl p-3.5 border border-white/60 shadow-sm transition-all hover:bg-white/80">
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">มูลค่า</p>
-                  <p className="text-lg font-black text-slate-900 tabular-nums leading-tight">{formatCurrency(deal.value)}</p>
+                  <div className="mt-0.5">
+                    {editingField === 'value' ? (
+                      <input
+                        type="number"
+                        autoFocus
+                        defaultValue={deal.value}
+                        className="text-lg font-black w-full border-b-2 border-violet-400 bg-transparent outline-none text-slate-900"
+                        onBlur={(e) => {
+                          const val = parseFloat(e.target.value);
+                          if (!isNaN(val) && val !== deal.value) {
+                            onUpdate(deal.id, { value: val });
+                          }
+                          setEditingField(null);
+                        }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') setEditingField(null); }}
+                      />
+                    ) : (
+                      <p
+                        className="text-lg font-black text-slate-900 tabular-nums leading-tight cursor-pointer hover:text-violet-600 transition-colors group flex items-center gap-1"
+                        onClick={() => setEditingField('value')}
+                        title="คลิกเพื่อแก้ไข"
+                      >
+                        {formatCurrency(deal.value)}
+                        <span className="opacity-0 group-hover:opacity-100 text-xs text-violet-400">✏️</span>
+                      </p>
+                    )}
+                  </div>
                 </div>
                 {/* Probability */}
                 <div className="bg-white/60 backdrop-blur-md rounded-2xl p-3.5 border border-white/60 shadow-sm transition-all hover:bg-white/80">
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">โอกาส</p>
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-lg font-black text-slate-900 tabular-nums leading-tight">{deal.probability}%</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    {editingField === 'probability' ? (
+                      <input
+                        type="number"
+                        autoFocus
+                        defaultValue={deal.probability}
+                        min="0"
+                        max="100"
+                        className="text-lg font-black w-full border-b-2 border-violet-400 bg-transparent outline-none text-slate-900"
+                        onBlur={(e) => {
+                          const val = parseFloat(e.target.value);
+                          if (!isNaN(val) && val !== deal.probability && val >= 0 && val <= 100) {
+                            onUpdate(deal.id, { probability: val });
+                          }
+                          setEditingField(null);
+                        }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') setEditingField(null); }}
+                      />
+                    ) : (
+                      <p
+                        className="text-lg font-black text-slate-900 tabular-nums leading-tight cursor-pointer hover:text-violet-600 transition-colors group flex items-center gap-1"
+                        onClick={() => setEditingField('probability')}
+                        title="คลิกเพื่อแก้ไข"
+                      >
+                        {deal.probability}%
+                        <span className="opacity-0 group-hover:opacity-100 text-xs text-violet-400">✏️</span>
+                      </p>
+                    )}
                   </div>
                   <div className="mt-2 h-1.5 bg-slate-200/50 rounded-full overflow-hidden">
                     <motion.div
@@ -419,12 +475,35 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                     />
                   </div>
                 </div>
-                {/* Stage position */}
+                {/* Expected Close Date */}
                 <div className="bg-white/60 backdrop-blur-md rounded-2xl p-3.5 border border-white/60 shadow-sm transition-all hover:bg-white/80">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">ขั้นตอน</p>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">คาดว่าจะปิด</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className={cn('w-2.5 h-2.5 rounded-full shrink-0 shadow-sm', wf?.dot || 'bg-slate-400')} />
-                    <p className="text-sm font-bold text-slate-800 truncate">{stageBadge.label.replace('🎉 ', '')}</p>
+                    {editingField === 'expected_close_date' ? (
+                      <input
+                        type="date"
+                        autoFocus
+                        defaultValue={deal.expected_close_date ? deal.expected_close_date.slice(0, 10) : ''}
+                        className="text-sm font-bold w-full border-b-2 border-violet-400 bg-transparent outline-none text-slate-900"
+                        onBlur={(e) => {
+                          const val = e.target.value;
+                          if (val !== (deal.expected_close_date ? deal.expected_close_date.slice(0, 10) : '')) {
+                            onUpdate(deal.id, { expected_close_date: val || null });
+                          }
+                          setEditingField(null);
+                        }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') setEditingField(null); }}
+                      />
+                    ) : (
+                      <p
+                        className="text-sm font-bold text-slate-800 truncate cursor-pointer hover:text-violet-600 transition-colors group flex items-center gap-1"
+                        onClick={() => setEditingField('expected_close_date')}
+                        title="คลิกเพื่อแก้ไข"
+                      >
+                        {deal.expected_close_date ? new Date(deal.expected_close_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
+                        <span className="opacity-0 group-hover:opacity-100 text-xs text-violet-400">✏️</span>
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -810,16 +889,23 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                               key={step.key} 
                               className="relative flex items-start gap-4 text-sm group"
                             >
-                              <div className={cn(
-                                "relative z-10 w-6 h-6 rounded-full bg-white border-2 flex items-center justify-center text-[10px] font-bold shrink-0 mt-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-white",
+                              <button 
+                                onClick={() => {
+                                  const newChecked = { ...checkedItems, [step.key]: !checkedItems[step.key] };
+                                  setCheckedItems(newChecked);
+                                  onUpdate(deal.id, { metadata: { ...(deal.metadata || {}), checklist_progress: newChecked } });
+                                }}
+                                className={cn(
+                                "relative z-10 w-6 h-6 rounded-full bg-white border-2 flex items-center justify-center text-[10px] font-bold shrink-0 mt-2 shadow-sm transition-all duration-300 group-hover:scale-110",
+                                checkedItems[step.key] ? 'bg-emerald-500 border-emerald-500 text-white shadow-[0_0_12px_rgba(52,211,153,0.5)]' :
                                 deal.stage === 'won' ? 'border-emerald-200 text-emerald-600 group-hover:border-emerald-400 group-hover:shadow-[0_0_12px_rgba(52,211,153,0.5)]' : 
                                 deal.stage === 'lost' ? 'border-rose-200 text-rose-600 group-hover:border-rose-400 group-hover:shadow-[0_0_12px_rgba(251,113,133,0.5)]' : 
                                 `border-slate-200 text-slate-500 group-hover:border-slate-400 group-hover:text-slate-700 group-hover:shadow-[0_0_12px_rgba(0,0,0,0.1)]`
                               )}>
-                                {i + 1}
-                              </div>
-                              <div className="flex-1 bg-white/60 backdrop-blur-md border border-white/60 group-hover:border-white p-3.5 rounded-2xl shadow-sm transition-all group-hover:shadow-md">
-                                <span className="text-slate-700 leading-relaxed font-semibold">{step.text}</span>
+                                {checkedItems[step.key] ? <CheckCircle2 size={12} /> : i + 1}
+                              </button>
+                              <div className={cn("flex-1 bg-white/60 backdrop-blur-md border border-white/60 group-hover:border-white p-3.5 rounded-2xl shadow-sm transition-all group-hover:shadow-md", checkedItems[step.key] && "opacity-60")}>
+                                <span className={cn("text-slate-700 leading-relaxed font-semibold transition-all", checkedItems[step.key] && "line-through text-slate-400")}>{step.text}</span>
                               </div>
                             </motion.div>
                           ))}

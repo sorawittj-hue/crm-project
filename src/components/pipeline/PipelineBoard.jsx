@@ -20,7 +20,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 import { Button } from '../ui/Button';
-import { normalizeDealForIntelligence } from '../../utils/salesIntelligence';
+import { normalizeDealForIntelligence, getCloseDateUrgency, getAgingTier } from '../../utils/salesIntelligence';
 import AIFollowUpModal from './AIFollowUpModal';
 
 const STAGE_CONFIG = {
@@ -854,6 +854,24 @@ const DealCard = memo(
     ) => {
       const isStagnant = deal.agingDays > 7 && !['won', 'lost'].includes(deal.stage);
       const isHighValue = Number(deal.value) >= 1000000;
+      
+      const normalizedDeal = useMemo(() => normalizeDealForIntelligence(deal), [deal]);
+      const agingTier = getAgingTier(deal.agingDays || 0);
+      const urgency = getCloseDateUrgency(normalizedDeal);
+      
+      const agingBorderColor = {
+        fresh: 'border-l-emerald-400',
+        watch: 'border-l-amber-400',
+        stale: 'border-l-orange-500',
+        critical: 'border-l-rose-500'
+      };
+      
+      const showUrgency = !['won', 'lost'].includes(deal.stage) && urgency && ['overdue', 'critical', 'warning'].includes(urgency);
+      const urgencyConfig = {
+        overdue: { label: `เลยกำหนด ${Math.abs(normalizedDeal.daysUntilClose)} วัน`, color: 'bg-rose-50 text-rose-600 border-rose-200/80', iconAnim: 'animate-pulse' },
+        critical: { label: `ปิดใน ${normalizedDeal.daysUntilClose} วัน`, color: 'bg-orange-50 text-orange-600 border-orange-200/80', iconAnim: '' },
+        warning: { label: `${normalizedDeal.daysUntilClose} วัน`, color: 'bg-amber-50 text-amber-600 border-amber-200/80', iconAnim: '' }
+      };
 
       // Generate a consistent color from the company name
       const getAvatarColor = (name) => {
@@ -876,7 +894,8 @@ const DealCard = memo(
               opacity: 0.98,
             } : {}}
             className={cn(
-              'group relative rounded-2xl border overflow-hidden bg-white/95 backdrop-blur-sm cursor-pointer',
+              'group relative rounded-2xl border overflow-hidden bg-white/95 backdrop-blur-sm cursor-pointer border-l-4',
+              !['won', 'lost'].includes(deal.stage) ? agingBorderColor[agingTier] : 'border-l-slate-300',
               !isDraggingAny && 'transition-all duration-300 hover:shadow-[0_12px_36px_rgba(139,92,246,0.14)] hover:-translate-y-1 hover:border-violet-300/80',
               isDragging ? 'border-violet-500 ring-4 ring-violet-500/25 shadow-2xl z-50'
                 : isSelected ? 'border-violet-400 ring-2 ring-violet-500/20 shadow-md'
@@ -886,11 +905,6 @@ const DealCard = memo(
                 : 'border-slate-200/70 shadow-sm'
             )}
           >
-            {/* Left accent bar with gradient glow */}
-            <div
-              className="absolute top-0 left-0 bottom-0 w-[4px] rounded-l-2xl"
-              style={{ background: `linear-gradient(to bottom, ${isHighValue ? '#f59e0b' : stageColor}, ${isHighValue ? '#d97706' : stageColor}bb)` }}
-            />
 
             {/* Drag handle */}
             <div
@@ -932,7 +946,13 @@ const DealCard = memo(
                       </span>
                     )}
                     {isPinned && <Star size={10} className="text-amber-500 fill-amber-400 shrink-0" />}
-                    {isStagnant && (
+                    {showUrgency && urgencyConfig[urgency] && (
+                      <span className={cn('inline-flex items-center gap-0.5 text-[8px] font-black px-1.5 py-0.5 rounded-full border shrink-0', urgencyConfig[urgency].color)}>
+                        <Clock size={7} className={urgencyConfig[urgency].iconAnim} />
+                        {urgencyConfig[urgency].label}
+                      </span>
+                    )}
+                    {!showUrgency && isStagnant && (
                       <span className="inline-flex items-center gap-0.5 text-[8px] font-black bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded-full border border-rose-200/80 shrink-0">
                         <Clock size={7} />{deal.agingDays}ว
                       </span>

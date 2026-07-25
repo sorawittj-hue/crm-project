@@ -15,6 +15,10 @@ import { STAGE_COLORS, STAGE_LABELS } from '../lib/constants';
 import { buildPipelineIntelligence, DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
 import { buildCustomerHealth } from '../utils/customerIntelligence';
 import { calculateForecastAccuracy, getLostReasonBreakdown } from '../utils/forecastAccuracy';
+import DateRangePicker from '../components/ui/DateRangePicker';
+import RepDrilldown from '../components/analytics/RepDrilldown';
+import { callGeminiAPI } from '../services/ai';
+import { calculateRollingWinRate } from '../utils/salesIntelligence';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
 import {
@@ -187,6 +191,11 @@ export default function AnalyticsPage() {
 
   const [timeRange, setTimeRange] = useState('6m');
   const [dateRange, setDateRange] = useState('30days');
+  const [customDateFrom, setCustomDateFrom] = useState('');
+  const [customDateTo, setCustomDateTo] = useState('');
+  const [selectedRep, setSelectedRep] = useState(null);
+  const [aiConsultantText, setAiConsultantText] = useState(null);
+  const [aiConsultantLoading, setAiConsultantLoading] = useState(false);
 
   const deals = useMemo(() => {
     if (!allDeals) return null;
@@ -200,6 +209,17 @@ export default function AnalyticsPage() {
       startDate = new Date(now.getFullYear(), now.getMonth(), 1);
     } else if (dateRange === 'thisYear') {
       startDate = new Date(now.getFullYear(), 0, 1);
+    } else if (dateRange === '3months') {
+      startDate.setMonth(now.getMonth() - 3);
+    } else if (dateRange === '6months') {
+      startDate.setMonth(now.getMonth() - 6);
+    } else if (dateRange === 'custom' && customDateFrom && customDateTo) {
+      return allDeals.filter(deal => {
+        const dateToCheck = ['won', 'lost'].includes(deal.stage)
+          ? new Date(deal.actual_close_date || deal.updated_at || deal.created_at)
+          : new Date(deal.created_at);
+        return dateToCheck >= new Date(customDateFrom) && dateToCheck <= new Date(customDateTo);
+      });
     }
 
     return allDeals.filter(deal => {
@@ -220,6 +240,8 @@ export default function AnalyticsPage() {
 
   const hasPersonalTarget = myProfile?.personal_target > 0;
   const monthlyTarget = hasPersonalTarget ? myProfile.personal_target : 0;
+
+  const rollingWinRate12m = calculateRollingWinRate(allDeals || [], 12);
 
   const analytics = useMemo(() => {
     if (!deals) return null;
@@ -488,44 +510,51 @@ export default function AnalyticsPage() {
   const simulatedRevenue = simLeads * simAvgValue * (simWinRate / 100);
   const simQuotaAttainment = monthlyTarget > 0 ? Math.round((simulatedRevenue / monthlyTarget) * 100) : 0;
 
-  const aiConsultantResponses = useMemo(() => {
-    if (!analytics) return {};
-    
-    const atRisk = analytics.intelligence.highImpactRisks || [];
-    const riskText = atRisk.length === 0
-      ? 'ไม่พบดีลที่มีความเสี่ยงสูงในระบบขณะนี้ ทุกดีลได้รับการดูแลอย่างสม่ำเสมอ'
-      : `ดีลกลุ่มเสี่ยงสูง (${atRisk.length} ดีล, มูลค่ารวม ${formatCurrency(analytics.intelligence.atRiskValue)}):\n\n` +
-        atRisk.map((d, i) => `${i+1}. บริษัท **${d.company}** (มูลค่า ${formatCurrency(d.value)}) — ไม่มีความเคลื่อนไหว ${d.daysInactive} วัน\n   -> คำแนะนำ: *${d.recommendedAction}*`).join('\n\n');
+  const generateAIConsultant = async (promptType) => {
+    if (!analytics) return;
+    setAiConsultantLoading(true);
+    setAiConsultantText(null);
+    setSelectedPrompt(promptType);
+    try {
+      const intel = analytics.intelligence;
+      let prompt = '';
+      if (promptType === 'high-risk') {
+        prompt = `คุณเป็นที่ปรึกษาการขาย B2B ระดับผู้เชี่ยวชาญ วิเคราะห์ดีลเสี่ยงสูงต่อไปนี้:
 
-    const gap = analytics.intelligence.goalGap;
-    const forecast = analytics.intelligence.forecastToGoalValue;
-    const coverage = Math.round((forecast / monthlyTarget) * 100);
-    const quotaText = gap <= 0
-      ? `🎉 ยินดีด้วย! ยอดขายจริงในเดือนนี้คือ ${formatCurrency(analytics.currentMonthActual)} ทะลุเป้าหมายที่ตั้งไว้ที่ ${formatCurrency(monthlyTarget)}`
-      : `การประเมินโอกาสยอดขายถึงเป้า (เป้าหมาย: ${hasPersonalTarget ? formatCurrency(monthlyTarget) : 'ยังไม่ได้ตั้งเป้าหมายส่วนตัว'}):\n\n` +
-        `- ยอดขายปิดได้แล้ว: **${formatCurrency(analytics.currentMonthActual)}**\n` +
-        `- ยอดขายคาดการณ์ถ่วงน้ำหนัก (Forecast): **${formatCurrency(forecast)}** (คิดเป็น **${coverage}%** ของเป้า)\n` +
-        `- ยอดขายส่วนขาด (Goal Gap): **${formatCurrency(gap)}**\n\n` +
-        `-> คำแนะนำเชิงรุก: เพื่อปิดช่องว่าง ${formatCurrency(gap)} เซลส์ควรเร่งกระตุ้นดีลในสถานะ 'กำลังปิด' หรือนำดีลใหญ่ที่มีค่าถ่วงน้ำหนักสูงมาเร่งปิดล่วงหน้า`;
+ดีลเสี่ยงสูง: ${intel.highImpactRisks?.length || 0} ดีล
+มูลค่าดีลเสี่ยง: ${(intel.atRiskValue || 0).toLocaleString('th-TH')} บาท
+Deal ค้างนาน: ${intel.staleDeals?.length || 0} ดีล
+Win Rate: ${intel.winRate || 0}%
+Weighted Pipeline: ${(intel.weightedPipelineValue || 0).toLocaleString('th-TH')} บาท
 
-    const funnel = analytics.funnelData || [];
-    const lowest = [...funnel].slice(1).sort((a, b) => a.conversionRate - b.conversionRate)[0];
-    const bottleneckText = !lowest
-      ? 'ข้อมูลไม่เพียงพอในการวิเคราะห์คอขวดขั้นตอนการขาย'
-      : `วิเคราะห์คอขวดขั้นตอนการขาย:\n\n` +
-        `ขั้นตอนการแปลงข้อมูลที่ประสิทธิภาพต่ำสุดคือ **'${lowest.label}'** (Pass Rate: **${lowest.conversionRate}%**)\n\n` +
-        `-> แนวทางแก้ไขเชิงกลยุทธ์:\n` +
-        (lowest.stage === 'contact' ? `  - เซลส์ควรเตรียม Case Study และ Solution Demo ที่เจาะจงกับ Pain Point ของลูกค้าในขั้นตอนนัดเจอให้ละเอียดมากขึ้นเพื่อผ่านไปเสนอราคา` :
-         lowest.stage === 'proposal' ? `  - เร่งปรับกระบวนการส่งและติดตามใบเสนอราคาภายใน 3 วันทำการ พร้อมให้ตัวเลือก (Options) ราคาหลายระดับ` :
-         lowest.stage === 'negotiation' ? `  - เสนอส่วนลดแบบมีเงื่อนเวลา (Time-bound discount) หรือประสานงานให้ผู้บริหารระดับสูงมีส่วนร่วมเพื่อเร่งลงนาม PO` :
-         `  - พัฒนาและติดตามการทำงานตามขั้นตอน AI Playbook อย่างใกล้ชิดเพื่อเพิ่มอัตราการแปลงของลูกค้า`);
+ให้คำแนะนำเชิงกลยุทธ์ 5 ข้อ ภาษาไทย เฉพาะเจาะจง เพื่อกู้คืนดีลและลดความเสี่ยง`;
+      } else if (promptType === 'quota') {
+        prompt = `วิเคราะห์โอกาสบรรลุเป้ายอดขาย:
 
-    return {
-      'high-risk': riskText,
-      'quota': quotaText,
-      'bottleneck': bottleneckText
-    };
-  }, [analytics, monthlyTarget, hasPersonalTarget]);
+ยอดปิดได้เดือนนี้: ${(intel.currentMonthWonValue || 0).toLocaleString('th-TH')} บาท
+Weighted Pipeline: ${(intel.weightedPipelineValue || 0).toLocaleString('th-TH')} บาท  
+ดีลที่จะปิดใน 30 วัน: ${intel.closingSoonDeals?.length || 0} ดีล
+Win Rate: ${intel.winRate || 0}%
+
+วิเคราะห์และให้คำแนะนำ 5 ข้อเพื่อเร่งปิดเป้าหมาย ภาษาไทย`;
+      } else {
+        prompt = `หา Bottleneck ในกระบวนการขาย:
+
+ดีลที่ไม่มี Next Step: ${intel.noNextStepDeals?.length || 0} ดีล
+ดีล Stale: ${intel.staleDeals?.length || 0} ดีล  
+Avg Inactive Days: ${intel.averageInactiveDays || 0} วัน
+Win Rate: ${intel.winRate || 0}%
+
+ระบุ 5 คอขวดหลักในกระบวนการขายและวิธีแก้ไข ภาษาไทย`;
+      }
+      const response = await callGeminiAPI(prompt);
+      setAiConsultantText(response);
+    } catch (e) {
+      setAiConsultantText('ไม่สามารถโหลดคำแนะนำ AI ได้ในขณะนี้ กรุณาลองอีกครั้ง');
+    } finally {
+      setAiConsultantLoading(false);
+    }
+  };
 
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center h-[60vh] gap-6">
@@ -559,20 +588,16 @@ export default function AnalyticsPage() {
             <div className="flex flex-col md:flex-row items-center justify-between w-full gap-3">
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-1.5 bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 shadow-inner">
-                  {[['7days', '7 Days'], ['30days', '30 Days'], ['thisMonth', 'This Month'], ['thisYear', 'This Year']].map(([val, label]) => (
-                    <button
-                      key={val}
-                      onClick={() => setDateRange(val)}
-                      className={cn(
-                        "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
-                        dateRange === val
-                          ? "bg-white text-violet-700 shadow-sm ring-1 ring-slate-200/60"
-                          : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-                      )}
-                    >
-                      {label}
-                    </button>
-                  ))}
+                  <DateRangePicker
+                    value={dateRange}
+                    onChange={setDateRange}
+                    customFrom={customDateFrom}
+                    customTo={customDateTo}
+                    onCustomChange={(type, val) => {
+                      if (type === 'from') setCustomDateFrom(val);
+                      else setCustomDateTo(val);
+                    }}
+                  />
                 </div>
                 <div className="flex items-center gap-1.5 bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 shadow-inner hidden lg:flex">
                   {[['3m', '3 Months Trend'], ['6m', '6 Months Trend'], ['12m', '12 Months Trend']].map(([val, label]) => (
@@ -735,7 +760,7 @@ export default function AnalyticsPage() {
                   title="Global Win Rate"
                   numericValue={analytics?.winRate}
                   formatter={(v) => `${Math.round(v)}%`}
-                  subValue="Across all closed deals"
+                  subValue={`12m Rolling: ${rollingWinRate12m}%`}
                   icon={Target}
                   color="emerald"
                   sparklineData={[35, 38, 37, 42, 40, analytics?.winRate || 40]}
@@ -881,7 +906,14 @@ export default function AnalyticsPage() {
                       <button
                         key={p.id}
                         type="button"
-                        onClick={() => setSelectedPrompt(selectedPrompt === p.id ? null : p.id)}
+                        onClick={() => {
+                          if (selectedPrompt === p.id) {
+                            setSelectedPrompt(null);
+                            setAiConsultantText(null);
+                          } else {
+                            generateAIConsultant(p.id);
+                          }
+                        }}
                         className={cn(
                           "flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all duration-300 shadow-sm",
                           isActive
@@ -907,7 +939,14 @@ export default function AnalyticsPage() {
                       className="overflow-hidden relative z-10"
                     >
                       <div className="relative bg-white/5 border border-white/10 rounded-2xl p-5 mt-2 text-xs leading-relaxed text-slate-200 backdrop-blur-sm overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:p-[1px] before:bg-gradient-to-r before:from-violet-500/0 before:via-violet-400/40 before:to-indigo-500/0 before:animate-[shimmer_3s_ease-in-out_infinite] before:pointer-events-none">
-                        <TypewriterEffect text={aiConsultantResponses[selectedPrompt]} />
+                        {aiConsultantLoading ? (
+                          <div className="flex items-center gap-2 text-violet-400">
+                            <Loader2 size={16} className="animate-spin" />
+                            <span>AI กำลังวิเคราะห์ข้อมูล...</span>
+                          </div>
+                        ) : (
+                          <TypewriterEffect text={aiConsultantText || ''} />
+                        )}
                         
                         {/* Quick-Action Buttons based on selected prompt */}
                         {selectedPrompt === 'high-risk' && (
@@ -1249,8 +1288,9 @@ export default function AnalyticsPage() {
                       initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.1 }}
+                      onClick={() => setSelectedRep(m)}
                       className={cn(
-                        "p-6 rounded-3xl border shadow-sm hover:shadow-xl transition-all duration-350 relative overflow-hidden group",
+                        "p-6 rounded-3xl border shadow-sm hover:shadow-xl transition-all duration-350 relative overflow-hidden group cursor-pointer hover:ring-2 hover:ring-violet-400/50",
                         i === 0 ? "bg-gradient-to-b from-amber-50/80 to-white border-amber-300 ring-2 ring-amber-400/10 shadow-amber-500/5" :
                         i === 1 ? "bg-gradient-to-b from-slate-50/80 to-white border-slate-200/60" :
                         i === 2 ? "bg-gradient-to-b from-orange-50/30 to-white border-orange-200/60" :
@@ -1619,6 +1659,15 @@ export default function AnalyticsPage() {
           )}
         </motion.div>
       </AnimatePresence>
+      
+      {selectedRep && (
+        <RepDrilldown
+          member={selectedRep}
+          deals={allDeals || []}
+          monthlyTarget={monthlyTarget}
+          onClose={() => setSelectedRep(null)}
+        />
+      )}
     </div>
   );
 }

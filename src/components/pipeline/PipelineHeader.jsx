@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Target, Activity, ChevronLeft, ChevronRight, CalendarDays, AlertTriangle, Download, Zap, Sparkles } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, Activity, ChevronLeft, ChevronRight, CalendarDays, AlertTriangle, Download, Zap, Sparkles, Briefcase } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { downloadCsv } from '../../utils/exportUtils';
@@ -34,6 +34,7 @@ export default function PipelineHeader({
   lastMonthTotal,
   atRiskValue,
   atRiskCount,
+  weightedPipelineValue = 0,
 }) {
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -125,7 +126,7 @@ export default function PipelineHeader({
       </div>
 
       {/* KPI STRIP */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3.5">
         {/* Monthly Target — Hero Card */}
         <div className="col-span-2 relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br from-violet-700 via-indigo-800 to-slate-900 text-white shadow-xl shadow-violet-600/20 border border-violet-400/20 group hover:-translate-y-0.5 transition-all duration-500">
           {/* Animated Glow Blobs */}
@@ -254,6 +255,23 @@ export default function PipelineHeader({
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
               {atRiskCount} ดีล (&gt;7 วัน ไม่มีกิจกรรม)
             </p>
+          </div>
+        </div>
+
+        {/* Weighted Pipeline */}
+        <div className="col-span-2 lg:col-span-1 p-5 rounded-3xl bg-white/80 backdrop-blur-md border border-violet-200/80 shadow-[0_8px_30px_rgba(139,92,246,0.06)] hover:border-violet-300 flex flex-col justify-between relative overflow-hidden group hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+          <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-violet-400/10 pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+          <div className="flex justify-between items-start relative z-10">
+            <p className="text-[10px] text-violet-700 font-black tracking-widest uppercase">Weighted Pipeline</p>
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-violet-500/20">
+              <Briefcase size={16} />
+            </div>
+          </div>
+          <div className="mt-4 relative z-10">
+            <h3 className="text-2xl font-black text-violet-700 tabular-nums leading-none tracking-tight">
+              <AnimatedNumber value={formatValue(weightedPipelineValue)} />
+            </h3>
+            <p className="text-[11px] text-slate-400 mt-2 font-bold">มูลค่าถ่วงน้ำหนัก</p>
           </div>
         </div>
       </div>
