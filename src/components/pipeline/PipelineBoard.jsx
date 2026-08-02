@@ -366,9 +366,15 @@ export default function PipelineBoard({
       return;
     }
 
+    const draggedDeal = localDeals.find((deal) => String(deal.id) === String(draggableId));
+    if (!draggedDeal) {
+      setMoveError('ไม่พบดีลที่กำลังลาก กรุณาลองใหม่อีกครั้ง');
+      return;
+    }
+
     const targetStage = destination.droppableId;
-    initiateMove(draggableId, targetStage);
-  }, [shouldBlockBasic, openPaywall, isGuestAccount, dealsByStage, initiateMove]);
+    initiateMove(draggedDeal.id, targetStage);
+  }, [shouldBlockBasic, openPaywall, isGuestAccount, dealsByStage, initiateMove, localDeals]);
 
   const handleMoveDeal = useCallback((dealId, direction) => {
     const deal = localDeals.find((d) => d.id === dealId);
@@ -908,7 +914,7 @@ const InnerList = memo(({ deals, stageColor, selectedDealId, pinnedDealIds, STAG
   return (
     <>
       {deals.map((deal, index) => (
-        <Draggable key={deal.id} draggableId={deal.id} index={index}>
+        <Draggable key={deal.id} draggableId={String(deal.id)} index={index}>
           {(dragProvided, dragSnapshot) => (
             <DealCard
               ref={dragProvided.innerRef}
@@ -998,7 +1004,7 @@ const DealCard = memo(
               opacity: 0.98,
             } : {}}
             className={cn(
-              'group relative rounded-2xl border overflow-hidden bg-white/95 backdrop-blur-sm cursor-pointer border-l-4',
+              'group relative rounded-2xl border overflow-hidden bg-white/95 backdrop-blur-sm cursor-grab active:cursor-grabbing touch-none select-none border-l-4',
               !['won', 'lost'].includes(deal.stage) ? agingBorderColor[agingTier] : 'border-l-slate-300',
               !isDraggingAny && 'transition-all duration-300 hover:shadow-[0_12px_36px_rgba(139,92,246,0.14)] hover:-translate-y-1 hover:border-violet-300/80',
               isDragging ? 'border-violet-500 ring-4 ring-violet-500/25 shadow-2xl z-50'
