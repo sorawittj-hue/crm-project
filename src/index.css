@@ -8,7 +8,7 @@
 @layer base {
   :root {
     /* ── Premium Nova Design System ── */
-    --background: 248 28% 98%;
+    --background: 240 24% 97%;
     --foreground: 240 18% 10%;
 
     --card: 0 0% 100%;
@@ -18,18 +18,18 @@
     --popover-foreground: 240 18% 10%;
 
     /* Deep Violet Primary */
-    --primary: 258 92% 56%;
+    --primary: 250 84% 58%;
     --primary-foreground: 0 0% 100%;
 
     /* Soft Violet Secondary */
-    --secondary: 256 60% 96%;
+    --secondary: 246 55% 96%;
     --secondary-foreground: 258 60% 28%;
 
     --muted: 240 14% 95%;
     --muted-foreground: 240 8% 54%;
 
     /* Hot Fuchsia Accent */
-    --accent: 315 88% 62%;
+    --accent: 190 82% 46%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 3 84% 58%;
@@ -37,7 +37,7 @@
 
     --border: 240 10% 90%;
     --input: 240 10% 90%;
-    --ring: 258 92% 56%;
+    --ring: 250 84% 58%;
 
     --radius-sm: 0.5rem;
     --radius-md: 0.875rem;
@@ -66,15 +66,16 @@
     font-family: var(--font-sans);
     @apply bg-background text-foreground antialiased selection:bg-primary/25 selection:text-primary;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    letter-spacing: -0.008em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   main {
-    background-color: #f5f4fb;
+    background-color: #f7f8fc;
     background-image:
-      radial-gradient(ellipse 80% 40% at 50% -10%, rgba(139,92,246,0.06) 0%, transparent 60%),
-      radial-gradient(circle at 1px 1px, rgb(148 163 184 / 0.07) 1px, transparent 0);
-    background-size: 100% 100%, 28px 28px;
+      radial-gradient(ellipse 80% 40% at 50% -10%, rgba(99,102,241,0.08) 0%, transparent 60%),
+      radial-gradient(circle at 1px 1px, rgb(148 163 184 / 0.045) 1px, transparent 0);
+    background-size: 100% 100%, 32px 32px;
   }
 }
 
@@ -233,8 +234,35 @@
 
   /* Hover lift */
   .hover-lift { @apply transition-all duration-400 hover:-translate-y-1.5 hover:shadow-xl; }
-  .hover-lift-sm { @apply transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md; }
+.hover-lift-sm { @apply transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md; }
+
+  /* Shared product surface and motion language */
+  .ui-surface {
+    @apply border border-slate-200/70 bg-white/90 shadow-sm backdrop-blur-xl;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03), 0 12px 32px rgba(79, 70, 229, 0.06);
+  }
+  .ui-surface-hover {
+    @apply transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg;
+  }
+  .ui-section-label {
+    @apply text-[11px] font-black uppercase tracking-[0.16em] text-slate-400;
+  }
+  .ui-focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/50 focus-visible:ring-offset-2;
+  }
 }
+
+@keyframes ui-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ui-enter { animation: ui-enter 420ms cubic-bezier(0.19, 1, 0.22, 1) both; }
+.ui-enter-delay-1 { animation-delay: 60ms; }
+.ui-enter-delay-2 { animation-delay: 120ms; }
+.ui-enter-delay-3 { animation-delay: 180ms; }
+
+button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 
 /* ─── Layout Utilities ─── */
 .dashboard-grid {

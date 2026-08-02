@@ -1,4 +1,3 @@
-import React from 'react';
 import { cn } from '../../lib/utils';
 
 export default function PageHeader({ 
@@ -14,18 +13,18 @@ export default function PageHeader({
 }) {
   return (
     <header className={cn(
-      "relative overflow-hidden mb-6",
-      "rounded-[1.75rem]",
-      "border border-violet-100/70",
-      "bg-white",
-      "shadow-[0_4px_32px_rgba(100,80,200,0.06),0_1px_0_rgba(255,255,255,1)_inset]",
-      "p-6 md:p-8",
+      "relative overflow-hidden mb-6 ui-enter",
+      "rounded-2xl",
+      "border border-slate-200/70",
+      "bg-gradient-to-br from-white via-white to-indigo-50/60",
+      "shadow-[0_1px_2px_rgba(15,23,42,0.03),0_16px_40px_rgba(79,70,229,0.07)]",
+      "p-5 md:p-7",
       "transition-all duration-500",
       "hover:shadow-[0_8px_40px_rgba(100,80,200,0.10),0_1px_0_rgba(255,255,255,1)_inset]",
       className
     )}>
       {/* Mesh gradient background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[1.75rem]">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
         {/* Primary glow */}
         <div
           className="absolute -top-20 -right-20 w-80 h-80 rounded-full"
@@ -84,7 +83,7 @@ export default function PageHeader({
               )} />
               {/* Icon box */}
               <div className={cn(
-                "w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center text-white relative overflow-hidden",
+                "w-12 h-12 rounded-2xl bg-gradient-to-br flex items-center justify-center text-white relative overflow-hidden",
                 "shadow-[0_8px_24px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2)]",
                 "transition-all duration-500 group-hover/header-icon:scale-105 group-hover/header-icon:rotate-2",
                 iconColor

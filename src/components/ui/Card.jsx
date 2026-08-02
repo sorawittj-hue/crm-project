@@ -6,10 +6,9 @@ const Card = React.forwardRef(({ className, hover = true, glow = false, glass = 
     <div
       ref={ref}
       className={cn(
-        "rounded-[1.5rem] border bg-white text-card-foreground",
-        "border-violet-100/60",
-        "shadow-[0_2px_16px_rgba(100,80,200,0.04),0_1px_0_rgba(255,255,255,1)_inset]",
-        hover && "transition-all duration-300 ease-out hover:shadow-[0_12px_40px_rgba(100,80,200,0.10),0_1px_0_rgba(255,255,255,1)_inset] hover:border-violet-200/80 hover:-translate-y-0.5",
+        "rounded-2xl border bg-white/90 text-card-foreground backdrop-blur-xl",
+        "border-slate-200/70 shadow-[0_1px_2px_rgba(15,23,42,0.03),0_12px_32px_rgba(79,70,229,0.06)]",
+        hover && "transition-all duration-300 ease-out hover:shadow-[0_16px_40px_rgba(79,70,229,0.11)] hover:border-indigo-200 hover:-translate-y-0.5",
         glow && "shadow-[0_2px_16px_rgba(100,80,200,0.04),0_0_0_1px_rgba(139,92,246,0.08),0_1px_0_rgba(255,255,255,1)_inset]",
         glass && "bg-white/70 backdrop-blur-xl border-white/80",
         className

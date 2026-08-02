@@ -7,8 +7,8 @@ import {
   Search, Settings, Bell,
   ChevronRight, Target, TrendingUp,
   AlertCircle, Clock, CheckCircle2, CalendarClock, Briefcase,
-  BarChart2, Trash2, CheckCheck, Plus, Sparkles, Lock, Crown,
-  Timer, RotateCcw, ChevronDown, Zap,
+  BarChart2, Trash2, CheckCheck, Plus, Lock,
+  Timer, Zap,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useDeals } from '../../hooks/useDeals';
@@ -1087,14 +1087,14 @@ export default function AppLayout() {
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto" style={{
-          background: 'linear-gradient(180deg, #f5f4fb 0%, #f8f7fe 100%)',
+          background: 'linear-gradient(180deg, #f7f8fc 0%, #fbfbfe 100%)',
           backgroundImage: `
             radial-gradient(ellipse 80% 40% at 50% -5%, rgba(139,92,246,0.05) 0%, transparent 60%),
             radial-gradient(circle at 1px 1px, rgba(148,163,184,0.06) 1px, transparent 0)
           `,
           backgroundSize: '100% 100%, 28px 28px',
         }}>
-          <div className="p-6 min-h-full">
+          <div className="p-4 md:p-6 lg:p-8 min-h-full">
             <TrialBanner 
               isTrialActive={isTrialActive} 
               isExpired={isExpired} 

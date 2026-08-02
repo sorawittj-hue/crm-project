@@ -8,10 +8,10 @@ export const springSmooth = {
 export const easeStandard = [0.19, 1, 0.22, 1];
 
 export const pageMotion = {
-  initial: { opacity: 0, y: 6 },
+  initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -4 },
-  transition: { duration: 0.12, ease: easeStandard },
+  exit: { opacity: 0, y: -6 },
+  transition: { duration: 0.24, ease: easeStandard },
 };
 
 export const reduceMotionProps = {
@@ -25,7 +25,7 @@ export const getPressMotion = (shouldReduceMotion) =>
   shouldReduceMotion
     ? {}
     : {
-        whileHover: { y: -1 },
+        whileHover: { y: -1, scale: 1.01 },
         whileTap: { scale: 0.98 },
         transition: { duration: 0.16, ease: easeStandard },
       };

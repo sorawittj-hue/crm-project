@@ -54,7 +54,7 @@ const Dialog = ({ open, onOpenChange, children, className }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-md"
+            className="fixed inset-0 bg-slate-950/55 backdrop-blur-md"
             onClick={() => onOpenChange?.(false)}
           />
           {/* Panel */}
@@ -65,7 +65,7 @@ const Dialog = ({ open, onOpenChange, children, className }) => {
             exit={{ opacity: 0, scale: 0.94, y: 12 }}
             transition={{ type: "spring", damping: 28, stiffness: 350 }}
             className={cn(
-              "relative z-[101] w-full max-w-lg max-h-[90vh] overflow-y-auto",
+              "relative z-[101] w-full max-w-lg max-h-[90vh] overflow-y-auto ui-enter",
               className
             )}
           >
@@ -104,8 +104,8 @@ const DialogFooter = ({ className, ...props }) => (
 const DialogContent = ({ className, children, ...props }) => (
   <div
     className={cn(
-      "relative w-full bg-white/95 backdrop-blur-xl rounded-3xl border border-violet-100/50",
-      "shadow-[0_24px_64px_rgba(0,0,0,0.12),0_8px_24px_rgba(139,92,246,0.08)]",
+      "relative w-full bg-white/95 backdrop-blur-xl rounded-2xl border border-slate-200/70",
+      "shadow-[0_24px_64px_rgba(15,23,42,0.18),0_8px_24px_rgba(79,70,229,0.08)]",
       "p-6",
       className
     )}

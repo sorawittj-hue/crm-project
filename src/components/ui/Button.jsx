@@ -14,7 +14,7 @@ const Button = React.forwardRef(({
   const shouldReduceMotion = useReducedMotion()
   const pressMotion = getPressMotion(shouldReduceMotion)
 
-  const baseStyles = "inline-flex items-center justify-center whitespace-nowrap font-semibold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 transition-all duration-200 ease-out select-none"
+  const baseStyles = "inline-flex items-center justify-center whitespace-nowrap font-semibold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 transition-all duration-200 ease-out select-none"
 
   const variants = {
     default:
@@ -22,9 +22,9 @@ const Button = React.forwardRef(({
     destructive:
       "bg-gradient-to-b from-rose-500 to-rose-700 text-white rounded-xl shadow-[0_4px_14px_rgba(225,29,72,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] hover:shadow-[0_8px_20px_rgba(225,29,72,0.45)] hover:-translate-y-px",
     outline:
-      "border border-violet-100 bg-white text-slate-700 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_0_rgba(255,255,255,1)_inset] hover:bg-violet-50/60 hover:border-violet-200 hover:text-violet-700 hover:shadow-[0_4px_12px_rgba(100,80,200,0.08)]",
+      "border border-slate-200/80 bg-white text-slate-700 rounded-xl shadow-sm hover:bg-indigo-50/60 hover:border-indigo-200 hover:text-indigo-700 hover:shadow-md",
     secondary:
-      "bg-slate-100 text-slate-700 rounded-xl hover:bg-violet-50 hover:text-violet-700 hover:shadow-sm",
+      "bg-slate-100 text-slate-700 rounded-xl hover:bg-indigo-50 hover:text-indigo-700 hover:shadow-sm",
     ghost:
       "text-slate-600 rounded-xl hover:bg-violet-50/80 hover:text-violet-700",
     link:
