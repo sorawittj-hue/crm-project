@@ -224,7 +224,7 @@ export default function CommandCenterPage() {
       >
         <PageHeader
           icon={LayoutDashboard}
-          title={<>{getGreeting()}, <span className="text-violet-600 bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600">{userName}</span></>}
+          title={<>{getGreeting()}, <span className="text-cyan-300">{userName}</span></>}
           description={<span className="flex items-center gap-1.5"><CalendarClock size={14} className="text-slate-400" /> {getDateString()}</span>}
           badge={
             <div className="flex items-center gap-2">

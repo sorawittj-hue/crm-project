@@ -555,16 +555,16 @@ export default function AppLayout() {
       {isDesktop ? (
         <aside
           ref={sidebarRef}
-          className="w-72 flex flex-col flex-shrink-0 relative bg-slate-950 border-r border-slate-800/80 shadow-[8px_0_36px_rgba(0,0,0,0.4)] z-30 select-none"
+          className="w-72 flex flex-col flex-shrink-0 relative bg-[#070b1a] border-r border-slate-800/80 shadow-[8px_0_36px_rgba(0,0,0,0.4)] z-30 select-none"
         >
           {/* Ambient Glows */}
-          <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-violet-600/15 via-indigo-600/5 to-transparent pointer-events-none" />
-          <div className="absolute top-12 -left-12 w-40 h-40 rounded-full bg-violet-500/10 blur-3xl pointer-events-none" />
+          <div className="absolute top-0 inset-x-0 h-72 bg-gradient-to-b from-cyan-400/15 via-indigo-500/10 to-transparent pointer-events-none" />
+          <div className="absolute top-12 -left-12 w-40 h-40 rounded-full bg-fuchsia-500/15 blur-3xl pointer-events-none" />
 
           {/* Logo / Brand Header */}
           <div className="h-20 flex items-center justify-between px-5 mb-2 relative shrink-0 border-b border-slate-800/60">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-violet-500/30 ring-2 ring-white/10 shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-400 via-sky-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-cyan-500/30 ring-2 ring-white/10 shrink-0">
                 <Zap size={20} className="fill-current text-white" />
               </div>
               <div>
@@ -580,7 +580,7 @@ export default function AppLayout() {
                     </span>
                   )}
                 </div>
-                <p className="text-[10px] font-extrabold text-violet-400 leading-none mt-1 uppercase tracking-widest">
+                <p className="text-[10px] font-extrabold text-cyan-300 leading-none mt-1 uppercase tracking-widest">
                   CRM Enterprise
                 </p>
               </div>
@@ -600,21 +600,21 @@ export default function AppLayout() {
                   className={cn(
                     "group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-300 relative overflow-hidden",
                     isActive
-                      ? "bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 text-white font-extrabold shadow-lg shadow-violet-600/30 border border-violet-400/30 scale-[1.02]"
-                      : "text-slate-400 hover:text-white hover:bg-slate-900/80 border border-transparent"
+                      ? "bg-white text-slate-950 font-extrabold shadow-lg shadow-cyan-500/20 border border-white scale-[1.02]"
+                      : "text-slate-400 hover:text-white hover:bg-white/10 border border-transparent"
                   )}
                 >
                   <div className={cn(
                     "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
                     isActive
-                      ? "bg-white/20 backdrop-blur-md text-white shadow-inner"
-                      : "bg-slate-900 text-slate-400 group-hover:text-violet-300 group-hover:bg-slate-800"
+                      ? "bg-slate-950 text-cyan-300 shadow-inner"
+                      : "bg-slate-900 text-slate-400 group-hover:text-cyan-200 group-hover:bg-slate-800"
                   )}>
                     <item.icon size={16} strokeWidth={isActive ? 2.5 : 2} />
                   </div>
                   <div className="flex flex-col min-w-0 flex-1">
                     <span className="leading-tight text-sm tracking-tight">{item.label}</span>
-                    <span className={cn("text-[10px] font-medium leading-none mt-0.5", isActive ? "text-violet-200" : "text-slate-500 group-hover:text-slate-400")}>
+                    <span className={cn("text-[10px] font-medium leading-none mt-0.5", isActive ? "text-slate-500" : "text-slate-500 group-hover:text-slate-400")}>
                       {item.sub}
                     </span>
                   </div>
@@ -683,15 +683,15 @@ export default function AppLayout() {
               ref={sidebarRef}
               {...mobileSidebarMotion}
               variants={sidebarVariants}
-              className="fixed inset-y-0 left-0 z-50 w-72 flex flex-col bg-slate-950 border-r border-slate-800/80 shadow-2xl select-none"
+              className="fixed inset-y-0 left-0 z-50 w-72 flex flex-col bg-[#070b1a] border-r border-slate-800/80 shadow-2xl select-none"
             >
               {/* Ambient Glows */}
-              <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-violet-600/15 via-indigo-600/5 to-transparent pointer-events-none" />
+              <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-cyan-400/15 via-indigo-500/10 to-transparent pointer-events-none" />
 
               {/* Logo / Brand Header */}
               <div className="h-20 flex items-center justify-between px-5 mb-2 relative shrink-0 border-b border-slate-800/60">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-violet-500/30 ring-2 ring-white/10 shrink-0">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-400 via-sky-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-cyan-500/30 ring-2 ring-white/10 shrink-0">
                     <Zap size={20} className="fill-current text-white" />
                   </div>
                   <div>
@@ -703,7 +703,7 @@ export default function AppLayout() {
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] font-extrabold text-violet-400 leading-none mt-1 uppercase tracking-widest">
+                    <p className="text-[10px] font-extrabold text-cyan-300 leading-none mt-1 uppercase tracking-widest">
                       CRM Enterprise
                     </p>
                   </div>
@@ -726,21 +726,21 @@ export default function AppLayout() {
                       className={cn(
                         "group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all duration-300 relative overflow-hidden",
                         isActive
-                          ? "bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 text-white font-extrabold shadow-lg shadow-violet-600/30 border border-violet-400/30"
-                          : "text-slate-400 hover:text-white hover:bg-slate-900/80 border border-transparent"
+                          ? "bg-white text-slate-950 font-extrabold shadow-lg shadow-cyan-500/20 border border-white"
+                          : "text-slate-400 hover:text-white hover:bg-white/10 border border-transparent"
                       )}
                     >
                       <div className={cn(
                         "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
                         isActive
-                          ? "bg-white/20 backdrop-blur-md text-white shadow-inner"
-                          : "bg-slate-900 text-slate-400 group-hover:text-violet-300 group-hover:bg-slate-800"
+                          ? "bg-slate-950 text-cyan-300 shadow-inner"
+                          : "bg-slate-900 text-slate-400 group-hover:text-cyan-200 group-hover:bg-slate-800"
                       )}>
                         <item.icon size={16} strokeWidth={isActive ? 2.5 : 2} />
                       </div>
                       <div className="flex flex-col min-w-0 flex-1">
                         <span className="leading-tight text-sm tracking-tight">{item.label}</span>
-                        <span className={cn("text-[10px] font-medium leading-none mt-0.5", isActive ? "text-violet-200" : "text-slate-500 group-hover:text-slate-400")}>
+                        <span className={cn("text-[10px] font-medium leading-none mt-0.5", isActive ? "text-slate-500" : "text-slate-500 group-hover:text-slate-400")}>
                           {item.sub}
                         </span>
                       </div>

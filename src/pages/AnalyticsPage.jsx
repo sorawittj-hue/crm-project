@@ -582,7 +582,7 @@ Win Rate: ${intel.winRate || 0}%
       >
         <PageHeader
           icon={Activity}
-          title={<>Analytics <span className="text-violet-600">Command Center</span></>}
+          title={<>Analytics <span className="text-cyan-300">Command Center</span></>}
           description="Deep insights and world-class pipeline intelligence."
           children={
             <div className="flex flex-col md:flex-row items-center justify-between w-full gap-3">

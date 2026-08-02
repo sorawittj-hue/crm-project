@@ -1,136 +1,66 @@
 import { cn } from '../../lib/utils';
 
-export default function PageHeader({ 
+export default function PageHeader({
   icon: Icon,
-  iconColor = "from-violet-500 via-indigo-500 to-purple-600",
-  title, 
-  description, 
+  iconColor = 'from-cyan-400 via-sky-500 to-indigo-600',
+  title,
+  description,
   badge,
   breadcrumb,
   rightContent,
   children,
-  className
+  className,
 }) {
   return (
-    <header className={cn(
-      "relative overflow-hidden mb-6 ui-enter",
-      "rounded-2xl",
-      "border border-slate-200/70",
-      "bg-gradient-to-br from-white via-white to-indigo-50/60",
-      "shadow-[0_1px_2px_rgba(15,23,42,0.03),0_16px_40px_rgba(79,70,229,0.07)]",
-      "p-5 md:p-7",
-      "transition-all duration-500",
-      "hover:shadow-[0_8px_40px_rgba(100,80,200,0.10),0_1px_0_rgba(255,255,255,1)_inset]",
-      className
-    )}>
-      {/* Mesh gradient background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
-        {/* Primary glow */}
-        <div
-          className="absolute -top-20 -right-20 w-80 h-80 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 65%)',
-            animation: 'headerGlowMove 18s ease-in-out infinite',
-          }}
-        />
-        {/* Secondary glow */}
-        <div
-          className="absolute -bottom-16 -left-16 w-60 h-60 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(251,191,36,0.06) 0%, transparent 65%)',
-            animation: 'headerGlowMove 22s ease-in-out infinite alternate',
-          }}
-        />
-        {/* Subtle noise texture */}
-        <div
-          className="absolute inset-0 opacity-[0.015]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-            backgroundSize: '150px',
-          }}
-        />
-        {/* Top shimmer */}
-        <div className="absolute top-0 left-0 right-0 h-px" style={{
-          background: 'linear-gradient(90deg, transparent 0%, rgba(139,92,246,0.3) 30%, rgba(236,72,153,0.2) 70%, transparent 100%)'
-        }} />
-        {/* Dot pattern */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: 'radial-gradient(circle, rgba(139,92,246,0.06) 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
-          }}
-        />
+    <header
+      className={cn(
+        'relative mb-7 overflow-hidden rounded-[28px] border border-slate-700/70',
+        'bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950',
+        'p-5 shadow-[0_22px_55px_rgba(15,23,42,0.28)] md:p-7',
+        className,
+      )}
+    >
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -right-24 -top-28 h-80 w-80 rounded-full bg-cyan-400/20 blur-[90px]" />
+        <div className="absolute -bottom-36 left-1/3 h-80 w-80 rounded-full bg-fuchsia-500/20 blur-[100px]" />
+        <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:32px_32px] [mask-image:linear-gradient(to_bottom,black,transparent)]" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/80 to-transparent" />
       </div>
 
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes headerGlowMove {
-          0%   { transform: translate(0px, 0px) scale(1); }
-          33%  { transform: translate(30px, -20px) scale(1.08); }
-          66%  { transform: translate(-15px, 15px) scale(0.95); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-      `}} />
-      
-      <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="relative z-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
         <div className="flex items-center gap-4">
           {Icon && (
-            <div className="relative group/header-icon shrink-0">
-              {/* Glow ring */}
+            <div className="relative shrink-0">
+              <div className={cn('absolute -inset-2 rounded-[22px] bg-gradient-to-br opacity-45 blur-xl', iconColor)} />
               <div className={cn(
-                "absolute -inset-1.5 rounded-2xl bg-gradient-to-br opacity-20 blur-lg transition-opacity duration-500 group-hover/header-icon:opacity-50",
-                iconColor
-              )} />
-              {/* Icon box */}
-              <div className={cn(
-                "w-12 h-12 rounded-2xl bg-gradient-to-br flex items-center justify-center text-white relative overflow-hidden",
-                "shadow-[0_8px_24px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2)]",
-                "transition-all duration-500 group-hover/header-icon:scale-105 group-hover/header-icon:rotate-2",
-                iconColor
+                'relative flex h-14 w-14 items-center justify-center rounded-[18px] bg-gradient-to-br text-white',
+                'border border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_12px_24px_rgba(0,0,0,0.24)]',
+                iconColor,
               )}>
-                {/* Inner shine */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 opacity-0 group-hover/header-icon:opacity-100 transition-opacity duration-500" />
-                <Icon size={24} className="relative z-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)]" />
+                <Icon size={27} strokeWidth={2.4} />
               </div>
             </div>
           )}
-          
+
           <div>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-2xl lg:text-3xl font-black tracking-tight">
-                {typeof title === 'string' ? (
-                  <span style={{
-                    background: 'linear-gradient(135deg, #1e1b4b, #312e81)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}>
-                    {title}
-                  </span>
-                ) : title}
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-2xl font-black tracking-[-0.035em] text-white lg:text-[30px]">
+                {typeof title === 'string' ? title : title}
               </h1>
               {badge}
             </div>
             {description && (
-              <p className="text-sm text-slate-500 mt-0.5 font-medium leading-relaxed">{description}</p>
+              <p className="mt-1 max-w-2xl text-sm font-medium leading-relaxed text-slate-300">{description}</p>
             )}
-            {breadcrumb && (
-              <div className="mt-2">
-                {breadcrumb}
-              </div>
-            )}
+            {breadcrumb && <div className="mt-2">{breadcrumb}</div>}
           </div>
         </div>
-        
-        {rightContent && (
-          <div className="w-full md:w-auto shrink-0 relative z-20">
-            {rightContent}
-          </div>
-        )}
+
+        {rightContent && <div className="w-full shrink-0 md:w-auto">{rightContent}</div>}
       </div>
 
       {children && (
-        <div className="relative z-10 mt-6 pt-5 border-t border-violet-50 flex items-center gap-2 flex-wrap md:flex-nowrap">
+        <div className="relative z-10 mt-6 flex flex-wrap items-center gap-2 border-t border-white/10 pt-5 md:flex-nowrap">
           {children}
         </div>
       )}
