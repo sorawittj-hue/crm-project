@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, lazy, Suspense, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useDeals, useUpdateDeal, useAddDeal, useAddMultipleDeals, useDeleteDeals } from '../hooks/useDeals';
 import { useCustomers, useUpdateCustomer } from '../hooks/useCustomers';
 import { useTeam } from '../hooks/useTeam';
@@ -26,6 +27,7 @@ import PageHeader from '../components/layout/PageHeader';
 import { Dialog, DialogContent } from '../components/ui/Dialog';
 
 export default function PipelinePage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: deals, isLoading, error } = useDeals();
   const { data: customers = [] } = useCustomers();
   const { data: teamMembers = [] } = useTeam();
@@ -113,17 +115,31 @@ export default function PipelinePage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [formTab, setFormTab] = useState('details'); // details, contact
   const [isScanOpen, setIsScanOpen] = useState(false);
-  const [myDealsOnly, setMyDealsOnly] = useState(false);
+  const [myDealsOnly, setMyDealsOnly] = useState(() => searchParams.get('owner') === 'me');
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
-  const [boardType, setBoardType] = useState('pipeline'); // 'pipeline' | 'renewals'
-  const [viewMode, setViewMode] = useState('kanban'); // 'kanban' | 'list'
+  const [boardType, setBoardType] = useState(() => searchParams.get('board') === 'renewals' ? 'renewals' : 'pipeline'); // 'pipeline' | 'renewals'
+  const [viewMode, setViewMode] = useState(() => searchParams.get('view') === 'list' ? 'list' : 'kanban'); // 'kanban' | 'list'
   const [quickDeal, setQuickDeal] = useState({ company: '', title: '', value: '', expected_close_date: '' });
   const [quickError, setQuickError] = useState(null);
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get('q') || '');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  useEffect(() => {
+    const nextParams = new URLSearchParams(searchParams);
+    const updateParam = (key, value, defaultValue = '') => {
+      if (value && value !== defaultValue) nextParams.set(key, value);
+      else nextParams.delete(key);
+    };
+
+    updateParam('q', debouncedSearchTerm);
+    updateParam('owner', myDealsOnly ? 'me' : '');
+    updateParam('board', boardType, 'pipeline');
+    updateParam('view', viewMode, 'kanban');
+    setSearchParams(nextParams, { replace: true });
+  }, [boardType, debouncedSearchTerm, myDealsOnly, searchParams, setSearchParams, viewMode]);
 
   const [newDeal, setNewDeal] = useState({
     title: '', company: '', value: '', stage: 'lead', customer_id: '',
