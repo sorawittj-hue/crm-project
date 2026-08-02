@@ -11,7 +11,7 @@ import { useAppStore } from '../store/useAppStore';
 import { useAddActivity } from '../hooks/useActivities';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
 import PipelineListView from '../components/pipeline/PipelineListView';
-import { Plus, Sliders, ScanLine, User, Zap, Loader2, ChevronDown, Search, X, Briefcase, Calendar, Building2, Sparkles, UserCheck, Smile, DollarSign, Check, Phone, Mail, ArrowRight, ArrowLeft, TrendingUp, Mic, LayoutGrid, List } from 'lucide-react';
+import { Plus, Sliders, ScanLine, User, Zap, Loader2, ChevronDown, Search, X, Briefcase, Calendar, Building2, Sparkles, UserCheck, Smile, DollarSign, Check, Phone, Mail, ArrowRight, ArrowLeft, TrendingUp, AlertTriangle, Mic, LayoutGrid, List } from 'lucide-react';
 
 // Lazy-load PDFImporter to avoid bundling pdfjs-dist (~5MB) in initial load
 const PDFImporter = lazy(() => import('../components/pipeline/PDFImporter'));
@@ -212,7 +212,6 @@ export default function PipelinePage() {
 
 
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const filteredDeals = useMemo(() => {
     let result = deals || [];
     if (debouncedSearchTerm) {
@@ -226,6 +225,23 @@ export default function PipelinePage() {
     if (myDealsOnly && user?.id) result = result.filter(d => d.assigned_to === user.id);
     return result;
   }, [deals, debouncedSearchTerm, myDealsOnly, user?.id]);
+
+  const pipelinePulse = useMemo(() => {
+    const activeDeals = filteredDeals.filter((deal) => !['won', 'lost'].includes(deal.stage));
+    const atRiskDeals = activeDeals.filter((deal) => {
+      const createdAt = deal.createdAt || deal.created_at;
+      if (!createdAt) return false;
+      // eslint-disable-next-line react-hooks/purity
+      return (Date.now() - new Date(createdAt).getTime()) / 86_400_000 > 7;
+    });
+
+    return {
+      activeCount: activeDeals.length,
+      activeValue: activeDeals.reduce((sum, deal) => sum + (Number(deal.value) || 0), 0),
+      atRiskCount: atRiskDeals.length,
+      atRiskValue: atRiskDeals.reduce((sum, deal) => sum + (Number(deal.value) || 0), 0),
+    };
+  }, [filteredDeals]);
 
   const [formError, setFormError] = useState(null);
 
@@ -498,6 +514,59 @@ export default function PipelinePage() {
             <Plus size={16} strokeWidth={3} className="transition-transform duration-300 group-hover:rotate-90" /> เพิ่มดีลใหม่
           </Button>
       </PageHeader>
+
+      <motion.section
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+        aria-label="Pipeline workspace snapshot"
+        className="grid grid-cols-1 gap-3 sm:grid-cols-3"
+      >
+        <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-indigo-50 p-4 shadow-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-violet-500">Active pipeline</p>
+              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900">
+                {new Intl.NumberFormat('th-TH', { notation: 'compact', maximumFractionDigits: 1 }).format(pipelinePulse.activeValue)}
+                <span className="ml-1 text-xs font-bold text-slate-400">THB</span>
+              </p>
+              <p className="mt-1 text-xs font-semibold text-slate-500">{pipelinePulse.activeCount} open deals</p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-500/25">
+              <TrendingUp size={18} />
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-4 shadow-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-sky-600">Working set</p>
+              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900">{filteredDeals.length}</p>
+              <p className="mt-1 text-xs font-semibold text-slate-500">deals match current view</p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-600 text-white shadow-lg shadow-sky-500/25">
+              <Briefcase size={18} />
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50 via-white to-orange-50 p-4 shadow-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-rose-600">Needs attention</p>
+              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900">
+                {pipelinePulse.atRiskCount}
+                <span className="ml-1 text-xs font-bold text-slate-400">deals</span>
+              </p>
+              <p className="mt-1 text-xs font-semibold text-slate-500">
+                {new Intl.NumberFormat('th-TH', { notation: 'compact', maximumFractionDigits: 1 }).format(pipelinePulse.atRiskValue)} THB at risk
+              </p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-600 text-white shadow-lg shadow-rose-500/25">
+              <AlertTriangle size={18} />
+            </div>
+          </div>
+        </div>
+      </motion.section>
 
       {/* QUICK ADD DIALOG */}
       <Dialog open={isQuickAddOpen} onOpenChange={(v) => { setIsQuickAddOpen(v); if (!v) { setQuickDeal({ company: '', title: '', value: '', expected_close_date: '' }); setQuickError(null); } }}>
