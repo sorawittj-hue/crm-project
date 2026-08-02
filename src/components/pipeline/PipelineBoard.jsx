@@ -951,7 +951,17 @@ const DealCard = memo(
             {/* Main clickable area */}
             <div
               className="pl-4 pr-10 py-3.5 space-y-3"
+              role="button"
+              tabIndex={0}
+              aria-label={`เปิดดีล ${deal.title || deal.company || 'ไม่ระบุชื่อ'}`}
               onClick={(e) => {
+                e.stopPropagation();
+                if (onSelect) onSelect(deal.id);
+                if (onClick) onClick(deal);
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                e.preventDefault();
                 e.stopPropagation();
                 if (onSelect) onSelect(deal.id);
                 if (onClick) onClick(deal);
