@@ -108,7 +108,7 @@ export default function PipelinePage() {
       }
     }
 
-    updateDealMutation.mutate({ id, ...updates });
+    return updateDealMutation.mutateAsync({ id, ...updates });
   }, [shouldBlockBasic, openPaywall, isGuestAccount, deals, customers, updateCustomerMutation, addActivityMutation, updateDealMutation]);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);

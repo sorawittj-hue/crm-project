@@ -143,6 +143,8 @@ export default function PipelineBoard({
   const [localDeals, setLocalDeals] = useState(deals);
   const isDraggingRef = useRef(false);
   const [isDraggingAny, setIsDraggingAny] = useState(false);
+  const [dragTargetStage, setDragTargetStage] = useState(null);
+  const [moveError, setMoveError] = useState(null);
 
   // Sync external deals into local state — but never interrupt an ongoing drag
   useEffect(() => {
@@ -263,30 +265,44 @@ export default function PipelineBoard({
   }, [dealsByStage]);
 
   const initiateMove = useCallback((dealId, targetStage) => {
-    setLocalDeals(prev => prev.map(d => 
-      d.id === dealId ? { ...d, stage: targetStage, last_activity: new Date().toISOString() } : d
+    const previousDeals = localDeals;
+    const changedAt = new Date().toISOString();
+    setMoveError(null);
+    setLocalDeals(prev => prev.map(d =>
+      d.id === dealId ? { ...d, stage: targetStage, last_activity: changedAt } : d
     ));
 
     if (targetStage === 'won' || targetStage === 'lost') {
       setReasonModal({ open: true, dealId, targetStage });
     } else {
-      onUpdateDeal(dealId, {
+      Promise.resolve(onUpdateDeal(dealId, {
         stage: targetStage,
-        last_activity: new Date().toISOString(),
+        last_activity: changedAt,
+      })).catch((error) => {
+        console.error('Failed to move deal', { dealId, targetStage, error });
+        setLocalDeals(previousDeals);
+        setMoveError('ย้ายดีลไม่สำเร็จ ระบบคืนดีลกลับสถานะเดิมแล้ว');
       });
     }
-  }, [onUpdateDeal]);
+  }, [localDeals, onUpdateDeal]);
 
   const handleDragStart = useCallback(() => {
     isDraggingRef.current = true;
     setIsDraggingAny(true);
+    setDragTargetStage(null);
+    setMoveError(null);
     // Disable pointer events on all text during drag to prevent jank
     document.body.style.userSelect = 'none';
+  }, []);
+
+  const handleDragUpdate = useCallback((update) => {
+    setDragTargetStage(update.destination?.droppableId || null);
   }, []);
 
   const handleDragEnd = useCallback((result) => {
     isDraggingRef.current = false;
     setIsDraggingAny(false);
+    setDragTargetStage(null);
     document.body.style.userSelect = '';
 
     if (shouldBlockBasic) {
@@ -456,6 +472,11 @@ export default function PipelineBoard({
         </div>
 
         <div className="flex items-center gap-2">
+          {isDraggingAny && dragTargetStage && (
+            <span className="hidden md:inline-flex items-center rounded-full bg-violet-100 px-3 py-1 text-[11px] font-bold text-violet-700 ring-1 ring-violet-200">
+              ปล่อยเพื่อย้ายไป {STAGE_CONFIG[dragTargetStage]?.label || dragTargetStage}
+            </span>
+          )}
           {viewMode === 'kanban' && (
             <p className="text-xs text-slate-400 flex items-center gap-1.5 hidden md:flex">
               <GripVertical size={12} />
@@ -654,7 +675,7 @@ export default function PipelineBoard({
       {viewMode === 'kanban' && (
         <div className="hidden md:block relative p-4 rounded-[2rem] bg-slate-100/30 backdrop-blur-2xl shadow-inner border border-white/60">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.05),transparent_40%),radial-gradient(circle_at_bottom_left,rgba(56,189,248,0.05),transparent_40%)] rounded-[2rem] pointer-events-none" />
-          <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <DragDropContext onDragStart={handleDragStart} onDragUpdate={handleDragUpdate} onDragEnd={handleDragEnd}>
           <div
             ref={scrollRef}
             className="flex-1 min-h-[560px] relative overflow-x-auto overflow-y-hidden custom-scrollbar-horizontal"
@@ -826,6 +847,13 @@ export default function PipelineBoard({
         )}
       </div>
 
+      {moveError && (
+        <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+          <span>{moveError}</span>
+          <button type="button" onClick={() => setMoveError(null)} className="text-xs underline underline-offset-2">ปิด</button>
+        </div>
+      )}
+
       {/* AI FOLLOW-UP MODAL */}
       <AIFollowUpModal
         open={!!aiModalDeal}
@@ -930,6 +958,7 @@ const DealCard = memo(
       return (
         <div ref={ref} className="mb-2 last:mb-0" {...draggableProps}>
           <div
+            {...dragHandleProps}
             style={isDragging ? {
               boxShadow: '0 25px 50px -12px rgba(124, 58, 237, 0.3)',
               transform: 'rotate(2.5deg) scale(1.03)',
@@ -950,7 +979,6 @@ const DealCard = memo(
 
             {/* Drag handle */}
             <div
-              {...dragHandleProps}
               className="absolute top-0 right-0 w-8 h-full flex items-center justify-center cursor-grab active:cursor-grabbing z-10 text-slate-300 group-hover:text-violet-500 transition-colors border-l border-slate-100/60"
               onClick={(e) => e.stopPropagation()}
             >
