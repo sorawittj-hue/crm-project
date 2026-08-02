@@ -18,6 +18,7 @@ import { useActivities } from '../../hooks/useActivities';
 import { useAuth } from '../../hooks/useAuth';
 import { useMyProfile } from '../../hooks/useUserProfiles';
 import { useSubscription } from '../../hooks/useSubscription';
+import PageTransition from '../ui/PageTransition';
 import {
   useNotifications,
   useProactiveEngine,
@@ -1123,7 +1124,9 @@ export default function AppLayout() {
                 </div>
               </div>
             }>
-              <Outlet />
+              <PageTransition key={location.pathname}>
+                <Outlet />
+              </PageTransition>
             </Suspense>
           </div>
         </main>
