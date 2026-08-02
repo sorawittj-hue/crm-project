@@ -16,7 +16,7 @@ export default function GlobalAddDealModal() {
     value: '',
     company: '',
     stage: 'lead',
-    actual_close_date: new Date().toISOString().split('T')[0],
+    expected_close_date: new Date().toISOString().split('T')[0],
     description: '',
   });
 
@@ -29,7 +29,7 @@ export default function GlobalAddDealModal() {
         title: form.title,
         value: Number(form.value),
         company: form.company,
-        actual_close_date: form.actual_close_date,
+        expected_close_date: form.expected_close_date,
         description: form.description,
         stage: form.stage,
         probability: form.stage === 'won' ? 100 : form.stage === 'lead' ? 10 : form.stage === 'contact' ? 30 : form.stage === 'proposal' ? 50 : 80,
@@ -41,7 +41,7 @@ export default function GlobalAddDealModal() {
         value: '',
         company: '',
         stage: 'lead',
-        actual_close_date: new Date().toISOString().split('T')[0],
+        expected_close_date: new Date().toISOString().split('T')[0],
         description: '',
       });
       closeQuickAdd();
@@ -125,8 +125,8 @@ export default function GlobalAddDealModal() {
                   <Input
                     type="date"
                     required
-                    value={form.actual_close_date}
-                    onChange={e => setForm(f => ({ ...f, actual_close_date: e.target.value }))}
+                    value={form.expected_close_date}
+                    onChange={e => setForm(f => ({ ...f, expected_close_date: e.target.value }))}
                     className="pl-10 h-11 bg-slate-50/60 border-slate-200/80 rounded-xl text-xs font-semibold"
                   />
                 </div>

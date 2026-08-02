@@ -1,8 +1,7 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Trash2, TrendingUp, Calendar, Building2 } from 'lucide-react';
 
-export default function PipelineListView({ deals, onUpdateDeal, onDeleteDeal }) {
+export default function PipelineListView({ deals, onDeleteDeal, onDealClick }) {
   const stageLabels = {
     lead: 'ลูกค้าใหม่',
     contact: 'นัดเจอ',
@@ -50,7 +49,17 @@ export default function PipelineListView({ deals, onUpdateDeal, onDeleteDeal }) 
                 key={deal.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="hover:bg-slate-50/50 transition-colors"
+                tabIndex={0}
+                role="button"
+                aria-label={`เปิดดีล ${deal.title || deal.company || 'ไม่ระบุชื่อ'}`}
+                onClick={() => onDealClick?.(deal)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onDealClick?.(deal);
+                  }
+                }}
+                className="cursor-pointer hover:bg-violet-50/50 focus-within:bg-violet-50/50 transition-colors"
               >
                 <td className="px-6 py-4">
                   <div className="font-bold text-slate-900">{deal.title || 'Untitled'}</div>
@@ -85,11 +94,13 @@ export default function PipelineListView({ deals, onUpdateDeal, onDeleteDeal }) 
                 </td>
                 <td className="px-6 py-4 text-right">
                   <button 
-                    onClick={() => {
+                    onClick={(event) => {
+                      event.stopPropagation();
                       if (window.confirm('Are you sure you want to delete this deal?')) {
                         onDeleteDeal(deal.id);
                       }
                     }}
+                    aria-label={`ลบดีล ${deal.title || deal.company || ''}`}
                     className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                   >
                     <Trash2 size={16} />

@@ -37,7 +37,7 @@ export default function PipelinePage() {
   const deleteDealsMutation = useDeleteDeals();
   const updateCustomerMutation = useUpdateCustomer();
   const addActivityMutation = useAddActivity();
-  const { pendingOpenDeal, clearPendingOpenDeal, pendingNewDealCustomer, clearPendingNewDealCustomer, openPaywall } = useAppStore();
+  const { pendingOpenDeal, setPendingOpenDeal, clearPendingOpenDeal, pendingNewDealCustomer, clearPendingNewDealCustomer, openPaywall } = useAppStore();
   const { user } = useAuth();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
   
@@ -701,6 +701,7 @@ export default function PipelinePage() {
           <PipelineListView 
             deals={filteredDeals} 
             onUpdateDeal={handleUpdateDeal} 
+            onDealClick={setPendingOpenDeal}
             onDeleteDeal={async (id) => {
               if (shouldBlockBasic) {
                 openPaywall(isGuestAccount ? 'default' : 'trial_ended');
