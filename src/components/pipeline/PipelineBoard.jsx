@@ -131,6 +131,7 @@ export default function PipelineBoard({
   const openPaywall = useAppStore(state => state.openPaywall);
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedDealId, setSelectedDealId] = useState(null);
+  const [reasonModal, setReasonModal] = useState({ open: false, dealId: null, targetStage: null });
   const [pinnedDealIds, setPinnedDealIds] = useState([]);
   const [selectedDealIds, setSelectedDealIds] = useState([]);
   const [aiModalDeal, setAiModalDeal] = useState(null);
@@ -366,13 +367,6 @@ export default function PipelineBoard({
     );
   }, []);
 
-  const filterColorMap = {
-    violet: { active: 'bg-gradient-to-r from-violet-600 to-purple-600 text-white border-transparent shadow-lg shadow-violet-500/30 scale-105', inactive: 'bg-white/80 backdrop-blur-sm text-slate-600 border-slate-200/80 hover:border-violet-300 hover:bg-violet-50/50 hover:text-violet-600' },
-    amber: { active: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-transparent shadow-lg shadow-amber-500/30 scale-105', inactive: 'bg-white/80 backdrop-blur-sm text-slate-600 border-slate-200/80 hover:border-amber-300 hover:bg-amber-50/50 hover:text-amber-600' },
-    emerald: { active: 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-transparent shadow-lg shadow-emerald-500/30 scale-105', inactive: 'bg-white/80 backdrop-blur-sm text-slate-600 border-slate-200/80 hover:border-emerald-300 hover:bg-emerald-50/50 hover:text-emerald-600' },
-    rose: { active: 'bg-gradient-to-r from-rose-500 to-red-500 text-white border-transparent shadow-lg shadow-rose-500/30 scale-105', inactive: 'bg-white/80 backdrop-blur-sm text-slate-600 border-slate-200/80 hover:border-rose-300 hover:bg-rose-50/50 hover:text-rose-600' },
-  };
-
   if (deals.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center bg-white/50 backdrop-blur-sm rounded-3xl border border-slate-200/60 shadow-sm mx-4 my-8 relative overflow-hidden">
@@ -405,7 +399,6 @@ export default function PipelineBoard({
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           {QUICK_FILTERS.map((filter) => {
             const isActive = activeFilter === filter.id;
-            const colors = filterColorMap[filter.color];
             const count = filter.id === 'all'
               ? processedDeals.length
               : filter.id === 'my-deals'
@@ -796,6 +789,13 @@ export default function PipelineBoard({
         onOpenChange={(v) => !v && setAiModalDeal(null)}
         deal={aiModalDeal}
       />
+
+      <WinLossModal
+        open={reasonModal.open}
+        targetStage={reasonModal.targetStage}
+        onClose={closeReasonModal}
+        onConfirm={submitReason}
+      />
     </div>
   );
 }
@@ -848,7 +848,6 @@ const DealCard = memo(
         onMove,
         draggableProps,
         dragHandleProps,
-        stageColor,
       },
       ref
     ) => {

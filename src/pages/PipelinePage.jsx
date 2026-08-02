@@ -11,7 +11,7 @@ import { useAppStore } from '../store/useAppStore';
 import { useAddActivity } from '../hooks/useActivities';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
 import PipelineListView from '../components/pipeline/PipelineListView';
-import { Plus, Sliders, ScanLine, Download, User, Zap, Loader2, ChevronDown, Search, Briefcase, Calendar, Building2, Sparkles, UserCheck, Smile, DollarSign, Check, Phone, Mail, ArrowRight, ArrowLeft, TrendingUp, Mic, LayoutGrid, List } from 'lucide-react';
+import { Plus, Sliders, ScanLine, User, Zap, Loader2, ChevronDown, Search, Briefcase, Calendar, Building2, Sparkles, UserCheck, Smile, DollarSign, Check, Phone, Mail, ArrowRight, ArrowLeft, TrendingUp, Mic, LayoutGrid, List } from 'lucide-react';
 
 // Lazy-load PDFImporter to avoid bundling pdfjs-dist (~5MB) in initial load
 const PDFImporter = lazy(() => import('../components/pipeline/PDFImporter'));
