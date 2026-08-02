@@ -125,11 +125,13 @@ export default function PipelineBoard({
   onUpdateDeal,
   selectedMonth,
   selectedYear,
+  initialFilter = 'all',
+  onFilterChange,
 }) {
   const { user } = useAuth();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
   const openPaywall = useAppStore(state => state.openPaywall);
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState(initialFilter);
   const [selectedDealId, setSelectedDealId] = useState(null);
   const [reasonModal, setReasonModal] = useState({ open: false, dealId: null, targetStage: null });
   const [pinnedDealIds, setPinnedDealIds] = useState([]);
@@ -148,6 +150,15 @@ export default function PipelineBoard({
 
   const scrollRef = useHorizontalScroll();
   const [viewMode, setViewMode] = useState('kanban');
+
+  useEffect(() => {
+    setActiveFilter(initialFilter);
+  }, [initialFilter]);
+
+  const handleFilterChange = useCallback((filterId) => {
+    setActiveFilter(filterId);
+    onFilterChange?.(filterId);
+  }, [onFilterChange]);
 
   // eslint-disable-next-line react-hooks/purity
   const nowMsRef = useRef(Date.now());
@@ -410,7 +421,7 @@ export default function PipelineBoard({
             return (
               <motion.button
                 key={filter.id}
-                onClick={() => setActiveFilter(filter.id)}
+                onClick={() => handleFilterChange(filter.id)}
                 aria-pressed={isActive}
                 aria-label={`${filter.label} ${count} ดีล`}
                 whileTap={{ scale: 0.95 }}

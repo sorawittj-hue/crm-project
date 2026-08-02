@@ -24,6 +24,8 @@ export default function MonthlyPipeline({
   pendingOpenDeal,
   onPendingOpenDealHandled,
   viewMode = 'pipeline',
+  initialFilter = 'all',
+  onFilterChange,
 }) {
   const { data: teamMembers } = useTeam();
   const { data: customers } = useCustomers();
@@ -223,6 +225,8 @@ export default function MonthlyPipeline({
             teamMembers={teamMembers}
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
+            initialFilter={initialFilter}
+            onFilterChange={onFilterChange}
           />
         )}
       </div>

@@ -116,6 +116,7 @@ export default function PipelinePage() {
   const [formTab, setFormTab] = useState('details'); // details, contact
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [myDealsOnly, setMyDealsOnly] = useState(() => searchParams.get('owner') === 'me');
+  const [pipelineFilter, setPipelineFilter] = useState(() => searchParams.get('filter') || 'all');
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
@@ -136,10 +137,11 @@ export default function PipelinePage() {
 
     updateParam('q', debouncedSearchTerm);
     updateParam('owner', myDealsOnly ? 'me' : '');
+    updateParam('filter', pipelineFilter, 'all');
     updateParam('board', boardType, 'pipeline');
     updateParam('view', viewMode, 'kanban');
     setSearchParams(nextParams, { replace: true });
-  }, [boardType, debouncedSearchTerm, myDealsOnly, searchParams, setSearchParams, viewMode]);
+  }, [boardType, debouncedSearchTerm, myDealsOnly, pipelineFilter, searchParams, setSearchParams, viewMode]);
 
   useEffect(() => {
     const handleSearchShortcut = (event) => {
@@ -616,6 +618,8 @@ export default function PipelinePage() {
             }}
             pendingOpenDeal={pendingOpenDeal}
             onPendingOpenDealHandled={clearPendingOpenDeal}
+            initialFilter={pipelineFilter}
+            onFilterChange={setPipelineFilter}
           />
         ) : (
           <PipelineListView 
