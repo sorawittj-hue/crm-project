@@ -11,7 +11,7 @@ import { useAppStore } from '../store/useAppStore';
 import { useAddActivity } from '../hooks/useActivities';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
 import PipelineListView from '../components/pipeline/PipelineListView';
-import { Plus, Sliders, ScanLine, User, Zap, Loader2, ChevronDown, Search, Briefcase, Calendar, Building2, Sparkles, UserCheck, Smile, DollarSign, Check, Phone, Mail, ArrowRight, ArrowLeft, TrendingUp, Mic, LayoutGrid, List } from 'lucide-react';
+import { Plus, Sliders, ScanLine, User, Zap, Loader2, ChevronDown, Search, X, Briefcase, Calendar, Building2, Sparkles, UserCheck, Smile, DollarSign, Check, Phone, Mail, ArrowRight, ArrowLeft, TrendingUp, Mic, LayoutGrid, List } from 'lucide-react';
 
 // Lazy-load PDFImporter to avoid bundling pdfjs-dist (~5MB) in initial load
 const PDFImporter = lazy(() => import('../components/pipeline/PDFImporter'));
@@ -140,6 +140,17 @@ export default function PipelinePage() {
     updateParam('view', viewMode, 'kanban');
     setSearchParams(nextParams, { replace: true });
   }, [boardType, debouncedSearchTerm, myDealsOnly, searchParams, setSearchParams, viewMode]);
+
+  useEffect(() => {
+    const handleSearchShortcut = (event) => {
+      if (event.key === 'Escape' && searchTerm) {
+        setSearchTerm('');
+      }
+    };
+
+    window.addEventListener('keydown', handleSearchShortcut);
+    return () => window.removeEventListener('keydown', handleSearchShortcut);
+  }, [searchTerm]);
 
   const [newDeal, setNewDeal] = useState({
     title: '', company: '', value: '', stage: 'lead', customer_id: '',
@@ -322,8 +333,18 @@ export default function PipelinePage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 h-11 w-full rounded-2xl border-violet-100 bg-white/50 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-violet-400 shadow-sm transition-all"
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                aria-label="ล้างคำค้นหา"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
+              >
+                <X size={14} />
+              </button>
+            )}
             {searchTerm !== debouncedSearchTerm && (
-              <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-violet-500 animate-spin" size={15} />
+              <Loader2 className="absolute right-10 top-1/2 -translate-y-1/2 text-violet-500 animate-spin" size={15} />
             )}
           </div>
         }

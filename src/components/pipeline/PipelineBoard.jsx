@@ -411,6 +411,8 @@ export default function PipelineBoard({
               <motion.button
                 key={filter.id}
                 onClick={() => setActiveFilter(filter.id)}
+                aria-pressed={isActive}
+                aria-label={`${filter.label} ${count} ดีล`}
                 whileTap={{ scale: 0.95 }}
                 className={cn(
                   'flex items-center gap-2 px-4 h-9 rounded-full text-xs font-bold transition-all duration-300 whitespace-nowrap border',
@@ -442,6 +444,8 @@ export default function PipelineBoard({
           <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 gap-1 shadow-sm">
             <button
               onClick={() => setViewMode('kanban')}
+              aria-label="แสดงแบบคัมบัง"
+              aria-pressed={viewMode === 'kanban'}
               className={cn('p-1.5 rounded-lg transition-all', viewMode === 'kanban' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-400 hover:text-slate-700')}
               title="Kanban"
             >
@@ -449,6 +453,8 @@ export default function PipelineBoard({
             </button>
             <button
               onClick={() => setViewMode('list')}
+              aria-label="แสดงแบบรายการ"
+              aria-pressed={viewMode === 'list'}
               className={cn('p-1.5 rounded-lg transition-all', viewMode === 'list' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-400 hover:text-slate-700')}
               title="รายการ"
             >
