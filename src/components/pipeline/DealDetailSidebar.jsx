@@ -186,6 +186,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
 
   useEffect(() => {
     setNextActionRecommendation(null);
+    setActiveTab('overview');
+    setEditingField(null);
   }, [deal?.id, deal?.stage]);
 
   const [localEdit, setLocalEdit] = useState({
@@ -377,6 +379,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                 </div>
                 <button
                   onClick={onClose}
+                  aria-label="ปิดรายละเอียดดีล"
                   className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-all shrink-0 bg-white/40 backdrop-blur-sm shadow-sm border border-white/50"
                 >
                   <X size={18} />
@@ -535,12 +538,12 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       // Clone basic deal data
                       const clonedData = {
                         title: `${deal.title} (Copy)`,
-                        company_name: deal.company_name,
+                        company: deal.company,
                         value: deal.value,
                         stage: deal.stage,
                         probability: deal.probability,
                         expected_close_date: deal.expected_close_date,
-                        contact_name: deal.contact_name,
+                        contact: deal.contact,
                         contact_email: deal.contact_email,
                         contact_phone: deal.contact_phone,
                         customer_id: deal.customer_id
@@ -559,6 +562,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                     }
                   }}
                   disabled={isDuplicating}
+                  aria-label="ทำสำเนาดีล"
                   className="w-11 h-11 rounded-xl bg-white/60 backdrop-blur-sm border border-white/60 text-slate-400 hover:bg-indigo-500 hover:text-white hover:border-indigo-500 transition-all flex items-center justify-center shrink-0 shadow-sm"
                   title="Duplicate Deal"
                 >
@@ -566,6 +570,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                 </button>
                 <button
                   onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setShowDeleteConfirm(true)}
+                  aria-label="ลบดีล"
                   className="w-11 h-11 rounded-xl bg-white/60 backdrop-blur-sm border border-white/60 text-slate-400 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all flex items-center justify-center shrink-0 shadow-sm"
                 >
                   <Trash2 size={18} />
@@ -582,6 +587,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
+                    role="tab"
+                    aria-selected={isActive}
                     className={cn(
                       'flex items-center gap-1.5 px-5 py-3.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-all relative',
                       isActive
