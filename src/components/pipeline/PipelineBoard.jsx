@@ -128,6 +128,8 @@ export default function PipelineBoard({
   initialFilter = 'all',
   onFilterChange,
   onDeleteDeals,
+  controlledViewMode,
+  onViewModeChange,
 }) {
   const { user } = useAuth();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
@@ -150,7 +152,14 @@ export default function PipelineBoard({
   }, [deals]);
 
   const scrollRef = useHorizontalScroll();
-  const [viewMode, setViewMode] = useState('kanban');
+  const [internalViewMode, setInternalViewMode] = useState('kanban');
+  const viewMode = controlledViewMode || internalViewMode;
+  const handleViewModeChange = useCallback((nextViewMode) => {
+    if (controlledViewMode === undefined) {
+      setInternalViewMode(nextViewMode);
+    }
+    onViewModeChange?.(nextViewMode);
+  }, [controlledViewMode, onViewModeChange]);
 
   useEffect(() => {
     setActiveFilter(initialFilter);
@@ -455,7 +464,7 @@ export default function PipelineBoard({
           )}
           <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 gap-1 shadow-sm">
             <button
-              onClick={() => setViewMode('kanban')}
+              onClick={() => handleViewModeChange('kanban')}
               aria-label="แสดงแบบคัมบัง"
               aria-pressed={viewMode === 'kanban'}
               className={cn('p-1.5 rounded-lg transition-all', viewMode === 'kanban' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-400 hover:text-slate-700')}
@@ -464,7 +473,7 @@ export default function PipelineBoard({
               <LayoutGrid size={14} />
             </button>
             <button
-              onClick={() => setViewMode('list')}
+              onClick={() => handleViewModeChange('list')}
               aria-label="แสดงแบบรายการ"
               aria-pressed={viewMode === 'list'}
               className={cn('p-1.5 rounded-lg transition-all', viewMode === 'list' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-400 hover:text-slate-700')}

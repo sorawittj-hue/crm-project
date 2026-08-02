@@ -10,7 +10,6 @@ import { useAppStore } from '../store/useAppStore';
 
 import { useAddActivity } from '../hooks/useActivities';
 import MonthlyPipeline from '../components/pipeline/MonthlyPipeline';
-import PipelineListView from '../components/pipeline/PipelineListView';
 import { Plus, Sliders, ScanLine, User, Zap, Loader2, ChevronDown, Search, X, Briefcase, Calendar, Building2, Sparkles, UserCheck, Smile, DollarSign, Check, Phone, Mail, ArrowRight, ArrowLeft, TrendingUp, AlertTriangle, Mic, LayoutGrid, List } from 'lucide-react';
 
 // Lazy-load PDFImporter to avoid bundling pdfjs-dist (~5MB) in initial load
@@ -37,7 +36,7 @@ export default function PipelinePage() {
   const deleteDealsMutation = useDeleteDeals();
   const updateCustomerMutation = useUpdateCustomer();
   const addActivityMutation = useAddActivity();
-  const { pendingOpenDeal, setPendingOpenDeal, clearPendingOpenDeal, pendingNewDealCustomer, clearPendingNewDealCustomer, openPaywall } = useAppStore();
+  const { pendingOpenDeal, clearPendingOpenDeal, pendingNewDealCustomer, clearPendingNewDealCustomer, openPaywall } = useAppStore();
   const { user } = useAuth();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
   
@@ -654,8 +653,7 @@ export default function PipelinePage() {
 
 
       <div id="pipeline-board">
-        {viewMode === 'kanban' ? (
-          <MonthlyPipeline
+        <MonthlyPipeline
             viewMode={boardType}
             deals={filteredDeals}
             onAddDeal={async (data) => {
@@ -696,25 +694,9 @@ export default function PipelinePage() {
             onPendingOpenDealHandled={clearPendingOpenDeal}
             initialFilter={pipelineFilter}
             onFilterChange={setPipelineFilter}
+            displayMode={viewMode}
+            onDisplayModeChange={setViewMode}
           />
-        ) : (
-          <PipelineListView 
-            deals={filteredDeals} 
-            onUpdateDeal={handleUpdateDeal} 
-            onDealClick={setPendingOpenDeal}
-            onDeleteDeal={async (id) => {
-              if (shouldBlockBasic) {
-                openPaywall(isGuestAccount ? 'default' : 'trial_ended');
-                return;
-              }
-              try {
-                await deleteDealsMutation.mutateAsync([id]);
-              } catch (err) {
-                alert('Failed to delete deal: ' + err.message);
-              }
-            }}
-          />
-        )}
       </div>
 
       {/* ADD ASSET MODAL */}
