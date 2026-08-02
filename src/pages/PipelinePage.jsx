@@ -616,6 +616,13 @@ export default function PipelinePage() {
                 alert('Failed to delete deal: ' + err.message);
               }
             }}
+            onDeleteDeals={async (ids) => {
+              if (shouldBlockBasic) {
+                openPaywall(isGuestAccount ? 'default' : 'trial_ended');
+                return;
+              }
+              await deleteDealsMutation.mutateAsync(ids);
+            }}
             pendingOpenDeal={pendingOpenDeal}
             onPendingOpenDealHandled={clearPendingOpenDeal}
             initialFilter={pipelineFilter}

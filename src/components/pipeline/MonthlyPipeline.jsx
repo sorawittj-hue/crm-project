@@ -26,6 +26,7 @@ export default function MonthlyPipeline({
   viewMode = 'pipeline',
   initialFilter = 'all',
   onFilterChange,
+  onDeleteDeals,
 }) {
   const { data: teamMembers } = useTeam();
   const { data: customers } = useCustomers();
@@ -227,6 +228,7 @@ export default function MonthlyPipeline({
             selectedYear={selectedYear}
             initialFilter={initialFilter}
             onFilterChange={onFilterChange}
+            onDeleteDeals={onDeleteDeals}
           />
         )}
       </div>

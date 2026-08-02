@@ -127,6 +127,7 @@ export default function PipelineBoard({
   selectedYear,
   initialFilter = 'all',
   onFilterChange,
+  onDeleteDeals,
 }) {
   const { user } = useAuth();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
@@ -502,6 +503,22 @@ export default function PipelineBoard({
                 </button>
               ))}
             </div>
+
+            {onDeleteDeals && (
+              <button
+                type="button"
+                aria-label="ลบดีลที่เลือก"
+                onClick={async () => {
+                  const confirmed = window.confirm(`ลบ ${selectedDealIds.length} ดีลที่เลือกใช่หรือไม่? การดำเนินการนี้ย้อนกลับไม่ได้`);
+                  if (!confirmed) return;
+                  await onDeleteDeals(selectedDealIds);
+                  setSelectedDealIds([]);
+                }}
+                className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 transition-colors text-[10px] font-black"
+              >
+                ลบที่เลือก
+              </button>
+            )}
 
             <button
               onClick={() => setSelectedDealIds([])}
