@@ -533,7 +533,7 @@ export default function ToolsPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="max-w-[1400px] mx-auto pb-20 px-4 md:px-0 relative"
+      className="max-w-[1400px] mx-auto pb-20 px-2 sm:px-4 md:px-6 relative ui-enter"
     >
       {/* Global Ambient Glow for Tools Page */}
       <div className="absolute top-0 right-0 w-full max-w-3xl h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-violet-300/30 via-indigo-100/10 to-transparent -z-10 pointer-events-none blur-3xl" />

@@ -566,7 +566,7 @@ Win Rate: ${intel.winRate || 0}%
   const memberColors = ['#8b5cf6', '#0ea5e9', '#f59e0b', '#10b981', '#ec4899', '#f43f5e'];
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-8 pb-24 px-4 md:px-6 mt-4 bg-slate-50/50 min-h-screen relative overflow-hidden">
+    <div className="max-w-[1600px] mx-auto space-y-8 pb-24 px-2 sm:px-4 md:px-6 mt-4 bg-slate-50/50 min-h-screen relative overflow-hidden ui-enter">
       {/* Fixed Premium Ambient Glow Blobs */}
       <div className="fixed top-0 right-0 w-[600px] h-[600px] bg-violet-500/4 rounded-full blur-[130px] pointer-events-none -z-10" />
       <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/4 rounded-full blur-[130px] pointer-events-none -z-10" />

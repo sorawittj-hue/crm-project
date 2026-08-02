@@ -1055,7 +1055,7 @@ export default function CustomersPage() {
   );
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-[1600px] mx-auto pb-20 px-4 md:px-0 relative">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-[1600px] mx-auto pb-20 px-2 sm:px-4 md:px-6 relative ui-enter">
       {/* Ambient glows */}
       <div className="fixed top-20 right-0 w-[500px] h-[500px] bg-violet-400/5 rounded-full blur-[120px] pointer-events-none -z-10" />
       <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-fuchsia-400/5 rounded-full blur-[100px] pointer-events-none -z-10" />

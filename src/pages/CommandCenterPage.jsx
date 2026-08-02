@@ -212,7 +212,7 @@ export default function CommandCenterPage() {
   );
 
   return (
-    <div className="relative max-w-[1600px] mx-auto space-y-6 pb-24 px-4 md:px-6 mt-4 overflow-hidden">
+    <div className="relative max-w-[1600px] mx-auto space-y-6 pb-24 px-2 sm:px-4 md:px-6 mt-4 overflow-hidden ui-enter">
       {/* Dynamic atmospheric ambient glows */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-500/5 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute top-80 right-1/4 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />

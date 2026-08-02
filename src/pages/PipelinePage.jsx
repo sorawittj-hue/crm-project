@@ -329,7 +329,7 @@ export default function PipelinePage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="max-w-[1600px] mx-auto space-y-6 pb-20 px-4 md:px-6 mt-4 relative overflow-hidden"
+      className="max-w-[1600px] mx-auto space-y-6 pb-20 px-2 sm:px-4 md:px-6 mt-4 relative overflow-hidden ui-enter"
     >
       {/* Ambient Glowing Orbs */}
       <div className="absolute top-[-5%] left-[-10%] w-[50%] h-[600px] rounded-full bg-violet-500/10 blur-[130px] pointer-events-none" />

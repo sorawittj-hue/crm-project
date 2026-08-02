@@ -80,7 +80,7 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="max-w-[1200px] mx-auto pb-20 px-4 md:px-0 relative">
+    <div className="max-w-[1200px] mx-auto pb-20 px-2 sm:px-4 md:px-6 relative ui-enter">
       {/* Ambient glows */}
       <div className="fixed top-20 left-1/4 w-[500px] h-[500px] bg-violet-600/5 rounded-full blur-[130px] pointer-events-none -z-10" />
       <div className="fixed bottom-20 right-10 w-80 h-80 bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none -z-10" />
