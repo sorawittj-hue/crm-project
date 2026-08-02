@@ -145,12 +145,21 @@ export default function PipelineBoard({
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const [dragTargetStage, setDragTargetStage] = useState(null);
   const [moveError, setMoveError] = useState(null);
+  const pendingMoveIdsRef = useRef(new Set());
+  const pendingMoveSnapshotsRef = useRef(new Map());
 
   // Sync external deals into local state — but never interrupt an ongoing drag
   useEffect(() => {
-    if (!isDraggingRef.current) {
+    if (!isDraggingRef.current && pendingMoveIdsRef.current.size === 0) {
       setLocalDeals(deals);
+      return;
     }
+
+    setLocalDeals((currentDeals) => deals.map((deal) => {
+      if (!pendingMoveIdsRef.current.has(deal.id)) return deal;
+      const optimisticDeal = currentDeals.find((current) => current.id === deal.id);
+      return optimisticDeal ? { ...deal, ...optimisticDeal } : deal;
+    }));
   }, [deals]);
 
   const scrollRef = useHorizontalScroll();
@@ -267,6 +276,8 @@ export default function PipelineBoard({
   const initiateMove = useCallback((dealId, targetStage) => {
     const previousDeals = localDeals;
     const changedAt = new Date().toISOString();
+    pendingMoveIdsRef.current.add(dealId);
+    pendingMoveSnapshotsRef.current.set(dealId, previousDeals);
     setMoveError(null);
     setLocalDeals(prev => prev.map(d =>
       d.id === dealId ? { ...d, stage: targetStage, last_activity: changedAt } : d
@@ -280,8 +291,14 @@ export default function PipelineBoard({
         last_activity: changedAt,
       })).catch((error) => {
         console.error('Failed to move deal', { dealId, targetStage, error });
-        setLocalDeals(previousDeals);
+        const snapshot = pendingMoveSnapshotsRef.current.get(dealId) || previousDeals;
+        pendingMoveIdsRef.current.delete(dealId);
+        pendingMoveSnapshotsRef.current.delete(dealId);
+        setLocalDeals(snapshot);
         setMoveError('ย้ายดีลไม่สำเร็จ ระบบคืนดีลกลับสถานะเดิมแล้ว');
+      }).then(() => {
+        pendingMoveIdsRef.current.delete(dealId);
+        pendingMoveSnapshotsRef.current.delete(dealId);
       });
     }
   }, [localDeals, onUpdateDeal]);
@@ -382,13 +399,29 @@ export default function PipelineBoard({
         closed_at: closeIsoString,
       },
     };
-    onUpdateDeal(reasonModal.dealId, updates);
+    Promise.resolve(onUpdateDeal(reasonModal.dealId, updates)).then(() => {
+      pendingMoveIdsRef.current.delete(reasonModal.dealId);
+      pendingMoveSnapshotsRef.current.delete(reasonModal.dealId);
+    }).catch((error) => {
+      console.error('Failed to close deal', { dealId: reasonModal.dealId, error });
+      const snapshot = pendingMoveSnapshotsRef.current.get(reasonModal.dealId) || deals;
+      pendingMoveIdsRef.current.delete(reasonModal.dealId);
+      pendingMoveSnapshotsRef.current.delete(reasonModal.dealId);
+      setLocalDeals(snapshot);
+      setMoveError('บันทึกผลปิดดีลไม่สำเร็จ ระบบคืนดีลกลับสถานะเดิมแล้ว');
+    });
     setReasonModal({ open: false, dealId: null, targetStage: null });
   };
 
   const closeReasonModal = () => {
     // Revert optimistic update
-    setLocalDeals(deals);
+    const dealId = reasonModal.dealId;
+    const snapshot = dealId ? pendingMoveSnapshotsRef.current.get(dealId) : null;
+    if (dealId) {
+      pendingMoveIdsRef.current.delete(dealId);
+      pendingMoveSnapshotsRef.current.delete(dealId);
+    }
+    setLocalDeals(snapshot || deals);
     setReasonModal({ open: false, dealId: null, targetStage: null });
   };
 
@@ -693,9 +726,11 @@ export default function PipelineBoard({
                 };
 
                 return (
-                  <Droppable droppableId={stageId} key={stageId}>
+                  <Droppable droppableId={stageId} direction="vertical" key={stageId}>
                     {(provided, snapshot) => (
                       <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
                         className={cn(
                           'flex-shrink-0 flex flex-col w-[300px] h-full rounded-[1.5rem] border overflow-hidden bg-white/70 backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.03)]',
                           snapshot.isDraggingOver
@@ -756,9 +791,7 @@ export default function PipelineBoard({
 
                         {/* Cards */}
                         <div 
-                          className="flex-1 overflow-y-auto px-3 py-3 custom-scrollbar-thin"
-                          {...provided.droppableProps}
-                          ref={provided.innerRef}
+                          className="flex-1 min-h-[180px] overflow-y-auto px-3 py-3 custom-scrollbar-thin"
                         >
                           <InnerList 
                             deals={stageDeals} 
