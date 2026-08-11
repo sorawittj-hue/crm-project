@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
-  Search, Filter, Star, TrendingUp, AlertTriangle,
+  Search, Filter, Star, TrendingUp, AlertTriangle, CheckSquare, Check,
+
   Zap, Users,
   ArrowLeft,
   Clock, GripVertical, ChevronRight,
@@ -163,7 +164,9 @@ export default function PipelineBoard({
   }, [deals]);
 
   const scrollRef = useHorizontalScroll();
-  const [internalViewMode, setInternalViewMode] = useState('kanban');
+  const [internalViewMode, setInternalViewMode] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth < 768 ? 'list' : 'kanban'
+  );
   const viewMode = controlledViewMode || internalViewMode;
   const handleViewModeChange = useCallback((nextViewMode) => {
     if (controlledViewMode === undefined) {
@@ -173,6 +176,14 @@ export default function PipelineBoard({
   }, [controlledViewMode, onViewModeChange]);
 
   useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) setInternalViewMode(v => v === 'kanban' ? 'list' : v);
+    };
+    window.addEventListener('resize', handleResize, { passive: true });
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
     setActiveFilter(initialFilter);
   }, [initialFilter]);
 
@@ -180,6 +191,9 @@ export default function PipelineBoard({
     setActiveFilter(filterId);
     onFilterChange?.(filterId);
   }, [onFilterChange]);
+
+  const [bulkMode, setBulkMode] = useState(false);
+  const [bulkSelected, setBulkSelected] = useState(new Set());
 
   // eslint-disable-next-line react-hooks/purity
   const nowMsRef = useRef(Date.now());
@@ -508,6 +522,19 @@ export default function PipelineBoard({
               </motion.button>
             );
           })}
+          
+          <button
+            onClick={() => { setBulkMode(b => !b); setBulkSelected(new Set()); }}
+            className={cn(
+              'flex items-center gap-1.5 h-8 px-3 rounded-xl text-xs font-bold border transition-all',
+              bulkMode
+                ? 'bg-violet-600 text-white border-violet-600'
+                : 'bg-white/80 text-slate-600 border-slate-200 hover:border-violet-300 hover:text-violet-600'
+            )}
+          >
+            <CheckSquare size={13} />
+            {bulkMode && bulkSelected.size > 0 ? `${bulkSelected.size} รายการ` : 'เลือกหลาย'}
+          </button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -546,6 +573,27 @@ export default function PipelineBoard({
       </div>
 
       {/* FLOATING BATCH ACTION BAR */}
+      <AnimatePresence>
+        {bulkMode && bulkSelected.size > 0 && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700"
+          >
+            <span className="text-xs font-black text-white">{bulkSelected.size} ดีล</span>
+            <div className="w-px h-5 bg-slate-600 mx-1" />
+            <button
+              onClick={() => { setBulkSelected(new Set()); setBulkMode(false); }}
+              className="text-xs text-slate-400 hover:text-white px-2 transition-colors"
+            >
+              ✕ ยกเลิก
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {selectedDealIds.length > 0 && (
           <motion.div

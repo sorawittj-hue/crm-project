@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useMyProfile } from '../hooks/useUserProfiles';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
-import { Target, Users, ListTree, User, Building2, ShieldCheck, Loader2, Sparkles, Settings2, Plug, Crown, Shield, Bell, History, ChevronRight } from 'lucide-react';
+import { Target, Users, ListTree, User, Building2, ShieldCheck, Loader2, Sparkles, Settings2, Plug, Crown, Shield, Bell, History, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { Database } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
 
@@ -59,6 +59,28 @@ export default function SettingsPage() {
   const { isLoading: teamLoading } = useTeam();
   const { user } = useAuth();
   const { data: myProfile } = useMyProfile(user?.id);
+
+  const [customFieldDefs, setCustomFieldDefs] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('crm_custom_fields') || '[]'); }
+    catch { return []; }
+  });
+  const [newFieldLabel, setNewFieldLabel] = useState('');
+  const [newFieldType, setNewFieldType] = useState('text');
+  const [showAddField, setShowAddField] = useState(false);
+
+  const saveCustomFields = (fields) => {
+    setCustomFieldDefs(fields);
+    localStorage.setItem('crm_custom_fields', JSON.stringify(fields));
+  };
+
+  const handleAddField = () => {
+    if (!newFieldLabel.trim()) return;
+    const key = newFieldLabel.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    const newField = { key, label: newFieldLabel.trim(), type: newFieldType };
+    saveCustomFields([...customFieldDefs, newField]);
+    setNewFieldLabel('');
+    setShowAddField(false);
+  };
 
   const isAdmin = myProfile?.role === 'admin' || myProfile?.role === 'owner';
   const isOwner = myProfile?.role === 'owner' || user?.id === settings?.owner_id;
@@ -181,7 +203,92 @@ export default function SettingsPage() {
             >
               {activeSection === 'targets'       && <TargetsSection />}
               {activeSection === 'team'          && <TeamSection />}
-              {activeSection === 'pipeline'      && <PipelineSection />}
+              {activeSection === 'pipeline'      && (
+                <div className="space-y-6">
+                  <PipelineSection />
+                  
+                  {/* Custom Fields Card */}
+                  <div className="bg-white/80 backdrop-blur-xl border border-violet-100/60 rounded-3xl p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-violet-500/20">
+                          <Database size={18} />
+                        </div>
+                        <div>
+                          <h3 className="font-black text-slate-900 text-sm">Custom Fields</h3>
+                          <p className="text-xs text-slate-400">เพิ่มข้อมูลพิเศษในดีลของคุณ</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowAddField(s => !s)}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors shadow-md shadow-violet-500/20"
+                      >
+                        <Plus size={13} /> เพิ่ม Field
+                      </button>
+                    </div>
+
+                    {showAddField && (
+                      <div className="mb-4 p-4 bg-violet-50 border border-violet-200 rounded-2xl flex flex-col gap-3">
+                        <p className="text-xs font-black text-violet-700 uppercase tracking-widest">เพิ่ม Field ใหม่</p>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="ชื่อ Field เช่น LinkedIn URL"
+                            value={newFieldLabel}
+                            onChange={e => setNewFieldLabel(e.target.value)}
+                            className="flex-1 h-9 px-3 rounded-xl border border-violet-200 bg-white text-sm font-semibold outline-none focus:border-violet-400"
+                            onKeyDown={e => { if (e.key === 'Enter') handleAddField(); }}
+                          />
+                          <select
+                            value={newFieldType}
+                            onChange={e => setNewFieldType(e.target.value)}
+                            className="h-9 px-3 rounded-xl border border-violet-200 bg-white text-sm font-semibold outline-none"
+                          >
+                            <option value="text">ข้อความ</option>
+                            <option value="number">ตัวเลข</option>
+                            <option value="url">URL</option>
+                            <option value="date">วันที่</option>
+                          </select>
+                          <button
+                            onClick={handleAddField}
+                            className="h-9 px-4 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors"
+                          >
+                            บันทึก
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {customFieldDefs.length === 0 && !showAddField && (
+                      <div className="py-8 text-center border-2 border-dashed border-slate-200 rounded-2xl">
+                        <Database size={20} className="text-slate-300 mx-auto mb-2" />
+                        <p className="text-sm text-slate-400 font-medium">ยังไม่มี Custom Fields</p>
+                        <p className="text-xs text-slate-300 mt-1">คลิก "เพิ่ม Field" เพื่อสร้างบันทึก field พิเศษของคุณเอง</p>
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      {customFieldDefs.map((field, idx) => (
+                        <div key={field.key} className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-violet-100 transition-colors">
+                          <div className="w-8 h-8 rounded-xl bg-violet-100 flex items-center justify-center">
+                            <Database size={13} className="text-violet-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-slate-800">{field.label}</p>
+                            <p className="text-xs text-slate-400">{field.key} · {field.type}</p>
+                          </div>
+                          <button
+                            onClick={() => saveCustomFields(customFieldDefs.filter((_, i) => i !== idx))}
+                            className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
               {activeSection === 'company'       && <CompanySection />}
               {activeSection === 'account'       && <AccountSection />}
               {activeSection === 'notifications' && <NotificationSection />}

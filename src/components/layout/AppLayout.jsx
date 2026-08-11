@@ -36,6 +36,7 @@ import PaywallModal from '../ui/PaywallModal';
 import WelcomeModal from '../ui/WelcomeModal';
 import OnboardingChecklist from '../ui/OnboardingChecklist';
 import GlobalAddDealModal from '../pipeline/GlobalAddDealModal';
+import GlobalSearch from '../ui/GlobalSearch';
 
 
 
@@ -335,6 +336,18 @@ export default function AppLayout() {
   const [notifFilter, setNotifFilter] = useState('all');
   const notifRef = useRef(null);
   const sidebarRef = useRef(null);
+  const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setGlobalSearchOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   useEffect(() => {
     if (!isDesktop && isSidebarOpen) {
@@ -816,7 +829,7 @@ export default function AppLayout() {
               <Menu size={20} />
             </button>
             <button
-              onClick={() => setIsCommandPaletteOpen(true)}
+              onClick={() => setGlobalSearchOpen(true)}
               className="hidden md:flex items-center gap-2.5 px-3.5 py-2 rounded-xl transition-all group text-sm"
               style={{background: 'rgba(255,255,255,0.8)', border: '1px solid rgba(139,92,246,0.1)', boxShadow: '0 1px 4px rgba(100,80,200,0.06)'}}
             >
@@ -1153,6 +1166,20 @@ export default function AppLayout() {
         
       </div>
 
+      <AnimatePresence>
+        {globalSearchOpen && (
+          <GlobalSearch
+            deals={deals || []}
+            customers={customers || []}
+            onNavigate={(type) => {
+              setGlobalSearchOpen(false);
+              if (type === 'deal') navigate('/pipeline');
+              if (type === 'customer') navigate('/customers');
+            }}
+            onClose={() => setGlobalSearchOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

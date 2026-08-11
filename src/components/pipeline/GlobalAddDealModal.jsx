@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { DEFAULT_STAGE_PROBABILITY } from '../../utils/salesIntelligence';
 import { CheckCircle2, DollarSign, Calendar, Building2, AlignLeft, Loader2, Zap } from 'lucide-react';
 import { useAddDeal } from '../../hooks/useDeals';
 import { useAppStore } from '../../store/useAppStore';
@@ -32,7 +33,7 @@ export default function GlobalAddDealModal() {
         expected_close_date: form.expected_close_date,
         description: form.description,
         stage: form.stage,
-        probability: form.stage === 'won' ? 100 : form.stage === 'lead' ? 10 : form.stage === 'contact' ? 30 : form.stage === 'proposal' ? 50 : 80,
+        probability: DEFAULT_STAGE_PROBABILITY[form.stage] ?? 50,
         source: 'direct',
       });
       

@@ -71,8 +71,8 @@ export default function WinLossModal({ open, targetStage, onClose, onConfirm }) 
     if (!isWon) {
       if (preset === 'งบประมาณไม่พอ') setLostReason('budget');
       else if (preset === 'เลือกเจ้าอื่น / คู่แข่งราคาถูกกว่า') setLostReason('คู่แข่ง');
-      else if (preset === 'ยกเลิก/เลื่อนโปรเจกต์') setLostReason('timing');
-      else if (preset === 'ติดต่อไม่ได้ / ไม่มีการตอบรับ') setLostReason('timing');
+      else if (preset === 'ยกเลิก/เลื่อนโปรเจกต์') setLostReason('cancelled');
+      else if (preset === 'ติดต่อไม่ได้ / ไม่มีการตอบรับ') setLostReason('no_response');
     }
   };
 
@@ -144,11 +144,13 @@ export default function WinLossModal({ open, targetStage, onClose, onConfirm }) 
                 className="w-full h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:border-violet-400 focus:bg-white outline-none transition-all cursor-pointer"
                 required
               >
-                <option value="">-- เลือกหมวดหมู่เหตุผลที่เสียดีล --</option>
+                <option value="">— เลือกหมวดหมู่ —</option>
                 <option value="ราคา">ราคา (Price)</option>
                 <option value="คู่แข่ง">คู่แข่ง (Competitor)</option>
-                <option value="timing">timing (Timing)</option>
-                <option value="budget">budget (Budget)</option>
+                <option value="timing">Timing</option>
+                <option value="cancelled">ยกเลิก/เลื่อน (Cancelled)</option>
+                <option value="no_response">ติดต่อไม่ได้ (No Response)</option>
+                <option value="budget">งบประมาณ (Budget)</option>
                 <option value="อื่นๆ">อื่นๆ (Other)</option>
               </select>
               {touched && !lostReason && (

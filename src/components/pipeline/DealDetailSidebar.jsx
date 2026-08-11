@@ -6,7 +6,7 @@ import {
   Phone, Mail, FileText, Clock,
   Sparkles, Activity, Target, Zap,
   Loader2, Send, CalendarClock, ListTodo, AlertTriangle, Settings,
-  Building2, User, TrendingUp, X, MessageSquare
+  Building2, User, TrendingUp, X, MessageSquare, Copy
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -16,6 +16,7 @@ import { formatFullCurrency as formatCurrency } from '../../lib/formatters';
 import { callGeminiAPI } from '../../services/ai';
 import { useDealActivities, useAddActivity } from '../../hooks/useActivities';
 import { useEmailTemplates } from '../../hooks/useEmailTemplates';
+import { useAddDeal } from '../../hooks/useDeals';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { createPortal } from 'react-dom';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -154,6 +155,30 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [checkedItems, setCheckedItems] = useState(() => deal?.metadata?.checklist_progress || {});
   const [editingField, setEditingField] = useState(null);
+
+  const addDealMutation = useAddDeal();
+  const [isCloning, setIsCloning] = useState(false);
+
+  const handleCloneDeal = async () => {
+    if (!deal || isCloning) return;
+    setIsCloning(true);
+    try {
+      const { id, actual_close_date, created_at, updated_at, last_activity, _agingDays, agingDays, focusScore, weightedValue, daysInactive, daysUntilClose, isActive, isAtRisk, recommendedAction, ...rest } = deal;
+      await addDealMutation.mutateAsync({
+        ...rest,
+        title: `${deal.title} (สำเนา)`,
+        stage: ['won', 'lost'].includes(deal.stage) ? 'lead' : deal.stage,
+      });
+      if (onRequestCloneDeal) {
+        onRequestCloneDeal();
+      }
+      onClose();
+    } catch (err) {
+      console.error('Clone failed:', err);
+    } finally {
+      setIsCloning(false);
+    }
+  };
 
   const { data: emailTemplates = [] } = useEmailTemplates();
 
@@ -377,13 +402,22 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                     {stageBadge.label}
                   </span>
                 </div>
-                <button
-                  onClick={onClose}
-                  aria-label="ปิดรายละเอียดดีล"
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-all shrink-0 bg-white/40 backdrop-blur-sm shadow-sm border border-white/50"
-                >
-                  <X size={18} />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={handleCloneDeal}
+                    disabled={isCloning}
+                    title="โคลนดีลนี้"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-violet-600 hover:bg-white/80 transition-all shrink-0 bg-white/40 backdrop-blur-sm shadow-sm border border-white/50"
+                  >
+                    {isCloning ? <Loader2 size={14} className="animate-spin" /> : <Copy size={14} />}
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-all shrink-0 bg-white/40 backdrop-blur-sm shadow-sm border border-white/50"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
               </div>
 
               {/* Deal name + company */}
@@ -788,6 +822,39 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                         <ListTodo size={13} className="mr-1.5" /> สร้างนัดติดตาม
                       </Button>
                     </div>
+
+                    {/* Custom Fields */}
+                    {(() => {
+                      const defs = (() => { try { return JSON.parse(localStorage.getItem('crm_custom_fields') || '[]'); } catch { return []; } })();
+                      if (!defs.length) return null;
+                      return (
+                        <div className="border-t border-slate-100 pt-4 space-y-3">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Custom Fields</p>
+                          {defs.map(field => (
+                            <div key={field.key} className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-semibold text-slate-500 shrink-0">{field.label}</span>
+                              <span
+                                className="text-sm font-bold text-slate-700 text-right cursor-pointer hover:text-violet-600 transition-colors"
+                                onClick={() => {
+                                  const val = prompt(`แก้ไข ${field.label}:`, deal?.metadata?.custom_fields?.[field.key] || '');
+                                  if (val !== null && onUpdate) {
+                                    onUpdate(deal.id, {
+                                      metadata: {
+                                        ...(deal.metadata || {}),
+                                        custom_fields: { ...(deal.metadata?.custom_fields || {}), [field.key]: val },
+                                      },
+                                    });
+                                  }
+                                }}
+                              >
+                                {deal?.metadata?.custom_fields?.[field.key] || <span className="text-slate-300 text-xs italic">คลิกเพื่อใส่ข้อมูล</span>}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+
                   </motion.div>
                 )}
 

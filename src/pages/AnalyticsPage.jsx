@@ -33,23 +33,35 @@ import {
 } from 'lucide-react';
 
 // --- Premium Typewriter Effect Component ---
-function TypewriterEffect({ text }) {
-  const [displayedText, setDisplayedText] = useState('');
-  
-  useEffect(() => {
-    setDisplayedText('');
-    let idx = 0;
-    const interval = setInterval(() => {
-      setDisplayedText((prev) => prev + text.charAt(idx));
-      idx += 1;
-      if (idx >= text.length) {
-        clearInterval(interval);
-      }
-    }, 4);
-    return () => clearInterval(interval);
-  }, [text]);
+function TypewriterEffect({ text, speed = 18 }) {
+  const [displayed, setDisplayed] = useState('');
+  const indexRef = useRef(0);
+  const rafRef = useRef(null);
+  const lastTimeRef = useRef(0);
 
-  return <span className="whitespace-pre-line font-medium leading-relaxed text-slate-200">{displayedText}</span>;
+  useEffect(() => {
+    indexRef.current = 0;
+    setDisplayed('');
+    lastTimeRef.current = 0;
+
+    const tick = (timestamp) => {
+      if (timestamp - lastTimeRef.current >= speed) {
+        lastTimeRef.current = timestamp;
+        if (indexRef.current < text.length) {
+          setDisplayed(text.slice(0, indexRef.current + 1));
+          indexRef.current++;
+        }
+      }
+      if (indexRef.current < text.length) {
+        rafRef.current = requestAnimationFrame(tick);
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [text, speed]);
+
+  return <span>{displayed}<span className="animate-pulse inline-block w-0.5 h-4 bg-current ml-0.5 align-middle">&nbsp;</span></span>;
 }
 
 // --- Premium Animated Number Component ---

@@ -18,7 +18,16 @@ const CircleGauge = ({ value, max, size = 120, strokeWidth = 10, color = '#7C6AF
   const offset = circumference - (pct / 100) * circumference;
 
   return (
-    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+    <svg 
+      width={size} 
+      height={size} 
+      style={{ transform: 'rotate(-90deg)' }}
+      role="meter"
+      aria-label="progress gauge"
+      aria-valuenow={Math.round(pct)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+    >
       <circle cx={size / 2} cy={size / 2} r={radius} stroke="#E5E7EB" strokeWidth={strokeWidth} fill="none" />
       <circle
         cx={size / 2} cy={size / 2} r={radius}

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell,
   AreaChart, Area
@@ -61,21 +61,17 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 function AnimatedNumber({ value, prefix = '', suffix = '' }) {
-  const [display, setDisplay] = useState(0);
+  const motionValue = useMotionValue(0);
+  const rounded = useTransform(motionValue, (v) => Math.round(v).toLocaleString('th-TH'));
+  const [display, setDisplay] = useState('0');
+
   useEffect(() => {
-    let start = 0;
-    const end = value;
-    if (start === end) { setDisplay(end); return; }
-    const duration = 900;
-    const step = Math.ceil((end - start) / (duration / 16));
-    const timer = setInterval(() => {
-      start = Math.min(start + step, end);
-      setDisplay(start);
-      if (start >= end) clearInterval(timer);
-    }, 16);
-    return () => clearInterval(timer);
+    const controls = animate(motionValue, value, { duration: 0.9, ease: 'easeOut' });
+    const unsubscribe = rounded.on('change', (v) => setDisplay(v));
+    return () => { controls.stop(); unsubscribe(); };
   }, [value]);
-  return <span>{prefix}{display.toLocaleString('th-TH')}{suffix}</span>;
+
+  return <span>{prefix}{display}{suffix}</span>;
 }
 
 export default function SalesTrackingPage() {
