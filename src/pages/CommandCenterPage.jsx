@@ -216,6 +216,7 @@ export default function CommandCenterPage() {
       {/* Dynamic atmospheric ambient glows */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-500/5 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute top-80 right-1/4 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed top-0 right-1/4 w-[500px] h-[500px] bg-violet-500/5 rounded-full blur-[140px] pointer-events-none -z-10" />
 
       {/* PREMIUM HEADER */}
       <motion.div
@@ -750,26 +751,36 @@ export default function CommandCenterPage() {
           {/* KPI RIBBON (Active pipeline, Win rate, velocity) */}
           <div id="kpi-ribbon" className="space-y-4">
             {[
-              { title: 'Active Pipeline', value: stats?.totalPipelineValue, formatter: v => formatCurrency(v), sub: `${stats?.activeCount || 0} active deals`, icon: Briefcase, color: 'violet', sparkline: stats?.revenueStream?.map(m => m.forecast) },
-              { title: 'Win Rate', value: stats?.winRate, formatter: v => `${Math.round(v)}%`, sub: 'สัดส่วนดีลสำเร็จทั้งหมด', icon: ShieldCheck, color: 'emerald', sparkline: [35, 38, 42, 40, 45, stats?.winRate || 40] },
-              { title: 'Avg Velocity', value: stats?.avgDaysToClose, formatter: v => `${Math.round(v)} วัน`, sub: 'ระยะเวลาเฉลี่ยถึงปิดดีล', icon: Zap, color: 'amber', sparkline: [24, 22, 25, 20, 21, stats?.avgDaysToClose || 20] },
+              { title: 'Active Pipeline', value: stats?.totalPipelineValue, formatter: v => formatCurrency(v), sub: `${stats?.activeCount || 0} active deals`, icon: Briefcase, color: 'violet', sparkline: stats?.revenueStream?.map(m => m.forecast), badge: 'LIVE' },
+              { title: 'Win Rate', value: stats?.winRate, formatter: v => `${Math.round(v)}%`, sub: 'สัดส่วนดีลสำเร็จทั้งหมด', icon: ShieldCheck, color: 'emerald', sparkline: [35, 38, 42, 40, 45, stats?.winRate || 40], badge: 'TOP' },
+              { title: 'Avg Velocity', value: stats?.avgDaysToClose, formatter: v => `${Math.round(v)} วัน`, sub: 'ระยะเวลาเฉลี่ยถึงปิดดีล', icon: Zap, color: 'amber', sparkline: [24, 22, 25, 20, 21, stats?.avgDaysToClose || 20], badge: 'SPEED' },
             ].map((kpi) => (
               <Card key={kpi.title} className={cn(
-                "p-4 rounded-2xl bg-white border-l-4 border border-slate-100 shadow-sm transition-all duration-300 relative overflow-hidden",
-                kpi.color === 'violet' && 'border-l-violet-500 hover:border-violet-200 hover:shadow-[0_4px_20px_rgba(139,92,246,0.15)]',
-                kpi.color === 'emerald' && 'border-l-emerald-500 hover:border-emerald-200 hover:shadow-[0_4px_20px_rgba(16,185,129,0.15)]',
-                kpi.color === 'amber'  && 'border-l-amber-500  hover:border-amber-200  hover:shadow-[0_4px_20px_rgba(245,158,11,0.15)]'
+                "p-4 rounded-2xl bg-white/60 backdrop-blur-xl border-l-4 border-y border-r border-white/40 shadow-lg relative overflow-visible transition-all duration-300 group/kpi",
+                kpi.color === 'violet' && 'border-l-violet-500 hover:border-violet-300 hover:shadow-[0_0_20px_rgba(139,92,246,0.3)] ring-1 ring-inset ring-violet-500/10',
+                kpi.color === 'emerald' && 'border-l-emerald-500 hover:border-emerald-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] ring-1 ring-inset ring-emerald-500/10',
+                kpi.color === 'amber'  && 'border-l-amber-500 hover:border-amber-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] ring-1 ring-inset ring-amber-500/10'
               )}>
-                <div className="flex items-center justify-between">
+                {/* Floating Badge */}
+                <div className={cn(
+                  "absolute -top-2 -right-2 px-2 py-0.5 rounded-full text-[9px] font-black tracking-widest text-white shadow-lg z-20 group-hover/kpi:scale-110 transition-transform",
+                  kpi.color === 'violet' ? 'bg-gradient-to-r from-violet-500 to-indigo-500 shadow-violet-500/40' :
+                  kpi.color === 'emerald' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-emerald-500/40' :
+                  'bg-gradient-to-r from-amber-500 to-orange-500 shadow-amber-500/40'
+                )}>
+                  {kpi.badge}
+                </div>
+                
+                <div className="flex items-center justify-between relative z-10">
                   <div className="flex items-center gap-3">
-                    <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
-                      kpi.color === 'violet' ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white' :
-                      kpi.color === 'emerald' ? 'bg-gradient-to-br from-emerald-500 to-green-600 text-white' :
-                                               'bg-gradient-to-br from-amber-500 to-orange-500 text-white')}>
-                      <kpi.icon size={15} strokeWidth={2.5} />
+                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg group-hover/kpi:scale-110 transition-transform",
+                      kpi.color === 'violet' ? 'bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600 text-white shadow-violet-500/30' :
+                      kpi.color === 'emerald' ? 'bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 text-white shadow-emerald-500/30' :
+                                               'bg-gradient-to-br from-amber-400 via-amber-500 to-orange-600 text-white shadow-amber-500/30')}>
+                      <kpi.icon size={18} strokeWidth={2.5} />
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
                         <MetricTooltip 
                           label={kpi.title} 
                           explanation={
@@ -783,7 +794,7 @@ export default function CommandCenterPage() {
                           }
                         />
                       </span>
-                      <p className="text-2xl font-black text-slate-900 tabular-nums leading-none mt-0.5">
+                      <p className="text-2xl font-black text-slate-900 tabular-nums tracking-tight leading-none mt-1">
                         <AnimatedNumber value={kpi.value || 0} formatter={kpi.formatter} />
                       </p>
                     </div>

@@ -195,41 +195,43 @@ export default function SalesTrackingPage() {
       {/* KPI HERO CARDS STRIP */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Annual Target Progress — Main Hero */}
-        <div className="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br from-violet-600 via-indigo-700 to-slate-900 text-white shadow-xl shadow-violet-600/20 border border-violet-400/20 group hover:-translate-y-0.5 transition-all duration-300">
-          <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/10 blur-2xl group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
+        <div className="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br from-slate-900 via-indigo-950 to-violet-950 text-white shadow-2xl shadow-violet-900/40 border border-violet-500/30 group hover:-translate-y-1 transition-all duration-500">
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-violet-500/20 blur-[60px] group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
+          <div className="absolute -bottom-10 -left-10 w-44 h-44 rounded-full bg-indigo-500/20 blur-[50px] group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
+          
           <div className="relative z-10 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center">
-                  <Trophy size={18} className="text-amber-300 fill-amber-300" />
+                <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-[0_0_15px_rgba(251,191,36,0.3)]">
+                  <Trophy size={20} className="text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
                 </div>
                 <div>
                   <p className="text-[11px] text-violet-200 font-extrabold uppercase tracking-widest">ยอดขายสะสมทั้งปี</p>
                   <p className="text-[10px] text-violet-300/80">ปี {currentYear + 543}</p>
                 </div>
               </div>
-              <div className="px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-black">
+              <div className="px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-xs font-black shadow-[0_0_10px_rgba(255,255,255,0.1)]">
                 {annualProgress}%
               </div>
             </div>
 
-            <div className="pt-1">
-              <p className="text-3xl lg:text-4xl font-black tabular-nums tracking-tight leading-none">
+            <div className="pt-2">
+              <p className="text-4xl lg:text-5xl font-black tabular-nums tracking-tight leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
                 {formatCurrency(totalYearlySales)}
               </p>
-              <p className="text-xs text-violet-200/90 font-medium mt-1.5">
+              <p className="text-xs text-violet-200/90 font-medium mt-2">
                 จากเป้าปี {formatCurrency(annualTarget)}
               </p>
             </div>
 
-            <div className="space-y-1.5 pt-1">
-              <div className="h-2.5 bg-black/20 backdrop-blur-md rounded-full overflow-hidden p-0.5 border border-white/10">
+            <div className="space-y-2 pt-2">
+              <div className="h-3 bg-black/40 backdrop-blur-md rounded-full overflow-hidden p-0.5 border border-white/10 shadow-inner">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-amber-300 via-violet-300 to-emerald-300 transition-all duration-700 shadow-[0_0_10px_rgba(255,255,255,0.6)]"
+                  className="h-full rounded-full bg-gradient-to-r from-amber-400 via-violet-400 to-emerald-400 transition-all duration-700 shadow-[0_0_12px_rgba(255,255,255,0.8)]"
                   style={{ width: `${annualProgress}%` }}
                 />
               </div>
-              <p className="text-[10px] text-violet-200 font-medium">
+              <p className="text-[10px] text-violet-200 font-semibold tracking-wide">
                 {annualProgress >= 100 ? '🎉 พิชิตเป้าหมายรายปีแล้ว!' : `ขาดอีก ${formatCurrency(Math.max(0, annualTarget - totalYearlySales))} เพื่อบรรลุเป้าปี`}
               </p>
             </div>
@@ -237,66 +239,72 @@ export default function SalesTrackingPage() {
         </div>
 
         {/* Current Month Live Pipeline */}
-        <div className="p-6 rounded-3xl bg-white/80 backdrop-blur-md border border-emerald-200/80 shadow-[0_8px_30px_rgba(16,185,129,0.06)] hover:border-emerald-300 flex flex-col justify-between relative overflow-hidden group hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-          <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-emerald-400/10 pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+        <div className="p-6 rounded-3xl bg-white/40 backdrop-blur-xl border border-emerald-300/60 shadow-[0_8px_30px_rgba(16,185,129,0.15)] hover:border-emerald-400 flex flex-col justify-between relative overflow-hidden group hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 ring-1 ring-inset ring-emerald-500/10">
+          <div className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full bg-emerald-400/20 blur-[40px] pointer-events-none group-hover:scale-125 transition-transform duration-700" />
+          <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-teal-400/10 blur-[30px] pointer-events-none" />
+          
           <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md shadow-emerald-500/20">
-                <Zap size={18} />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+                <Zap size={20} className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)]" />
               </div>
               <div>
-                <p className="text-[10px] font-black tracking-widest text-emerald-700 uppercase">ยอดปิดได้เดือนนี้</p>
-                <p className="text-[10px] text-slate-400 font-medium">{MONTHS[currentMonth - 1].full}</p>
+                <p className="text-[10px] font-black tracking-widest text-emerald-800 uppercase">ยอดปิดได้เดือนนี้</p>
+                <p className="text-[10px] text-slate-500 font-bold">{MONTHS[currentMonth - 1].full}</p>
               </div>
             </div>
-            <span className="text-xs font-black px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
+            <span className="text-xs font-black px-3 py-1.5 rounded-full bg-emerald-100/80 backdrop-blur-sm text-emerald-800 border border-emerald-300 shadow-sm shadow-emerald-500/20">
               {currentMonthProgress}% เป้าเดือน
             </span>
           </div>
 
-          <div className="mt-4 relative z-10">
-            <h3 className="text-2xl lg:text-3xl font-black text-slate-900 tabular-nums tracking-tight leading-none">
+          <div className="mt-6 relative z-10">
+            <h3 className="text-3xl lg:text-4xl font-black text-slate-900 tabular-nums tracking-tight leading-none drop-shadow-sm">
               {formatCurrency(currentMonthPipelineSales)}
             </h3>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-3 mt-3 bg-white/50 w-fit px-3 py-1.5 rounded-xl border border-white/60">
               {momGrowth !== null && (
-                <span className={cn('text-xs font-extrabold flex items-center gap-0.5 px-2 py-0.5 rounded-full',
-                  momGrowth >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                <span className={cn('text-xs font-extrabold flex items-center gap-0.5 px-2 py-0.5 rounded-lg shadow-sm',
+                  momGrowth >= 0 ? 'bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-700' : 'bg-gradient-to-r from-rose-100 to-rose-50 text-rose-700'
                 )}>
-                  {momGrowth >= 0 ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
+                  {momGrowth >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                   {momGrowth > 0 ? `+${momGrowth}%` : `${momGrowth}%`} MoM
                 </span>
               )}
-              <span className="text-xs text-slate-400 font-medium">เป้าเดือน {formatCurrency(monthlyTarget)}</span>
+              <span className="text-xs text-slate-500 font-bold">เป้าเดือน {formatCurrency(monthlyTarget)}</span>
             </div>
           </div>
         </div>
 
         {/* Forecast / Quarter Summary Highlight */}
-        <div className="p-6 rounded-3xl bg-white/80 backdrop-blur-md border border-violet-200/80 shadow-[0_8px_30px_rgba(139,92,246,0.06)] hover:border-violet-300 flex flex-col justify-between relative overflow-hidden group hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-          <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-violet-400/10 pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+        <div className="p-6 rounded-3xl bg-white/40 backdrop-blur-xl border border-violet-300/60 shadow-[0_8px_30px_rgba(139,92,246,0.15)] hover:border-violet-400 flex flex-col justify-between relative overflow-hidden group hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 ring-1 ring-inset ring-violet-500/10">
+          <div className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full bg-violet-400/20 blur-[40px] pointer-events-none group-hover:scale-125 transition-transform duration-700" />
+          <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-fuchsia-400/10 blur-[30px] pointer-events-none" />
+          
           <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-violet-500/20">
-                <Target size={18} />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-600 text-white flex items-center justify-center shadow-[0_0_15px_rgba(139,92,246,0.4)]">
+                <Target size={20} className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)]" />
               </div>
               <div>
-                <p className="text-[10px] font-black tracking-widest text-violet-700 uppercase">เป้าหมายเฉลี่ย</p>
-                <p className="text-[10px] text-slate-400 font-medium">เป้าหมายต่อไตรมาส</p>
+                <p className="text-[10px] font-black tracking-widest text-violet-800 uppercase">เป้าหมายเฉลี่ย</p>
+                <p className="text-[10px] text-slate-500 font-bold">เป้าหมายต่อไตรมาส</p>
               </div>
             </div>
-            <span className="text-xs font-black px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 border border-violet-200">
+            <span className="text-xs font-black px-3 py-1.5 rounded-full bg-violet-100/80 backdrop-blur-sm text-violet-800 border border-violet-300 shadow-sm shadow-violet-500/20">
               Q Target
             </span>
           </div>
 
-          <div className="mt-4 relative z-10">
-            <h3 className="text-2xl lg:text-3xl font-black text-slate-900 tabular-nums tracking-tight leading-none">
+          <div className="mt-6 relative z-10">
+            <h3 className="text-3xl lg:text-4xl font-black text-slate-900 tabular-nums tracking-tight leading-none drop-shadow-sm">
               {formatCurrency(monthlyTarget * 3)}
             </h3>
-            <p className="text-xs text-slate-500 font-medium mt-2">
-              เฉลี่ยเดือนละ {formatCurrency(monthlyTarget)} (เป้าทีม)
-            </p>
+            <div className="flex items-center gap-2 mt-3 bg-white/50 w-fit px-3 py-1.5 rounded-xl border border-white/60">
+              <p className="text-xs text-slate-600 font-bold">
+                เฉลี่ยเดือนละ <span className="text-violet-700 font-black">{formatCurrency(monthlyTarget)}</span>
+              </p>
+            </div>
           </div>
         </div>
       </div>

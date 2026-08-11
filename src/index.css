@@ -532,3 +532,63 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ─── Ultra-Premium Additions ─── */
+.glass-panel-gold {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+.glass-panel-gold::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 20%, rgba(251, 191, 36, 0.15) 50%, transparent 80%);
+  animation: shimmer 3s infinite linear;
+  pointer-events: none;
+}
+
+.glow-card-hover {
+  transition: all 0.5s cubic-bezier(0.16,1,0.3,1);
+}
+.glow-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(139, 92, 246, 0.12), 0 0 0 1px rgba(139, 92, 246, 0.2);
+}
+
+.btn-glow-primary {
+  @apply inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-300;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  color: white;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+.btn-glow-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.5), 0 0 20px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.lux-card {
+  @apply rounded-3xl backdrop-blur-2xl border border-violet-200/50 shadow-[0_12px_40px_rgba(139,92,246,0.06)] hover:shadow-[0_20px_60px_rgba(139,92,246,0.14)] hover:border-violet-300 transition-all duration-500 bg-white/80;
+}
+
+.nav-glow-item {
+  @apply relative flex items-center px-4 py-2 rounded-lg transition-all duration-300 text-violet-700 font-medium;
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.08) 0%, transparent 100%);
+}
+.nav-glow-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #8b5cf6;
+  box-shadow: 0 0 10px 2px rgba(139, 92, 246, 0.6);
+}
+

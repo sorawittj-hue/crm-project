@@ -799,8 +799,11 @@ export default function PipelineBoard({
                       >
                         {/* Top gradient accent line */}
                         <div
-                          className="h-1.5 w-full"
-                          style={{ background: `linear-gradient(90deg, ${stage.dotColor}, ${stage.dotColor}88)` }}
+                          className="h-1.5 w-full relative z-10"
+                          style={{ 
+                            background: `linear-gradient(90deg, ${stage.dotColor}, ${stage.dotColor}88)`,
+                            boxShadow: `0 0 12px 1px ${stage.dotColor}66`
+                          }}
                         />
 
                         {/* Column header */}
@@ -815,9 +818,11 @@ export default function PipelineBoard({
                               </div>
                               <div>
                                 <h3 className="text-sm font-black text-slate-900 leading-tight tracking-tight">{stage.label}</h3>
-                                <p className="text-[11px] font-extrabold tabular-nums leading-none mt-0.5" style={{ color: stage.dotColor }}>
-                                  {formatCurrency(totalValue)}
-                                </p>
+                                <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full bg-white/60 border border-slate-100/50 shadow-sm backdrop-blur-sm">
+                                  <span className="text-[11px] font-extrabold tabular-nums leading-none bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(135deg, ${stage.dotColor}, ${stage.dotColor}99)` }}>
+                                    {formatCurrency(totalValue)}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                             <span
@@ -1052,9 +1057,9 @@ const DealCard = memo(
               opacity: 0.98,
             } : {}}
             className={cn(
-              'group relative rounded-2xl border overflow-hidden bg-white/95 backdrop-blur-sm cursor-grab active:cursor-grabbing touch-none select-none border-l-4',
+              'group relative rounded-2xl border overflow-hidden bg-white/95 backdrop-blur-md cursor-grab active:cursor-grabbing touch-none select-none border-l-4',
               !['won', 'lost'].includes(deal.stage) ? agingBorderColor[agingTier] : 'border-l-slate-300',
-              !isDraggingAny && 'transition-all duration-300 hover:shadow-[0_12px_36px_rgba(139,92,246,0.14)] hover:-translate-y-1 hover:border-violet-300/80',
+              !isDraggingAny && 'transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-violet-300/80',
               isDragging ? 'border-violet-500 ring-4 ring-violet-500/25 shadow-2xl z-50'
                 : isSelected ? 'border-violet-400 ring-2 ring-violet-500/20 shadow-md'
                 : isPinned ? 'border-amber-300 bg-gradient-to-br from-amber-50/30 to-white shadow-sm'
@@ -1074,7 +1079,7 @@ const DealCard = memo(
 
             {/* Main clickable area */}
             <div
-              className="pl-4 pr-10 py-3.5 space-y-3"
+              className="pl-4 pr-10 py-3.5 space-y-3 bg-gradient-to-r from-slate-50 to-violet-50/30"
               role="button"
               tabIndex={0}
               aria-label={`เปิดดีล ${deal.title || deal.company || 'ไม่ระบุชื่อ'}`}
@@ -1103,8 +1108,8 @@ const DealCard = memo(
                   {isHighValue ? '👑' : (deal.company || 'D').charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1 pt-0.5">
-                  <div className="flex items-center gap-1 flex-wrap mb-0.5">
-                    <p className={cn('text-xs font-black truncate leading-tight tracking-tight', isHighValue ? 'text-amber-900' : 'text-slate-900')}>
+                  <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                    <p className={cn('text-sm font-extrabold truncate leading-tight tracking-tight', isHighValue ? 'text-amber-900' : 'text-slate-900')}>
                       {deal.company || 'ไม่ระบุบริษัท'}
                     </p>
                     {isHighValue && (
@@ -1114,14 +1119,18 @@ const DealCard = memo(
                     )}
                     {isPinned && <Star size={10} className="text-amber-500 fill-amber-400 shrink-0" />}
                     {showUrgency && urgencyConfig[urgency] && (
-                      <span className={cn('inline-flex items-center gap-0.5 text-[8px] font-black px-1.5 py-0.5 rounded-full border shrink-0', urgencyConfig[urgency].color)}>
-                        <Clock size={7} className={urgencyConfig[urgency].iconAnim} />
+                      <span className={cn('inline-flex items-center gap-0.5 text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 shadow-sm', urgencyConfig[urgency].color)}>
+                        <Clock size={8} className={urgencyConfig[urgency].iconAnim} />
                         {urgencyConfig[urgency].label}
                       </span>
                     )}
                     {!showUrgency && isStagnant && (
-                      <span className="inline-flex items-center gap-0.5 text-[8px] font-black bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded-full border border-rose-200/80 shrink-0">
-                        <Clock size={7} />{deal.agingDays}ว
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold bg-rose-50/80 text-rose-600 px-2 py-0.5 rounded-full border border-rose-200/80 shrink-0 shadow-sm">
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
+                        </span>
+                        {deal.agingDays}ว
                       </span>
                     )}
                   </div>
@@ -1134,7 +1143,7 @@ const DealCard = memo(
               {/* Value row */}
               <div className="flex items-center justify-between">
                 <span className={cn(
-                  'text-base font-black tabular-nums tracking-tight',
+                  'text-lg font-black tabular-nums tracking-tight drop-shadow-sm',
                   isHighValue ? 'text-amber-700' : 'text-slate-900'
                 )}>
                   {formatCurrency(deal.value)}
