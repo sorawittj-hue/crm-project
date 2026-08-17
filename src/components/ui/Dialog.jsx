@@ -72,7 +72,7 @@ const Dialog = ({ open, onOpenChange, children, className }) => {
             {children}
             <button
               onClick={() => onOpenChange?.(false)}
-              className="absolute right-4 top-4 w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-violet-300 z-10"
+              className="absolute right-4 top-4 w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-violet-300 z-10"
               aria-label="ปิด"
             >
               <X className="h-4 w-4" />
@@ -90,11 +90,11 @@ const DialogHeader = ({ className, ...props }) => (
 )
 
 const DialogTitle = ({ className, ...props }) => (
-  <h2 className={cn("text-xl font-black tracking-tight text-slate-900", className)} {...props} />
+  <h2 className={cn("text-xl font-black tracking-tight text-slate-900 dark:text-white", className)} {...props} />
 )
 
 const DialogDescription = ({ className, ...props }) => (
-  <p className={cn("text-sm text-slate-500 font-medium leading-relaxed", className)} {...props} />
+  <p className={cn("text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed", className)} {...props} />
 )
 
 const DialogFooter = ({ className, ...props }) => (
@@ -104,8 +104,8 @@ const DialogFooter = ({ className, ...props }) => (
 const DialogContent = ({ className, children, ...props }) => (
   <div
     className={cn(
-      "relative w-full bg-white/95 backdrop-blur-xl rounded-2xl border border-slate-200/70",
-      "shadow-[0_24px_64px_rgba(15,23,42,0.18),0_8px_24px_rgba(79,70,229,0.08)]",
+      "relative w-full bg-white/95 dark:bg-[#0f111a]/95 backdrop-blur-xl rounded-2xl border border-slate-200/70 dark:border-white/10",
+      "shadow-[0_24px_64px_rgba(15,23,42,0.18),0_8px_24px_rgba(79,70,229,0.08)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.5)]",
       "p-6",
       className
     )}

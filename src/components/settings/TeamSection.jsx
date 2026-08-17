@@ -9,7 +9,6 @@ import { Plus, Check, X, Pencil, Trash2, Users, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTeam, useAddTeamMember, useUpdateTeamMember, useDeleteTeamMember } from '../../hooks/useTeam';
 import ConfirmDialog from '../ui/ConfirmDialog';
-
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -83,15 +82,15 @@ export function TeamSection() {
 
   return (
     <div className="space-y-4">
-      <Card className="p-8 rounded-[2rem] bg-white/60 backdrop-blur-3xl border border-white shadow-xl shadow-slate-200/50 relative overflow-hidden">
+      <Card className="p-8 rounded-[2rem] bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
         <div className="flex items-center justify-between mb-8 relative z-10">
           <div>
-            <h2 className="text-xl font-black text-slate-900 tracking-tight relative z-10 flex items-center gap-2">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight relative z-10 flex items-center gap-2">
               ทีมงาน
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-violet-100 text-violet-700">{teamMembers.length} คน</span>
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300">{teamMembers.length} คน</span>
             </h2>
-            <p className="text-sm font-medium text-slate-500 mt-1 relative z-10">จัดการสมาชิกและเป้าหมายรายบุคคล</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1 relative z-10">จัดการสมาชิกและเป้าหมายรายบุคคล</p>
           </div>
           <Button
             onClick={() => {
@@ -102,17 +101,17 @@ export function TeamSection() {
                 setNewMember(EMPTY_MEMBER);
               }
             }}
-            className="h-9 px-4 rounded-xl text-xs bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20 font-bold flex items-center gap-1.5"
+            className="h-9 px-4 rounded-xl text-xs bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20 font-bold flex items-center gap-1.5 cursor-pointer"
           >
             <Plus size={13} className="mr-1.5" /> เพิ่มสมาชิก
           </Button>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3 relative z-10">
           {teamMembers.map((m) => (
             <div
               key={m.id}
-              className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-gradient-to-r hover:from-violet-50/40 hover:to-white hover:border-violet-100 hover:shadow-sm transition-all group"
+              className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] hover:bg-gradient-to-r hover:from-violet-50/40 hover:to-white dark:hover:from-white/[0.06] dark:hover:to-white/[0.04] hover:border-violet-100 dark:hover:border-violet-500/20 hover:shadow-sm transition-all group"
             >
               {editingMemberId === m.id ? (
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -120,26 +119,26 @@ export function TeamSection() {
                     placeholder="ชื่อ"
                     value={editMemberForm.name ?? m.name}
                     onChange={(e) => setEditMemberForm({ ...editMemberForm, name: e.target.value })}
-                    className="h-9 rounded-xl border-slate-200 bg-white text-sm"
+                    className="h-9 rounded-xl border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] text-slate-900 dark:text-white text-sm"
                   />
                   <Input
                     placeholder="ตำแหน่ง"
                     value={editMemberForm.role ?? m.role}
                     onChange={(e) => setEditMemberForm({ ...editMemberForm, role: e.target.value })}
-                    className="h-9 rounded-xl border-slate-200 bg-white text-sm"
+                    className="h-9 rounded-xl border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] text-slate-900 dark:text-white text-sm"
                   />
                   <Input
                     type="number"
                     placeholder="เป้าหมาย (บาท)"
                     value={editMemberForm.goal ?? m.goal}
                     onChange={(e) => setEditMemberForm({ ...editMemberForm, goal: e.target.value })}
-                    className="h-9 rounded-xl border-slate-200 bg-white text-sm"
+                    className="h-9 rounded-xl border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] text-slate-900 dark:text-white text-sm"
                   />
                   <div className="flex gap-2">
                     <select
                       value={editMemberForm.color ?? m.color}
                       onChange={(e) => setEditMemberForm({ ...editMemberForm, color: e.target.value })}
-                      className="flex-1 h-9 rounded-xl border border-slate-200 bg-white px-2 text-xs outline-none"
+                      className="flex-1 h-9 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] text-slate-900 dark:text-white px-2 text-xs outline-none cursor-pointer"
                     >
                       {MEMBER_COLORS.map((c) => (
                         <option key={c.value} value={c.value}>{c.label}</option>
@@ -147,13 +146,13 @@ export function TeamSection() {
                     </select>
                     <button
                       onClick={() => handleUpdateMember(m.id)}
-                      className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600"
+                      className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 cursor-pointer"
                     >
                       <Check size={14} />
                     </button>
                     <button
                       onClick={() => setEditingMemberId(null)}
-                      className="w-9 h-9 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-300"
+                      className="w-9 h-9 rounded-xl bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-300 dark:hover:bg-white/20 cursor-pointer"
                     >
                       <X size={14} />
                     </button>
@@ -162,15 +161,15 @@ export function TeamSection() {
               ) : (
                 <>
                   <div className={cn('p-0.5 rounded-xl shrink-0', m.color ? m.color.replace('bg-', 'bg-gradient-to-br from-').concat('/80 to-', m.color.replace('bg-', '')) : 'bg-gradient-to-br from-violet-500 to-violet-700')}>
-                    <div className={cn('w-10 h-10 rounded-[10px] flex items-center justify-center text-white font-bold text-base', m.color || 'bg-violet-600')}>
+                    <div className={cn('w-10 h-10 rounded-[10px] flex items-center justify-center text-white font-bold text-base border border-white/20', m.color || 'bg-violet-600')}>
                       {m.name.charAt(0)}
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-900">{m.name}</p>
-                    <p className="text-xs text-slate-400">{m.role}</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{m.name}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">{m.role}</p>
                   </div>
-                  <p className="text-sm font-bold text-slate-700 tabular-nums hidden sm:block">
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300 tabular-nums hidden sm:block">
                     {formatFullCurrency(m.goal)}
                   </p>
                   <div className="flex gap-1.5 shrink-0">
@@ -183,7 +182,7 @@ export function TeamSection() {
                           setEditMemberForm({ name: m.name, role: m.role, goal: m.goal, color: m.color });
                         }
                       }}
-                      className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-violet-600 hover:border-violet-300 transition-all"
+                      className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-300 dark:hover:border-violet-500/40 transition-all cursor-pointer"
                     >
                       <Pencil size={13} />
                     </button>
@@ -195,7 +194,7 @@ export function TeamSection() {
                           setConfirmDeleteMember({ open: true, id: m.id, name: m.name });
                         }
                       }}
-                      className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 transition-all"
+                      className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-800/40 transition-all cursor-pointer"
                     >
                       <Trash2 size={13} />
                     </button>
@@ -207,11 +206,11 @@ export function TeamSection() {
 
           {teamMembers.length === 0 && (
             <div className="text-center py-14">
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-100 flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20 border border-violet-100 dark:border-white/10 flex items-center justify-center mx-auto mb-4">
                 <Users size={32} className="text-violet-400" />
               </div>
-              <p className="text-sm font-bold text-slate-600">ยังไม่มีสมาชิกในทีม</p>
-              <p className="text-xs text-slate-400 mt-1">กดปุ่ม &ldquo;เพิ่มสมาชิก&rdquo; เพื่อเริ่มสร้างทีมขาย</p>
+              <p className="text-sm font-bold text-slate-600 dark:text-slate-300">ยังไม่มีสมาชิกในทีม</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">กดปุ่ม &ldquo;เพิ่มสมาชิก&rdquo; เพื่อเริ่มสร้างทีมขาย</p>
             </div>
           )}
         </div>
@@ -225,41 +224,41 @@ export function TeamSection() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
           >
-            <Card className="p-6 rounded-2xl bg-white border border-violet-200 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-800 mb-4">เพิ่มสมาชิกใหม่</h3>
+            <Card className="p-6 rounded-2xl bg-white dark:bg-[#0f111a] border border-violet-200 dark:border-violet-500/30 shadow-sm">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-4">เพิ่มสมาชิกใหม่</h3>
               <form onSubmit={handleAddMember} className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500">ชื่อ *</label>
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">ชื่อ *</label>
                     <Input
                       required
                       placeholder="เช่น คุณสมชาย"
                       value={newMember.name}
                       onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
-                      className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
+                      className="h-10 rounded-xl border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#171926] text-slate-900 dark:text-white text-sm"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500">ตำแหน่ง</label>
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">ตำแหน่ง</label>
                     <Input
                       placeholder="เช่น นักขาย"
                       value={newMember.role}
                       onChange={(e) => setNewMember({ ...newMember, role: e.target.value })}
-                      className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
+                      className="h-10 rounded-xl border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#171926] text-slate-900 dark:text-white text-sm"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500">เป้าหมาย (บาท/เดือน)</label>
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">เป้าหมาย (บาท/เดือน)</label>
                     <Input
                       type="number"
                       placeholder="0"
                       value={newMember.goal}
                       onChange={(e) => setNewMember({ ...newMember, goal: e.target.value })}
-                      className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm"
+                      className="h-10 rounded-xl border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#171926] text-slate-900 dark:text-white text-sm"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500">สี</label>
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">สี</label>
                     <div className="flex gap-2 flex-wrap">
                       {MEMBER_COLORS.map((c) => (
                         <button
@@ -267,9 +266,9 @@ export function TeamSection() {
                           type="button"
                           onClick={() => setNewMember({ ...newMember, color: c.value })}
                           className={cn(
-                            'w-7 h-7 rounded-lg transition-all',
+                            'w-7 h-7 rounded-lg transition-all cursor-pointer',
                             c.value,
-                            newMember.color === c.value ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'opacity-60 hover:opacity-100'
+                            newMember.color === c.value ? 'ring-2 ring-offset-2 ring-violet-400 scale-110' : 'opacity-60 hover:opacity-100'
                           )}
                         />
                       ))}
@@ -281,14 +280,14 @@ export function TeamSection() {
                     type="button"
                     variant="ghost"
                     onClick={() => setAddingMember(false)}
-                    className="flex-1 h-10 rounded-xl text-slate-500 text-sm"
+                    className="flex-1 h-10 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 text-sm cursor-pointer"
                   >
                     ยกเลิก
                   </Button>
                   <Button
                     type="submit"
                     disabled={addMember.isPending}
-                    className="flex-[2] h-10 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold border-0 shadow-md shadow-violet-500/20 flex items-center justify-center gap-2"
+                    className="flex-[2] h-10 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold border-0 shadow-md shadow-violet-500/20 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {addMember.isPending && <Loader2 size={13} className="animate-spin" />}
                     <Plus size={13} /> เพิ่มสมาชิก

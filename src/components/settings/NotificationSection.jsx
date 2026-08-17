@@ -78,7 +78,6 @@ export function NotificationSection() {
     } catch (e) {
       console.error('Failed to load notification settings:', e);
     }
-
   }, []);
 
   // Save settings helper
@@ -154,22 +153,22 @@ export function NotificationSection() {
   };
 
   const CATEGORY_ITEMS = [
-    { id: 'deal_at_risk', label: 'ดีลวิกฤต/เสี่ยงหลุด', desc: 'เตือนเมื่อดีลที่กำลังเจรจาไม่มีความเคลื่อนไหวเกิน 3, 5 หรือ 7 วัน', icon: ShieldAlert, color: 'text-rose-500 bg-rose-50' },
-    { id: 'deal_closing_overdue', label: 'ดีลเลยกำหนดปิด', desc: 'เตือนเมื่อวันปิดดีลที่คาดไว้ได้ผ่านพ้นไปแล้ว', icon: Clock, color: 'text-red-500 bg-red-50' },
-    { id: 'follow_up_overdue', label: 'นัดหมายติดตาม', desc: 'เตือนเมื่อถึงกำหนดนัด หรือมีกิจกรรมการนัดหมายเลยกำหนดส่ง', icon: CalendarClock, color: 'text-amber-500 bg-amber-50' },
-    { id: 'deal_closing_soon', label: 'ดีลใกล้ครบกำหนดปิด', desc: 'เตือนล่วงหน้า 3-7 วันก่อนถึงกำหนดวันคาดว่าจะปิดดีล', icon: Briefcase, color: 'text-violet-500 bg-violet-50' },
-    { id: 'monthly_goal_at_risk', label: 'ยอดขายเฉลี่ยต่ำกว่าเป้า', desc: 'แจ้งเตือนเมื่อเป้ายอดขายรายเดือนของคุณเสี่ยงจะไม่ตรงตามเป้าหมาย', icon: BarChart2, color: 'text-blue-500 bg-blue-50' },
-    { id: 'deal_stale', label: 'ดีลหยุดนิ่งทั่วไป', desc: 'เตือนดีลขั้นตอนอื่นๆ ที่ไม่มีการขยับขยายตามจำนวนวันที่ระบุ', icon: Clock, color: 'text-slate-500 bg-slate-50' },
+    { id: 'deal_at_risk', label: 'ดีลวิกฤต/เสี่ยงหลุด', desc: 'เตือนเมื่อดีลที่กำลังเจรจาไม่มีความเคลื่อนไหวเกิน 3, 5 หรือ 7 วัน', icon: ShieldAlert, color: 'text-rose-500 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-400' },
+    { id: 'deal_closing_overdue', label: 'ดีลเลยกำหนดปิด', desc: 'เตือนเมื่อวันปิดดีลที่คาดไว้ได้ผ่านพ้นไปแล้ว', icon: Clock, color: 'text-red-500 bg-red-50 dark:bg-red-950/40 dark:text-red-400' },
+    { id: 'follow_up_overdue', label: 'นัดหมายติดตาม', desc: 'เตือนเมื่อถึงกำหนดนัด หรือมีกิจกรรมการนัดหมายเลยกำหนดส่ง', icon: CalendarClock, color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-400' },
+    { id: 'deal_closing_soon', label: 'ดีลใกล้ครบกำหนดปิด', desc: 'เตือนล่วงหน้า 3-7 วันก่อนถึงกำหนดวันคาดว่าจะปิดดีล', icon: Briefcase, color: 'text-violet-500 bg-violet-50 dark:bg-violet-950/40 dark:text-violet-400' },
+    { id: 'monthly_goal_at_risk', label: 'ยอดขายเฉลี่ยต่ำกว่าเป้า', desc: 'แจ้งเตือนเมื่อเป้ายอดขายรายเดือนของคุณเสี่ยงจะไม่ตรงตามเป้าหมาย', icon: BarChart2, color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/40 dark:text-blue-400' },
+    { id: 'deal_stale', label: 'ดีลหยุดนิ่งทั่วไป', desc: 'เตือนดีลขั้นตอนอื่นๆ ที่ไม่มีการขยับขยายตามจำนวนวันที่ระบุ', icon: Clock, color: 'text-slate-500 bg-slate-50 dark:bg-white/10 dark:text-slate-400' },
   ];
 
   return (
-    <Card className="p-8 rounded-[2rem] bg-white/60 backdrop-blur-3xl border border-white shadow-xl shadow-slate-200/50 relative overflow-hidden">
+    <Card className="p-8 rounded-[2rem] bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
       
       <div className="flex items-center justify-between mb-8 relative z-10">
         <div>
-          <h2 className="text-xl font-black text-slate-900 tracking-tight">ตั้งค่าการแจ้งเตือน (Notification Settings)</h2>
-          <p className="text-sm font-medium text-slate-500 mt-1">ตั้งค่าช่องทางการรับข่าวสาร เสียง และตัวกรองอัจฉริยะ</p>
+          <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">ตั้งค่าการแจ้งเตือน (Notification Settings)</h2>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">ตั้งค่าช่องทางการรับข่าวสาร เสียง และตัวกรองอัจฉริยะ</p>
         </div>
       </div>
 
@@ -177,20 +176,20 @@ export function NotificationSection() {
         {/* Sound & Browser Permissions Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Sound Card */}
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-violet-50/20 border border-slate-100/80 flex items-center justify-between transition-all hover:shadow-sm">
+          <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-violet-50/20 dark:from-white/[0.04] dark:to-violet-950/20 border border-slate-100/80 dark:border-white/10 flex items-center justify-between transition-all hover:shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/50 text-violet-600 dark:text-violet-300 flex items-center justify-center">
                 <Volume2 size={20} />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-800">เสียงแจ้งเตือน (Chime)</p>
-                <p className="text-[11px] text-slate-400 font-medium">เล่นเสียงกระดิ่งเบาๆ เมื่อมีแจ้งเตือนใหม่เข้า</p>
+                <p className="text-sm font-bold text-slate-800 dark:text-white">เสียงแจ้งเตือน (Chime)</p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">เล่นเสียงกระดิ่งเบาๆ เมื่อมีแจ้งเตือนใหม่เข้า</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <button 
                 onClick={playNotificationChime} 
-                className="p-2 hover:bg-slate-200/60 text-slate-400 hover:text-slate-700 rounded-xl transition-all"
+                className="p-2 hover:bg-slate-200/60 dark:hover:bg-white/10 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl transition-all cursor-pointer"
                 title="ทดสอบเสียงกระดิ่ง"
               >
                 <Play size={14} className="fill-current" />
@@ -199,7 +198,7 @@ export function NotificationSection() {
                 onClick={handleToggleSound}
                 className={cn(
                   "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                  settings.soundEnabled ? "bg-violet-600" : "bg-slate-200"
+                  settings.soundEnabled ? "bg-violet-600" : "bg-slate-200 dark:bg-white/20"
                 )}
               >
                 <span
@@ -213,21 +212,21 @@ export function NotificationSection() {
           </div>
 
           {/* Desktop Push Card */}
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-blue-50/20 border border-slate-100/80 flex items-center justify-between transition-all hover:shadow-sm">
+          <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-blue-50/20 dark:from-white/[0.04] dark:to-blue-950/20 border border-slate-100/80 dark:border-white/10 flex items-center justify-between transition-all hover:shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-300 flex items-center justify-center">
                 <Bell size={20} />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-800">การแจ้งเตือนบนเบราว์เซอร์</p>
-                <p className="text-[11px] text-slate-400 font-medium">ส่งข้อความข้ามหน้าจอ (Push) เมื่อแท็บอยู่ด้านหลัง</p>
+                <p className="text-sm font-bold text-slate-800 dark:text-white">การแจ้งเตือนบนเบราว์เซอร์</p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">ส่งข้อความข้ามหน้าจอ (Push) เมื่อแท็บอยู่ด้านหลัง</p>
               </div>
             </div>
             <button
               onClick={handleToggleDesktop}
               className={cn(
                 "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                settings.desktopEnabled ? "bg-blue-600" : "bg-slate-200"
+                settings.desktopEnabled ? "bg-blue-600" : "bg-slate-200 dark:bg-white/20"
               )}
             >
               <span
@@ -242,7 +241,7 @@ export function NotificationSection() {
 
         {/* Categories Section */}
         <div className="space-y-3 pt-2">
-          <h3 className="text-sm font-bold text-slate-700 tracking-tight">เลือกเปิด/ปิด แต่ละประเภทการแจ้งเตือน</h3>
+          <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 tracking-tight">เลือกเปิด/ปิด แต่ละประเภทการแจ้งเตือน</h3>
           
           <div className="space-y-2">
             {CATEGORY_ITEMS.map((cat) => {
@@ -254,8 +253,8 @@ export function NotificationSection() {
                   className={cn(
                     "flex items-start justify-between p-4 rounded-2xl border transition-all duration-300",
                     isEnabled 
-                      ? "bg-white border-slate-100 hover:border-violet-100 hover:shadow-sm" 
-                      : "bg-slate-50/50 border-slate-100 opacity-60"
+                      ? "bg-white dark:bg-[#171926] border-slate-100 dark:border-white/10 hover:border-violet-100 dark:hover:border-violet-500/30 hover:shadow-sm" 
+                      : "bg-slate-50/50 dark:bg-white/[0.02] border-slate-100 dark:border-white/[0.06] opacity-60"
                   )}
                 >
                   <div className="flex gap-4">
@@ -263,15 +262,15 @@ export function NotificationSection() {
                       <Icon size={18} />
                     </div>
                     <div className="space-y-0.5">
-                      <p className="text-sm font-bold text-slate-800">{cat.label}</p>
-                      <p className="text-xs text-slate-400 leading-normal">{cat.desc}</p>
+                      <p className="text-sm font-bold text-slate-800 dark:text-white">{cat.label}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">{cat.desc}</p>
                     </div>
                   </div>
                   <button
                     onClick={() => handleToggleCategory(cat.id)}
                     className={cn(
                       "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                      isEnabled ? "bg-violet-600" : "bg-slate-200"
+                      isEnabled ? "bg-violet-600" : "bg-slate-200 dark:bg-white/20"
                     )}
                   >
                     <span
@@ -288,12 +287,12 @@ export function NotificationSection() {
         </div>
 
         {/* Custom Days Threshold Config */}
-        <div className="p-5 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex gap-3">
-            <Info size={16} className="text-slate-400 mt-0.5 shrink-0" />
+            <Info size={16} className="text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
             <div className="space-y-0.5">
-              <p className="text-xs font-bold text-slate-700">เกณฑ์ประเมินดีลไม่มีความเคลื่อนไหว (Stale Threshold)</p>
-              <p className="text-[11px] text-slate-400">ระบุจำนวนวันที่ดีลไม่มีบันทึกหรือความขยับขยาย ก่อนแจ้งเป็นดีลหยุดนิ่ง</p>
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-200">เกณฑ์ประเมินดีลไม่มีความเคลื่อนไหว (Stale Threshold)</p>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500">ระบุจำนวนวันที่ดีลไม่มีบันทึกหรือความขยับขยาย ก่อนแจ้งเป็นดีลหยุดนิ่ง</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -303,9 +302,9 @@ export function NotificationSection() {
               max={90}
               value={settings.staleDaysThreshold}
               onChange={(e) => handleThresholdChange(e.target.value)}
-              className="w-16 h-10 text-center font-bold text-slate-800 rounded-xl border border-slate-200 bg-white focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all outline-none"
+              className="w-16 h-10 text-center font-bold text-slate-800 dark:text-white rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] focus:border-violet-400 focus:ring-2 focus:ring-violet-100 dark:focus:ring-violet-900/30 transition-all outline-none"
             />
-            <span className="text-xs font-bold text-slate-500">วัน</span>
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">วัน</span>
           </div>
         </div>
       </div>

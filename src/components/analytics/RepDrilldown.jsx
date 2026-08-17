@@ -1,17 +1,17 @@
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trophy, Target, TrendingUp, Briefcase, DollarSign } from 'lucide-react';
+import { X, Trophy, Target, TrendingUp, DollarSign } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { formatCurrency } from '../../lib/formatters';
 import { STAGE_LABELS } from '../../lib/constants';
 
 const STAGE_COLOR = {
-  lead: 'bg-slate-100 text-slate-700',
-  contact: 'bg-amber-100 text-amber-700',
-  proposal: 'bg-sky-100 text-sky-700',
-  negotiation: 'bg-violet-100 text-violet-700',
-  won: 'bg-emerald-100 text-emerald-700',
-  lost: 'bg-rose-100 text-rose-700',
+  lead: 'bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-300',
+  contact: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
+  proposal: 'bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300',
+  negotiation: 'bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300',
+  won: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
+  lost: 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300',
 };
 
 export default function RepDrilldown({ member, deals = [], monthlyTarget = 0, onClose }) {
@@ -41,7 +41,7 @@ export default function RepDrilldown({ member, deals = [], monthlyTarget = 0, on
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       >
         <motion.div
@@ -49,15 +49,15 @@ export default function RepDrilldown({ member, deals = [], monthlyTarget = 0, on
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-          className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-slate-200/80 w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
+          className="bg-white/95 dark:bg-[#0f111a]/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-slate-200/80 dark:border-white/10 w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="relative p-6 border-b border-slate-100 bg-gradient-to-r from-violet-600 to-indigo-700">
+          <div className="relative p-6 border-b border-slate-100 dark:border-white/10 bg-gradient-to-r from-violet-600 to-indigo-700">
             <div className="absolute inset-0 bg-gradient-to-br from-violet-600/90 to-indigo-800/90" />
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 z-10 w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+              className="absolute top-4 right-4 z-10 w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-colors cursor-pointer"
             >
               <X size={16} />
             </button>
@@ -74,36 +74,36 @@ export default function RepDrilldown({ member, deals = [], monthlyTarget = 0, on
           </div>
 
           {/* KPI Cards */}
-          <div className="p-6 grid grid-cols-2 sm:grid-cols-4 gap-3 border-b border-slate-100">
+          <div className="p-6 grid grid-cols-2 sm:grid-cols-4 gap-3 border-b border-slate-100 dark:border-white/10">
             {[
-              { label: 'Won Value', value: formatCurrency(stats.wonValue), icon: Trophy, color: 'text-emerald-600 bg-emerald-50' },
-              { label: 'Win Rate', value: `${stats.winRate}%`, icon: Target, color: 'text-violet-600 bg-violet-50' },
-              { label: 'Avg Deal Size', value: formatCurrency(stats.avgDealSize), icon: DollarSign, color: 'text-blue-600 bg-blue-50' },
-              { label: 'Goal %', value: `${stats.goalPct}%`, icon: TrendingUp, color: stats.goalPct >= 100 ? 'text-emerald-600 bg-emerald-50' : 'text-amber-600 bg-amber-50' },
+              { label: 'Won Value', value: formatCurrency(stats.wonValue), icon: Trophy, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40' },
+              { label: 'Win Rate', value: `${stats.winRate}%`, icon: Target, color: 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/40' },
+              { label: 'Avg Deal Size', value: formatCurrency(stats.avgDealSize), icon: DollarSign, color: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40' },
+              { label: 'Goal %', value: `${stats.goalPct}%`, icon: TrendingUp, color: stats.goalPct >= 100 ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40' : 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40' },
             ].map(({ label, value, icon: Icon, color }) => (
-              <div key={label} className="bg-slate-50/80 rounded-2xl p-3">
+              <div key={label} className="bg-slate-50/80 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/[0.06] rounded-2xl p-3">
                 <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center mb-2', color)}>
                   <Icon size={14} />
                 </div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-wide">{label}</p>
-                <p className="text-lg font-black text-slate-900 leading-tight">{value}</p>
+                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide">{label}</p>
+                <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{value}</p>
               </div>
             ))}
           </div>
 
           {/* Deals List */}
           <div className="flex-1 overflow-y-auto p-6">
-            <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">ดีลทั้งหมด ({stats.repDeals.length})</p>
+            <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">ดีลทั้งหมด ({stats.repDeals.length})</p>
             <div className="space-y-2">
               {stats.repDeals.slice(0, 20).map(deal => (
-                <div key={deal.id} className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/80 hover:bg-slate-100/80 transition-colors">
+                <div key={deal.id} className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/80 dark:bg-white/[0.03] hover:bg-slate-100/80 dark:hover:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.06] transition-colors">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-slate-800 truncate">{deal.title}</p>
+                    <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{deal.title}</p>
                     <p className="text-xs text-slate-400">{deal.company}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-black text-slate-900">{formatCurrency(deal.value)}</p>
-                    <span className={cn('text-[10px] font-black px-2 py-0.5 rounded-full', STAGE_COLOR[deal.stage] || 'bg-slate-100 text-slate-600')}>
+                    <p className="text-sm font-black text-slate-900 dark:text-white">{formatCurrency(deal.value)}</p>
+                    <span className={cn('text-[10px] font-black px-2 py-0.5 rounded-full', STAGE_COLOR[deal.stage] || 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300')}>
                       {STAGE_LABELS?.[deal.stage] || deal.stage}
                     </span>
                   </div>

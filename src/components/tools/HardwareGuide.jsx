@@ -201,10 +201,10 @@ export default function HardwareGuide() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className={cn(
-                "flex-1 md:flex-none flex items-center justify-center gap-3 px-8 h-16 rounded-2xl transition-all duration-300 font-black text-[11px] uppercase tracking-[0.2em] border shadow-sm",
+                "flex-1 md:flex-none flex items-center justify-center gap-3 px-8 h-16 rounded-2xl transition-all duration-300 font-black text-[11px] uppercase tracking-[0.2em] border shadow-sm cursor-pointer",
                 isActive
                   ? `bg-gradient-to-r ${data.gradient} border-transparent text-white shadow-[0_8px_20px_rgba(0,0,0,0.12)] ring-1 ring-white/20`
-                  : "bg-white/80 backdrop-blur-xl border-white/80 text-slate-500 hover:border-slate-300 hover:text-slate-900 hover:shadow-md"
+                  : "bg-white/80 dark:bg-white/[0.06] backdrop-blur-xl border-slate-200/80 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20 hover:text-slate-900 dark:hover:text-white hover:shadow-md"
               )}
             >
               <Icon size={20} strokeWidth={2.5} />
@@ -225,8 +225,8 @@ export default function HardwareGuide() {
               <currentCategoryDb.icon size={26} strokeWidth={2.5} />
             </div>
             <div>
-              <h3 className="text-lg md:text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">{currentCategoryDb.title}</h3>
-              <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">Select Configuration</p>
+              <h3 className="text-lg md:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none">{currentCategoryDb.title}</h3>
+              <p className="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mt-1.5">Select Configuration</p>
             </div>
           </div>
 
@@ -243,27 +243,27 @@ export default function HardwareGuide() {
                   transition={{ delay: idx * 0.05 }}
                   whileHover={{ scale: 1.01, x: 2 }}
                   className={cn(
-                    "w-full text-left p-4 md:p-5 rounded-[1.5rem] border transition-all duration-300 group overflow-hidden relative",
+                    "w-full text-left p-4 md:p-5 rounded-[1.5rem] border transition-all duration-300 group overflow-hidden relative cursor-pointer",
                     isProfileActive
                       ? `bg-gradient-to-br ${currentCategoryDb.bgGradient} ${currentCategoryDb.borderColor} shadow-[0_8px_30px_rgb(0,0,0,0.06)]`
-                      : "bg-white/70 backdrop-blur-xl border-white/80 hover:border-slate-200 hover:shadow-md shadow-sm"
+                      : "bg-white/70 dark:bg-white/[0.04] backdrop-blur-xl border-slate-200/80 dark:border-white/[0.06] hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md shadow-sm"
                   )}
                 >
                   {isProfileActive && (
-                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-[shimmer_2s_infinite] skew-x-12" />
+                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent -translate-x-full animate-[shimmer_2s_infinite] skew-x-12" />
                   )}
                   <div className="flex items-start gap-3 md:gap-4 font-inter relative z-10">
                     <div className={cn(
                       "w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center shrink-0 transition-all",
                       isProfileActive
                         ? `bg-gradient-to-br ${currentCategoryDb.gradient} text-white shadow-md`
-                        : "bg-slate-100/80 text-slate-400 group-hover:bg-slate-200"
+                        : "bg-slate-100/80 dark:bg-white/10 text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-white/15"
                     )}>
                       <ProfileIcon size={20} strokeWidth={2.5} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className={cn("text-[13px] md:text-sm font-black mb-1 leading-snug transition-colors", isProfileActive ? "text-slate-900" : "text-slate-700")}>{profile.label}</h3>
-                      <p className="text-[10px] md:text-xs font-bold text-slate-500 leading-relaxed line-clamp-2 md:line-clamp-none">{profile.desc}</p>
+                      <h3 className={cn("text-[13px] md:text-sm font-black mb-1 leading-snug transition-colors", isProfileActive ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300")}>{profile.label}</h3>
+                      <p className="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2 md:line-clamp-none">{profile.desc}</p>
                     </div>
                   </div>
                 </motion.button>
@@ -283,17 +283,17 @@ export default function HardwareGuide() {
               transition={{ duration: 0.3 }}
               className="h-full"
             >
-              <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] border border-white/80 p-6 md:p-10 shadow-[0_20px_60px_rgb(0,0,0,0.06)] ring-1 ring-slate-900/5 h-full flex flex-col relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-8 opacity-5">
+              <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-2xl rounded-[2.5rem] border border-slate-200/80 dark:border-white/10 p-6 md:p-10 shadow-[0_20px_60px_rgb(0,0,0,0.06)] ring-1 ring-slate-900/5 dark:ring-white/5 h-full flex flex-col relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-5 dark:opacity-10 pointer-events-none">
                   <currentProfile.icon size={120} />
                 </div>
                 
                 <div className="relative z-10">
-                  <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 md:mb-3 flex items-center gap-2">
+                  <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2 md:mb-3 flex items-center gap-2">
                     <span className={cn("w-2 h-2 rounded-full bg-gradient-to-br", currentCategoryDb.gradient)} />
                     Recommended Specs 2026
                   </h4>
-                  <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-none mb-6 md:mb-8">{currentProfile.label}</h2>
+                  <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-none mb-6 md:mb-8">{currentProfile.label}</h2>
 
                   {/* Specs List */}
                   <div className="space-y-3 md:space-y-4 flex-1">
@@ -303,12 +303,12 @@ export default function HardwareGuide() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.1 }}
                         key={specKey} 
-                        className="flex flex-col sm:flex-row sm:items-center py-2.5 md:py-3 border-b border-slate-100 last:border-0 group"
+                        className="flex flex-col sm:flex-row sm:items-center py-2.5 md:py-3 border-b border-slate-100 dark:border-white/[0.06] last:border-0 group"
                       >
-                        <span className="text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest sm:w-1/3 mb-1 sm:mb-0 shrink-0">
+                        <span className="text-[10px] md:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest sm:w-1/3 mb-1 sm:mb-0 shrink-0">
                           {specKey.replace('_', ' ')}
                         </span>
-                        <span className="text-xs md:text-sm font-semibold text-slate-800 sm:w-2/3 group-hover:text-slate-900 transition-colors">
+                        <span className="text-xs md:text-sm font-semibold text-slate-800 dark:text-slate-200 sm:w-2/3 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                           {specValue}
                         </span>
                       </motion.div>
@@ -326,21 +326,21 @@ export default function HardwareGuide() {
                         `${currentCategoryDb.bgGradient} ${currentCategoryDb.borderColor}`
                       )}
                     >
-                      <div className="absolute -top-6 -right-6 text-current opacity-[0.05]">
+                      <div className="absolute -top-6 -right-6 text-current opacity-[0.05] pointer-events-none">
                         <Lightbulb size={100} />
                       </div>
                       <div className="flex gap-4 relative z-10">
                         <div className={cn(
-                          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-inner bg-white/60",
+                          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-inner bg-white/60 dark:bg-white/10",
                           `text-${currentCategoryDb.gradient.split(' ')[0].replace('from-', '')}`
                         )}>
                           <Lightbulb size={20} strokeWidth={2.5} />
                         </div>
                         <div>
-                          <h5 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                          <h5 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
                             Pro Tip 💡
                           </h5>
-                          <p className="text-sm font-medium text-slate-700 leading-relaxed">
+                          <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed">
                             {currentProfile.proTip}
                           </p>
                         </div>

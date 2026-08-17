@@ -6,7 +6,6 @@ import { formatFullCurrency } from '../../lib/formatters';
 import { useToast } from '../ui/Toast';
 import { Pencil, Save, Loader2, Target } from 'lucide-react';
 import { useSettings, useUpdateSettings } from '../../hooks/useSettings';
-
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -37,7 +36,7 @@ export function TargetsSection() {
       await updateSettings.mutateAsync({
         monthly_target: Number(targetForm.monthly_target),
       });
-            success('บันทึกเป้าหมายยอดขายสำเร็จ');
+      success('บันทึกเป้าหมายยอดขายสำเร็จ');
       setTargetForm(null);
     } catch (err) {
       error('เกิดข้อผิดพลาดในการบันทึกเป้าหมาย: ' + err.message);
@@ -47,17 +46,17 @@ export function TargetsSection() {
   };
 
   return (
-    <Card className="p-8 rounded-[2rem] bg-white/60 backdrop-blur-3xl border border-white shadow-xl shadow-slate-200/50 space-y-8 relative overflow-hidden">
+    <Card className="p-8 rounded-[2rem] bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
         <div>
-          <h2 className="text-xl font-black text-slate-900 tracking-tight">เป้าหมายยอดขาย</h2>
-          <p className="text-sm font-medium text-slate-500 mt-1">กำหนดเป้าหมายรายเดือนของทีม</p>
+          <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">เป้าหมายยอดขาย</h2>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">กำหนดเป้าหมายรายเดือนของทีม</p>
         </div>
         {!targetForm && (
           <Button
             onClick={initTargetForm}
-            className="h-9 px-4 rounded-xl text-sm bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20"
+            className="h-9 px-4 rounded-xl text-sm bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20 cursor-pointer"
           >
             <Pencil size={13} className="mr-1.5" /> แก้ไข
           </Button>
@@ -66,28 +65,28 @@ export function TargetsSection() {
 
       {!targetForm ? (
         <div className="space-y-4 relative z-10">
-          <div className="flex items-center justify-between p-6 rounded-[1.5rem] bg-gradient-to-r from-violet-50 to-white border border-violet-100 shadow-sm hover:shadow-md transition-all">
+          <div className="flex items-center justify-between p-6 rounded-[1.5rem] bg-gradient-to-r from-violet-50 to-white dark:from-violet-950/30 dark:to-[#171926] border border-violet-100 dark:border-violet-800/40 shadow-sm hover:shadow-md transition-all">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600">
+              <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center text-violet-600 dark:text-violet-300">
                 <Target size={20} />
               </div>
-              <p className="text-sm font-bold text-slate-700">เป้าหมายรวมทีม (ต่อเดือน)</p>
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-200">เป้าหมายรวมทีม (ต่อเดือน)</p>
             </div>
-            <p className="text-2xl font-black tabular-nums tracking-tight text-violet-700">{formatFullCurrency(settings?.monthly_target)}</p>
+            <p className="text-2xl font-black tabular-nums tracking-tight text-violet-700 dark:text-violet-400">{formatFullCurrency(settings?.monthly_target)}</p>
           </div>
-          <p className="text-xs font-medium text-slate-400 px-2">
-            💡 เป้าหมายยอดขายส่วนตัวของแต่ละคน สามารถตั้งค่าแยกได้ที่หน้า <span className="font-bold text-violet-600">บัญชีผู้ใช้</span>
+          <p className="text-xs font-medium text-slate-400 dark:text-slate-500 px-2">
+            💡 เป้าหมายยอดขายส่วนตัวของแต่ละคน สามารถตั้งค่าแยกได้ที่หน้า <span className="font-bold text-violet-600 dark:text-violet-400">บัญชีผู้ใช้</span>
           </p>
         </div>
       ) : (
-        <form onSubmit={handleSaveTargets} className="space-y-4">
+        <form onSubmit={handleSaveTargets} className="space-y-4 relative z-10">
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-500">เป้าหมายรวมทีม (บาท/เดือน)</label>
+            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">เป้าหมายรวมทีม (บาท/เดือน)</label>
             <Input
               type="number"
               value={targetForm.monthly_target}
               onChange={(e) => setTargetForm({ ...targetForm, monthly_target: e.target.value })}
-              className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-bold"
+              className="h-11 rounded-xl border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#171926] text-slate-900 dark:text-white text-sm font-bold"
             />
           </div>
           <div className="flex gap-3 pt-2">
@@ -95,14 +94,14 @@ export function TargetsSection() {
               type="button"
               variant="ghost"
               onClick={() => setTargetForm(null)}
-              className="flex-1 h-10 rounded-xl text-slate-500 text-sm"
+              className="flex-1 h-10 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 text-sm cursor-pointer"
             >
               ยกเลิก
             </Button>
             <Button
               type="submit"
               disabled={savingTargets}
-              className="flex-[2] h-10 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold border-0 shadow-md shadow-violet-500/20 flex items-center justify-center gap-2"
+              className="flex-[2] h-10 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold border-0 shadow-md shadow-violet-500/20 flex items-center justify-center gap-2 cursor-pointer"
             >
               {savingTargets && <Loader2 size={13} className="animate-spin" />}
               <Save size={13} /> บันทึก

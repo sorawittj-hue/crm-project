@@ -5,8 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useMyProfile } from '../hooks/useUserProfiles';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
-import { Target, Users, ListTree, User, Building2, ShieldCheck, Loader2, Sparkles, Settings2, Plug, Crown, Shield, Bell, History, ChevronRight, Plus, Trash2 } from 'lucide-react';
-import { Database } from 'lucide-react';
+import { Target, Users, ListTree, User, Building2, ShieldCheck, Loader2, Sparkles, Settings2, Plug, Crown, Shield, Bell, History, ChevronRight, Plus, Trash2, Database } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
 
 import { TargetsSection } from '../components/settings/TargetsSection';
@@ -94,18 +93,18 @@ export default function SettingsPage() {
 
   if (settingsLoading || teamLoading) return (
     <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
-      <div className="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center">
+      <div className="w-14 h-14 rounded-2xl bg-violet-50 dark:bg-violet-950/40 flex items-center justify-center">
         <Loader2 className="animate-spin text-violet-500" size={26} />
       </div>
-      <p className="text-sm font-semibold text-slate-400">กำลังโหลดการตั้งค่า...</p>
+      <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">กำลังโหลดการตั้งค่า...</p>
     </div>
   );
 
   return (
     <div className="max-w-[1200px] mx-auto pb-20 px-2 sm:px-4 md:px-6 relative ui-enter">
       {/* Ambient glows */}
-      <div className="fixed top-20 left-1/4 w-[500px] h-[500px] bg-violet-600/5 rounded-full blur-[130px] pointer-events-none -z-10" />
-      <div className="fixed bottom-20 right-10 w-80 h-80 bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none -z-10" />
+      <div className="fixed top-20 left-1/4 w-[500px] h-[500px] bg-violet-600/5 dark:bg-violet-600/10 rounded-full blur-[130px] pointer-events-none -z-10" />
+      <div className="fixed bottom-20 right-10 w-80 h-80 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none -z-10" />
 
       {/* HEADER SECTION */}
       <motion.div
@@ -120,28 +119,28 @@ export default function SettingsPage() {
           badge={<Sparkles size={18} className="text-amber-400" />}
           breadcrumb={
             activeItem && (
-              <div className="flex items-center gap-1.5 text-slate-500 text-xs font-semibold">
+              <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs font-semibold">
                 <span>Settings</span>
                 <ChevronRight size={12} />
-                <span className="text-violet-600">{activeItem.label}</span>
+                <span className="text-violet-600 dark:text-violet-400">{activeItem.label}</span>
               </div>
             )
           }
           rightContent={
             <div className="self-start sm:self-center shrink-0">
               {isOwner ? (
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-50 border border-amber-200 text-xs font-black text-amber-700 shadow-sm backdrop-blur-sm">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 text-xs font-black text-amber-700 dark:text-amber-300 shadow-sm backdrop-blur-sm">
                   <Crown size={13} className="text-amber-500 fill-current" />
                   Owner
                 </span>
               ) : isAdmin ? (
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-black text-emerald-700 backdrop-blur-sm">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-xs font-black text-emerald-700 dark:text-emerald-300 backdrop-blur-sm">
                   <Shield size={13} className="text-emerald-500" />
                   Admin
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 border border-violet-100 text-xs font-black text-slate-700 shadow-sm">
-                  <User size={13} className="text-slate-500" />
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 dark:bg-white/10 border border-violet-100 dark:border-white/10 text-xs font-black text-slate-700 dark:text-slate-300 shadow-sm">
+                  <User size={13} className="text-slate-500 dark:text-slate-400" />
                   Member
                 </span>
               )}
@@ -216,7 +215,7 @@ export default function SettingsPage() {
                         </div>
                         <div>
                           <h3 className="font-bold text-slate-900 dark:text-white text-sm">Custom Fields</h3>
-                          <p className="text-xs text-slate-400">เพิ่มข้อมูลพิเศษในดีลของคุณ</p>
+                          <p className="text-xs text-slate-400 dark:text-slate-500">เพิ่มข้อมูลพิเศษในดีลของคุณ</p>
                         </div>
                       </div>
                       <button
@@ -263,7 +262,7 @@ export default function SettingsPage() {
                       <div className="py-8 text-center border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
                         <Database size={20} className="text-slate-300 dark:text-slate-600 mx-auto mb-2" />
                         <p className="text-sm text-slate-400 font-medium">ยังไม่มี Custom Fields</p>
-                        <p className="text-xs text-slate-400/80 mt-1">คลิก "เพิ่ม Field" เพื่อสร้างบันทึก field พิเศษของคุณเอง</p>
+                        <p className="text-xs text-slate-400/80 dark:text-slate-500 mt-1">คลิก "เพิ่ม Field" เพื่อสร้างบันทึก field พิเศษของคุณเอง</p>
                       </div>
                     )}
 
@@ -275,7 +274,7 @@ export default function SettingsPage() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold text-slate-800 dark:text-white">{field.label}</p>
-                            <p className="text-xs text-slate-400">{field.key} · {field.type}</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-500">{field.key} · {field.type}</p>
                           </div>
                           <button
                             onClick={() => saveCustomFields(customFieldDefs.filter((_, i) => i !== idx))}

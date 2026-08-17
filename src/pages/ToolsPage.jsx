@@ -44,12 +44,12 @@ function EmailTemplates() {
   const [editForm, setEditForm] = useState({});
 
   const CATEGORIES = [
-    { id: 'follow_up', label: 'Follow Up', color: 'bg-blue-50 text-blue-700', border: 'border-l-blue-400' },
-    { id: 'proposal', label: 'เสนอราคา', color: 'bg-violet-50 text-violet-700', border: 'border-l-violet-400' },
-    { id: 'introduction', label: 'แนะนำตัว', color: 'bg-emerald-50 text-emerald-700', border: 'border-l-emerald-400' },
-    { id: 'closing', label: 'ปิดดีล', color: 'bg-amber-50 text-amber-700', border: 'border-l-amber-400' },
-    { id: 'win_back', label: 'Win Back', color: 'bg-rose-50 text-rose-700', border: 'border-l-rose-400' },
-    { id: 'other', label: 'อื่นๆ', color: 'bg-slate-100 text-slate-700', border: 'border-l-slate-400' },
+    { id: 'follow_up', label: 'Follow Up', color: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300', border: 'border-l-blue-400' },
+    { id: 'proposal', label: 'เสนอราคา', color: 'bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300', border: 'border-l-violet-400' },
+    { id: 'introduction', label: 'แนะนำตัว', color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300', border: 'border-l-emerald-400' },
+    { id: 'closing', label: 'ปิดดีล', color: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300', border: 'border-l-amber-400' },
+    { id: 'win_back', label: 'Win Back', color: 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300', border: 'border-l-rose-400' },
+    { id: 'other', label: 'อื่นๆ', color: 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-300', border: 'border-l-slate-400' },
   ];
 
   const getCatConfig = (id) => CATEGORIES.find(c => c.id === id) || CATEGORIES[5];
@@ -112,7 +112,7 @@ function EmailTemplates() {
             placeholder="ค้นหา template..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="pl-9 h-9 rounded-xl text-sm border-slate-200"
+            className="pl-9 h-9 rounded-xl text-sm border-slate-200 dark:border-white/10 dark:bg-[#171926] dark:text-white"
           />
         </div>
         <Button
@@ -138,33 +138,33 @@ function EmailTemplates() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
           >
-            <Card className="p-6 md:p-8 rounded-[2rem] border-violet-200/60 bg-gradient-to-br from-violet-50/80 to-white/80 backdrop-blur-xl shadow-2xl shadow-violet-500/10 relative overflow-hidden">
+            <Card className="p-6 md:p-8 rounded-[2rem] border-violet-200/60 dark:border-violet-500/20 bg-gradient-to-br from-violet-50/80 to-white/80 dark:from-violet-950/30 dark:to-[#0f111a]/80 backdrop-blur-xl shadow-2xl shadow-violet-500/10 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-40 h-40 bg-violet-400/10 rounded-bl-full -z-0 pointer-events-none" />
-              <h4 className="text-sm font-black text-violet-700 uppercase tracking-wider mb-5 relative z-10 flex items-center gap-2">
+              <h4 className="text-sm font-black text-violet-700 dark:text-violet-300 uppercase tracking-wider mb-5 relative z-10 flex items-center gap-2">
                 <Sparkles size={14} /> เพิ่ม Template ใหม่
               </h4>
               <form onSubmit={handleAdd} className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500">ชื่อ Template *</label>
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">ชื่อ Template *</label>
                     <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                       placeholder="เช่น Follow Up หลังเสนอราคา" className="h-9 rounded-xl text-sm" required />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-500">หมวดหมู่</label>
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">หมวดหมู่</label>
                     <select value={form.category} onChange={e => setForm({...form, category: e.target.value})}
-                      className="w-full h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none">
+                      className="w-full h-9 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] px-3 text-sm text-slate-900 dark:text-white outline-none">
                       {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                     </select>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500">Subject Email</label>
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Subject Email</label>
                   <Input value={form.subject} onChange={e => setForm({...form, subject: e.target.value})}
                     placeholder="เช่น ติดตามใบเสนอราคา [ชื่อดีล]" className="h-9 rounded-xl text-sm" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500">เนื้อหา Email *</label>
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">เนื้อหา Email *</label>
                   <p className="text-[10px] text-slate-400">ใช้ {'{{name}}'}, {'{{company}}'}, {'{{value}}'} เพื่อแทรกข้อมูล</p>
                   <Textarea value={form.body} onChange={e => setForm({...form, body: e.target.value})}
                     placeholder={'สวัสดีคุณ {{name}},\n\nขอบคุณที่ให้ความสนใจ...'} rows={6}
@@ -203,7 +203,7 @@ function EmailTemplates() {
           return (
             <motion.div key={t.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
               <Card className={cn(
-                "rounded-[1.5rem] overflow-hidden border-y border-r border-slate-100/80 border-l-4 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 bg-white/60 backdrop-blur-md group",
+                "rounded-[1.5rem] overflow-hidden border-y border-r border-slate-100/80 dark:border-white/[0.06] border-l-4 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/30 transition-all duration-300 bg-white/60 dark:bg-[#0f111a]/60 backdrop-blur-md group",
                 cat.border || "border-l-slate-200"
               )}>
                 <div className="p-4 md:p-5">
@@ -211,13 +211,13 @@ function EmailTemplates() {
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <span className={cn('px-2.5 py-0.5 rounded-lg text-[10px] font-bold shrink-0', cat.color)}>{cat.label}</span>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-slate-900 truncate">{t.name}</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{t.name}</p>
                         {t.subject && <p className="text-xs text-slate-400 truncate mt-0.5">Subject: {t.subject}</p>}
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <button onClick={() => handleCopy(t.body, t.id)}
-                        className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
                         {copiedId === t.id ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                       </button>
                       <button onClick={() => {
@@ -229,15 +229,15 @@ function EmailTemplates() {
                           setExpandedId(null);
                         }
                       }}
-                        className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
                         <Pencil size={14} />
                       </button>
                       <button onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setDeleteId(t.id)}
-                        className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors">
+                        className="p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors">
                         <Trash2 size={14} />
                       </button>
                       <button onClick={() => setExpandedId(isExpanded ? null : t.id)}
-                        className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
+                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
                         {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                       </button>
                     </div>
@@ -247,8 +247,8 @@ function EmailTemplates() {
                 <AnimatePresence>
                   {isExpanded && !isEditing && (
                     <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
-                      <div className="px-4 md:px-5 pb-5 border-t border-slate-100/80 pt-4">
-                        <pre className="text-[13px] text-slate-600 whitespace-pre-wrap font-medium leading-relaxed bg-slate-50/80 border border-slate-100 rounded-2xl p-4 shadow-inner">{t.body}</pre>
+                      <div className="px-4 md:px-5 pb-5 border-t border-slate-100/80 dark:border-white/[0.06] pt-4">
+                        <pre className="text-[13px] text-slate-600 dark:text-slate-300 whitespace-pre-wrap font-medium leading-relaxed bg-slate-50/80 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-2xl p-4 shadow-inner">{t.body}</pre>
                         <button onClick={() => handleCopy(t.body, t.id + '-body')}
                           className="mt-2 flex items-center gap-1.5 text-xs text-violet-600 hover:text-violet-800 font-semibold">
                           {copiedId === t.id + '-body' ? <Check size={12} /> : <Copy size={12} />}
@@ -259,28 +259,28 @@ function EmailTemplates() {
                   )}
                   {isEditing && (
                     <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
-                      <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
+                      <div className="px-4 pb-4 border-t border-slate-100 dark:border-white/5 pt-3 space-y-3">
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1">
-                            <label className="text-xs font-semibold text-slate-500">ชื่อ</label>
+                            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">ชื่อ</label>
                             <Input value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})}
                               className="h-9 rounded-xl text-sm" />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-xs font-semibold text-slate-500">หมวดหมู่</label>
+                            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">หมวดหมู่</label>
                             <select value={editForm.category} onChange={e => setEditForm({...editForm, category: e.target.value})}
-                              className="w-full h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none">
+                              className="w-full h-9 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] px-3 text-sm text-slate-900 dark:text-white outline-none">
                               {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                             </select>
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <label className="text-xs font-semibold text-slate-500">Subject</label>
+                          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Subject</label>
                           <Input value={editForm.subject} onChange={e => setEditForm({...editForm, subject: e.target.value})}
                             className="h-9 rounded-xl text-sm" />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-xs font-semibold text-slate-500">Body</label>
+                          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Body</label>
                           <Textarea value={editForm.body} onChange={e => setEditForm({...editForm, body: e.target.value})}
                             rows={5} className="rounded-xl text-sm resize-none" />
                         </div>
@@ -345,18 +345,18 @@ function DealCalculator() {
   })();
 
   const SCENARIOS = [
-    { label: 'Worst Case (30%)', value: Number(dealValue) * 0.3, bg: 'from-rose-50 to-rose-100/50', border: 'border-rose-200', text: 'text-rose-700' },
-    { label: 'Commit (70%)', value: Number(dealValue) * 0.7, bg: 'from-amber-50 to-amber-100/50', border: 'border-amber-200', text: 'text-amber-700' },
-    { label: 'Best Case (100%)', value: Number(dealValue), bg: 'from-emerald-50 to-emerald-100/50', border: 'border-emerald-200', text: 'text-emerald-700' },
+    { label: 'Worst Case (30%)', value: Number(dealValue) * 0.3, bg: 'from-rose-50 to-rose-100/50 dark:from-rose-950/40 dark:to-rose-900/20', border: 'border-rose-200 dark:border-rose-800/40', text: 'text-rose-700 dark:text-rose-300' },
+    { label: 'Commit (70%)', value: Number(dealValue) * 0.7, bg: 'from-amber-50 to-amber-100/50 dark:from-amber-950/40 dark:to-amber-900/20', border: 'border-amber-200 dark:border-amber-800/40', text: 'text-amber-700 dark:text-amber-300' },
+    { label: 'Best Case (100%)', value: Number(dealValue), bg: 'from-emerald-50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-800/40', text: 'text-emerald-700 dark:text-emerald-300' },
   ];
 
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Inputs */}
-        <div className="lg:col-span-5 space-y-5 bg-white/60 backdrop-blur-xl p-6 rounded-[2rem] border border-white shadow-xl shadow-slate-200/40 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0" />
-          <h3 className="text-xs font-black uppercase tracking-wider text-violet-600 flex items-center gap-2 relative z-10">
+        <div className="lg:col-span-5 space-y-5 bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-xl p-6 rounded-[2rem] border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/40 dark:shadow-black/30 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+          <h3 className="text-xs font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 flex items-center gap-2 relative z-10">
             <Calculator size={14} /> พารามิเตอร์ของดีล
           </h3>
           <div className="space-y-4 relative z-10">
@@ -365,27 +365,27 @@ function DealCalculator() {
               { label: 'ต้นทุน (Cost/COGS)', value: cost, setter: setCost, placeholder: '600,000', prefix: '฿' },
             ].map(f => (
               <div key={f.label} className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{f.label}</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{f.label}</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">{f.prefix}</span>
                   <Input type="number" value={f.value} onChange={e => f.setter(e.target.value)}
-                    placeholder={f.placeholder} className="h-12 pl-8 rounded-xl text-base font-bold bg-white/80 border-slate-200 focus:border-violet-400 focus:ring-violet-400/20" />
+                    placeholder={f.placeholder} className="h-12 pl-8 rounded-xl text-base font-bold bg-white/80 dark:bg-[#171926] border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:border-violet-400 focus:ring-violet-400/20" />
                 </div>
               </div>
             ))}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">โอกาสปิด (%)</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">โอกาสปิด (%)</label>
                 <div className="relative">
                   <Input type="number" min="0" max="100" value={probability} onChange={e => setProbability(e.target.value)}
-                    className="h-12 pr-8 rounded-xl text-base font-bold bg-white/80 border-slate-200 focus:border-amber-400 focus:ring-amber-400/20" />
+                    className="h-12 pr-8 rounded-xl text-base font-bold bg-white/80 dark:bg-[#171926] border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:border-amber-400 focus:ring-amber-400/20" />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">ระยะเวลา (ด.)</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">ระยะเวลา (ด.)</label>
                 <Input type="number" min="1" value={months} onChange={e => setMonths(e.target.value)}
-                  className="h-12 rounded-xl text-base font-bold bg-white/80 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20" />
+                  className="h-12 rounded-xl text-base font-bold bg-white/80 dark:bg-[#171926] border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:border-blue-400 focus:ring-blue-400/20" />
               </div>
             </div>
           </div>
@@ -393,17 +393,17 @@ function DealCalculator() {
 
         {/* Results */}
         <div className="lg:col-span-7 space-y-5">
-          <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
+          <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-2">
             <Sparkles size={14} className="text-amber-500" /> การวิเคราะห์ผลตอบแทน (ROI Analysis)
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {[
-              { label: 'กำไรขั้นต้น', value: formatCurrency(calc.grossProfit), color: calc.grossProfit >= 0 ? 'text-emerald-600' : 'text-rose-600', bg: 'bg-white', border: 'border-slate-100' },
-              { label: 'Margin', value: `${calc.margin.toFixed(1)}%`, color: calc.margin >= 20 ? 'text-emerald-600' : calc.margin >= 10 ? 'text-amber-600' : 'text-rose-600', bg: 'bg-white', border: 'border-slate-100' },
-              { label: 'ROI', value: `${calc.roi.toFixed(0)}%`, color: calc.roi >= 100 ? 'text-emerald-600' : calc.roi >= 50 ? 'text-amber-600' : 'text-rose-600', bg: 'bg-white', border: 'border-slate-100' },
-              { label: 'Expected Revenue', value: formatCurrency(calc.expectedRevenue), color: 'text-violet-700', bg: 'bg-violet-50/50', border: 'border-violet-100' },
-              { label: 'Expected Profit', value: formatCurrency(calc.expectedProfit), color: 'text-violet-700', bg: 'bg-violet-50/50', border: 'border-violet-100' },
-              { label: 'รายได้ต่อเดือน', value: formatCurrency(calc.monthlyRevenue), color: 'text-blue-700', bg: 'bg-blue-50/50', border: 'border-blue-100' },
+              { label: 'กำไรขั้นต้น', value: formatCurrency(calc.grossProfit), color: calc.grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-white/80 dark:bg-white/[0.04]', border: 'border-slate-200/80 dark:border-white/10' },
+              { label: 'Margin', value: `${calc.margin.toFixed(1)}%`, color: calc.margin >= 20 ? 'text-emerald-600 dark:text-emerald-400' : calc.margin >= 10 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-white/80 dark:bg-white/[0.04]', border: 'border-slate-200/80 dark:border-white/10' },
+              { label: 'ROI', value: `${calc.roi.toFixed(0)}%`, color: calc.roi >= 100 ? 'text-emerald-600 dark:text-emerald-400' : calc.roi >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-white/80 dark:bg-white/[0.04]', border: 'border-slate-200/80 dark:border-white/10' },
+              { label: 'Expected Revenue', value: formatCurrency(calc.expectedRevenue), color: 'text-violet-700 dark:text-violet-300', bg: 'bg-violet-50/50 dark:bg-violet-950/30', border: 'border-violet-200/60 dark:border-violet-800/30' },
+              { label: 'Expected Profit', value: formatCurrency(calc.expectedProfit), color: 'text-violet-700 dark:text-violet-300', bg: 'bg-violet-50/50 dark:bg-violet-950/30', border: 'border-violet-200/60 dark:border-violet-800/30' },
+              { label: 'รายได้ต่อเดือน', value: formatCurrency(calc.monthlyRevenue), color: 'text-blue-700 dark:text-blue-300', bg: 'bg-blue-50/50 dark:bg-blue-950/30', border: 'border-blue-200/60 dark:border-blue-800/30' },
             ].map((m, i) => (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={m.label} 
                 className={cn('p-4 rounded-2xl border shadow-sm', m.bg, m.border)}>
@@ -414,12 +414,12 @@ function DealCalculator() {
           </div>
 
           <div className="pt-2">
-            <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3">ฉากทัศน์คาดการณ์ (Forecast Scenarios)</h3>
+            <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">ฉากทัศน์คาดการณ์ (Forecast Scenarios)</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {SCENARIOS.map((s, i) => (
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 + (i * 0.1) }} 
                   key={s.label} className={cn('p-5 rounded-2xl border bg-gradient-to-br shadow-sm relative overflow-hidden group', s.bg, s.border)}>
-                  <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-white/20 dark:bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <p className={cn('text-[10px] font-black uppercase tracking-wider mb-1 opacity-70', s.text)}>{s.label}</p>
                   <p className={cn('text-xl font-black tabular-nums tracking-tight', s.text)}>{formatCurrency(s.value)}</p>
                 </motion.div>

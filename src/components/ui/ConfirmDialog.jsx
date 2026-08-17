@@ -22,7 +22,7 @@ export default function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm p-0 overflow-hidden rounded-[2rem] border-0 shadow-2xl relative bg-white/95 backdrop-blur-3xl">
+      <DialogContent className="max-w-sm p-0 overflow-hidden rounded-[2rem] border border-slate-200/80 dark:border-white/10 shadow-2xl relative bg-white/95 dark:bg-[#0f111a]/95 backdrop-blur-3xl">
         {/* Subtle dot grid pattern */}
         <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '12px 12px' }} />
 
@@ -69,10 +69,10 @@ export default function ConfirmDialog({
               </motion.div>
             </div>
 
-            <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight text-center">
+            <DialogTitle className="text-2xl font-black text-slate-900 dark:text-white tracking-tight text-center">
               {title}
             </DialogTitle>
-            <p className="text-sm text-slate-500 mt-2 font-medium leading-relaxed text-center px-2">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium leading-relaxed text-center px-2">
               {description}
             </p>
           </DialogHeader>
@@ -80,7 +80,7 @@ export default function ConfirmDialog({
           <DialogFooter className="flex gap-3 mt-4">
             <Button 
               variant="outline" 
-              className="flex-1 h-12 rounded-xl font-bold text-sm text-slate-600 bg-white border-slate-200 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 transition-all shadow-sm"
+              className="flex-1 h-12 rounded-xl font-bold text-sm text-slate-600 dark:text-slate-300 bg-white dark:bg-white/[0.05] border-slate-200 dark:border-white/10 hover:border-violet-300 dark:hover:border-violet-500/40 hover:bg-violet-50 dark:hover:bg-violet-950/30 hover:text-violet-700 dark:hover:text-violet-300 transition-all shadow-sm"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
@@ -96,9 +96,6 @@ export default function ConfirmDialog({
               onClick={() => {
                 onConfirm?.();
                 if (!isLoading) {
-                  // If there is an async operation, onOpenChange might be handled by parent,
-                  // but we close optimistically if it's not a loading state action.
-                  // Actually, better to let the parent handle close or close it immediately if not loading.
                   if (!isLoading) onOpenChange(false);
                 }
               }}

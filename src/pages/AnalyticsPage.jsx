@@ -576,7 +576,7 @@ Win Rate: ${intel.winRate || 0}%
   const memberColors = ['#8b5cf6', '#0ea5e9', '#f59e0b', '#10b981', '#ec4899', '#f43f5e'];
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-8 pb-24 px-2 sm:px-4 md:px-6 mt-4 bg-slate-50/50 min-h-screen relative overflow-hidden ui-enter">
+    <div className="max-w-[1600px] mx-auto space-y-8 pb-24 px-2 sm:px-4 md:px-6 mt-4 min-h-screen relative overflow-hidden ui-enter">
       {/* Fixed Premium Ambient Glow Blobs */}
       <div className="fixed top-0 right-0 w-[600px] h-[600px] bg-violet-500/4 rounded-full blur-[130px] pointer-events-none -z-10" />
       <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/4 rounded-full blur-[130px] pointer-events-none -z-10" />
@@ -597,7 +597,7 @@ Win Rate: ${intel.winRate || 0}%
           children={
             <div className="flex flex-col md:flex-row items-center justify-between w-full gap-3">
               <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-1.5 bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 shadow-inner">
+                <div className="flex items-center gap-1.5 bg-white/70 dark:bg-white/[0.06] p-1 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-sm">
                   <DateRangePicker
                     value={dateRange}
                     onChange={setDateRange}
@@ -609,16 +609,16 @@ Win Rate: ${intel.winRate || 0}%
                     }}
                   />
                 </div>
-                <div className="flex items-center gap-1.5 bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 shadow-inner hidden lg:flex">
+                <div className="flex items-center gap-1.5 bg-white/70 dark:bg-white/[0.06] p-1 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-sm hidden lg:flex">
                   {[['3m', '3 Months Trend'], ['6m', '6 Months Trend'], ['12m', '12 Months Trend']].map(([val, label]) => (
                     <button
                       key={val}
                       onClick={() => setTimeRange(val)}
                       className={cn(
-                        "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
+                        "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer",
                         timeRange === val
-                          ? "bg-white text-violet-700 shadow-sm ring-1 ring-slate-200/60"
-                          : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                          ? "bg-white dark:bg-white/15 text-violet-700 dark:text-white shadow-sm ring-1 ring-slate-200/60 dark:ring-white/10"
+                          : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/10"
                       )}
                     >
                       {label}
@@ -638,7 +638,7 @@ Win Rate: ${intel.winRate || 0}%
                   link.click();
                   link.remove();
                 }}
-                className="group/export flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-500 border border-slate-200 hover:bg-slate-50 hover:text-slate-700 transition-all shadow-sm"
+                className="group/export flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-white/80 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm cursor-pointer"
               >
                 <Download size={14} className="group-hover/export:-translate-y-0.5 transition-transform" /> Export CSV
               </button>
@@ -649,7 +649,7 @@ Win Rate: ${intel.winRate || 0}%
 
       {/* TAB NAVIGATION */}
       <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 pb-1">
-        <div className="inline-flex gap-2 bg-white/80 backdrop-blur-md border border-slate-200 p-1.5 rounded-2xl shadow-sm min-w-max">
+        <div className="inline-flex gap-2 bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-md border border-slate-200/80 dark:border-white/10 p-1.5 rounded-2xl shadow-sm min-w-max">
           {[
             { id: 'overview', label: 'ภาพรวม & AI', icon: Sparkles },
             { id: 'funnel', label: 'กรวยการขาย & คอขวด', icon: TrendingUp },
@@ -663,8 +663,8 @@ Win Rate: ${intel.winRate || 0}%
                 key={tab.id}
                 onClick={() => { setActiveTab(tab.id); setSelectedPrompt(null); }}
                 className={cn(
-                  'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap',
-                  isActive ? 'bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-[0_8px_24px_rgba(139,92,246,0.4)] ring-1 ring-white/20' : 'text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-sm'
+                  'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap cursor-pointer',
+                  isActive ? 'bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-[0_8px_24px_rgba(139,92,246,0.4)] ring-1 ring-white/20' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white hover:shadow-sm'
                 )}
               >
                 {isActive && (
@@ -790,16 +790,16 @@ Win Rate: ${intel.winRate || 0}%
 
               {/* REVENUE CHART + STAGE DONUT */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2 p-7 rounded-[2rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 relative overflow-hidden group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 transition-shadow duration-500">
+                <Card className="lg:col-span-2 p-7 rounded-[2rem] bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 dark:ring-white/5 relative overflow-hidden group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 dark:hover:border-violet-500/20 hover:-translate-y-0.5 transition-all duration-300">
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-8">
                     <div>
-                      <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Revenue Trend</h3></div>
-                      <p className="text-xs text-slate-400 mt-1 font-medium">Actuals vs Forecast vs Goal</p>
+                      <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">Revenue Trend</h3></div>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Actuals vs Forecast vs Goal</p>
                     </div>
-                    <div className="flex items-center gap-5 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
-                      <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" /><span className="text-xs font-semibold text-slate-600">Actual</span></div>
-                      <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-slate-300" /><span className="text-xs font-semibold text-slate-600">Pipeline</span></div>
-                      <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-violet-500 shadow-sm shadow-violet-500/50" /><span className="text-xs font-semibold text-slate-600">Weighted</span></div>
+                    <div className="flex items-center gap-5 bg-slate-50 dark:bg-white/[0.04] px-4 py-2 rounded-2xl border border-slate-200/60 dark:border-white/[0.06]">
+                      <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" /><span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Actual</span></div>
+                      <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600" /><span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Pipeline</span></div>
+                      <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-violet-500 shadow-sm shadow-violet-500/50" /><span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Weighted</span></div>
                     </div>
                   </div>
                   <div className="h-[360px] w-full min-w-0 min-h-0">
@@ -826,10 +826,10 @@ Win Rate: ${intel.winRate || 0}%
                             </feMerge>
                           </filter>
                         </defs>
-                        <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} dy={15} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
-                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }} />
+                        <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(148, 163, 184, 0.15)" />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} dy={15} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.05)' }} />
                         <Bar dataKey="unweighted" name="Pipeline Volume" fill="url(#colorPipeline)" radius={[8, 8, 0, 0]} barSize={40} isAnimationActive={false} />
                         <Area type="monotone" dataKey="actual" name="Actual Revenue" stroke="#10b981" strokeWidth={4} fill="url(#colorActualAnalytics)" isAnimationActive={false} />
                         <Area type="monotone" dataKey="weighted" name="Weighted Forecast" stroke="#8b5cf6" strokeWidth={3} fill="url(#colorWeightedAnalytics)" isAnimationActive={false} />
@@ -840,10 +840,10 @@ Win Rate: ${intel.winRate || 0}%
                   </div>
                 </Card>
 
-                <Card className="lg:col-span-1 p-7 rounded-[2rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 flex flex-col items-center group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 transition-shadow duration-500">
+                <Card className="lg:col-span-1 p-7 rounded-[2rem] bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 dark:ring-white/5 flex flex-col items-center group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 dark:hover:border-violet-500/20 hover:-translate-y-0.5 transition-all duration-300">
                   <div className="w-full mb-6">
-                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Stage Distribution</h3></div>
-                    <p className="text-xs text-slate-400 mt-1 font-medium">Pipeline health by volume</p>
+                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">Stage Distribution</h3></div>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Pipeline health by volume</p>
                   </div>
                   <div className="relative w-full aspect-square max-w-[260px] min-w-0 min-h-0">
                     <SafeResponsiveContainer>
@@ -858,23 +858,23 @@ Win Rate: ${intel.winRate || 0}%
                     </SafeResponsiveContainer>
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="text-center">
-                        <p className="text-4xl font-black text-slate-900 tracking-tighter">
+                        <p className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">
                           <AnimatedNumber value={analytics?.totalDeals || 0} />
                         </p>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Total Deals</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mt-1">Total Deals</p>
                       </div>
                     </div>
                   </div>
-                  <div className="w-full mt-auto space-y-3 pt-6 border-t border-slate-100">
+                  <div className="w-full mt-auto space-y-3 pt-6 border-t border-slate-100 dark:border-white/[0.06]">
                     {analytics?.stageData.map((stage) => (
                       <div key={stage.name} className="flex items-center justify-between group">
                         <div className="flex items-center gap-3">
                           <div className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: stage.color }} />
-                          <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">{stage.name}</span>
+                          <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{stage.name}</span>
                         </div>
                         <div className="flex items-center gap-4">
                           <span className="text-xs text-slate-400 font-medium">{formatCurrency(stage.totalValue)}</span>
-                          <span className="text-xs font-black text-slate-900 w-6 text-right tabular-nums">{stage.value}</span>
+                          <span className="text-xs font-black text-slate-900 dark:text-white w-6 text-right tabular-nums">{stage.value}</span>
                         </div>
                       </div>
                     ))}
@@ -996,15 +996,15 @@ Win Rate: ${intel.winRate || 0}%
               </div>
               
               {/* FORECAST ACCURACY DASHBOARD */}
-              <Card className="p-8 rounded-[2.5rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 relative overflow-hidden group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 mt-8">
+              <Card className="p-8 rounded-[2.5rem] bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 dark:ring-white/5 relative overflow-hidden group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 dark:hover:border-violet-500/20 hover:-translate-y-0.5 transition-all duration-300 mt-8">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}>
+                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}>
                       <Target size={18} strokeWidth={2.5} />
                     </div>
                     <div>
-                      <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Forecast Accuracy</h3></div>
-                      <p className="text-xs text-slate-500 mt-1 font-medium">ความแม่นยำของการคาดการณ์ยอดขายเทียบกับยอดจริง</p>
+                      <h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">Forecast Accuracy</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">ความแม่นยำของการคาดการณ์ยอดขายเทียบกับยอดจริง</p>
                     </div>
                   </div>
                 </div>
@@ -1013,11 +1013,11 @@ Win Rate: ${intel.winRate || 0}%
                   <div className="col-span-2 h-[300px] w-full min-w-0 min-h-0">
                     <SafeResponsiveContainer>
                       <ComposedChart data={analytics?.forecastAccuracyData}>
-                        <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} dy={15} />
-                        <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
-                        <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v}%`} dx={10} />
-                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }} />
+                        <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(148, 163, 184, 0.15)" />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} dy={15} />
+                        <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
+                        <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v}%`} dx={10} />
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.05)' }} />
                         <Bar yAxisId="left" dataKey="forecast" name="Forecast" fill="#cbd5e1" radius={[4, 4, 0, 0]} barSize={30} isAnimationActive={false} opacity={0.6} />
                         <Bar yAxisId="left" dataKey="actual" name="Actual" fill="#7c3aed" radius={[4, 4, 0, 0]} barSize={30} isAnimationActive={false} />
                         <Line yAxisId="right" type="monotone" dataKey="accuracy" name="Accuracy %" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }} isAnimationActive={false} />
@@ -1025,10 +1025,10 @@ Win Rate: ${intel.winRate || 0}%
                     </SafeResponsiveContainer>
                   </div>
 
-                  <div className="col-span-1 bg-slate-50/50 rounded-3xl p-6 border border-slate-100 flex flex-col">
+                  <div className="col-span-1 bg-slate-50/50 dark:bg-white/[0.03] rounded-3xl p-6 border border-slate-200/60 dark:border-white/[0.06] flex flex-col">
                     <div className="flex items-center gap-2.5 mb-6">
-                      <AlertCircle size={16} className="text-slate-400" strokeWidth={2.5} />
-                      <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Lost Reasons Breakdown</p>
+                      <AlertCircle size={16} className="text-slate-400 dark:text-slate-500" strokeWidth={2.5} />
+                      <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Lost Reasons Breakdown</p>
                     </div>
                     <div className="space-y-4 flex-1 overflow-y-auto pr-2">
                       {analytics?.accuracyBreakdown?.length === 0 ? (
@@ -1037,12 +1037,12 @@ Win Rate: ${intel.winRate || 0}%
                         </div>
                       ) : (
                         analytics?.accuracyBreakdown?.map((item) => (
-                          <div key={item.reason} className="flex flex-col gap-1 pb-3 border-b border-slate-100 last:border-0 last:pb-0">
+                          <div key={item.reason} className="flex flex-col gap-1 pb-3 border-b border-slate-100 dark:border-white/[0.06] last:border-0 last:pb-0">
                             <div className="flex justify-between items-center">
-                              <span className="text-sm font-bold text-slate-700">{item.reason}</span>
-                              <span className="text-xs font-black text-slate-900 bg-white px-2 py-0.5 rounded shadow-sm border border-slate-100">{item.count} ดีล</span>
+                              <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{item.reason}</span>
+                              <span className="text-xs font-black text-slate-900 dark:text-white bg-white dark:bg-white/10 px-2 py-0.5 rounded shadow-sm border border-slate-150 dark:border-white/10">{item.count} ดีล</span>
                             </div>
-                            <div className="text-xs text-rose-500 font-semibold">สูญเสียโอกาส {formatCurrency(item.value)}</div>
+                            <div className="text-xs text-rose-500 dark:text-rose-400 font-semibold">สูญเสียโอกาส {formatCurrency(item.value)}</div>
                           </div>
                         ))
                       )}
@@ -1055,18 +1055,18 @@ Win Rate: ${intel.winRate || 0}%
 
           {/* TAB 2: FUNNEL */}
           {activeTab === 'funnel' && (
-            <Card className="p-8 rounded-[2.5rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 space-y-10 hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300">
+            <Card className="p-8 rounded-[2.5rem] bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 dark:ring-white/5 space-y-10 hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 dark:hover:border-violet-500/20 hover:-translate-y-0.5 transition-all duration-300">
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}>
+                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}>
                     <TrendingUp size={18} strokeWidth={2.5} />
                   </div>
                   <div>
-                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Conversion Funnel & Velocity</h3></div>
-                    <p className="text-xs text-slate-500 mt-1 font-medium">Analyze drop-offs and stage bottlenecks</p>
+                    <h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">Conversion Funnel & Velocity</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Analyze drop-offs and stage bottlenecks</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 text-xs text-slate-500 font-medium bg-slate-50 px-4 py-2 rounded-xl">
+                <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium bg-slate-50 dark:bg-white/[0.04] px-4 py-2 rounded-xl border border-slate-200/60 dark:border-white/[0.06]">
                   <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/40" /> Excellent &gt;60%</span>
                   <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm shadow-amber-500/40" /> Average</span>
                   <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/40" /> Needs Work &lt;30%</span>
@@ -1080,9 +1080,9 @@ Win Rate: ${intel.winRate || 0}%
                     <div key={item.stage} className="relative">
                       <div className="flex items-center gap-4 mb-2">
                         <div className="w-28 shrink-0">
-                          <span className="text-sm font-bold text-slate-700">{item.label}</span>
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{item.label}</span>
                         </div>
-                        <div className="flex-1 relative h-11 bg-slate-100/50 rounded-2xl overflow-hidden border border-slate-200/60 shadow-inner">
+                        <div className="flex-1 relative h-11 bg-slate-100/50 dark:bg-white/[0.04] rounded-2xl overflow-hidden border border-slate-200/60 dark:border-white/10 shadow-inner">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${item.widthPct}%` }}
@@ -1100,13 +1100,13 @@ Win Rate: ${intel.winRate || 0}%
                         </div>
                         <div className="w-28 shrink-0 text-right">
                           {i === 0 ? (
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Start</span>
+                            <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Start</span>
                           ) : (
                             <span className={cn(
                               "text-xs font-black px-3 py-1.5 rounded-xl shadow-sm border",
-                              item.conversionRate >= 60 ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                              item.conversionRate >= 30 ? "bg-amber-50 text-amber-600 border-amber-100" :
-                              "bg-rose-50 text-rose-600 border-rose-100"
+                              item.conversionRate >= 60 ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/40" :
+                              item.conversionRate >= 30 ? "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-800/40" :
+                              "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-800/40"
                             )}>
                               <AnimatedNumber value={item.conversionRate} formatter={v => `${Math.round(v)}%`} /> Pass
                             </span>
@@ -1114,35 +1114,35 @@ Win Rate: ${intel.winRate || 0}%
                         </div>
                       </div>
                       {i < (analytics.funnelData.length - 1) && (
-                        <div className="ml-28 pl-6 border-l-2 border-dashed border-slate-200 h-4" />
+                        <div className="ml-28 pl-6 border-l-2 border-dashed border-slate-200 dark:border-white/10 h-4" />
                       )}
                     </div>
                   ))}
                 </div>
 
                 {/* Velocity Grid */}
-                <div className="col-span-1 bg-slate-50/50 rounded-3xl p-6 border border-slate-100">
+                <div className="col-span-1 bg-slate-50/50 dark:bg-white/[0.03] rounded-3xl p-6 border border-slate-200/60 dark:border-white/[0.06]">
                   <div className="flex items-center gap-2.5 mb-6">
-                    <div className="w-7 h-7 rounded-xl flex items-center justify-center text-white shadow-sm" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}>
+                    <div className="w-7 h-7 rounded-xl flex items-center justify-center text-white shadow-sm shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}>
                       <Clock size={13} strokeWidth={2.5} />
                     </div>
-                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Stage Velocity</p>
+                    <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Stage Velocity</p>
                   </div>
                   <div className="space-y-4">
                     {analytics?.velocityData.map((v) => (
-                      <div key={v.name} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-[0_4px_16px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300">
+                      <div key={v.name} className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 shadow-sm hover:shadow-[0_4px_16px_rgba(139,92,246,0.10)] hover:border-violet-100 dark:hover:border-violet-500/20 hover:-translate-y-0.5 transition-all duration-300">
                         <div>
-                          <p className="text-sm font-bold text-slate-700">{v.name}</p>
-                          <p className="text-xs text-slate-400 font-medium mt-0.5">{v.count} active deals</p>
+                          <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{v.name}</p>
+                          <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">{v.count} active deals</p>
                         </div>
                         <div className="text-right flex items-baseline gap-1">
                           <p className={cn(
                             "text-3xl font-black tabular-nums tracking-tighter",
-                            v.days >= 7 ? "text-rose-500" : v.days >= 4 ? "text-amber-500" : "text-emerald-500"
+                            v.days >= 7 ? "text-rose-500 dark:text-rose-400" : v.days >= 4 ? "text-amber-500 dark:text-amber-400" : "text-emerald-500 dark:text-emerald-400"
                           )}>
                             <AnimatedNumber value={v.days} />
                           </p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Days</p>
+                          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">Days</p>
                         </div>
                       </div>
                     ))}
@@ -1151,25 +1151,25 @@ Win Rate: ${intel.winRate || 0}%
               </div>
 
               {/* WIN / LOSS REASONS */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6 border-t border-slate-100">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6 border-t border-slate-100 dark:border-white/[0.06]">
                 <div className="space-y-5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md" style={{background: 'linear-gradient(135deg, #10b981, #059669)'}}>
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-emerald-500/20" style={{background: 'linear-gradient(135deg, #10b981, #059669)'}}>
                         <ThumbsUp size={16} />
                       </div>
                       <div>
-                        <h4 className="text-sm font-black tracking-tight text-slate-800">Win Reasons</h4>
-                        <p className="text-xs text-slate-400 font-semibold">เหตุผลเด่นที่ชนะดีลการขาย</p>
+                        <h4 className="text-sm font-black tracking-tight text-slate-800 dark:text-white">Win Reasons</h4>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold">เหตุผลเด่นที่ชนะดีลการขาย</p>
                       </div>
                     </div>
-                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">{analytics?.wonCount || 0} Deals</span>
+                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/40 px-2.5 py-1 rounded-lg">{analytics?.wonCount || 0} Deals</span>
                   </div>
                   <div className="space-y-4">
                     {!analytics?.wonReasons?.length ? (
-                      <div className="flex flex-col items-center justify-center py-8 bg-slate-50/50 backdrop-blur-sm border border-dashed border-slate-200/80 rounded-2xl">
-                        <div className="w-10 h-10 mb-3 rounded-full bg-white shadow-sm flex items-center justify-center"><Info size={16} className="text-slate-400" /></div>
-                        <p className="text-xs text-slate-500 font-medium">ไม่มีข้อมูลวิเคราะห์เหตุผลการชนะดีล</p>
+                      <div className="flex flex-col items-center justify-center py-8 bg-slate-50/50 dark:bg-white/[0.02] backdrop-blur-sm border border-dashed border-slate-200/80 dark:border-white/10 rounded-2xl">
+                        <div className="w-10 h-10 mb-3 rounded-full bg-white dark:bg-white/10 shadow-sm flex items-center justify-center"><Info size={16} className="text-slate-400" /></div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">ไม่มีข้อมูลวิเคราะห์เหตุผลการชนะดีล</p>
                       </div>
                     ) : analytics.wonReasons.map((r, i) => {
                       const max = analytics.wonReasons[0].count;
@@ -1177,11 +1177,11 @@ Win Rate: ${intel.winRate || 0}%
                       return (
                         <div key={i} className="space-y-1.5 group">
                           <div className="flex justify-between items-end gap-2 text-xs">
-                            <p className="font-bold text-slate-700 truncate flex-1 group-hover:text-emerald-600 transition-colors">{r.reason}</p>
-                            <span className="font-bold text-slate-400">{r.count}×</span>
-                            <span className="font-bold text-emerald-600">{formatCurrency(r.totalValue)}</span>
+                            <p className="font-bold text-slate-700 dark:text-slate-200 truncate flex-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{r.reason}</p>
+                            <span className="font-bold text-slate-400 dark:text-slate-500">{r.count}×</span>
+                            <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(r.totalValue)}</span>
                           </div>
-                          <div className="h-3 bg-slate-100/50 rounded-full overflow-hidden shadow-inner border border-slate-200/50">
+                          <div className="h-3 bg-slate-100/50 dark:bg-white/[0.05] rounded-full overflow-hidden shadow-inner border border-slate-200/50 dark:border-white/10">
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${pct}%` }}
@@ -1200,21 +1200,21 @@ Win Rate: ${intel.winRate || 0}%
                 <div className="space-y-5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md" style={{background: 'linear-gradient(135deg, #f43f5e, #e11d48)'}}>
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-rose-500/20" style={{background: 'linear-gradient(135deg, #f43f5e, #e11d48)'}}>
                         <ThumbsDown size={16} />
                       </div>
                       <div>
-                        <h4 className="text-sm font-black tracking-tight text-slate-800">Loss Reasons</h4>
-                        <p className="text-xs text-slate-400 font-semibold">เหตุผลและปัญหาที่เสียดีล</p>
+                        <h4 className="text-sm font-black tracking-tight text-slate-800 dark:text-white">Loss Reasons</h4>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold">เหตุผลและปัญหาที่เสียดีล</p>
                       </div>
                     </div>
-                    <span className="text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-lg">{analytics?.lostCount || 0} Deals</span>
+                    <span className="text-xs font-bold text-rose-500 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-800/40 px-2.5 py-1 rounded-lg">{analytics?.lostCount || 0} Deals</span>
                   </div>
                   <div className="space-y-4">
                     {!analytics?.lostReasons?.length ? (
-                      <div className="flex flex-col items-center justify-center py-8 bg-slate-50/50 backdrop-blur-sm border border-dashed border-slate-200/80 rounded-2xl">
-                        <div className="w-10 h-10 mb-3 rounded-full bg-white shadow-sm flex items-center justify-center"><Info size={16} className="text-slate-400" /></div>
-                        <p className="text-xs text-slate-500 font-medium">ไม่มีข้อมูลวิเคราะห์เหตุผลการแพ้ดีล</p>
+                      <div className="flex flex-col items-center justify-center py-8 bg-slate-50/50 dark:bg-white/[0.02] backdrop-blur-sm border border-dashed border-slate-200/80 dark:border-white/10 rounded-2xl">
+                        <div className="w-10 h-10 mb-3 rounded-full bg-white dark:bg-white/10 shadow-sm flex items-center justify-center"><Info size={16} className="text-slate-400" /></div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">ไม่มีข้อมูลวิเคราะห์เหตุผลการแพ้ดีล</p>
                       </div>
                     ) : analytics.lostReasons.map((r, i) => {
                       const max = analytics.lostReasons[0].count;
@@ -1222,11 +1222,11 @@ Win Rate: ${intel.winRate || 0}%
                       return (
                         <div key={i} className="space-y-1.5 group">
                           <div className="flex justify-between items-end gap-2 text-xs">
-                            <p className="font-bold text-slate-700 truncate flex-1 group-hover:text-rose-500 transition-colors">{r.reason}</p>
-                            <span className="font-bold text-slate-400">{r.count}×</span>
-                            <span className="font-bold text-rose-500">{formatCurrency(r.totalValue)}</span>
+                            <p className="font-bold text-slate-700 dark:text-slate-200 truncate flex-1 group-hover:text-rose-500 dark:group-hover:text-rose-400 transition-colors">{r.reason}</p>
+                            <span className="font-bold text-slate-400 dark:text-slate-500">{r.count}×</span>
+                            <span className="font-bold text-rose-500 dark:text-rose-400">{formatCurrency(r.totalValue)}</span>
                           </div>
-                          <div className="h-3 bg-slate-100/50 rounded-full overflow-hidden shadow-inner border border-slate-200/50">
+                          <div className="h-3 bg-slate-100/50 dark:bg-white/[0.05] rounded-full overflow-hidden shadow-inner border border-slate-200/50 dark:border-white/10">
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${pct}%` }}
@@ -1249,18 +1249,18 @@ Win Rate: ${intel.winRate || 0}%
           {activeTab === 'performance' && (
             <div className="space-y-8">
               {/* Monthly contribution chart */}
-              <Card className="p-7 rounded-[2rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300">
+              <Card className="p-7 rounded-[2rem] bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 dark:ring-white/5 group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 dark:hover:border-violet-500/20 hover:-translate-y-0.5 transition-all duration-300">
                 <div className="mb-6">
-                  <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Monthly Revenue Contribution</h3></div>
-                  <p className="text-xs text-slate-400 mt-1 font-medium">Monthly won deal values by team member</p>
+                  <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">Monthly Revenue Contribution</h3></div>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Monthly won deal values by team member</p>
                 </div>
                 <div className="h-[320px] w-full min-w-0 min-h-0">
                   <SafeResponsiveContainer>
                     <ComposedChart data={analytics?.revenueByMember}>
-                      <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} dy={15} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
-                      <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }} />
+                      <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(148, 163, 184, 0.15)" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} dy={15} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
+                      <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.05)' }} />
                       {(teamMembers || []).map((m, idx) => (
                         <Area
                           key={m.id}
@@ -1282,12 +1282,12 @@ Win Rate: ${intel.winRate || 0}%
               {/* Leaderboard Cards */}
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md" style={{background: 'linear-gradient(135deg, #f59e0b, #d97706)'}}>
+                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-amber-500/20" style={{background: 'linear-gradient(135deg, #f59e0b, #d97706)'}}>
                     <Trophy size={18} strokeWidth={2.5} />
                   </div>
                   <div>
-                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Elite Leaderboard</h3></div>
-                    <p className="text-xs text-slate-500 mt-1 font-medium">Top performers & Quota attainment</p>
+                    <h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">Elite Leaderboard</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Top performers & Quota attainment</p>
                   </div>
                 </div>
 
@@ -1301,25 +1301,25 @@ Win Rate: ${intel.winRate || 0}%
                       onClick={() => setSelectedRep(m)}
                       className={cn(
                         "p-6 rounded-3xl border shadow-sm hover:shadow-xl transition-all duration-350 relative overflow-hidden group cursor-pointer hover:ring-2 hover:ring-violet-400/50",
-                        i === 0 ? "bg-gradient-to-b from-amber-50/80 to-white border-amber-300 ring-2 ring-amber-400/10 shadow-amber-500/5" :
-                        i === 1 ? "bg-gradient-to-b from-slate-50/80 to-white border-slate-200/60" :
-                        i === 2 ? "bg-gradient-to-b from-orange-50/30 to-white border-orange-200/60" :
-                        "bg-white border-slate-100"
+                        i === 0 ? "bg-gradient-to-b from-amber-50/80 to-white dark:from-amber-950/30 dark:to-[#0f111a] border-amber-300 dark:border-amber-700/50 ring-2 ring-amber-400/10 shadow-amber-500/5" :
+                        i === 1 ? "bg-gradient-to-b from-slate-50/80 to-white dark:from-slate-900/40 dark:to-[#0f111a] border-slate-200/80 dark:border-white/10" :
+                        i === 2 ? "bg-gradient-to-b from-orange-50/30 to-white dark:from-orange-950/20 dark:to-[#0f111a] border-orange-200/60 dark:border-orange-800/40" :
+                        "bg-white dark:bg-[#0f111a]/80 border-slate-200/80 dark:border-white/10"
                       )}
                     >
-                      {i === 0 && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12 -translate-x-[150%] animate-[shimmer_3s_infinite] pointer-events-none z-0" />}
+                      {i === 0 && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 dark:via-white/10 to-transparent skew-x-12 -translate-x-[150%] animate-[shimmer_3s_infinite] pointer-events-none z-0" />}
                       
                       {/* Ranking Medals */}
                       <div className="absolute top-4 right-4 flex items-center gap-1.5 relative z-10">
                         {i === 0 && (
-                          <span className="text-[10px] font-black text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-md tracking-wider">
+                          <span className="text-[10px] font-black text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/40 px-2 py-0.5 rounded-md tracking-wider">
                             👑 CHAMPION
                           </span>
                         )}
                         {i === 0 ? <div className="text-4xl drop-shadow-md">🏆</div> :
                          i === 1 ? <div className="text-4xl drop-shadow-md">🥈</div> :
                          i === 2 ? <div className="text-4xl drop-shadow-md">🥉</div> :
-                         <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-400 border border-slate-200">#{i + 1}</div>}
+                         <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-xs font-black text-slate-400 dark:text-slate-400 border border-slate-200 dark:border-white/10">#{i + 1}</div>}
                       </div>
 
                       <div className="flex items-center gap-4 mb-6">
@@ -1328,33 +1328,33 @@ Win Rate: ${intel.winRate || 0}%
                           i === 0 ? "bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-500" : "bg-gradient-to-br from-violet-400 to-indigo-500"
                         )}>
                           <div className={cn(
-                            'w-14 h-14 rounded-xl flex items-center justify-center text-white font-black text-xl border-2 border-white',
+                            'w-14 h-14 rounded-xl flex items-center justify-center text-white font-black text-xl border-2 border-white dark:border-white/20',
                             m.color?.split(' ')[0] || 'bg-violet-600'
                           )}>
                             {m.name.charAt(0)}
                           </div>
                         </div>
                         <div>
-                          <p className="font-black text-slate-800 text-lg leading-tight">{m.name}</p>
-                          <p className="text-xs text-slate-400 font-semibold mt-0.5">{m.role}</p>
+                          <p className="font-black text-slate-800 dark:text-white text-lg leading-tight">{m.name}</p>
+                          <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold mt-0.5">{m.role}</p>
                         </div>
                       </div>
 
                       {/* Stats grid */}
                       <div className="grid grid-cols-3 gap-3 mb-6">
-                        <div className="text-center p-3 rounded-2xl bg-slate-50/80 border border-slate-100 group-hover:bg-white transition-colors">
-                          <p className="text-xl font-black text-slate-900 tabular-nums"><AnimatedNumber value={m.wonThisMonthCount} /></p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Won</p>
+                        <div className="text-center p-3 rounded-2xl bg-slate-50/80 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/[0.06] group-hover:bg-white dark:group-hover:bg-white/[0.08] transition-colors">
+                          <p className="text-xl font-black text-slate-900 dark:text-white tabular-nums"><AnimatedNumber value={m.wonThisMonthCount} /></p>
+                          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1">Won</p>
                         </div>
-                        <div className="text-center p-3 rounded-2xl bg-slate-50/80 border border-slate-100 group-hover:bg-white transition-colors">
-                          <p className={cn("text-xl font-black tabular-nums", m.winRate >= 50 ? "text-emerald-500" : m.winRate >= 30 ? "text-amber-500" : "text-rose-500")}>
+                        <div className="text-center p-3 rounded-2xl bg-slate-50/80 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/[0.06] group-hover:bg-white dark:group-hover:bg-white/[0.08] transition-colors">
+                          <p className={cn("text-xl font-black tabular-nums", m.winRate >= 50 ? "text-emerald-500 dark:text-emerald-400" : m.winRate >= 30 ? "text-amber-500 dark:text-amber-400" : "text-rose-500 dark:text-rose-400")}>
                             <AnimatedNumber value={m.winRate} />%
                           </p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Win Rate</p>
+                          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1">Win Rate</p>
                         </div>
-                        <div className="text-center p-3 rounded-2xl bg-slate-50/80 border border-slate-100 group-hover:bg-white transition-colors">
-                          <p className="text-xl font-black text-blue-500 tabular-nums"><AnimatedNumber value={m.activeCount} /></p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Active</p>
+                        <div className="text-center p-3 rounded-2xl bg-slate-50/80 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/[0.06] group-hover:bg-white dark:group-hover:bg-white/[0.08] transition-colors">
+                          <p className="text-xl font-black text-blue-500 dark:text-blue-400 tabular-nums"><AnimatedNumber value={m.activeCount} /></p>
+                          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1">Active</p>
                         </div>
                       </div>
 
@@ -1362,23 +1362,23 @@ Win Rate: ${intel.winRate || 0}%
                       <div className="space-y-2.5">
                         <div className="flex justify-between items-end">
                           <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Quota Attainment</p>
-                            <p className="text-2xl font-black text-slate-900 tabular-nums tracking-tight">
+                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Quota Attainment</p>
+                            <p className="text-2xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">
                               {formatCurrency(m.wonThisMonthValue)}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Goal {formatCurrency(m.goal || 0)}</p>
+                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Goal {formatCurrency(m.goal || 0)}</p>
                             <p className={cn(
                               "text-sm font-black tabular-nums px-2 py-0.5 rounded-lg inline-block",
-                              m.goalAchievement >= 100 ? "bg-emerald-50 text-emerald-600" :
-                              m.goalAchievement >= 70 ? "bg-amber-50 text-amber-600" : "bg-rose-50 text-rose-600"
+                              m.goalAchievement >= 100 ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400" :
+                              m.goalAchievement >= 70 ? "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400" : "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400"
                             )}>
                               <AnimatedNumber value={m.goalAchievement} />%
                             </p>
                           </div>
                         </div>
-                        <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                        <div className="h-3 w-full bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden shadow-inner">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${Math.min(100, m.goalAchievement)}%` }}
@@ -1393,7 +1393,7 @@ Win Rate: ${intel.winRate || 0}%
                             <div className="absolute inset-0 bg-white/20 w-1/2 skew-x-12 -translate-x-full animate-[shimmer_2s_infinite]" />
                           </motion.div>
                         </div>
-                        <p className="text-xs font-semibold text-slate-400 mt-2">Active Pipeline: <span className="text-slate-600">{formatCurrency(m.activePipelineValue)}</span></p>
+                        <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 mt-2">Active Pipeline: <span className="text-slate-600 dark:text-slate-300 font-bold">{formatCurrency(m.activePipelineValue)}</span></p>
                       </div>
                     </motion.div>
                   ))}
@@ -1407,10 +1407,10 @@ Win Rate: ${intel.winRate || 0}%
             <div className="space-y-8">
               {/* Row 1: Grade distribution & Tier distribution */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-1 p-7 rounded-[2rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 flex flex-col items-center group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300">
+                <Card className="lg:col-span-1 p-7 rounded-[2rem] bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 dark:ring-white/5 flex flex-col items-center group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 dark:hover:border-violet-500/20 hover:-translate-y-0.5 transition-all duration-300">
                   <div className="w-full mb-6">
-                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Revenue by Customer Grade</h3></div>
-                    <p className="text-xs text-slate-400 mt-1 font-medium">Won deal values across VIP to At-risk groups</p>
+                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">Revenue by Customer Grade</h3></div>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Won deal values across VIP to At-risk groups</p>
                   </div>
                   <div className="relative w-full aspect-square max-w-[220px] min-w-0 min-h-0">
                     {analytics?.gradeData?.length > 0 ? (
@@ -1427,37 +1427,37 @@ Win Rate: ${intel.winRate || 0}%
                         </SafeResponsiveContainer>
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="text-center">
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Revenue</p>
-                            <p className="text-lg font-black text-slate-900 tabular-nums mt-0.5">
+                            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Revenue</p>
+                            <p className="text-lg font-black text-slate-900 dark:text-white tabular-nums mt-0.5">
                               {formatCurrency(analytics.gradeData.reduce((s, g) => s + g.value, 0))}
                             </p>
                           </div>
                         </div>
                       </>
                     ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/50 backdrop-blur-sm border border-dashed border-slate-200/80 rounded-full m-4">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/50 dark:bg-white/[0.02] backdrop-blur-sm border border-dashed border-slate-200/80 dark:border-white/10 rounded-full m-4">
                         <Info size={16} className="text-slate-400 mb-2" />
-                        <p className="text-[10px] text-slate-500 font-medium text-center px-4">ไม่มีข้อมูลยอดขายแยกตามเกรด</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium text-center px-4">ไม่มีข้อมูลยอดขายแยกตามเกรด</p>
                       </div>
                     )}
                   </div>
-                  <div className="w-full mt-auto space-y-3 pt-6 border-t border-slate-100">
+                  <div className="w-full mt-auto space-y-3 pt-6 border-t border-slate-100 dark:border-white/[0.06]">
                     {analytics?.gradeData.map((grade) => (
                       <div key={grade.name} className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-3">
                           <div className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: grade.color }} />
-                          <span className="font-semibold text-slate-500">{grade.name}</span>
+                          <span className="font-semibold text-slate-600 dark:text-slate-300">{grade.name}</span>
                         </div>
-                        <span className="font-black text-slate-900 tabular-nums">{formatCurrency(grade.value)}</span>
+                        <span className="font-black text-slate-900 dark:text-white tabular-nums">{formatCurrency(grade.value)}</span>
                       </div>
                     ))}
                   </div>
                 </Card>
 
-                <Card className="lg:col-span-2 p-7 rounded-[2rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300">
+                <Card className="lg:col-span-2 p-7 rounded-[2rem] bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 dark:ring-white/5 group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 dark:hover:border-violet-500/20 hover:-translate-y-0.5 transition-all duration-300">
                   <div className="mb-6">
-                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Revenue & Pipeline by Customer Tier</h3></div>
-                    <p className="text-xs text-slate-400 mt-1 font-medium">Comparison of closed revenue vs active pipeline per tier</p>
+                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">Revenue & Pipeline by Customer Tier</h3></div>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Comparison of closed revenue vs active pipeline per tier</p>
                   </div>
                   <div className="h-[280px] w-full min-w-0 min-h-0">
                     <SafeResponsiveContainer>
@@ -1472,9 +1472,9 @@ Win Rate: ${intel.winRate || 0}%
                             <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.45} />
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
+                        <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(148, 163, 184, 0.15)" />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
                         <Tooltip content={<CustomTooltip />} />
                         <Bar dataKey="revenue" name="Closed Won Revenue" fill="url(#colorTierRevenue)" radius={[6, 6, 0, 0]} barSize={25} isAnimationActive={false} />
                         <Bar dataKey="pipeline" name="Active Pipeline" fill="url(#colorTierPipeline)" radius={[6, 6, 0, 0]} barSize={25} isAnimationActive={false} />
@@ -1486,10 +1486,10 @@ Win Rate: ${intel.winRate || 0}%
 
               {/* Row 2: Revenue by industry & Quota simulator */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="p-7 rounded-[2rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300">
+                <Card className="p-7 rounded-[2rem] bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 dark:ring-white/5 group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 dark:hover:border-violet-500/20 hover:-translate-y-0.5 transition-all duration-300">
                   <div className="mb-6">
-                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">Top Industries by Revenue</h3></div>
-                    <p className="text-xs text-slate-400 mt-1 font-medium">Won deal volumes in top 5 market sectors</p>
+                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">Top Industries by Revenue</h3></div>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Won deal volumes in top 5 market sectors</p>
                   </div>
                   <div className="h-[280px] w-full min-w-0 min-h-0">
                     {analytics?.industryData?.length > 0 ? (
@@ -1501,38 +1501,38 @@ Win Rate: ${intel.winRate || 0}%
                               <stop offset="95%" stopColor="#6d28d9" stopOpacity={0.55} />
                             </linearGradient>
                           </defs>
-                          <CartesianGrid strokeDasharray="4 4" horizontal={false} stroke="#f1f5f9" />
-                          <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: '705' }} tickFormatter={(v) => `${v / 1000}k`} />
-                          <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: '705' }} width={80} />
+                          <CartesianGrid strokeDasharray="4 4" horizontal={false} stroke="rgba(148, 163, 184, 0.15)" />
+                          <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000}k`} />
+                          <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: '700' }} width={80} />
                           <Tooltip content={<CustomTooltip />} />
                           <Bar dataKey="revenue" name="Revenue" fill="url(#colorIndustryRevenue)" radius={[0, 6, 6, 0]} barSize={16} isAnimationActive={false} />
                         </BarChart>
                       </SafeResponsiveContainer>
                     ) : (
-                      <div className="h-full flex flex-col items-center justify-center bg-slate-50/50 backdrop-blur-sm border border-dashed border-slate-200/80 rounded-2xl">
-                        <div className="w-10 h-10 mb-3 rounded-full bg-white shadow-sm flex items-center justify-center"><Info size={16} className="text-slate-400" /></div>
-                        <p className="text-xs text-slate-500 font-medium">ไม่มีข้อมูลวิเคราะห์อุตสาหกรรมในระบบ</p>
+                      <div className="h-full flex flex-col items-center justify-center bg-slate-50/50 dark:bg-white/[0.02] backdrop-blur-sm border border-dashed border-slate-200/80 dark:border-white/10 rounded-2xl">
+                        <div className="w-10 h-10 mb-3 rounded-full bg-white dark:bg-white/10 shadow-sm flex items-center justify-center"><Info size={16} className="text-slate-400" /></div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">ไม่มีข้อมูลวิเคราะห์อุตสาหกรรมในระบบ</p>
                       </div>
                     )}
                   </div>
                 </Card>
 
                 {/* AI Sales Quota Simulator */}
-                <Card className="p-7 rounded-[2rem] bg-white/90 backdrop-blur-3xl border border-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 flex flex-col justify-between group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300 hover:border-violet-100 hover:-translate-y-0.5 transition-all duration-300">
+                <Card className="p-7 rounded-[2rem] bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 dark:ring-white/5 flex flex-col justify-between group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 dark:hover:border-violet-500/20 hover:-translate-y-0.5 transition-all duration-300">
                   <div>
                     <div className="flex items-center gap-2.5 mb-5">
-                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}>
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}>
                         <Sliders size={16} />
                       </div>
-                      <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800">AI Sales Quota Simulator</h3></div>
+                      <h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">AI Sales Quota Simulator</h3>
                     </div>
                     
                     <div className="space-y-4">
                       {/* Win Rate Slider */}
                       <div className="space-y-1.5">
                         <div className="flex justify-between text-xs font-semibold">
-                          <span className="text-slate-500">อัตราการปิดดีลสำเร็จ (Win Rate)</span>
-                          <span className="text-violet-600 font-bold">{simWinRate}%</span>
+                          <span className="text-slate-500 dark:text-slate-400">อัตราการปิดดีลสำเร็จ (Win Rate)</span>
+                          <span className="text-violet-600 dark:text-violet-400 font-bold">{simWinRate}%</span>
                         </div>
                         <input
                           type="range"
@@ -1540,15 +1540,15 @@ Win Rate: ${intel.winRate || 0}%
                           max="100"
                           value={simWinRate}
                           onChange={(e) => setSimWinRate(Number(e.target.value))}
-                          className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-violet-600"
+                          className="w-full h-2 bg-slate-100 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-violet-600"
                         />
                       </div>
 
                       {/* Avg Deal Size Slider */}
                       <div className="space-y-1.5">
                         <div className="flex justify-between text-xs font-semibold">
-                          <span className="text-slate-500">มูลค่าดีลเฉลี่ย (Average Deal Size)</span>
-                          <span className="text-violet-600 font-bold">{formatCurrency(simAvgValue)}</span>
+                          <span className="text-slate-500 dark:text-slate-400">มูลค่าดีลเฉลี่ย (Average Deal Size)</span>
+                          <span className="text-violet-600 dark:text-violet-400 font-bold">{formatCurrency(simAvgValue)}</span>
                         </div>
                         <input
                           type="range"
@@ -1557,15 +1557,15 @@ Win Rate: ${intel.winRate || 0}%
                           step="10000"
                           value={simAvgValue}
                           onChange={(e) => setSimAvgValue(Number(e.target.value))}
-                          className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-violet-600"
+                          className="w-full h-2 bg-slate-100 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-violet-600"
                         />
                       </div>
 
                       {/* Leads Count Slider */}
                       <div className="space-y-1.5">
                         <div className="flex justify-between text-xs font-semibold">
-                          <span className="text-slate-500">จำนวนดีลลีดที่ดูแล (Active Leads)</span>
-                          <span className="text-violet-600 font-bold">{simLeads} ราย</span>
+                          <span className="text-slate-500 dark:text-slate-400">จำนวนดีลลีดที่ดูแล (Active Leads)</span>
+                          <span className="text-violet-600 dark:text-violet-400 font-bold">{simLeads} ราย</span>
                         </div>
                         <input
                           type="range"
@@ -1573,18 +1573,18 @@ Win Rate: ${intel.winRate || 0}%
                           max="100"
                           value={simLeads}
                           onChange={(e) => setSimLeads(Number(e.target.value))}
-                          className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-violet-600"
+                          className="w-full h-2 bg-slate-100 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-violet-600"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Simulator Results */}
-                  <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between gap-4">
+                  <div className="mt-6 pt-5 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between gap-4">
                     <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">คาดการณ์รายได้จำลอง</p>
-                      <p className="text-xl font-black text-slate-900 tabular-nums">{formatCurrency(simulatedRevenue)}</p>
-                      <p className="text-[10px] text-slate-500 font-medium">เป้าหมายประจำเดือน: {formatCurrency(monthlyTarget)}</p>
+                      <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">คาดการณ์รายได้จำลอง</p>
+                      <p className="text-xl font-black text-slate-900 dark:text-white tabular-nums">{formatCurrency(simulatedRevenue)}</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">เป้าหมายประจำเดือน: {formatCurrency(monthlyTarget)}</p>
                     </div>
                     
                     <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
@@ -1602,7 +1602,8 @@ Win Rate: ${intel.winRate || 0}%
                           cx="48"
                           cy="48"
                           r="40"
-                          stroke="#e2e8f0"
+                          stroke="currentColor"
+                          className="text-slate-200 dark:text-white/10"
                           strokeWidth="6"
                           fill="transparent"
                           strokeDasharray="4 6"
@@ -1630,20 +1631,20 @@ Win Rate: ${intel.winRate || 0}%
                       <div className="absolute flex flex-col items-center justify-center">
                         <span className={cn(
                           "text-base font-black tabular-nums leading-none",
-                          simQuotaAttainment >= 100 ? "text-emerald-600" :
-                          simQuotaAttainment >= 70 ? "text-amber-600" : "text-rose-500"
+                          simQuotaAttainment >= 100 ? "text-emerald-600 dark:text-emerald-400" :
+                          simQuotaAttainment >= 70 ? "text-amber-600 dark:text-amber-400" : "text-rose-500 dark:text-rose-400"
                         )}>
                           {simQuotaAttainment}%
                         </span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-wider">Quota</span>
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mt-1 tracking-wider">Quota</span>
                       </div>
                     </div>
                   </div>
 
                   {/* AI Strategy for Simulator */}
-                  <div className="mt-4 p-4 bg-violet-50/50 border border-violet-100 rounded-2xl text-[10px] text-violet-800 leading-relaxed whitespace-pre-line font-semibold">
-                    <span className="font-bold flex items-center gap-1.5 mb-1.5 text-violet-750">
-                      <Sparkles size={11} className="text-violet-600" />
+                  <div className="mt-4 p-4 bg-violet-50/50 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-800/30 rounded-2xl text-[10px] text-violet-800 dark:text-violet-300 leading-relaxed whitespace-pre-line font-semibold">
+                    <span className="font-bold flex items-center gap-1.5 mb-1.5 text-violet-750 dark:text-violet-200">
+                      <Sparkles size={11} className="text-violet-600 dark:text-violet-400" />
                       กลยุทธ์ AI แนะนำจากตัวเลขจำลอง:
                     </span>
                     {(() => {
