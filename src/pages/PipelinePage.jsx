@@ -343,19 +343,19 @@ export default function PipelinePage() {
         description="จัดการและติดตามดีลในทุกขั้นตอน"
         rightContent={
           <div className="relative w-full md:w-72">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={15} />
             <Input
               placeholder="ค้นหาดีล บริษัท หรือผู้ติดต่อ..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-11 w-full rounded-2xl border-violet-100 bg-white/50 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-violet-400 shadow-sm transition-all"
+              className="pl-10 h-11 w-full rounded-2xl border-slate-200/80 dark:border-white/10 bg-white/60 dark:bg-white/[0.05] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-[#171926] focus:border-violet-400 shadow-sm transition-all"
             />
             {searchTerm && (
               <button
                 type="button"
                 onClick={() => setSearchTerm('')}
                 aria-label="ล้างคำค้นหา"
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-700 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-400"
               >
                 <X size={14} />
               </button>
@@ -366,14 +366,14 @@ export default function PipelinePage() {
           </div>
         }
       >
-          <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-violet-100/50 mr-2 shadow-inner">
+          <div className="flex bg-white/70 dark:bg-white/[0.06] backdrop-blur-sm p-1 rounded-2xl border border-slate-200/80 dark:border-white/10 mr-2 shadow-xs">
             <button
               onClick={() => setBoardType('pipeline')}
               className={cn(
-                'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5',
+                'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
                 boardType === 'pipeline'
-                  ? 'bg-white text-violet-700 shadow-sm ring-1 ring-slate-200/60'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                  ? 'bg-violet-600 text-white shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/10'
               )}
             >
               <Briefcase size={14} /> Pipeline
@@ -381,24 +381,24 @@ export default function PipelinePage() {
             <button
               onClick={() => setBoardType('renewals')}
               className={cn(
-                'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5',
+                'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
                 boardType === 'renewals'
-                  ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-slate-200/60'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/10'
               )}
             >
               <Calendar size={14} /> Renewals
             </button>
           </div>
 
-          <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-violet-100/50 mr-2 shadow-inner">
+          <div className="flex bg-white/70 dark:bg-white/[0.06] backdrop-blur-sm p-1 rounded-2xl border border-slate-200/80 dark:border-white/10 mr-2 shadow-xs">
             <button
               onClick={() => setViewMode('kanban')}
               className={cn(
-                'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5',
+                'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
                 viewMode === 'kanban'
-                  ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/60'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                  ? 'bg-white dark:bg-white/15 text-slate-900 dark:text-white shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10'
               )}
             >
               <LayoutGrid size={14} /> Kanban
@@ -406,10 +406,10 @@ export default function PipelinePage() {
             <button
               onClick={() => setViewMode('list')}
               className={cn(
-                'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5',
+                'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
                 viewMode === 'list'
-                  ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/60'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                  ? 'bg-white dark:bg-white/15 text-slate-900 dark:text-white shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10'
               )}
             >
               <List size={14} /> List
@@ -420,25 +420,26 @@ export default function PipelinePage() {
           <button
             onClick={() => setMyDealsOnly(v => !v)}
             className={cn(
-              'h-10 px-4 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5',
+              'h-10 px-4 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer',
               myDealsOnly
-                ? 'bg-violet-100 text-violet-700 border-violet-200 shadow-sm'
-                : 'bg-white text-slate-500 border-violet-100 hover:bg-slate-50 hover:text-slate-700 shadow-sm'
+                ? 'bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800/60 shadow-xs'
+                : 'bg-white/70 dark:bg-white/[0.06] text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
             )}
           >
             <User size={14} /> ดีลของฉัน
           </button>
 
           {/* Divider */}
-          <div className="w-px h-8 bg-slate-200 hidden md:block" />
+          <div className="w-px h-8 bg-slate-200 dark:bg-white/10 hidden md:block" />
 
           {/* Dropdown Menu for secondary tools (Quick Add & Scan PDF) */}
           <div className="relative">
             <button
               onClick={() => setIsToolsOpen(!isToolsOpen)}
               className={cn(
-                'h-10 px-4 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 bg-white text-slate-600 border-violet-100 hover:bg-slate-50 hover:text-slate-800 shadow-sm',
-                isToolsOpen && 'bg-slate-100 text-slate-900 shadow-inner'
+                'h-10 px-4 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 cursor-pointer',
+                'bg-white/70 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs',
+                isToolsOpen && 'bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white'
               )}
             >
               <Zap size={14} className="text-amber-500 fill-amber-500" />
@@ -455,7 +456,7 @@ export default function PipelinePage() {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 8 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 mt-1.5 w-56 bg-white border border-slate-150 rounded-xl shadow-lg py-1.5 z-50 origin-top-right"
+                    className="absolute right-0 mt-1.5 w-56 bg-white dark:bg-[#0f111a] border border-slate-200/80 dark:border-white/10 rounded-xl shadow-xl py-1.5 z-50 origin-top-right backdrop-blur-xl"
                   >
                     <button
                       onClick={() => {
@@ -467,7 +468,7 @@ export default function PipelinePage() {
                           setQuickError(null);
                         }
                       }}
-                      className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-2"
+                      className="w-full text-left px-3.5 py-2.5 hover:bg-slate-50 dark:hover:bg-white/[0.06] text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2 transition-colors cursor-pointer"
                     >
                       <Zap size={12} className="text-amber-500 fill-amber-500" />
                       <span>Quick Add (บันทึกด่วน)</span>
@@ -481,7 +482,7 @@ export default function PipelinePage() {
                           setIsScanOpen(true);
                         }
                       }}
-                      className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-2"
+                      className="w-full text-left px-3.5 py-2.5 hover:bg-slate-50 dark:hover:bg-white/[0.06] text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2 transition-colors cursor-pointer"
                     >
                       <Sliders size={12} className="text-violet-500" />
                       <span>สแกนใบเสนอราคา (PDF)</span>
@@ -495,7 +496,7 @@ export default function PipelinePage() {
                           setIsVoiceModalOpen(true);
                         }
                       }}
-                      className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-2"
+                      className="w-full text-left px-3.5 py-2.5 hover:bg-slate-50 dark:hover:bg-white/[0.06] text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2 transition-colors cursor-pointer"
                     >
                       <Mic size={12} className="text-rose-500" />
                       <span>สั่งงานด้วยเสียง (Voice)</span>
@@ -521,46 +522,51 @@ export default function PipelinePage() {
         aria-label="Pipeline workspace snapshot"
         className="grid grid-cols-1 gap-3 sm:grid-cols-3"
       >
-        <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-indigo-50 p-4 shadow-sm">
+        {/* Active Pipeline */}
+        <div className="rounded-2xl border border-violet-200/60 dark:border-violet-800/30 bg-gradient-to-br from-violet-50 via-white to-indigo-50 dark:from-violet-950/40 dark:via-[#0f111a] dark:to-indigo-950/30 p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-violet-500">Active pipeline</p>
-              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-400">Active pipeline</p>
+              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
                 {new Intl.NumberFormat('th-TH', { notation: 'compact', maximumFractionDigits: 1 }).format(pipelinePulse.activeValue)}
                 <span className="ml-1 text-xs font-bold text-slate-400">THB</span>
               </p>
-              <p className="mt-1 text-xs font-semibold text-slate-500">{pipelinePulse.activeCount} open deals</p>
+              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{pipelinePulse.activeCount} open deals</p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-500/25">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-md shadow-violet-500/25 shrink-0">
               <TrendingUp size={18} />
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-4 shadow-sm">
+
+        {/* Working set */}
+        <div className="rounded-2xl border border-sky-200/60 dark:border-sky-800/30 bg-gradient-to-br from-sky-50 via-white to-cyan-50 dark:from-sky-950/40 dark:via-[#0f111a] dark:to-cyan-950/30 p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-sky-600">Working set</p>
-              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900">{filteredDeals.length}</p>
-              <p className="mt-1 text-xs font-semibold text-slate-500">deals match current view</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-sky-600 dark:text-sky-400">Working set</p>
+              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">{filteredDeals.length}</p>
+              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">deals match current view</p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-600 text-white shadow-lg shadow-sky-500/25">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-600 text-white shadow-md shadow-sky-500/25 shrink-0">
               <Briefcase size={18} />
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50 via-white to-orange-50 p-4 shadow-sm">
+
+        {/* Needs attention */}
+        <div className="rounded-2xl border border-rose-200/60 dark:border-rose-800/30 bg-gradient-to-br from-rose-50 via-white to-orange-50 dark:from-rose-950/40 dark:via-[#0f111a] dark:to-orange-950/30 p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-rose-600">Needs attention</p>
-              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400">Needs attention</p>
+              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
                 {pipelinePulse.atRiskCount}
                 <span className="ml-1 text-xs font-bold text-slate-400">deals</span>
               </p>
-              <p className="mt-1 text-xs font-semibold text-slate-500">
+              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
                 {new Intl.NumberFormat('th-TH', { notation: 'compact', maximumFractionDigits: 1 }).format(pipelinePulse.atRiskValue)} THB at risk
               </p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-600 text-white shadow-lg shadow-rose-500/25">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-600 text-white shadow-md shadow-rose-500/25 shrink-0">
               <AlertTriangle size={18} />
             </div>
           </div>
@@ -569,59 +575,59 @@ export default function PipelinePage() {
 
       {/* QUICK ADD DIALOG */}
       <Dialog open={isQuickAddOpen} onOpenChange={(v) => { setIsQuickAddOpen(v); if (!v) { setQuickDeal({ company: '', title: '', value: '', expected_close_date: '' }); setQuickError(null); } }}>
-        <DialogContent className="max-w-sm p-0 overflow-hidden rounded-2xl border-0">
+        <DialogContent className="max-w-sm p-0 overflow-hidden rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-[#0f111a]">
           {/* Amber top ribbon */}
           <div className="h-1.5 bg-gradient-to-r from-amber-400 to-orange-500" />
           <div className="p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center shrink-0">
                 <Zap size={18} className="text-amber-500 fill-amber-500" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">Quick Add Deal</h3>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Quick Add Deal</h3>
                 <p className="text-xs text-slate-400 mt-0.5">เพิ่มดีลด่วน — กรอกแค่สิ่งสำคัญ</p>
               </div>
             </div>
 
             <form onSubmit={handleQuickAdd} className="space-y-3">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">ชื่อบริษัท</label>
+                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">ชื่อบริษัท</label>
                 <Input
                   placeholder="เช่น บริษัท ABC จำกัด"
                   value={quickDeal.company}
                   onChange={e => setQuickDeal(q => ({ ...q, company: e.target.value }))}
-                  className="h-11 rounded-xl bg-slate-50 border-violet-100 text-sm font-semibold"
+                  className="h-11 rounded-xl bg-slate-50 dark:bg-white/[0.05] border-slate-200 dark:border-white/10 text-sm font-semibold"
                   autoFocus
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">มูลค่า (บาท)</label>
+                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">มูลค่า (บาท)</label>
                 <Input
                   type="number"
                   placeholder="500,000"
                   value={quickDeal.value}
                   onChange={e => setQuickDeal(q => ({ ...q, value: e.target.value }))}
-                  className="h-11 rounded-xl bg-slate-50 border-violet-100 text-sm font-bold text-amber-700"
+                  className="h-11 rounded-xl bg-slate-50 dark:bg-white/[0.05] border-slate-200 dark:border-white/10 text-sm font-bold text-amber-700 dark:text-amber-400"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">วันคาดว่าจะปิด</label>
+                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">วันคาดว่าจะปิด</label>
                 <input
                   type="date"
                   value={quickDeal.expected_close_date}
                   onChange={e => setQuickDeal(q => ({ ...q, expected_close_date: e.target.value }))}
-                  className="w-full h-11 rounded-xl border border-violet-100 bg-slate-50 px-3 outline-none focus:border-amber-400 focus:bg-white transition-all text-sm font-semibold"
+                  className="w-full h-11 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.05] px-3 outline-none focus:border-amber-400 focus:bg-white dark:focus:bg-[#171926] transition-all text-sm font-semibold text-slate-900 dark:text-white"
                 />
               </div>
               {quickError && (
-                <p className="text-xs text-rose-500 font-medium bg-rose-50 px-3 py-2 rounded-xl">{quickError}</p>
+                <p className="text-xs text-rose-500 font-medium bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 px-3 py-2 rounded-xl">{quickError}</p>
               )}
               <div className="flex gap-2 pt-2">
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={() => setIsQuickAddOpen(false)}
-                  className="flex-1 h-11 rounded-xl text-sm text-slate-500 border border-violet-100 hover:bg-slate-50"
+                  className="flex-1 h-11 rounded-xl text-sm text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.06]"
                 >
                   ยกเลิก
                 </Button>
