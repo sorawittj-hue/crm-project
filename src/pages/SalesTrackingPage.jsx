@@ -46,11 +46,11 @@ const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-violet-100/80 flex flex-col gap-1 z-50 min-w-[170px]">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{data.fullMonth} {data.year}</p>
-        <p className="text-xl font-black text-slate-900 mt-0.5 tracking-tight">{formatCurrency(data.amount)}</p>
+      <div className="bg-white/95 dark:bg-[#171926]/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-slate-200/80 dark:border-white/10 flex flex-col gap-1 z-50 min-w-[170px]">
+        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{data.fullMonth} {data.year}</p>
+        <p className="text-xl font-black text-slate-900 dark:text-white mt-0.5 tracking-tight">{formatCurrency(data.amount)}</p>
         {data.isCurrentMonth && (
-          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-full w-fit mt-1">
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40 px-2 py-0.5 rounded-full w-fit mt-1">
             <Zap size={10} className="fill-emerald-500 text-emerald-500" /> Live Pipeline
           </span>
         )}
@@ -239,70 +239,68 @@ export default function SalesTrackingPage() {
         </div>
 
         {/* Current Month Live Pipeline */}
-        <div className="p-6 rounded-3xl bg-white/40 backdrop-blur-xl border border-emerald-300/60 shadow-[0_8px_30px_rgba(16,185,129,0.15)] hover:border-emerald-400 flex flex-col justify-between relative overflow-hidden group hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 ring-1 ring-inset ring-emerald-500/10">
-          <div className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full bg-emerald-400/20 blur-[40px] pointer-events-none group-hover:scale-125 transition-transform duration-700" />
-          <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-teal-400/10 blur-[30px] pointer-events-none" />
+        <div className="p-6 rounded-3xl bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-emerald-300/60 dark:border-emerald-500/30 shadow-sm hover:border-emerald-400 flex flex-col justify-between relative overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+          <div className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full bg-emerald-400/10 blur-[40px] pointer-events-none group-hover:scale-125 transition-transform duration-700" />
           
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.4)]">
-                <Zap size={20} className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)]" />
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-xs">
+                <Zap size={20} />
               </div>
               <div>
-                <p className="text-[10px] font-black tracking-widest text-emerald-800 uppercase">ยอดปิดได้เดือนนี้</p>
-                <p className="text-[10px] text-slate-500 font-bold">{MONTHS[currentMonth - 1].full}</p>
+                <p className="text-[10px] font-bold tracking-wider text-emerald-700 dark:text-emerald-400 uppercase">ยอดปิดได้เดือนนี้</p>
+                <p className="text-[10px] text-slate-400 font-bold">{MONTHS[currentMonth - 1].full}</p>
               </div>
             </div>
-            <span className="text-xs font-black px-3 py-1.5 rounded-full bg-emerald-100/80 backdrop-blur-sm text-emerald-800 border border-emerald-300 shadow-sm shadow-emerald-500/20">
+            <span className="text-xs font-black px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40 shadow-xs">
               {currentMonthProgress}% เป้าเดือน
             </span>
           </div>
 
           <div className="mt-6 relative z-10">
-            <h3 className="text-3xl lg:text-4xl font-black text-slate-900 tabular-nums tracking-tight leading-none drop-shadow-sm">
+            <h3 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
               {formatCurrency(currentMonthPipelineSales)}
             </h3>
-            <div className="flex items-center gap-3 mt-3 bg-white/50 w-fit px-3 py-1.5 rounded-xl border border-white/60">
+            <div className="flex items-center gap-3 mt-3 bg-slate-50 dark:bg-white/[0.04] w-fit px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-white/5">
               {momGrowth !== null && (
-                <span className={cn('text-xs font-extrabold flex items-center gap-0.5 px-2 py-0.5 rounded-lg shadow-sm',
-                  momGrowth >= 0 ? 'bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-700' : 'bg-gradient-to-r from-rose-100 to-rose-50 text-rose-700'
+                <span className={cn('text-xs font-bold flex items-center gap-0.5 px-2 py-0.5 rounded-lg shadow-xs',
+                  momGrowth >= 0 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' : 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'
                 )}>
                   {momGrowth >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                   {momGrowth > 0 ? `+${momGrowth}%` : `${momGrowth}%`} MoM
                 </span>
               )}
-              <span className="text-xs text-slate-500 font-bold">เป้าเดือน {formatCurrency(monthlyTarget)}</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">เป้าเดือน {formatCurrency(monthlyTarget)}</span>
             </div>
           </div>
         </div>
 
         {/* Forecast / Quarter Summary Highlight */}
-        <div className="p-6 rounded-3xl bg-white/40 backdrop-blur-xl border border-violet-300/60 shadow-[0_8px_30px_rgba(139,92,246,0.15)] hover:border-violet-400 flex flex-col justify-between relative overflow-hidden group hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 ring-1 ring-inset ring-violet-500/10">
-          <div className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full bg-violet-400/20 blur-[40px] pointer-events-none group-hover:scale-125 transition-transform duration-700" />
-          <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-fuchsia-400/10 blur-[30px] pointer-events-none" />
+        <div className="p-6 rounded-3xl bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-violet-300/60 dark:border-violet-500/30 shadow-sm hover:border-violet-400 flex flex-col justify-between relative overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+          <div className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full bg-violet-400/10 blur-[40px] pointer-events-none group-hover:scale-125 transition-transform duration-700" />
           
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-600 text-white flex items-center justify-center shadow-[0_0_15px_rgba(139,92,246,0.4)]">
-                <Target size={20} className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)]" />
+              <div className="w-10 h-10 rounded-2xl bg-violet-600 text-white flex items-center justify-center shadow-xs">
+                <Target size={20} />
               </div>
               <div>
-                <p className="text-[10px] font-black tracking-widest text-violet-800 uppercase">เป้าหมายเฉลี่ย</p>
-                <p className="text-[10px] text-slate-500 font-bold">เป้าหมายต่อไตรมาส</p>
+                <p className="text-[10px] font-bold tracking-wider text-violet-700 dark:text-violet-400 uppercase">เป้าหมายเฉลี่ย</p>
+                <p className="text-[10px] text-slate-400 font-bold">เป้าหมายต่อไตรมาส</p>
               </div>
             </div>
-            <span className="text-xs font-black px-3 py-1.5 rounded-full bg-violet-100/80 backdrop-blur-sm text-violet-800 border border-violet-300 shadow-sm shadow-violet-500/20">
+            <span className="text-xs font-black px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800/40 shadow-xs">
               Q Target
             </span>
           </div>
 
           <div className="mt-6 relative z-10">
-            <h3 className="text-3xl lg:text-4xl font-black text-slate-900 tabular-nums tracking-tight leading-none drop-shadow-sm">
+            <h3 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
               {formatCurrency(monthlyTarget * 3)}
             </h3>
-            <div className="flex items-center gap-2 mt-3 bg-white/50 w-fit px-3 py-1.5 rounded-xl border border-white/60">
-              <p className="text-xs text-slate-600 font-bold">
-                เฉลี่ยเดือนละ <span className="text-violet-700 font-black">{formatCurrency(monthlyTarget)}</span>
+            <div className="flex items-center gap-2 mt-3 bg-slate-50 dark:bg-white/[0.04] w-fit px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-white/5">
+              <p className="text-xs text-slate-600 dark:text-slate-300 font-bold">
+                เฉลี่ยเดือนละ <span className="text-violet-600 dark:text-violet-400 font-black">{formatCurrency(monthlyTarget)}</span>
               </p>
             </div>
           </div>
@@ -310,11 +308,11 @@ export default function SalesTrackingPage() {
       </div>
 
       {/* CHART SECTION */}
-      <div className="p-6 rounded-3xl bg-white/80 backdrop-blur-md border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.03)] space-y-4">
+      <div className="p-6 rounded-3xl bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-sm space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
-            <h3 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <BarChart3 className="text-violet-600" size={20} />
+            <h3 className="text-base md:text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <BarChart3 className="text-violet-600 dark:text-violet-400" size={20} />
               ยอดขายรายเดือนตลอดปี {currentYear + 543}
             </h3>
             <p className="text-xs text-slate-400 font-medium mt-0.5">
@@ -338,8 +336,8 @@ export default function SalesTrackingPage() {
                       <stop offset="100%" stopColor="#059669" stopOpacity={0.8} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="shortMonth" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 700 }} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148, 163, 184, 0.15)" />
+                  <XAxis dataKey="shortMonth" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 700 }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={(val) => `${val / 1000}k`} />
                   <RechartsTooltip content={<CustomTooltip />} />
                   <Bar dataKey="amount" radius={[10, 10, 0, 0]}>
@@ -359,8 +357,8 @@ export default function SalesTrackingPage() {
                       <stop offset="100%" stopColor="#7c3aed" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="shortMonth" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 700 }} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148, 163, 184, 0.15)" />
+                  <XAxis dataKey="shortMonth" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 700 }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={(val) => `${val / 1000}k`} />
                   <RechartsTooltip content={<CustomTooltip />} />
                   <Area type="monotone" dataKey="cumulative" stroke="#7c3aed" strokeWidth={3} fillOpacity={1} fill="url(#areaGradient)" />
@@ -377,30 +375,30 @@ export default function SalesTrackingPage() {
           const targetForQ = monthlyTarget * 3;
           const qProgress = targetForQ > 0 ? Math.min(100, Math.round((q.amount / targetForQ) * 100)) : 0;
           return (
-            <div key={q.id} className="p-5 rounded-3xl bg-white/80 backdrop-blur-md border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] space-y-3 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <div key={q.id} className="p-5 rounded-3xl bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-sm space-y-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center font-black text-xs">
+                  <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300 flex items-center justify-center font-black text-xs">
                     {q.label}
                   </div>
                   <div>
-                    <h4 className="text-sm font-black text-slate-900">{q.label}</h4>
+                    <h4 className="text-sm font-black text-slate-900 dark:text-white">{q.label}</h4>
                     <p className="text-[10px] text-slate-400 font-medium">{q.sub}</p>
                   </div>
                 </div>
-                <span className="text-xs font-black text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-100">
+                <span className="text-xs font-black text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/50 px-2 py-0.5 rounded-full border border-violet-100 dark:border-violet-800/40">
                   {qProgress}%
                 </span>
               </div>
 
               <div>
-                <p className="text-xl font-black text-slate-900 tabular-nums tracking-tight">
+                <p className="text-xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">
                   {formatCurrency(q.amount)}
                 </p>
                 <p className="text-[11px] text-slate-400 font-medium mt-0.5">จากเป้า {formatCurrency(targetForQ)}</p>
               </div>
 
-              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 transition-all duration-500"
                   style={{ width: `${qProgress}%` }}
@@ -414,9 +412,9 @@ export default function SalesTrackingPage() {
       {/* MONTHLY GRID & EDITING */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-            <Calendar className="text-violet-600" size={18} />
-            จัดการยอดขายายเดือน
+          <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+            <Calendar className="text-violet-600 dark:text-violet-400" size={18} />
+            จัดการยอดขายรายเดือน
           </h3>
           <p className="text-xs text-slate-400 font-medium hidden sm:block">
             คลิกที่เดือนย้อนหลังเพื่อปรับแก้ไขยอดขายที่เกิดขึ้นจริง
@@ -431,17 +429,17 @@ export default function SalesTrackingPage() {
               <div
                 key={m.month}
                 className={cn(
-                  'p-5 rounded-3xl border transition-all duration-300 bg-white/80 backdrop-blur-md relative overflow-hidden group',
+                  'p-5 rounded-3xl border transition-all duration-300 bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl relative overflow-hidden group',
                   m.isCurrentMonth
-                    ? 'border-emerald-300 ring-2 ring-emerald-400/20 shadow-md shadow-emerald-500/10'
-                    : 'border-slate-200/80 hover:border-violet-200 hover:shadow-md'
+                    ? 'border-emerald-400 dark:border-emerald-500/50 ring-2 ring-emerald-400/20 shadow-md shadow-emerald-500/10'
+                    : 'border-slate-200/80 dark:border-white/10 hover:border-violet-300 dark:hover:border-violet-500/40 hover:shadow-md'
                 )}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-black text-slate-900">{m.fullMonth}</span>
+                    <span className="text-sm font-black text-slate-900 dark:text-white">{m.fullMonth}</span>
                     {m.isCurrentMonth && (
-                      <span className="text-[9px] font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">
+                      <span className="text-[9px] font-black bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/40">
                         เดือนนี้ (Live)
                       </span>
                     )}
@@ -453,7 +451,7 @@ export default function SalesTrackingPage() {
                         setEditingMonth(m.month);
                         setEditValues(prev => ({ ...prev, [m.month]: m.amount }));
                       }}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-violet-50 hover:text-violet-600 transition-colors opacity-0 group-hover:opacity-100"
+                      className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-violet-50 dark:hover:bg-white/10 hover:text-violet-600 dark:hover:text-white transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
                       title="แก้ไขยอดขาย"
                     >
                       <Edit2 size={13} />
@@ -493,7 +491,7 @@ export default function SalesTrackingPage() {
                   </div>
                 ) : (
                   <div>
-                    <p className="text-xl font-black text-slate-900 tabular-nums tracking-tight">
+                    <p className="text-xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">
                       {formatCurrency(m.amount)}
                     </p>
                     <div className="mt-3 space-y-1.5">
@@ -501,7 +499,7 @@ export default function SalesTrackingPage() {
                         <span>ความคืบหน้า</span>
                         <span>{progressMonth}%</span>
                       </div>
-                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div
                           className={cn('h-full rounded-full transition-all duration-500',
                             m.isCurrentMonth ? 'bg-emerald-500' : 'bg-violet-600'

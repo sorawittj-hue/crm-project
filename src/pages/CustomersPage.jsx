@@ -101,9 +101,10 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        'group bg-white rounded-3xl border p-5 cursor-pointer relative overflow-hidden transition-all duration-300',
-        'hover:border-violet-200 hover:shadow-[0_8px_32px_rgba(139,92,246,0.12)] hover:-translate-y-1',
-        isSelected ? 'border-violet-300 shadow-[0_0_0_3px_rgba(139,92,246,0.15)]' : 'border-slate-100 shadow-sm',
+        'group rounded-2xl border p-5 cursor-pointer relative overflow-hidden transition-all duration-300',
+        'bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border-slate-200/80 dark:border-white/10 shadow-sm',
+        'hover:border-violet-300 dark:hover:border-violet-500/40 hover:shadow-lg dark:hover:shadow-violet-950/20 hover:-translate-y-1',
+        isSelected ? 'border-violet-500 ring-2 ring-violet-500/20' : '',
       )}
       onClick={() => onOpen(customer)}
     >
@@ -114,7 +115,7 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
       >
         <div className={cn(
           'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all',
-          isSelected ? 'bg-violet-600 border-violet-600' : 'border-slate-300 bg-white group-hover:border-violet-400'
+          isSelected ? 'bg-violet-600 border-violet-600' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-white/10 group-hover:border-violet-400'
         )}>
           {isSelected && <CheckCircle2 size={13} className="text-white" />}
         </div>
@@ -122,7 +123,7 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
 
       {/* Subtle gradient strip on hover */}
       <div
-        className="absolute top-0 left-0 w-1 h-full rounded-l-3xl opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-0 left-0 w-1 h-full rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity"
         style={{ background: `linear-gradient(to bottom, ${g1}, ${g2})` }}
       />
 
@@ -130,18 +131,18 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
         {/* Header */}
         <div className="flex items-start gap-3 pr-7">
           <div
-            className="w-11 h-11 rounded-2xl flex items-center justify-center text-white text-base font-black shrink-0 shadow-md transition-transform group-hover:scale-105"
+            className="w-10 h-10 rounded-2xl flex items-center justify-center text-white text-base font-black shrink-0 shadow-md transition-transform group-hover:scale-105"
             style={{ background: `linear-gradient(135deg, ${g1}, ${g2})` }}
           >
             {customer.name?.charAt(0)?.toUpperCase() || '?'}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-bold text-slate-900 truncate group-hover:text-violet-700 transition-colors">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
               {customer.name}
             </h3>
             {customer.company && (
-              <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5 truncate">
-                <Building2 size={10} className="shrink-0" />
+              <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5 truncate">
+                <Building2 size={11} className="shrink-0" />
                 {customer.company}
               </p>
             )}
@@ -155,16 +156,16 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
               {customer.grade}
             </span>
           )}
-          <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-lg border', healthConf.cls)}>
+          <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-lg border dark:bg-white/5 dark:border-white/10', healthConf.cls)}>
             {healthConf.label}
           </span>
           {customer.industry && (
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-slate-50 text-slate-500 border border-slate-100 truncate max-w-[100px]">
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-white/5 truncate max-w-[110px]">
               {customer.industry}
             </span>
           )}
           {suggestTierUpgrade(customer.dealStats?.wonValue || 0, customer.tier)?.shouldUpgrade && (
-            <span className="inline-flex items-center gap-1 text-[9px] font-black text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 text-[9px] font-black text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 px-1.5 py-0.5 rounded-full">
               ⬆️ แนะนำ {suggestTierUpgrade(customer.dealStats?.wonValue || 0, customer.tier)?.suggestedTier}
             </span>
           )}
@@ -173,7 +174,7 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
         {/* Health bar */}
         <div className="space-y-1">
           <div className="flex justify-between text-[10px] font-semibold">
-            <span className="text-slate-400">Health Score</span>
+            <span className="text-slate-400 dark:text-slate-500">Health Score</span>
             <span className={cn(
               customer.health?.status === 'at_risk' ? 'text-rose-500'
                 : customer.health?.status === 'watch' ? 'text-amber-500'
@@ -187,18 +188,18 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-50">
+        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-white/5">
           <div className="text-center">
-            <p className="text-[10px] text-slate-400 font-medium mb-0.5">ดีลรวม</p>
-            <p className="text-base font-black text-slate-800">{customer.dealStats.total}</p>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium mb-0.5">ดีลรวม</p>
+            <p className="text-sm md:text-base font-black text-slate-900 dark:text-white tabular-nums">{customer.dealStats.total}</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] text-emerald-600 font-medium mb-0.5">ปิดได้</p>
-            <p className="text-base font-black text-emerald-600">{customer.dealStats.won}</p>
+            <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium mb-0.5">ปิดได้</p>
+            <p className="text-sm md:text-base font-black text-emerald-600 dark:text-emerald-400 tabular-nums">{customer.dealStats.won}</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] text-violet-600 font-medium mb-0.5">CLV</p>
-            <p className="text-xs font-black text-violet-700 leading-tight">
+            <p className="text-[10px] text-violet-600 dark:text-violet-400 font-medium mb-0.5">CLV</p>
+            <p className="text-xs font-black text-violet-600 dark:text-violet-400 leading-tight tabular-nums truncate">
               {formatCurrency(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0))}
             </p>
           </div>
@@ -211,25 +212,25 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
               <a
                 href={`mailto:${customer.email}`}
                 onClick={e => e.stopPropagation()}
-                className="w-7 h-7 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-violet-50 hover:border-violet-200 hover:text-violet-600 transition-all"
+                className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:text-violet-600 dark:hover:text-violet-300 transition-all"
                 title={customer.email}
               >
-                <Mail size={13} />
+                <Mail size={12} />
               </a>
             )}
             {customer.phone && (
               <a
                 href={`tel:${customer.phone}`}
                 onClick={e => e.stopPropagation()}
-                className="w-7 h-7 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 transition-all"
+                className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-600 dark:hover:text-emerald-300 transition-all"
                 title={customer.phone}
               >
-                <Phone size={13} />
+                <Phone size={12} />
               </a>
             )}
           </div>
-          <span className="flex items-center gap-1 text-[11px] font-bold text-violet-500 opacity-0 group-hover:opacity-100 transition-opacity">
-            ดูข้อมูล <ChevronRight size={13} />
+          <span className="flex items-center gap-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 opacity-0 group-hover:opacity-100 transition-opacity">
+            ดูข้อมูล <ChevronRight size={12} />
           </span>
         </div>
       </div>
@@ -247,7 +248,7 @@ function CustomerRow({ customer, onOpen, onSelect, isSelected }) {
     <tr
       className={cn(
         'group cursor-pointer transition-colors',
-        isSelected ? 'bg-violet-50' : 'hover:bg-slate-50'
+        isSelected ? 'bg-violet-50/60 dark:bg-violet-950/30' : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
       )}
       onClick={() => onOpen(customer)}
     >
@@ -255,7 +256,7 @@ function CustomerRow({ customer, onOpen, onSelect, isSelected }) {
         <div
           className={cn(
             'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer',
-            isSelected ? 'bg-violet-600 border-violet-600' : 'border-slate-300'
+            isSelected ? 'bg-violet-600 border-violet-600' : 'border-slate-300 dark:border-slate-600'
           )}
           onClick={() => onSelect(customer.id)}
         >
@@ -265,14 +266,14 @@ function CustomerRow({ customer, onOpen, onSelect, isSelected }) {
       <td className="p-4">
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-sm shrink-0"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-xs shrink-0"
             style={{ background: `linear-gradient(135deg, ${g1}, ${g2})` }}
           >
             {customer.name?.charAt(0)?.toUpperCase() || '?'}
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-900 group-hover:text-violet-700 transition-colors">{customer.name}</p>
-            {customer.company && <p className="text-xs text-slate-400">{customer.company}</p>}
+            <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{customer.name}</p>
+            {customer.company && <p className="text-xs text-slate-400 dark:text-slate-500">{customer.company}</p>}
           </div>
         </div>
       </td>
@@ -283,14 +284,14 @@ function CustomerRow({ customer, onOpen, onSelect, isSelected }) {
               {customer.grade}
             </span>
           )}
-          <span className={cn('px-2 py-0.5 rounded-lg text-[10px] font-bold border', TIER_CONFIG[customer.tier]?.color || 'bg-slate-100 text-slate-500 border-slate-200')}>
+          <span className={cn('px-2 py-0.5 rounded-lg text-[10px] font-bold border dark:bg-white/5 dark:border-white/10', TIER_CONFIG[customer.tier]?.color || 'bg-slate-100 text-slate-500 border-slate-200')}>
             {TIER_CONFIG[customer.tier]?.icon} {customer.tier || 'Silver'}
           </span>
         </div>
       </td>
       <td className="p-4">
         <div className="flex items-center gap-2">
-          <div className="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+          <div className="w-20 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full"
               style={{
@@ -302,36 +303,36 @@ function CustomerRow({ customer, onOpen, onSelect, isSelected }) {
               }}
             />
           </div>
-          <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border', healthConf.cls)}>
+          <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded border dark:bg-white/5 dark:border-white/10', healthConf.cls)}>
             {customer.health?.score ?? 0}%
           </span>
         </div>
       </td>
       <td className="p-4">
-        <span className="text-sm font-black text-slate-800">
+        <span className="text-sm font-black text-slate-900 dark:text-white tabular-nums">
           {formatCurrency(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0))}
         </span>
       </td>
       <td className="p-4">
-        <span className="text-xs text-slate-500">
-          <strong className="text-slate-800">{customer.dealStats.total}</strong> ดีล
+        <span className="text-xs text-slate-500 dark:text-slate-400">
+          <strong className="text-slate-900 dark:text-white">{customer.dealStats.total}</strong> ดีล
           {customer.dealStats.won > 0 && (
-            <span className="text-emerald-600 ml-1">(Won: {customer.dealStats.won})</span>
+            <span className="text-emerald-600 dark:text-emerald-400 ml-1 font-semibold">(Won: {customer.dealStats.won})</span>
           )}
         </span>
       </td>
       <td className="p-4">
         <div className="flex flex-col gap-0.5">
-          {customer.email && <span className="text-xs text-slate-500 truncate max-w-[140px]">{customer.email}</span>}
+          {customer.email && <span className="text-xs text-slate-600 dark:text-slate-300 truncate max-w-[140px]">{customer.email}</span>}
           {customer.phone && <span className="text-[11px] text-slate-400 font-mono">{customer.phone}</span>}
         </div>
       </td>
       <td className="p-4 text-right" onClick={e => e.stopPropagation()}>
         <button
           onClick={() => onOpen(customer)}
-          className="p-2 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-colors"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-white/10 transition-colors"
         >
-          <ChevronRight size={16} />
+          <ChevronRight size={15} />
         </button>
       </td>
     </tr>
@@ -1111,7 +1112,7 @@ export default function CustomersPage() {
           </div>
 
           {/* Search + Filter bar */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3 flex flex-col sm:flex-row gap-3">
+          <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-sm p-3 flex flex-col sm:flex-row gap-3">
             {/* Search */}
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
@@ -1119,17 +1120,17 @@ export default function CustomersPage() {
                 placeholder="ค้นหาชื่อ, บริษัท, อีเมล..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20 outline-none transition-all"
+                className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-50 dark:bg-white/[0.04] text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-[#171926] focus:border-violet-400 outline-none transition-all"
               />
               {searchTerm && (
-                <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+                <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-white">
                   <X size={14} />
                 </button>
               )}
             </div>
 
             {/* Grade filter pills */}
-            <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 p-1 rounded-xl overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 p-1 rounded-xl overflow-x-auto no-scrollbar">
               {[
                 { val: 'all', label: 'ทั้งหมด', count: gradeCounts.all, cls: 'bg-violet-600 text-white' },
                 { val: 'grade-A', label: 'A', count: gradeCounts.A, cls: 'bg-emerald-600 text-white' },
@@ -1138,10 +1139,10 @@ export default function CustomersPage() {
                 { val: 'grade-D', label: 'D', count: gradeCounts.D, cls: 'bg-rose-500 text-white' },
               ].map(({ val, label, count, cls }) => (
                 <button key={val} onClick={() => setGradeFilter(val)}
-                  className={cn('px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1',
-                    gradeFilter === val ? cls : 'text-slate-500 hover:text-slate-800 hover:bg-white')}>
+                  className={cn('px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer',
+                    gradeFilter === val ? cls : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10')}>
                   {label}
-                  <span className={cn('text-[10px] px-1.5 rounded-full', gradeFilter === val ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-500')}>{count}</span>
+                  <span className={cn('text-[10px] px-1.5 rounded-full', gradeFilter === val ? 'bg-white/25 text-white' : 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300')}>{count}</span>
                 </button>
               ))}
             </div>
@@ -1150,7 +1151,7 @@ export default function CustomersPage() {
               <select
                 value={industryFilter}
                 onChange={e => setIndustryFilter(e.target.value)}
-                className="h-10 px-3 rounded-xl border border-slate-200 bg-white/80 text-xs font-semibold text-slate-600 cursor-pointer"
+                className="h-10 px-3 rounded-xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-[#171926] text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
               >
                 <option value="all">ทุก Industry</option>
                 {industries.map(ind => (
@@ -1162,7 +1163,7 @@ export default function CustomersPage() {
             {/* Sort + View */}
             <div className="flex items-center gap-2">
               <select value={`${sortBy}-${sortOrder}`} onChange={e => { const [by, ord] = e.target.value.split('-'); setSortBy(by); setSortOrder(ord); }}
-                className="h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-600 outline-none focus:border-violet-400 cursor-pointer">
+                className="h-10 px-3 rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-50 dark:bg-[#171926] text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:border-violet-400 cursor-pointer">
                 <option value="name-asc">ชื่อ A→Z</option>
                 <option value="name-desc">ชื่อ Z→A</option>
                 <option value="clv-desc">CLV มากสุด</option>
@@ -1171,11 +1172,11 @@ export default function CustomersPage() {
                 <option value="health-asc">Health แย่สุด</option>
                 <option value="date-desc">อัปเดตล่าสุด</option>
               </select>
-              <div className="flex bg-slate-50 border border-slate-200 p-1 rounded-xl">
-                <button onClick={() => setViewMode('grid')} className={cn('p-1.5 rounded-lg transition-all', viewMode === 'grid' ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 hover:text-slate-700')}>
+              <div className="flex bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 p-1 rounded-xl">
+                <button onClick={() => setViewMode('grid')} className={cn('p-1.5 rounded-lg transition-all cursor-pointer', viewMode === 'grid' ? 'bg-white dark:bg-violet-600 text-violet-600 dark:text-white shadow-xs' : 'text-slate-400 hover:text-slate-700 dark:hover:text-white')}>
                   <LayoutGrid size={15} />
                 </button>
-                <button onClick={() => setViewMode('list')} className={cn('p-1.5 rounded-lg transition-all', viewMode === 'list' ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 hover:text-slate-700')}>
+                <button onClick={() => setViewMode('list')} className={cn('p-1.5 rounded-lg transition-all cursor-pointer', viewMode === 'list' ? 'bg-white dark:bg-violet-600 text-violet-600 dark:text-white shadow-xs' : 'text-slate-400 hover:text-slate-700 dark:hover:text-white')}>
                   <List size={15} />
                 </button>
               </div>
@@ -1186,11 +1187,11 @@ export default function CustomersPage() {
           <AnimatePresence>
             {selectedIds.length > 0 && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                <div className="flex items-center justify-between bg-violet-50 border border-violet-200 rounded-2xl px-4 py-2.5">
-                  <span className="text-sm font-bold text-violet-700">เลือก {selectedIds.length} รายการ</span>
+                <div className="flex items-center justify-between bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800/40 rounded-2xl px-4 py-2.5">
+                  <span className="text-sm font-bold text-violet-700 dark:text-violet-300">เลือก {selectedIds.length} รายการ</span>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setSelectedIds([])} className="h-8 text-xs border-violet-200 text-violet-600">ยกเลิก</Button>
-                    <Button variant="outline" size="sm" onClick={handleBulkDelete} className="h-8 text-xs border-rose-200 text-rose-600 hover:bg-rose-50">
+                    <Button variant="outline" size="sm" onClick={() => setSelectedIds([])} className="h-8 text-xs border-violet-200 dark:border-violet-800 text-violet-600 dark:text-violet-300">ยกเลิก</Button>
+                    <Button variant="outline" size="sm" onClick={handleBulkDelete} className="h-8 text-xs border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40">
                       <Trash2 size={13} className="mr-1" /> ลบที่เลือก
                     </Button>
                   </div>
@@ -1218,23 +1219,23 @@ export default function CustomersPage() {
 
           {/* List view */}
           {viewMode === 'list' && filteredCustomers.length > 0 && (
-            <div className="overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm">
+            <div className="overflow-hidden rounded-2xl bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-100 bg-slate-50">
+                    <tr className="border-b border-slate-200/60 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02]">
                       <th className="p-4 w-12">
-                        <div className={cn('w-5 h-5 rounded-full border-2 cursor-pointer flex items-center justify-center', selectedIds.length === filteredCustomers.length && filteredCustomers.length > 0 ? 'bg-violet-600 border-violet-600' : 'border-slate-300')}
+                        <div className={cn('w-5 h-5 rounded-full border-2 cursor-pointer flex items-center justify-center', selectedIds.length === filteredCustomers.length && filteredCustomers.length > 0 ? 'bg-violet-600 border-violet-600' : 'border-slate-300 dark:border-slate-600')}
                           onClick={() => setSelectedIds(selectedIds.length === filteredCustomers.length ? [] : filteredCustomers.map(c => c.id))}>
                           {selectedIds.length === filteredCustomers.length && filteredCustomers.length > 0 && <CheckCircle2 size={11} className="text-white" />}
                         </div>
                       </th>
                       {['ลูกค้า', 'เกรด / ระดับ', 'สุขภาพบัญชี', 'CLV', 'ดีล', 'ติดต่อ', ''].map(h => (
-                        <th key={h} className="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{h}</th>
+                        <th key={h} className="p-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                     {filteredCustomers.map(customer => (
                       <CustomerRow key={customer.id} customer={customer} onOpen={openCustomer} onSelect={toggleSelection} isSelected={selectedIds.includes(customer.id)} />
                     ))}
@@ -1246,19 +1247,19 @@ export default function CustomersPage() {
 
           {/* Empty state */}
           {filteredCustomers.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-slate-100 shadow-sm">
-              <div className="w-20 h-20 bg-violet-50 rounded-3xl flex items-center justify-center mb-5 shadow-inner">
-                <Users size={36} className="text-violet-500" />
+            <div className="flex flex-col items-center justify-center py-20 bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-sm">
+              <div className="w-16 h-16 bg-violet-500/10 rounded-2xl flex items-center justify-center mb-4">
+                <Users size={32} className="text-violet-600 dark:text-violet-400" />
               </div>
-              <h3 className="text-xl font-black text-slate-800 mb-2">
+              <h3 className="text-lg font-black text-slate-900 dark:text-white mb-1">
                 {searchTerm ? 'ไม่พบลูกค้า' : 'ยังไม่มีฐานลูกค้า'}
               </h3>
-              <p className="text-sm text-slate-500 mb-6 text-center max-w-xs">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 text-center max-w-xs">
                 {searchTerm ? 'ลองเปลี่ยนคำค้นหา หรือล้างตัวกรอง' : 'เริ่มเพิ่มลูกค้าเพื่อติดตามและวิเคราะห์สุขภาพบัญชีอย่างมืออาชีพ'}
               </p>
               <button
                 onClick={() => searchTerm ? setSearchTerm('') : (setNewCustomer(EMPTY_FORM), setIsAddModalOpen(true))}
-                className="px-6 py-3 bg-violet-600 text-white text-sm font-bold rounded-2xl hover:bg-violet-700 hover:scale-105 transition-all shadow-lg shadow-violet-500/20"
+                className="px-5 py-2.5 bg-violet-600 text-white text-xs font-bold rounded-xl hover:bg-violet-700 transition-all shadow-md cursor-pointer"
               >
                 {searchTerm ? 'ล้างการค้นหา' : '+ เพิ่มลูกค้าใหม่'}
               </button>

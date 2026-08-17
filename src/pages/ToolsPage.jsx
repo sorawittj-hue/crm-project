@@ -548,7 +548,7 @@ export default function ToolsPage() {
 
       {/* Tab List */}
       <div className="mb-8 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 pb-1">
-        <div className="inline-flex gap-1.5 bg-white/90 backdrop-blur-xl border border-slate-100 p-1.5 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] min-w-max">
+        <div className="inline-flex gap-1.5 bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 p-1.5 rounded-2xl shadow-sm min-w-max">
           {TOOLS.map(tool => {
             const Icon = tool.icon;
             const isActive = activeTab === tool.key;
@@ -557,10 +557,10 @@ export default function ToolsPage() {
                 key={tool.key}
                 onClick={() => setActiveTab(tool.key)}
                 className={cn(
-                  'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap',
+                  'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap cursor-pointer',
                   isActive
-                    ? `bg-gradient-to-r ${tool.gradient} text-white shadow-lg ${tool.shadowClass}`
-                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800 hover:shadow-sm'
+                    ? `bg-gradient-to-r ${tool.gradient} text-white shadow-md ${tool.shadowClass}`
+                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white'
                 )}
               >
                 <Icon size={14} strokeWidth={2.5} />
@@ -582,34 +582,31 @@ export default function ToolsPage() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -16, scale: 0.98 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="rounded-[2.5rem] border border-violet-100/40 shadow-2xl shadow-slate-300/30 bg-white/90 backdrop-blur-3xl overflow-hidden relative"
+          className="rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-lg bg-white/90 dark:bg-[#0f111a]/90 backdrop-blur-3xl overflow-hidden relative"
         >
           {/* Glass glare effect */}
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-80 z-10" />
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-10" />
           
           <div className={`h-1.5 bg-gradient-to-r ${activeTool.gradient} relative z-10`} />
 
-          <div className="px-6 py-8 md:px-12 md:py-10 border-b border-slate-100/80 relative bg-gradient-to-b from-white to-transparent">
-            <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
-              <activeTool.icon size={160} />
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-6 relative z-10">
-              <div className={cn("w-16 h-16 rounded-3xl bg-gradient-to-br flex items-center justify-center text-white shadow-xl shrink-0 transform transition-transform hover:scale-105 hover:rotate-3", activeTool.gradient, activeTool.shadowClass || "shadow-violet-500/30")}>
-                <activeTool.icon size={28} strokeWidth={2.5} />
+          <div className="px-6 py-8 md:px-10 md:py-8 border-b border-slate-100 dark:border-white/5 relative bg-gradient-to-b from-white/40 dark:from-white/[0.02] to-transparent">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-5 relative z-10">
+              <div className={cn("w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center text-white shadow-md shrink-0", activeTool.gradient, activeTool.shadowClass || "shadow-violet-500/30")}>
+                <activeTool.icon size={26} strokeWidth={2.5} />
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-2xl font-black text-slate-900 mb-1 tracking-tight">{activeTool.title}</h2>
-                <p className="text-sm text-slate-500 font-medium">{activeTool.desc}</p>
+                <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white mb-1 tracking-tight">{activeTool.title}</h2>
+                <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium">{activeTool.desc}</p>
               </div>
               <div className="flex flex-wrap gap-2 shrink-0">
                 {activeTool.badges.map(b => (
-                  <span key={b.label} className={cn('px-3.5 py-1.5 rounded-xl border text-xs font-bold tracking-wide uppercase', b.color)}>{b.label}</span>
+                  <span key={b.label} className={cn('px-3 py-1 rounded-xl border text-xs font-bold tracking-wide uppercase', b.color)}>{b.label}</span>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="p-6 md:p-12 relative z-10">
+          <div className="p-6 md:p-10 relative z-10">
             {ActiveComponent && <ActiveComponent />}
           </div>
         </motion.div>

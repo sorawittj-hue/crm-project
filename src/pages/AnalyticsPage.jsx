@@ -90,51 +90,55 @@ function AnimatedNumber({ value, formatter, duration = 1.2 }) {
 // --- Premium Metric Card ---
 const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Icon, trend, color = "primary", sparklineData, delay = 0 }) => {
   const colorStyles = {
-    primary: "text-violet-600 bg-violet-50/80 border-violet-100",
-    emerald: "text-emerald-600 bg-emerald-50/80 border-emerald-100",
-    rose: "text-rose-600 bg-rose-50/80 border-rose-100",
-    amber: "text-amber-600 bg-amber-50/80 border-amber-100",
-    slate: "text-slate-600 bg-slate-50/80 border-slate-100"
+    primary: "text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/40 border-violet-100 dark:border-violet-800/40",
+    emerald: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-800/40",
+    rose: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border-rose-100 dark:border-rose-800/40",
+    amber: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border-amber-100 dark:border-amber-800/40",
+    slate: "text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-white/5 border-slate-200/60 dark:border-white/5"
   };
   
   const glowStyles = {
-    primary: "group-hover:shadow-violet-500/20",
-    emerald: "group-hover:shadow-emerald-500/20",
-    rose: "group-hover:shadow-rose-500/20",
-    amber: "group-hover:shadow-amber-500/20",
-    slate: "group-hover:shadow-slate-500/20"
+    primary: "hover:shadow-violet-500/10",
+    emerald: "hover:shadow-emerald-500/10",
+    rose: "hover:shadow-rose-500/10",
+    amber: "hover:shadow-amber-500/10",
+    slate: "hover:shadow-slate-500/10"
   };
 
   const topBarStyles = {
-    primary: "from-violet-400 to-indigo-500",
-    emerald: "from-emerald-400 to-teal-500",
-    rose: "from-rose-400 to-pink-500",
-    amber: "from-amber-400 to-orange-500",
-    slate: "from-slate-400 to-slate-500"
+    primary: "from-violet-500 to-indigo-500",
+    emerald: "from-emerald-500 to-teal-500",
+    rose: "from-rose-500 to-pink-500",
+    amber: "from-amber-500 to-orange-500",
+    slate: "from-slate-400 to-slate-600"
   };
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }} 
+      initial={{ opacity: 0, y: 16 }} 
       animate={{ opacity: 1, y: 0 }} 
-      transition={{ delay, duration: 0.5, ease: "easeOut" }}
+      transition={{ delay, duration: 0.4, ease: "easeOut" }}
       className="group"
     >
-      <Card className={cn("p-6 rounded-[2rem] bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_24px_48px_rgb(0,0,0,0.12)] ring-1 ring-slate-900/5 hover:-translate-y-1.5 transition-all duration-500 relative overflow-hidden group", glowStyles[color])}>
+      <Card className={cn(
+        "p-5 md:p-6 rounded-2xl md:rounded-3xl border transition-all duration-300 relative overflow-hidden group",
+        "bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border-slate-200/80 dark:border-white/10 shadow-sm hover:shadow-lg hover:-translate-y-1",
+        glowStyles[color]
+      )}>
         {/* Top accent gradient bar */}
-        <div className={cn("absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r opacity-70 group-hover:opacity-100 transition-opacity duration-500", topBarStyles[color])} />
-        {/* Subtle background glow */}
-        <div className={cn("absolute -top-10 -right-10 w-32 h-32 blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-full", colorStyles[color].split(' ')[1])} />
+        <div className={cn("absolute top-0 left-0 right-0 h-1 bg-gradient-to-r opacity-80 group-hover:opacity-100 transition-opacity duration-300", topBarStyles[color])} />
         
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-4">
-            <div className={cn("w-11 h-11 rounded-2xl flex items-center justify-center backdrop-blur-sm", colorStyles[color])}>
+          <div className="flex items-center justify-between mb-3.5">
+            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center border", colorStyles[color])}>
               <Icon size={18} strokeWidth={2.5} />
             </div>
             {trend !== undefined && (
               <div className={cn(
                 "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold tracking-wide",
-                trend >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                trend >= 0 
+                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40" 
+                  : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/40"
               )}>
                 {trend >= 0 ? <ArrowUpRight size={13} strokeWidth={3} /> : <ArrowDownRight size={13} strokeWidth={3} />}
                 {Math.abs(trend)}%
@@ -142,21 +146,16 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
             )}
           </div>
           <div className="space-y-1">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{title}</p>
+            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{title}</p>
             <div className="flex items-baseline justify-between gap-2">
-              <h3 className="text-2xl font-black text-slate-900 tabular-nums leading-none tracking-tight">
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white tabular-nums leading-none tracking-tight">
                 {numericValue !== undefined ? <AnimatedNumber value={numericValue} formatter={formatter} /> : value}
               </h3>
               
-              {/* Premium Sparkline */}
+              {/* Sparkline */}
               {sparklineData && sparklineData.length > 1 && (
-                <div className="w-16 h-8 shrink-0">
+                <div className="w-16 h-7 shrink-0 opacity-80">
                   <svg className="w-full h-full overflow-visible" viewBox="0 0 60 20">
-                    <defs>
-                      <filter id={`sparkline-glow-${title.replace(/\s+/g, '-')}`} x="-20%" y="-20%" width="140%" height="140%">
-                        <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor={color === 'emerald' ? '#10b981' : color === 'rose' ? '#ef4444' : color === 'amber' ? '#f59e0b' : '#8b5cf6'} floodOpacity="0.3"/>
-                      </filter>
-                    </defs>
                     <motion.path
                       d={(() => {
                         const min = Math.min(...sparklineData);
@@ -169,20 +168,19 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
                         }).join(' ');
                       })()}
                       fill="none"
-                      stroke={color === 'emerald' ? '#10b981' : color === 'rose' ? '#ef4444' : color === 'amber' ? '#f59e0b' : color === 'slate' ? '#64748b' : '#8b5cf6'}
-                      strokeWidth="2.5"
+                      stroke={color === 'emerald' ? '#10b981' : color === 'rose' ? '#f43f5e' : color === 'amber' ? '#f59e0b' : color === 'slate' ? '#64748b' : '#8b5cf6'}
+                      strokeWidth="2.2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      filter={`url(#sparkline-glow-${title.replace(/\s+/g, '-')})`}
                       initial={{ pathLength: 0 }}
                       animate={{ pathLength: 1 }}
-                      transition={{ duration: 1.2, ease: "easeInOut", delay: delay + 0.3 }}
+                      transition={{ duration: 1, ease: "easeInOut", delay: delay + 0.2 }}
                     />
                   </svg>
                 </div>
               )}
             </div>
-            {subValue && <p className="text-xs text-slate-500 font-medium mt-1.5">{subValue}</p>}
+            {subValue && <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">{subValue}</p>}
           </div>
         </div>
       </Card>

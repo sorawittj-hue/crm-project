@@ -35,17 +35,14 @@ import {
   CartesianGrid, Tooltip as RechartsTooltip
 } from 'recharts';
 
-
-
 const ACTIVITY_ICON = {
-  call: { Icon: Phone, color: 'bg-blue-50 text-blue-500' },
-  email: { Icon: Mail, color: 'bg-violet-50 text-violet-500' },
-  meeting: { Icon: Clock, color: 'bg-amber-50 text-amber-600' },
-  note: { Icon: FileText, color: 'bg-slate-50 text-slate-500' },
-  task: { Icon: CalendarClock, color: 'bg-amber-50 text-amber-700' },
-  whatsapp: { Icon: MessageSquare, color: 'bg-emerald-50 text-emerald-600' },
+  call: { Icon: Phone, color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
+  email: { Icon: Mail, color: 'bg-violet-500/10 text-violet-600 dark:text-violet-400' },
+  meeting: { Icon: Clock, color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+  note: { Icon: FileText, color: 'bg-slate-500/10 text-slate-600 dark:text-slate-400' },
+  task: { Icon: CalendarClock, color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+  whatsapp: { Icon: MessageSquare, color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
 };
-
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -64,8 +61,8 @@ export default function CommandCenterPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: myProfile } = useMyProfile(user?.id);
-  const { data: deals, isLoading: dealsLoading } = useDeals();
-  const { data: teamMembers, isLoading: teamLoading } = useTeam();
+  const { data: deals = [], isLoading: dealsLoading } = useDeals();
+  const { data: teamMembers = [], isLoading: teamLoading } = useTeam();
   const { data: activities = [] } = useActivities();
   const updateActivityMutation = useUpdateActivity();
   const { data: customers = [] } = useCustomers();
@@ -77,7 +74,7 @@ export default function CommandCenterPage() {
   const hasPersonalTarget = myProfile?.personal_target > 0;
   const monthlyGoal = hasPersonalTarget ? myProfile.personal_target : 0;
 
-  const [viewMode, setViewMode] = useState('team'); // 'team' | 'personal'
+  const [viewMode, setViewMode] = useState('team');
   const baseStats = useCommandCenterStats(deals, monthlyGoal, user?.id);
   const stats = viewMode === 'personal' && baseStats?.myStats ? baseStats.myStats : baseStats;
 
@@ -98,7 +95,6 @@ export default function CommandCenterPage() {
   // Today's Action Plan
   const actionPlan = useMemo(() => {
     if (!deals) return { followUps: [], closingThisWeek: [], stale: [] };
-    // eslint-disable-next-line
     const now = Date.now();
     const endOfToday = new Date(now); endOfToday.setHours(23, 59, 59, 999);
     const dealMap = Object.fromEntries(deals.map(d => [d.id, d]));
@@ -204,65 +200,97 @@ export default function CommandCenterPage() {
   const userName = myProfile?.full_name || user?.email?.split('@')[0] || '';
 
   if (isLoading) return (
-    <div className="flex flex-col items-center justify-center h-[70vh] gap-4">
-      <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-        className="w-10 h-10 border-4 border-violet-100 border-t-violet-600 rounded-full" />
-      <p className="text-sm text-slate-400">กำลังโหลดข้อมูล...</p>
+    <div className="flex flex-col items-center justify-center h-[70vh] gap-3">
+      <div className="w-12 h-12 rounded-2xl bg-violet-500/10 flex items-center justify-center border border-violet-500/20">
+        <Loader2 className="animate-spin text-violet-600 dark:text-violet-400" size={24} />
+      </div>
+      <p className="text-xs font-semibold text-slate-400">กำลังโหลดข้อมูล...</p>
     </div>
   );
 
   return (
-    <div className="relative max-w-[1600px] mx-auto space-y-6 pb-24 px-2 sm:px-4 md:px-6 mt-4 overflow-hidden ui-enter">
+    <div className="relative max-w-[1600px] mx-auto space-y-6 pb-20">
+      
       {/* Dynamic atmospheric ambient glows */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-500/5 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute top-80 right-1/4 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed top-0 right-1/4 w-[500px] h-[500px] bg-violet-500/5 rounded-full blur-[140px] pointer-events-none -z-10" />
+      <div className="ambient-glow-brand -top-20 left-1/4 w-96 h-96" />
+      <div className="ambient-glow-cyan top-96 right-1/4 w-96 h-96" />
 
-      {/* PREMIUM HEADER */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
+      {/* HEADER */}
+      <PageHeader
+        icon={LayoutDashboard}
+        title={
+          <div className="flex items-center gap-2 flex-wrap">
+            <span>{getGreeting()},</span>
+            <span className="gradient-text-brand font-black">{userName}</span>
+          </div>
+        }
+        description={
+          <span className="flex items-center gap-1.5 font-medium">
+            <CalendarClock size={14} className="text-violet-500" /> {getDateString()}
+          </span>
+        }
+        badge={
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-slate-100 dark:bg-white/10 p-0.5 rounded-xl border border-slate-200/80 dark:border-white/10">
+              <button
+                onClick={() => setViewMode('team')}
+                className={cn(
+                  "px-3 py-1 text-xs font-bold rounded-lg transition-all",
+                  viewMode === 'team'
+                    ? "bg-white dark:bg-violet-600 text-violet-700 dark:text-white shadow-xs"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                )}
+              >
+                ทีม
+              </button>
+              <button
+                onClick={() => setViewMode('personal')}
+                className={cn(
+                  "px-3 py-1 text-xs font-bold rounded-lg transition-all",
+                  viewMode === 'personal'
+                    ? "bg-white dark:bg-violet-600 text-violet-700 dark:text-white shadow-xs"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                )}
+              >
+                ของฉัน
+              </button>
+            </div>
+          </div>
+        }
+        rightContent={
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsQuickWinOpen(true)}
+              variant="emerald"
+              size="sm"
+            >
+              <Zap size={14} className="mr-1.5" />
+              บันทึกยอดด่วน
+            </Button>
+          </div>
+        }
       >
-        <PageHeader
-          icon={LayoutDashboard}
-          title={<>{getGreeting()}, <span className="text-cyan-300">{userName}</span></>}
-          description={<span className="flex items-center gap-1.5"><CalendarClock size={14} className="text-slate-400" /> {getDateString()}</span>}
-          badge={
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-violet-600 uppercase tracking-widest hidden md:inline-block ml-4">Nova Pipeline</span>
-              <div className="ml-2 flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-                <button onClick={() => setViewMode('team')} className={cn("px-3 py-1 text-[10px] font-bold rounded-md transition-all", viewMode === 'team' ? "bg-white text-violet-700 shadow-sm" : "text-slate-500 hover:text-slate-700")}>ทีม</button>
-                <button onClick={() => setViewMode('personal')} className={cn("px-3 py-1 text-[10px] font-bold rounded-md transition-all", viewMode === 'personal' ? "bg-white text-violet-700 shadow-sm" : "text-slate-500 hover:text-slate-700")}>ของฉัน</button>
-              </div>
-            </div>
-          }
-          rightContent={
-            <div className="flex items-center gap-2 flex-wrap">
-              <Button onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsQuickWinOpen(true)}
-                className="h-9 px-4 rounded-xl text-xs font-bold border shadow-sm transition-all hover:shadow-md bg-emerald-500 text-white shadow-emerald-500/20 border-emerald-400 hover:bg-emerald-600 active:scale-95">
-                <Zap size={14} className="mr-1.5" />
-                บันทึกยอดด่วน
-              </Button>
-            </div>
-          }
-          children={
-            <div className="flex items-center gap-2 w-full overflow-x-auto pb-1">
-              {[
-                { label: 'Pipeline', icon: Briefcase, to: '/pipeline', tone: 'bg-violet-600 text-white shadow-violet-500/20 hover:bg-violet-700' },
-                { label: 'ลูกค้า', icon: Users, to: '/customers', tone: 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300' },
-                { label: 'Analytics', icon: BarChart3, to: '/analytics', tone: 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300' },
-                { label: 'เครื่องมือ', icon: Wrench, to: '/tools', tone: 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300' },
-              ].map(btn => (
-                <Button key={btn.to} onClick={() => navigate(btn.to)}
-                  className={cn("h-9 px-4 rounded-xl text-xs font-bold border shadow-sm transition-all hover:shadow-md active:scale-95 shrink-0", btn.tone)}>
-                  <btn.icon size={14} className="mr-1.5" />
-                  {btn.label}
-                </Button>
-              ))}
-            </div>
-          }
-        />
-      </motion.div>
+        <div className="flex items-center gap-2 w-full overflow-x-auto pb-1">
+          {[
+            { label: 'Pipeline', icon: Briefcase, to: '/pipeline', primary: true },
+            { label: 'ลูกค้า', icon: Users, to: '/customers' },
+            { label: 'ยอดขาย', icon: TrendingUp, to: '/sales' },
+            { label: 'Analytics', icon: BarChart3, to: '/analytics' },
+            { label: 'เครื่องมือ', icon: Wrench, to: '/tools' },
+          ].map(btn => (
+            <Button
+              key={btn.to}
+              onClick={() => navigate(btn.to)}
+              variant={btn.primary ? 'primary' : 'outline'}
+              size="sm"
+              className="shrink-0"
+            >
+              <btn.icon size={13} className="mr-1.5" />
+              {btn.label}
+            </Button>
+          ))}
+        </div>
+      </PageHeader>
 
       {/* ONBOARDING CTA */}
       {hasNoDeals && (
@@ -272,20 +300,24 @@ export default function CommandCenterPage() {
           className="grid grid-cols-1 gap-3 md:grid-cols-3"
         >
           {[
-            { title: 'เพิ่มดีลแรก', detail: 'สร้าง pipeline ให้ dashboard เริ่มวิเคราะห์ทันที', icon: Briefcase, action: () => navigate('/pipeline'), tone: 'bg-violet-600 text-white shadow-violet-500/20' },
-            { title: 'เพิ่มลูกค้า', detail: 'ผูกดีลกับบัญชีลูกค้าเพื่อเห็นมูลค่ารวม', icon: Users, action: () => navigate('/customers'), tone: 'bg-white text-slate-800 border-slate-100' },
-            { title: 'ตั้งเป้าหมาย', detail: 'กำหนด target เพื่อให้ forecast มีบริบท', icon: Target, action: () => navigate('/settings'), tone: 'bg-white text-slate-800 border-slate-100' },
+            { title: 'เพิ่มดีลแรก', detail: 'สร้าง pipeline ให้ dashboard เริ่มวิเคราะห์ทันที', icon: Briefcase, action: () => navigate('/pipeline'), tone: 'bg-violet-600 text-white' },
+            { title: 'เพิ่มลูกค้า', detail: 'ผูกดีลกับบัญชีลูกค้าเพื่อเห็นมูลค่ารวม', icon: Users, action: () => navigate('/customers'), tone: 'bg-white dark:bg-white/5 text-slate-800 dark:text-white border-slate-200 dark:border-white/10' },
+            { title: 'ตั้งเป้าหมาย', detail: 'กำหนด target เพื่อให้ forecast มีบริบท', icon: Target, action: () => navigate('/settings'), tone: 'bg-white dark:bg-white/5 text-slate-800 dark:text-white border-slate-200 dark:border-white/10' },
           ].map((item) => (
-            <button key={item.title} type="button" onClick={item.action}
-              className={cn('group rounded-2xl border p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md', item.tone)}>
+            <button
+              key={item.title}
+              type="button"
+              onClick={item.action}
+              className={cn('group rounded-2xl border p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md cursor-pointer', item.tone)}
+            >
               <div className="mb-4 flex items-center justify-between">
-                <div className={cn('flex h-10 w-10 items-center justify-center rounded-xl', item.tone.includes('violet') ? 'bg-white/15 text-white' : 'bg-violet-50 text-violet-600')}>
+                <div className={cn('flex h-10 w-10 items-center justify-center rounded-xl', item.tone.includes('violet') ? 'bg-white/15 text-white' : 'bg-violet-50 dark:bg-violet-950 text-violet-600 dark:text-violet-400')}>
                   <item.icon size={18} />
                 </div>
-                <ChevronRight size={16} className={cn('transition-transform group-hover:translate-x-0.5', item.tone.includes('violet') ? 'text-white/70' : 'text-slate-300')} />
+                <ChevronRight size={16} className={cn('transition-transform group-hover:translate-x-0.5', item.tone.includes('violet') ? 'text-white/70' : 'text-slate-400')} />
               </div>
               <p className="text-sm font-bold">{item.title}</p>
-              <p className={cn('mt-1 text-xs leading-5', item.tone.includes('violet') ? 'text-violet-100' : 'text-slate-500')}>{item.detail}</p>
+              <p className={cn('mt-1 text-xs leading-5', item.tone.includes('violet') ? 'text-violet-100' : 'text-slate-500 dark:text-slate-400')}>{item.detail}</p>
             </button>
           ))}
         </motion.section>
@@ -294,7 +326,7 @@ export default function CommandCenterPage() {
       {/* TWO-COLUMN GRID LAYOUT */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* ================= LEFT COLUMN: ACTION & DATA VISUALS (2/3 width) ================= */}
+        {/* LEFT COLUMN: ACTION & DATA VISUALS (2/3 width) */}
         <div className="lg:col-span-2 space-y-6">
           
           <FocusDealsCard focusDeals={stats?.focusDeals} onOpenDeal={openDeal} />
@@ -302,12 +334,12 @@ export default function CommandCenterPage() {
           {/* TODAY'S FOCUS / ACTIONS */}
           <div id="ai-insights-card" className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center">
-                <Target size={18} className="text-violet-600" strokeWidth={2.5} />
+              <div className="w-10 h-10 rounded-2xl bg-violet-500/10 flex items-center justify-center">
+                <Target size={18} className="text-violet-600 dark:text-violet-400" strokeWidth={2.5} />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900 tracking-tight">วันนี้ต้องทำ</h3>
-                <p className="text-xs text-slate-400 font-medium">งานและดีลเร่งด่วนที่ต้องจัดการเพื่อดันยอดปิด</p>
+                <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white tracking-tight">วันนี้ต้องทำ</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">งานและดีลเร่งด่วนที่ต้องจัดการเพื่อดันยอดปิด</p>
               </div>
             </div>
 
@@ -315,37 +347,46 @@ export default function CommandCenterPage() {
               actionPlan.followUps.length === 0 &&
               actionPlan.closingThisWeek.length === 0 &&
               actionPlan.stale.length === 0 && (
-              <div className="p-6 rounded-3xl bg-emerald-50 border border-emerald-100 text-center shadow-sm">
-                <CheckCircle2 size={28} className="text-emerald-400 mx-auto mb-2 animate-bounce" />
-                <p className="text-sm font-bold text-emerald-700">ทุกอย่างเรียบร้อยดี!</p>
-                <p className="text-xs text-emerald-500 mt-1 font-semibold">ไม่มีงานค้างหรือดีลที่ต้องติดตามเร่งด่วน</p>
-              </div>
+              <Card className="p-6 text-center border-emerald-200 dark:border-emerald-800/40 bg-emerald-50/50 dark:bg-emerald-950/20">
+                <CheckCircle2 size={28} className="text-emerald-500 mx-auto mb-2" />
+                <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">ทุกอย่างเรียบร้อยดี!</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium">ไม่มีงานค้างหรือดีลที่ต้องติดตามเร่งด่วน</p>
+              </Card>
             )}
 
             {stats?.intelligence?.executiveActions?.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">งานเร่งด่วน</p>
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">งานเร่งด่วน</p>
                   <span className="text-xs text-slate-400 font-bold">{stats.intelligence.executiveActions.length}</span>
                 </div>
                 {stats.intelligence.executiveActions.slice(0, 3).map((action) => (
-                  <button key={action.id} onClick={() => navigate('/pipeline')}
-                    className={cn('w-full text-left p-3.5 rounded-2xl border transition-all flex items-start gap-3 hover:shadow-md group/action',
-                      action.priority === 'critical' ? 'bg-rose-50/70 border-rose-100 hover:border-rose-200' :
-                      action.priority === 'high' ? 'bg-violet-50/70 border-violet-100 hover:border-violet-200' : 'bg-slate-50/70 border-slate-100 hover:border-slate-200')}>
-                    <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover/action:scale-105',
-                      action.priority === 'critical' ? 'bg-rose-100 text-rose-600 shadow-sm shadow-rose-500/20' :
-                      action.priority === 'high' ? 'bg-violet-100 text-violet-600 shadow-sm shadow-violet-500/20' : 'bg-slate-100 text-slate-600 shadow-sm')}>
+                  <button
+                    key={action.id}
+                    onClick={() => navigate('/pipeline')}
+                    className={cn(
+                      'w-full text-left p-3.5 rounded-2xl border transition-all flex items-start gap-3 hover:shadow-md group/action cursor-pointer',
+                      action.priority === 'critical'
+                        ? 'bg-rose-50/70 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/40 hover:border-rose-300'
+                        : 'bg-violet-50/70 dark:bg-violet-950/30 border-violet-200 dark:border-violet-900/40 hover:border-violet-300'
+                    )}
+                  >
+                    <div className={cn(
+                      'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-xs',
+                      action.priority === 'critical' ? 'bg-rose-500 text-white' : 'bg-violet-600 text-white'
+                    )}>
                       <AlertCircle size={15} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-bold text-slate-800 truncate group-hover/action:text-violet-700 transition-colors">{action.title}</p>
-                        <span className="text-xs font-black text-slate-700 tabular-nums shrink-0">{formatCurrency(action.impactValue)}</span>
+                        <p className="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate group-hover/action:text-violet-600 dark:group-hover/action:text-violet-400 transition-colors">
+                          {action.title}
+                        </p>
+                        <span className="text-xs font-black text-slate-900 dark:text-white tabular-nums shrink-0">{formatCurrency(action.impactValue)}</span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 leading-relaxed">{action.description}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2 leading-relaxed font-medium">{action.description}</p>
                     </div>
-                    <ChevronRight size={14} className="text-slate-300 mt-1 transition-transform group-hover/action:translate-x-0.5" />
+                    <ChevronRight size={14} className="text-slate-400 mt-1 transition-transform group-hover/action:translate-x-0.5" />
                   </button>
                 ))}
               </div>
@@ -354,222 +395,145 @@ export default function CommandCenterPage() {
             {/* My Agenda (Follow-ups) */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">My Agenda (งานติดตามลูกค้า)</p>
+                <p className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">My Agenda (งานติดตามลูกค้า)</p>
                 <span className="text-xs text-slate-400 font-bold">{actionPlan.followUps.length}</span>
               </div>
               {actionPlan.followUps.length === 0 ? (
-                <div className="p-4 rounded-2xl bg-white border border-slate-100 text-center shadow-sm">
-                  <CheckCircle2 size={18} className="text-emerald-400 mx-auto mb-1 animate-pulse" />
-                  <p className="text-xs text-slate-400 font-semibold">ไม่มีงานค้าง หรือสิ่งที่ต้องติดตาม</p>
-                </div>
+                <Card className="p-4 text-center">
+                  <CheckCircle2 size={18} className="text-emerald-500 mx-auto mb-1" />
+                  <p className="text-xs text-slate-400 font-medium">ไม่มีงานค้าง หรือสิ่งที่ต้องติดตาม</p>
+                </Card>
               ) : actionPlan.followUps.slice(0, 4).map((a, i) => {
                 const isCompleting = updateActivityMutation.isPending && updateActivityMutation.variables?.id === a.id;
                 return (
-                <motion.div key={a.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-                  className={cn('w-full text-left p-3.5 rounded-2xl border transition-all flex items-start gap-3 hover:shadow-md group/follow',
-                    a.overdue ? 'bg-rose-50/70 border-rose-100 hover:border-rose-200' : 'bg-amber-50/70 border-amber-100 hover:border-amber-200',
-                    isCompleting && 'opacity-50 pointer-events-none scale-95')}
-                >
-                  <div 
-                    onClick={(e) => handleCompleteTask(e, a.id)}
-                    className={cn('w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover/follow:scale-105 cursor-pointer hover:bg-emerald-500 hover:text-white',
-                    a.overdue ? 'bg-rose-100 text-rose-500 shadow-sm hover:shadow-emerald-500/30' : 'bg-amber-100 text-amber-600 shadow-sm shadow-amber-500/10 hover:shadow-emerald-500/30',
-                    isCompleting && 'bg-emerald-500 text-white')}
-                    title="Mark as complete"
+                  <motion.div
+                    key={a.id}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className={cn(
+                      'w-full text-left p-3.5 rounded-2xl border transition-all flex items-start gap-3 hover:shadow-md group/follow',
+                      a.overdue
+                        ? 'bg-rose-50/70 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/40 hover:border-rose-300'
+                        : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/40 hover:border-amber-300',
+                      isCompleting && 'opacity-50 pointer-events-none scale-95'
+                    )}
                   >
-                    {isCompleting ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
-                  </div>
-                  <div className="min-w-0 flex-1 cursor-pointer" onClick={() => openDeal(a.deal)}>
-                    <div className="flex items-center gap-2">
-                      {a.overdue && !isCompleting && <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-rose-100 text-rose-700 shadow-sm animate-pulse">เกินกำหนด</span>}
-                      <span className={cn("text-[10px] text-slate-500 font-bold uppercase tracking-wider", isCompleting && "line-through")}>{a.deal?.company || a.deal?.title}</span>
+                    <div 
+                      onClick={(e) => handleCompleteTask(e, a.id)}
+                      className={cn(
+                        'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover/follow:scale-105 cursor-pointer',
+                        a.overdue ? 'bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-300' : 'bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-300'
+                      )}
+                      title="ทำเครื่องหมายว่าเสร็จแล้ว"
+                    >
+                      {isCompleting ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
                     </div>
-                    <p className={cn("text-sm font-bold text-slate-800 truncate mt-0.5 group-hover/follow:text-violet-700 transition-colors", isCompleting && "line-through text-slate-400")}>{a.title}</p>
-                  </div>
-                  <button onClick={() => openDeal(a.deal)} className="p-1 rounded-full hover:bg-slate-100 transition-colors">
-                    <ChevronRight size={14} className="text-slate-300 mt-1 transition-transform group-hover/follow:translate-x-0.5" />
-                  </button>
-                </motion.div>
+                    <div className="min-w-0 flex-1 cursor-pointer" onClick={() => openDeal(a.deal)}>
+                      <div className="flex items-center gap-2">
+                        {a.overdue && !isCompleting && (
+                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300">
+                            เกินกำหนด
+                          </span>
+                        )}
+                        <span className={cn("text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider", isCompleting && "line-through")}>
+                          {a.deal?.company || a.deal?.title}
+                        </span>
+                      </div>
+                      <p className={cn("text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate mt-0.5 group-hover/follow:text-violet-600 transition-colors", isCompleting && "line-through text-slate-400")}>
+                        {a.title}
+                      </p>
+                    </div>
+                    <button onClick={() => openDeal(a.deal)} className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                      <ChevronRight size={14} />
+                    </button>
+                  </motion.div>
                 );
               })}
             </div>
-
-            {/* Closing this week */}
-            {actionPlan.closingThisWeek.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold text-violet-700 uppercase tracking-wider">คาดว่าจะปิดสัปดาห์นี้</p>
-                  <span className="text-xs text-slate-400 font-bold">{actionPlan.closingThisWeek.length}</span>
-                </div>
-                {actionPlan.closingThisWeek.slice(0, 3).map((d) => (
-                  <button key={d.id} onClick={() => openDeal(d)}
-                    className="w-full text-left p-3.5 rounded-2xl bg-violet-50/70 border border-violet-100 hover:border-violet-200 hover:shadow-md transition-all flex items-center gap-3 group/close">
-                    <div className="w-8 h-8 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center shrink-0 shadow-sm group-hover/close:scale-105 transition-transform duration-300">
-                      <Briefcase size={14} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-slate-800 truncate group-hover/close:text-violet-700 transition-colors">{d.title}</p>
-                      <p className="text-xs text-slate-550 font-semibold mt-0.5">{formatCurrency(d.value)} • {d.probability}% โอกาส</p>
-                    </div>
-                    <ChevronRight size={14} className="text-slate-300 transition-transform group-hover/close:translate-x-0.5" />
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Stale */}
-            {actionPlan.stale.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold text-rose-700 uppercase tracking-wider">หยุดนิ่ง 3 วันขึ้นไป</p>
-                  <span className="text-xs text-slate-400 font-bold">{actionPlan.stale.length}</span>
-                </div>
-                {actionPlan.stale.slice(0, 3).map((d) => {
-                  const days = daysSince(d.last_activity || d.created_at);
-                  return (
-                    <button key={d.id} onClick={() => openDeal(d)}
-                      className="w-full text-left p-3.5 rounded-2xl bg-rose-50/70 border border-rose-100 hover:border-rose-200 hover:shadow-md transition-all flex items-center gap-3 group/stale">
-                      <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-500 flex items-center justify-center shrink-0 shadow-sm group-hover/stale:scale-105 transition-transform duration-300">
-                        <Clock size={14} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-bold text-slate-800 truncate group-hover/stale:text-rose-600 transition-colors">{d.company || d.title}</p>
-                        <p className="text-xs text-rose-500 font-black mt-0.5">{days} วันไม่มีกิจกรรม</p>
-                      </div>
-                      <ChevronRight size={14} className="text-slate-300 transition-transform group-hover/stale:translate-x-0.5" />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
           {/* HOT DEALS */}
           {stats?.hotDeals && stats.hotDeals.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-rose-500/10 flex items-center justify-center">
                   <Flame size={18} className="text-rose-500" strokeWidth={2.5} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 tracking-tight">Hot Deals (ดีลเด่นเน้นปิด)</h3>
-                  <p className="text-xs text-slate-400 font-medium">มูลค่าสูงสุดคูณความน่าจะเป็นในการปิด</p>
+                  <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white tracking-tight">Hot Deals (ดีลเด่นเน้นปิด)</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">มูลค่าสูงสุดคูณความน่าจะเป็นในการปิด</p>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {stats.hotDeals.slice(0, 4).map((d, i) => (
-                  <motion.button key={d.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                  <motion.div
+                    key={d.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
                     onClick={() => openDeal(d)}
-                    className={cn(
-                      'text-left p-5 rounded-3xl shadow-sm hover:shadow-lg transition-all group duration-300 relative overflow-hidden border', 
-                      i === 0 
-                        ? 'bg-gradient-to-br from-amber-50/80 via-yellow-50/40 to-white border-amber-200 shadow-amber-500/5 hover:border-amber-300' 
-                        : 'bg-white border-slate-100 hover:border-violet-200'
-                    )}>
-                    {i === 0 && (
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-400/10 to-transparent rounded-full blur-xl pointer-events-none" />
-                    )}
-                    <div className="flex items-start justify-between gap-3 mb-4">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-bold text-slate-800 truncate group-hover:text-violet-700 transition-colors">{d.title}</p>
-                        <p className="text-xs text-slate-400 font-semibold truncate mt-0.5">{d.company}</p>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {d.closingSoon && <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 tracking-tight uppercase shadow-sm">ใกล้ปิด</span>}
-                        <div className={cn("px-2 py-0.5 rounded-md text-[10px] font-black shadow-sm",
-                          d.healthScore >= 70 ? "bg-emerald-100 text-emerald-700" :
-                          d.healthScore >= 45 ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700"
-                        )}>
-                          {d.healthScore || 0}HP
+                  >
+                    <Card className="p-5 cursor-pointer group">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                            {d.title}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">{d.company}</p>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {d.closingSoon && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-600 dark:text-rose-300 border border-rose-500/20 uppercase">
+                              ใกล้ปิด
+                            </span>
+                          )}
+                          <div className={cn("px-2 py-0.5 rounded-md text-[10px] font-bold",
+                            d.healthScore >= 70 ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" :
+                            d.healthScore >= 45 ? "bg-amber-500/15 text-amber-700 dark:text-amber-300" : "bg-rose-500/15 text-rose-700 dark:text-rose-300"
+                          )}>
+                            {d.healthScore || 0}HP
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 text-center pt-3 border-t border-slate-100/60">
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">มูลค่า</p>
-                        <p className="text-sm font-black text-slate-800 tabular-nums mt-0.5">{formatCurrency(Number(d.value))}</p>
+                      <div className="grid grid-cols-3 gap-2 text-center pt-3 border-t border-slate-100 dark:border-white/5">
+                        <div>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">มูลค่า</p>
+                          <p className="text-xs md:text-sm font-black text-slate-900 dark:text-white tabular-nums mt-0.5">{formatCurrency(Number(d.value))}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">โอกาส</p>
+                          <p className={cn("text-xs md:text-sm font-black tabular-nums mt-0.5", Number(d.probability) >= 70 ? "text-emerald-500" : "text-amber-500")}>
+                            {d.probability}%
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Expected</p>
+                          <p className="text-xs md:text-sm font-black text-violet-600 dark:text-violet-400 tabular-nums mt-0.5">{formatCurrency(d.score)}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">โอกาส</p>
-                        <p className={cn("text-sm font-black tabular-nums mt-0.5", Number(d.probability) >= 70 ? "text-emerald-600" : "text-amber-600")}>{d.probability}%</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Expected</p>
-                        <p className="text-sm font-black text-violet-600 tabular-nums mt-0.5">{formatCurrency(d.score)}</p>
-                      </div>
-                    </div>
-                  </motion.button>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* CONTRACT RENEWALS */}
-          {stats?.renewalDeals && stats.renewalDeals.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center">
-                  <RefreshCw size={18} className="text-indigo-500" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 tracking-tight">Contract Renewals (ต่ออายุสัญญาใน 90 วัน)</h3>
-                  <p className="text-xs text-slate-400 font-medium">สัญญาแบบ Subscription/Recurring ที่ใกล้ครบกำหนด</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {stats.renewalDeals.map((d, i) => {
-                  let badgeColor = "bg-emerald-100 text-emerald-700 border-emerald-200";
-                  if (d.diffDays <= 30) badgeColor = "bg-rose-100 text-rose-700 border-rose-200 animate-pulse";
-                  else if (d.diffDays <= 60) badgeColor = "bg-amber-100 text-amber-700 border-amber-200";
-                  
-                  return (
-                    <motion.button key={d.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                      onClick={() => openDeal(d)}
-                      className="text-left p-5 rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-lg hover:border-indigo-200 transition-all group duration-300 relative overflow-hidden"
-                    >
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-bold text-slate-800 truncate group-hover:text-indigo-700 transition-colors">{d.title}</p>
-                          <p className="text-xs text-slate-400 font-semibold truncate mt-0.5">{d.company}</p>
-                        </div>
-                        <span className={cn("text-[9px] font-black px-2 py-0.5 rounded-md border tracking-tight uppercase shadow-inner shrink-0", badgeColor)}>
-                          ใน {d.diffDays} วัน
-                        </span>
-                      </div>
-                      <div className="flex items-baseline justify-between pt-2.5 border-t border-slate-100/60">
-                        <div>
-                          <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">มูลค่าสัญญา</p>
-                          <p className="text-sm font-black text-slate-800 tabular-nums mt-0.5">{formatCurrency(Number(d.value))}</p>
-                        </div>
-                        <div>
-                          <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider text-right">วันที่ต่อสัญญา</p>
-                          <p className="text-xs font-bold text-slate-600 mt-1 text-right">
-                            {new Date(d.renewal_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' })}
-                          </p>
-                        </div>
-                      </div>
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           {/* REVENUE STREAM CHART */}
-          <Card className="p-6 rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300">
+          <Card className="p-6">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 tracking-tight">ยอดขาย 6 เดือนล่าสุด</h3>
-                <p className="text-xs text-slate-400 mt-0.5 font-medium">ยอดขายจริง เทียบกับคาดการณ์</p>
+                <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white tracking-tight">ยอดขาย 6 เดือนล่าสุด</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">ยอดขายจริง เทียบกับคาดการณ์</p>
               </div>
-              <div className="flex items-center gap-4 bg-slate-50/80 px-3.5 py-1.5 rounded-2xl border border-slate-100 shadow-inner">
+              <div className="flex items-center gap-3 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-white/5">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-violet-500 shadow-sm" />
-                  <span className="text-[10px] text-slate-500 font-bold">ยอดจริง</span>
+                  <div className="w-2 h-2 rounded-full bg-violet-500 shadow-xs" />
+                  <span className="text-[10px] text-slate-600 dark:text-slate-300 font-bold">ยอดจริง</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-slate-300" />
-                  <span className="text-[10px] text-slate-500 font-bold">คาดการณ์</span>
+                  <div className="w-2 h-2 rounded-full bg-slate-400" />
+                  <span className="text-[10px] text-slate-600 dark:text-slate-300 font-bold">คาดการณ์</span>
                 </div>
               </div>
             </div>
@@ -577,25 +541,21 @@ export default function CommandCenterPage() {
               <SafeResponsiveContainer>
                 <AreaChart data={stats?.revenueStream}>
                   <defs>
-                    <filter id="glowCmd" x="-20%" y="-20%" width="140%" height="140%">
-                      <feGaussianBlur stdDeviation="3" result="blur" />
-                      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                    </filter>
                     <linearGradient id="colorActualCmd" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.25} />
+                      <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.35} />
                       <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="colorForecastCmd" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.15} />
+                      <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.2} />
                       <stop offset="95%" stopColor="#94a3b8" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: '700' }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
-                  <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }} />
-                  <Area type="monotone" dataKey="actual" name="ยอดขายจริง" stroke="#7c3aed" strokeWidth={3} fill="url(#colorActualCmd)" filter="url(#glowCmd)" isAnimationActive={false} />
-                  <Area type="monotone" dataKey="forecast" name="คาดการณ์" stroke="#cbd5e1" strokeWidth={2} strokeDasharray="5 5" fill="url(#colorForecastCmd)" isAnimationActive={false} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148, 163, 184, 0.15)" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
+                  <RechartsTooltip content={<CustomTooltip />} />
+                  <Area type="monotone" dataKey="actual" name="ยอดขายจริง" stroke="#7c3aed" strokeWidth={3} fill="url(#colorActualCmd)" isAnimationActive={false} />
+                  <Area type="monotone" dataKey="forecast" name="คาดการณ์" stroke="#94a3b8" strokeWidth={2} strokeDasharray="4 4" fill="url(#colorForecastCmd)" isAnimationActive={false} />
                 </AreaChart>
               </SafeResponsiveContainer>
             </div>
@@ -605,12 +565,12 @@ export default function CommandCenterPage() {
           {todayActivities.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center">
-                  <Activity size={18} className="text-slate-600" strokeWidth={2.5} />
+                <div className="w-10 h-10 rounded-2xl bg-slate-500/10 flex items-center justify-center">
+                  <Activity size={18} className="text-slate-600 dark:text-slate-300" strokeWidth={2.5} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 tracking-tight">กิจกรรมล่าสุด</h3>
-                  <p className="text-xs text-slate-400 font-medium">ไทม์ไลน์กิจกรรมของทีม</p>
+                  <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white tracking-tight">กิจกรรมล่าสุด</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">ไทม์ไลน์กิจกรรมของทีม</p>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -618,29 +578,25 @@ export default function CommandCenterPage() {
                   const cfg = ACTIVITY_ICON[a.type] || ACTIVITY_ICON.note;
                   const { Icon, color } = cfg;
                   return (
-                    <div key={a.id} className="relative group">
-                      <button onClick={() => a.deal && openDeal(a.deal)}
-                        className={cn(
-                          "w-full text-left p-4 rounded-2xl bg-white border border-slate-100 hover:border-violet-100 shadow-sm hover:shadow-md transition-all flex items-start gap-3.5 relative z-10 group/item",
-                          a.type === 'call' && 'border-l-4 border-l-blue-500',
-                          a.type === 'email' && 'border-l-4 border-l-violet-500',
-                          a.type === 'meeting' && 'border-l-4 border-l-amber-500',
-                          a.type === 'whatsapp' && 'border-l-4 border-l-emerald-500',
-                          !['call', 'email', 'meeting', 'whatsapp'].includes(a.type) && 'border-l-4 border-l-slate-400'
-                        )}>
-                        <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover/item:scale-105 shadow-sm', color)}>
-                          <Icon size={16} />
+                    <Card
+                      key={a.id}
+                      onClick={() => a.deal && openDeal(a.deal)}
+                      className="p-4 cursor-pointer group flex items-start gap-3.5"
+                    >
+                      <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-xs', color)}>
+                        <Icon size={16} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                            {a.title || a.type}
+                          </p>
+                          <span className="text-[10px] text-slate-400 font-semibold">{a.timeLabel}</span>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-sm font-bold text-slate-800 truncate group-hover/item:text-violet-700 transition-colors">{a.title || a.type}</p>
-                            <span className="text-[10px] text-slate-400 shrink-0 font-semibold">{a.timeLabel}</span>
-                          </div>
-                          {a.deal && <p className="text-xs text-slate-500 font-semibold truncate mt-1">{a.deal.company || a.deal.title}</p>}
-                          {a.notes && <p className="text-xs text-slate-400 line-clamp-1 mt-1 font-medium">{a.notes}</p>}
-                        </div>
-                      </button>
-                    </div>
+                        {a.deal && <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">{a.deal.company || a.deal.title}</p>}
+                        {a.notes && <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{a.notes}</p>}
+                      </div>
+                    </Card>
                   );
                 })}
               </div>
@@ -649,26 +605,22 @@ export default function CommandCenterPage() {
 
         </div>
 
-        {/* ================= RIGHT COLUMN: METRICS, GOALS, LEADERBOARD (1/3 width) ================= */}
+        {/* RIGHT COLUMN: METRICS, GOALS, LEADERBOARD (1/3 width) */}
         <div className="lg:col-span-1 space-y-6">
           
           {/* GOAL radial progress */}
-          <Card id="goal-card" className="p-6 rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white border border-slate-800 shadow-2xl relative overflow-hidden group/goal hover:shadow-violet-950/20 hover:border-violet-900/40 duration-500">
-            <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-violet-600/10 rounded-full blur-3xl pointer-events-none group-hover/goal:bg-violet-600/15 group-hover/goal:scale-110 transition-all duration-700" />
-            <div className="absolute -left-12 -top-12 w-40 h-40 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none group-hover/goal:bg-indigo-600/15 group-hover/goal:scale-110 transition-all duration-700" />
-            <div className="absolute top-0 right-0 p-6 opacity-[0.03] pointer-events-none text-white group-hover/goal:rotate-6 group-hover/goal:scale-110 transition-transform duration-700">
-              <Target size={120} />
-            </div>
+          <Card className="p-6 relative overflow-hidden bg-gradient-to-br from-violet-600 via-indigo-700 to-slate-900 text-white border-0 shadow-lg dark:shadow-violet-950/40">
+            <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
             <div className="relative z-10">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">เป้าหมายเดือนนี้</p>
-                  <p className="text-[10px] text-slate-350 mt-0.5 font-semibold">
+                  <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">เป้าหมายเดือนนี้</p>
+                  <p className="text-[11px] text-white/90 mt-0.5 font-bold">
                     {stats?.hasPersonalTarget ? `เป้าหมายส่วนตัว ${formatCurrency(monthlyGoal)}` : 'ยังไม่ได้ตั้งเป้าหมายส่วนตัว'}
                   </p>
                 </div>
-                <div className={cn('flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-inner',
-                  Number(stats?.growthPercent) >= 0 ? 'bg-emerald-500/25 text-emerald-300' : 'bg-rose-500/25 text-rose-300'
+                <div className={cn('flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-xs',
+                  Number(stats?.growthPercent) >= 0 ? 'bg-emerald-500/25 text-emerald-200' : 'bg-rose-500/25 text-rose-200'
                 )}>
                   {Number(stats?.growthPercent) >= 0 ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
                   {stats?.growthPercent > 0 ? '+' : ''}{stats?.growthPercent}%
@@ -678,27 +630,13 @@ export default function CommandCenterPage() {
                 {/* SVG Radial Gauge */}
                 <div className="relative w-20 h-20 shrink-0">
                   <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
-                    <defs>
-                      <linearGradient id="goalSuccessGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#34d399" />
-                        <stop offset="100%" stopColor="#10b981" />
-                      </linearGradient>
-                      <linearGradient id="goalWarnGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#fbbf24" />
-                        <stop offset="100%" stopColor="#f59e0b" />
-                      </linearGradient>
-                      <linearGradient id="goalProgressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#a78bfa" />
-                        <stop offset="100%" stopColor="#7c3aed" />
-                      </linearGradient>
-                    </defs>
-                    <circle cx="40" cy="40" r="34" stroke="rgba(255,255,255,0.06)" strokeWidth="6.5" fill="transparent" />
+                    <circle cx="40" cy="40" r="34" stroke="rgba(255,255,255,0.15)" strokeWidth="7" fill="transparent" />
                     <motion.circle cx="40" cy="40" r="34"
-                      stroke={stats?.achievementPercent >= 100 ? "url(#goalSuccessGradient)" : stats?.achievementPercent >= 70 ? "url(#goalWarnGradient)" : "url(#goalProgressGradient)"}
-                      strokeWidth="6.5" fill="transparent"
+                      stroke="#38bdf8"
+                      strokeWidth="7" fill="transparent"
                       strokeDasharray={2 * Math.PI * 34}
                       animate={{ strokeDashoffset: 2 * Math.PI * 34 * (1 - Math.min(100, stats?.achievementPercent || 0) / 100) }}
-                      transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
+                      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                       strokeLinecap="round"
                     />
                   </svg>
@@ -709,11 +647,11 @@ export default function CommandCenterPage() {
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ยอดขายปัจจุบัน</p>
-                  <p className="text-xl font-black text-white tabular-nums tracking-tight leading-none mt-1 truncate">
+                  <p className="text-[10px] font-bold text-white/70 uppercase tracking-wider">ยอดขายปัจจุบัน</p>
+                  <p className="text-xl md:text-2xl font-black text-white tabular-nums tracking-tight leading-none mt-1 truncate">
                     {formatCurrency(stats?.totalWonValue || 0)}
                   </p>
-                  <p className="text-[10px] font-bold text-slate-350 mt-1.5">เป้า: {formatCurrency(monthlyGoal)}</p>
+                  <p className="text-[10px] font-bold text-white/70 mt-1.5">เป้า: {formatCurrency(monthlyGoal)}</p>
                 </div>
               </div>
             </div>
@@ -721,25 +659,20 @@ export default function CommandCenterPage() {
 
           {/* WEEKLY PULSE */}
           <div className="space-y-3">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">ยอดสัปดาห์นี้ (Weekly Pulse)</p>
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-1">ยอดสัปดาห์นี้ (Weekly Pulse)</p>
             {[
-              { label: 'ดีลใหม่สัปดาห์นี้', value: stats?.newDealsThisWeek || 0, icon: Flame, iconColor: 'text-violet-600', iconBg: 'bg-violet-50', valueColor: 'text-slate-900', bgClass: 'bg-gradient-to-br from-violet-50 to-purple-50 border-violet-100 hover:border-violet-200' },
-              { label: 'ปิดได้สัปดาห์นี้', value: stats?.wonThisWeek || 0, icon: Trophy, iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50', valueColor: 'text-emerald-600', bgClass: 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-100 hover:border-emerald-200' },
-              { label: 'มูลค่าปิดสัปดาห์นี้', value: formatCurrency(stats?.wonThisWeekValue), icon: Star, iconColor: 'text-blue-600', iconBg: 'bg-blue-50', valueColor: 'text-blue-600', isText: true, bgClass: 'bg-gradient-to-br from-blue-50 to-sky-50 border-blue-100 hover:border-blue-200' },
+              { label: 'ดีลใหม่สัปดาห์นี้', value: stats?.newDealsThisWeek || 0, icon: Flame, iconBg: 'bg-violet-500', valueColor: 'text-slate-900 dark:text-white' },
+              { label: 'ปิดได้สัปดาห์นี้', value: stats?.wonThisWeek || 0, icon: Trophy, iconBg: 'bg-emerald-500', valueColor: 'text-emerald-600 dark:text-emerald-400' },
+              { label: 'มูลค่าปิดสัปดาห์นี้', value: formatCurrency(stats?.wonThisWeekValue), icon: Star, iconBg: 'bg-cyan-500', valueColor: 'text-cyan-600 dark:text-cyan-400', isText: true },
             ].map((item) => (
-              <motion.div key={item.label} whileHover={{ y: -2, scale: 1.015 }}>
-                <Card className={cn("p-3.5 rounded-2xl border shadow-xs flex items-center gap-3 transition-all duration-200 cursor-pointer", item.bgClass || "bg-white border-slate-100")}>
-                  <div className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
-                    item.label === 'ดีลใหม่สัปดาห์นี้' ? 'bg-gradient-to-br from-violet-500 to-purple-600' :
-                    item.label === 'ปิดได้สัปดาห์นี้'  ? 'bg-gradient-to-br from-emerald-500 to-green-600' :
-                                                          'bg-gradient-to-br from-blue-500 to-sky-600'
-                  )}>
-                    <item.icon size={16} className="text-white" />
+              <motion.div key={item.label} whileHover={{ y: -2, scale: 1.01 }}>
+                <Card className="p-3.5 flex items-center gap-3.5 cursor-pointer">
+                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs text-white", item.iconBg)}>
+                    <item.icon size={16} />
                   </div>
                   <div>
-                    <p className="text-[10px] text-slate-400 font-semibold">{item.label}</p>
-                    <p className={cn("text-xl font-black tabular-nums leading-none mt-0.5", item.valueColor)}>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">{item.label}</p>
+                    <p className={cn("text-lg md:text-xl font-black tabular-nums leading-none mt-1", item.valueColor)}>
                       {item.isText ? item.value : <AnimatedNumber value={item.value} />}
                     </p>
                   </div>
@@ -748,239 +681,70 @@ export default function CommandCenterPage() {
             ))}
           </div>
 
-          {/* KPI RIBBON (Active pipeline, Win rate, velocity) */}
-          <div id="kpi-ribbon" className="space-y-4">
+          {/* KPI CARDS */}
+          <div id="kpi-ribbon" className="space-y-3">
             {[
-              { title: 'Active Pipeline', value: stats?.totalPipelineValue, formatter: v => formatCurrency(v), sub: `${stats?.activeCount || 0} active deals`, icon: Briefcase, color: 'violet', sparkline: stats?.revenueStream?.map(m => m.forecast), badge: 'LIVE' },
-              { title: 'Win Rate', value: stats?.winRate, formatter: v => `${Math.round(v)}%`, sub: 'สัดส่วนดีลสำเร็จทั้งหมด', icon: ShieldCheck, color: 'emerald', sparkline: [35, 38, 42, 40, 45, stats?.winRate || 40], badge: 'TOP' },
-              { title: 'Avg Velocity', value: stats?.avgDaysToClose, formatter: v => `${Math.round(v)} วัน`, sub: 'ระยะเวลาเฉลี่ยถึงปิดดีล', icon: Zap, color: 'amber', sparkline: [24, 22, 25, 20, 21, stats?.avgDaysToClose || 20], badge: 'SPEED' },
+              { title: 'Active Pipeline', value: stats?.totalPipelineValue, formatter: v => formatCurrency(v), sub: `${stats?.activeCount || 0} active deals`, icon: Briefcase, color: 'text-violet-500' },
+              { title: 'Win Rate', value: stats?.winRate, formatter: v => `${Math.round(v)}%`, sub: 'สัดส่วนดีลสำเร็จทั้งหมด', icon: ShieldCheck, color: 'text-emerald-500' },
+              { title: 'Avg Velocity', value: stats?.avgDaysToClose, formatter: v => `${Math.round(v)} วัน`, sub: 'ระยะเวลาเฉลี่ยถึงปิดดีล', icon: Zap, color: 'text-amber-500' },
             ].map((kpi) => (
-              <Card key={kpi.title} className={cn(
-                "p-4 rounded-2xl bg-white/60 backdrop-blur-xl border-l-4 border-y border-r border-white/40 shadow-lg relative overflow-visible transition-all duration-300 group/kpi",
-                kpi.color === 'violet' && 'border-l-violet-500 hover:border-violet-300 hover:shadow-[0_0_20px_rgba(139,92,246,0.3)] ring-1 ring-inset ring-violet-500/10',
-                kpi.color === 'emerald' && 'border-l-emerald-500 hover:border-emerald-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] ring-1 ring-inset ring-emerald-500/10',
-                kpi.color === 'amber'  && 'border-l-amber-500 hover:border-amber-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] ring-1 ring-inset ring-amber-500/10'
-              )}>
-                {/* Floating Badge */}
-                <div className={cn(
-                  "absolute -top-2 -right-2 px-2 py-0.5 rounded-full text-[9px] font-black tracking-widest text-white shadow-lg z-20 group-hover/kpi:scale-110 transition-transform",
-                  kpi.color === 'violet' ? 'bg-gradient-to-r from-violet-500 to-indigo-500 shadow-violet-500/40' :
-                  kpi.color === 'emerald' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-emerald-500/40' :
-                  'bg-gradient-to-r from-amber-500 to-orange-500 shadow-amber-500/40'
-                )}>
-                  {kpi.badge}
-                </div>
-                
-                <div className="flex items-center justify-between relative z-10">
-                  <div className="flex items-center gap-3">
-                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg group-hover/kpi:scale-110 transition-transform",
-                      kpi.color === 'violet' ? 'bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600 text-white shadow-violet-500/30' :
-                      kpi.color === 'emerald' ? 'bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 text-white shadow-emerald-500/30' :
-                                               'bg-gradient-to-br from-amber-400 via-amber-500 to-orange-600 text-white shadow-amber-500/30')}>
-                      <kpi.icon size={18} strokeWidth={2.5} />
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                        <MetricTooltip 
-                          label={kpi.title} 
-                          explanation={
-                            kpi.title === 'Active Pipeline' ? 'ผลรวมมูลค่าทั้งหมดของทุกดีลการขายที่ยังไม่เข้าสู่ขั้นตอนปิดได้หรือเสีย' :
-                            kpi.title === 'Win Rate' ? 'สัดส่วนจำนวนดีลที่ปิดสำเร็จเทียบกับจำนวนดีลที่เข้าสู่ขั้นตอนปิดทั้งหมด' :
-                            kpi.title === 'Avg Velocity' ? 'จำนวนวันเฉลี่ยที่ใช้ในการดูแลดีลตั้งแต่เริ่มสร้างจนปิดสัญญาสำเร็จ' : ''
-                          }
-                          formula={
-                            kpi.title === 'Win Rate' ? 'ดีลสำเร็จ (Won) / (ดีลสำเร็จ + ดีลแพ้ (Lost)) * 100' :
-                            kpi.title === 'Avg Velocity' ? 'Σ(วันปิดงาน - วันสร้างงาน) / จำนวนดีลสำเร็จ' : ''
-                          }
-                        />
-                      </span>
-                      <p className="text-2xl font-black text-slate-900 tabular-nums tracking-tight leading-none mt-1">
-                        <AnimatedNumber value={kpi.value || 0} formatter={kpi.formatter} />
-                      </p>
-                    </div>
+              <Card key={kpi.title} className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-100 dark:bg-white/5">
+                    <kpi.icon size={18} className={kpi.color} strokeWidth={2.5} />
                   </div>
-                  {/* Mini sparkline */}
-                  {kpi.sparkline && kpi.sparkline.length > 1 && (
-                    <div className="w-12 h-6 shrink-0 opacity-70">
-                      <svg className="w-full h-full overflow-visible" viewBox="0 0 60 20">
-                        <motion.path
-                          d={(() => {
-                            const data = kpi.sparkline;
-                            const min = Math.min(...data);
-                            const max = Math.max(...data);
-                            const range = max - min || 1;
-                            return data.map((val, idx) => {
-                              const x = (idx / (data.length - 1)) * 60;
-                              const y = 20 - ((val - min) / range) * 16 - 2;
-                              return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
-                            }).join(' ');
-                          })()}
-                          fill="none"
-                          stroke={kpi.color === 'violet' ? '#8b5cf6' : kpi.color === 'emerald' ? '#10b981' : '#f59e0b'}
-                          strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-                  )}
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+                      <MetricTooltip label={kpi.title} />
+                    </span>
+                    <p className="text-xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight leading-none mt-1">
+                      <AnimatedNumber value={kpi.value || 0} formatter={kpi.formatter} />
+                    </p>
+                  </div>
                 </div>
               </Card>
             ))}
           </div>
 
-          {/* FORECAST SCENARIOS */}
-          <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-2 mb-3.5">
-              <Target size={14} className="text-violet-600" />
-              <h3 className="text-xs font-bold text-slate-800">Forecast Scenarios — เดือนนี้</h3>
-            </div>
-            <div className="space-y-2.5">
-              {[
-                { label: 'Worst Case', sub: 'ดีล ≥90% prob', value: (stats?.worstCaseValue || 0) + (stats?.totalWonValue || 0), color: 'text-rose-600', bg: 'bg-gradient-to-br from-rose-500/5 to-rose-500/10 border-rose-100', barBg: 'bg-rose-500' },
-                { label: 'Commit', sub: 'ดีล ≥70% prob', value: (stats?.commitValue || 0) + (stats?.totalWonValue || 0), color: 'text-amber-600', bg: 'bg-gradient-to-br from-amber-500/5 to-amber-500/10 border-amber-100', barBg: 'bg-amber-500' },
-                { label: 'Best Case', sub: 'ปิดได้หมดทุกดีล', value: (stats?.bestCaseValue || 0) + (stats?.totalWonValue || 0), color: 'text-emerald-600', bg: 'bg-gradient-to-br from-emerald-500/5 to-emerald-500/10 border-emerald-100', barBg: 'bg-emerald-500' },
-              ].map(s => {
-                const pct = monthlyGoal > 0 ? Math.round((s.value / monthlyGoal) * 100) : 0;
-                return (
-                  <div key={s.label} className={cn("p-2.5 rounded-xl border text-left", s.bg)}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{s.label}</span>
-                      <span className="text-[9px] text-slate-400 font-semibold">{s.sub}</span>
-                    </div>
-                    <div className="flex items-baseline justify-between mt-1">
-                      <span className={cn("text-sm font-black tabular-nums", s.color)}>{formatCurrency(s.value)}</span>
-                      <span className="text-[9px] text-slate-400 font-bold">{pct}% of target</span>
-                    </div>
-                    <div className="mt-1.5 h-1 bg-slate-200/50 rounded-full overflow-hidden">
-                      <div className={cn("h-full rounded-full", s.barBg === 'bg-emerald-500' ? 'bg-emerald-500' : s.barBg === 'bg-amber-500' ? 'bg-amber-500' : 'bg-rose-500')} style={{ width: `${Math.min(100, pct)}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-
-          {/* PIPELINE MINI-FUNNEL */}
-          {stats?.funnelData && (
-            <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center">
-                  <BarChart3 size={15} className="text-violet-600" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold text-slate-900 tracking-tight">Pipeline Snapshot</h3>
-                  <p className="text-[10px] text-slate-400 font-medium">จำนวนดีลและมูลค่าตามขั้นตอน</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {stats.funnelData.map((item) => (
-                  <div key={item.stage} className="flex items-center justify-between p-2 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors border border-slate-100/50 cursor-pointer"
-                    onClick={() => navigate('/pipeline')}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.color }} />
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{item.label}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-xs font-black text-slate-800 tabular-nums">{item.count} ดีล</span>
-                      <span className="text-[9px] text-slate-400 font-semibold block">{formatCurrency(item.value)}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          )}
-
-          {/* CUSTOMER HEALTH SNAPSHOT */}
-          {customerStats && customerStats.total > 0 && (
-            <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
-                  <Shield size={15} className="text-blue-600" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold text-slate-900 tracking-tight">Customer Health</h3>
-                  <p className="text-[10px] text-slate-400 font-medium">สุขภาพความสัมพันธ์ของลูกค้า</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-4 gap-2">
-                {[
-                  { grade: 'A', label: 'VIP', color: 'bg-blue-50 text-blue-700 border-blue-100', dot: 'bg-blue-500' },
-                  { grade: 'B', label: 'เติบโต', color: 'bg-emerald-50 text-emerald-700 border-emerald-100', dot: 'bg-emerald-500' },
-                  { grade: 'C', label: 'ทั่วไป', color: 'bg-amber-50 text-amber-700 border-amber-100', dot: 'bg-amber-500' },
-                  { grade: 'D', label: 'เสี่ยง', color: 'bg-rose-50 text-rose-600 border-rose-100', dot: 'bg-rose-500' },
-                ].map((g) => (
-                  <div key={g.grade} onClick={() => navigate('/customers')}
-                    className={cn("p-2 rounded-xl border text-center cursor-pointer transition-all hover:shadow-xs", g.color)}>
-                    <span className="text-[9px] font-bold uppercase tracking-wider block">เกรด {g.grade}</span>
-                    <span className="text-base font-black tabular-nums block mt-1">{customerStats.gradeCount[g.grade] || 0}</span>
-                  </div>
-                ))}
-              </div>
-              {/* At risk alerts */}
-              {customerStats.atRiskCustomers.length > 0 && (
-                <div className="mt-3.5 space-y-1.5 pt-3 border-t border-slate-100">
-                  <p className="text-[9px] font-bold text-rose-600 uppercase tracking-wider flex items-center gap-1.5">
-                    <AlertCircle size={10} /> ลูกค้าที่ต้องดูแลเร่งด่วน
-                  </p>
-                  {customerStats.atRiskCustomers.slice(0, 2).map(c => (
-                    <div key={c.id} onClick={() => navigate('/customers')}
-                      className="cursor-pointer p-2 rounded-xl bg-rose-50/50 hover:bg-rose-50 border border-rose-100/50 transition-all flex items-center justify-between gap-2">
-                      <span className="text-xs font-semibold text-slate-800 truncate">{c.company || c.name}</span>
-                      <span className="text-[9px] font-black text-rose-600 shrink-0 bg-rose-100 px-1.5 py-0.5 rounded">เกรด {c.grade}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          )}
-
           {/* TEAM LEADERBOARD */}
           {teamLeaderboard.length > 0 && (
-            <Card className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
+            <Card className="p-5">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
-                  <Trophy size={15} className="text-amber-600" strokeWidth={2.5} />
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                  <Trophy size={16} className="text-amber-600 dark:text-amber-400" strokeWidth={2.5} />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-slate-900 tracking-tight">Team Leaderboard</h3>
-                  <p className="text-[10px] text-slate-400 font-medium">อันดับยอดขายทีมเดือนนี้</p>
+                  <h3 className="text-xs md:text-sm font-bold text-slate-900 dark:text-white tracking-tight">Team Leaderboard</h3>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">อันดับยอดขายทีมเดือนนี้</p>
                 </div>
               </div>
               <div className="space-y-2">
                 {teamLeaderboard.slice(0, 4).map((m, i) => {
                   const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
                   const goalPct = Math.min(100, m.goalAchievement || 0);
-                  const barColor = i === 0 ? 'bg-amber-400' : i === 1 ? 'bg-slate-400' : i === 2 ? 'bg-orange-400' : 'bg-violet-400';
                   return (
-                    <div key={m.id} className={cn("p-2.5 rounded-xl border transition-all duration-200",
-                      i === 0 ? "bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 shadow-amber-100 shadow-sm" : "bg-slate-50/40 border-slate-100"
-                    )}>
+                    <div key={m.id} className="p-2.5 rounded-xl border border-slate-200/70 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02]">
                       <div className="flex items-center justify-between gap-3 mb-1.5">
                         <div className="flex items-center gap-2 min-w-0">
                           <div className="relative shrink-0">
-                            <div className={cn("w-8 h-8 rounded-full text-white font-black text-xs flex items-center justify-center shadow-md",
-                              m.color?.split(' ')[0] || 'bg-violet-600'
-                            )}>{m.name.charAt(0)}</div>
-                            {medal && (
-                              <span className="absolute -top-1.5 -right-1.5 text-sm leading-none">{medal}</span>
-                            )}
-                            {!medal && (
-                              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-700 text-white text-[8px] font-black flex items-center justify-center shadow">{i + 1}</div>
-                            )}
+                            <div className="w-7 h-7 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+                              {m.name.charAt(0)}
+                            </div>
+                            {medal && <span className="absolute -top-1.5 -right-1.5 text-xs">{medal}</span>}
                           </div>
                           <div className="min-w-0">
-                            <h4 className="font-bold text-slate-800 text-xs truncate leading-none">{m.name}</h4>
-                            <p className="text-[8px] text-slate-400 font-semibold mt-0.5">{m.role}</p>
+                            <h4 className="font-bold text-slate-900 dark:text-white text-xs truncate leading-none">{m.name}</h4>
+                            <p className="text-[9px] text-slate-400 font-medium mt-0.5">{m.role}</p>
                           </div>
                         </div>
                         <div className="text-right shrink-0">
-                          <span className="text-xs font-black text-slate-800 tabular-nums">{formatCurrency(m.wonThisMonthValue)}</span>
+                          <span className="text-xs font-black text-slate-900 dark:text-white tabular-nums">{formatCurrency(m.wonThisMonthValue)}</span>
                           <span className="text-[9px] text-slate-400 block font-bold">{m.goalAchievement}% Goal</span>
                         </div>
                       </div>
-                      {/* Progress bar */}
-                      <div className="h-1 rounded-full bg-slate-200/70 overflow-hidden">
+                      <div className="h-1 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
                         <div
-                          className={cn("h-full rounded-full transition-all duration-700", barColor)}
+                          className="h-full rounded-full bg-gradient-to-r from-violet-600 to-indigo-500"
                           style={{ width: `${goalPct}%` }}
                         />
                       </div>
@@ -998,5 +762,4 @@ export default function CommandCenterPage() {
       <QuickWinModal open={isQuickWinOpen} onOpenChange={setIsQuickWinOpen} />
     </div>
   );
-
 }

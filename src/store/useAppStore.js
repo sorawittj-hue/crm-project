@@ -1,15 +1,40 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const applyThemeToDOM = (theme) => {
+  const root = document.documentElement;
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = theme === 'dark' || (theme === 'system' && systemPrefersDark);
+  
+  if (isDark) {
+    root.classList.add('dark');
+  } else {
+    root.classList.remove('dark');
+  }
+};
+
 export const useAppStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
+      // Theme Management
+      theme: 'dark', // 'dark' | 'light' | 'system'
+      setTheme: (theme) => {
+        applyThemeToDOM(theme);
+        set({ theme });
+      },
+      toggleTheme: () => {
+        const currentTheme = get().theme;
+        const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        applyThemeToDOM(nextTheme);
+        set({ theme: nextTheme });
+      },
+
       // Sidebar
       isSidebarOpen: false,
       toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
       closeSidebar: () => set({ isSidebarOpen: false }),
 
-      // Monthly Target (synced with settings via React Query, this is the local override)
+      // Monthly Target
       monthlyTarget: 10000000,
       setMonthlyTarget: (value) => set({ monthlyTarget: Number(value) || 10000000 }),
 
@@ -17,12 +42,12 @@ export const useAppStore = create(
       globalSearchTerm: '',
       setGlobalSearchTerm: (term) => set({ globalSearchTerm: term }),
 
-      // Pending deal to open when navigating to /pipeline (from notifications, dashboard, etc.)
+      // Pending deal to open when navigating to /pipeline
       pendingOpenDeal: null,
       setPendingOpenDeal: (deal) => set({ pendingOpenDeal: deal }),
       clearPendingOpenDeal: () => set({ pendingOpenDeal: null }),
 
-      // Pending customer for new deal creation (when redirecting from Customers to Pipeline)
+      // Pending customer for new deal creation
       pendingNewDealCustomer: null,
       setPendingNewDealCustomer: (customer) => set({ pendingNewDealCustomer: customer }),
       clearPendingNewDealCustomer: () => set({ pendingNewDealCustomer: null }),
@@ -34,16 +59,15 @@ export const useAppStore = create(
 
       // Paywall Modal
       isPaywallOpen: false,
-      paywallReason: 'default', // 'default', 'trial_ended', 'premium_only', 'guest_upgrade'
+      paywallReason: 'default',
       openPaywall: (reason = 'default') => {
         let finalReason = reason;
         if (reason === 'default' || reason === 'upgrade') {
           try {
-            // Use session-scoped key (matches localDb.js getSessionKeys())
             const sessionId = sessionStorage.getItem('nova_guest_session_id');
             const raw = sessionId
               ? localStorage.getItem(`nova_trial_state_${sessionId}`)
-              : localStorage.getItem('nova_trial_state'); // backward compat
+              : localStorage.getItem('nova_trial_state');
             if (raw) {
               const parsed = JSON.parse(raw);
               if (parsed.isActive) {
@@ -62,7 +86,15 @@ export const useAppStore = create(
       name: 'nova-pipeline-store',
       partialize: (state) => ({
         monthlyTarget: state.monthlyTarget,
+        theme: state.theme,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.theme) {
+          applyThemeToDOM(state.theme);
+        } else {
+          applyThemeToDOM('dark');
+        }
+      }
     }
   )
 );

@@ -158,11 +158,11 @@ export default function SettingsPage() {
           transition={{ duration: 0.4, delay: 0.1 }}
           className="lg:w-68 shrink-0"
         >
-          <nav className="lg:sticky lg:top-8 bg-white/60 backdrop-blur-2xl p-3 rounded-[2rem] border border-white/80 shadow-xl shadow-slate-200/40 space-y-4">
+          <nav className="lg:sticky lg:top-8 bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl p-3 rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-sm space-y-4">
             {/* Base groups */}
             {SECTION_GROUPS.map((group) => (
               <div key={group.groupLabel}>
-                <p className="text-[10px] font-black text-slate-400/70 uppercase tracking-widest px-3 pb-1.5 pt-1">{group.groupLabel}</p>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-3 pb-1.5 pt-1">{group.groupLabel}</p>
                 <div className="space-y-0.5">
                   {group.items.map((s) => {
                     const isActive = activeSection === s.id;
@@ -177,7 +177,7 @@ export default function SettingsPage() {
             {/* Admin group */}
             {isOwner && (
               <div>
-                <p className="text-[10px] font-black text-amber-500/70 uppercase tracking-widest px-3 pb-1.5 pt-1">ระบบ (Owner)</p>
+                <p className="text-[10px] font-bold text-amber-500 uppercase tracking-wider px-3 pb-1.5 pt-1">ระบบ (Owner)</p>
                 <div className="space-y-0.5">
                   {ADMIN_SECTIONS.map((s) => {
                     const isActive = activeSection === s.id;
@@ -208,41 +208,41 @@ export default function SettingsPage() {
                   <PipelineSection />
                   
                   {/* Custom Fields Card */}
-                  <div className="bg-white/80 backdrop-blur-xl border border-violet-100/60 rounded-3xl p-6 shadow-sm">
+                  <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-violet-500/20">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-xs">
                           <Database size={18} />
                         </div>
                         <div>
-                          <h3 className="font-black text-slate-900 text-sm">Custom Fields</h3>
+                          <h3 className="font-bold text-slate-900 dark:text-white text-sm">Custom Fields</h3>
                           <p className="text-xs text-slate-400">เพิ่มข้อมูลพิเศษในดีลของคุณ</p>
                         </div>
                       </div>
                       <button
                         onClick={() => setShowAddField(s => !s)}
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors shadow-md shadow-violet-500/20"
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors shadow-xs cursor-pointer"
                       >
                         <Plus size={13} /> เพิ่ม Field
                       </button>
                     </div>
 
                     {showAddField && (
-                      <div className="mb-4 p-4 bg-violet-50 border border-violet-200 rounded-2xl flex flex-col gap-3">
-                        <p className="text-xs font-black text-violet-700 uppercase tracking-widest">เพิ่ม Field ใหม่</p>
+                      <div className="mb-4 p-4 bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800/40 rounded-2xl flex flex-col gap-3">
+                        <p className="text-xs font-bold text-violet-700 dark:text-violet-300 uppercase tracking-wider">เพิ่ม Field ใหม่</p>
                         <div className="flex gap-2">
                           <input
                             type="text"
                             placeholder="ชื่อ Field เช่น LinkedIn URL"
                             value={newFieldLabel}
                             onChange={e => setNewFieldLabel(e.target.value)}
-                            className="flex-1 h-9 px-3 rounded-xl border border-violet-200 bg-white text-sm font-semibold outline-none focus:border-violet-400"
+                            className="flex-1 h-9 px-3 rounded-xl border border-violet-200 dark:border-violet-800/40 bg-white dark:bg-[#171926] text-slate-900 dark:text-white text-sm font-semibold outline-none focus:border-violet-400"
                             onKeyDown={e => { if (e.key === 'Enter') handleAddField(); }}
                           />
                           <select
                             value={newFieldType}
                             onChange={e => setNewFieldType(e.target.value)}
-                            className="h-9 px-3 rounded-xl border border-violet-200 bg-white text-sm font-semibold outline-none"
+                            className="h-9 px-3 rounded-xl border border-violet-200 dark:border-violet-800/40 bg-white dark:bg-[#171926] text-slate-900 dark:text-white text-sm font-semibold outline-none cursor-pointer"
                           >
                             <option value="text">ข้อความ</option>
                             <option value="number">ตัวเลข</option>
@@ -251,7 +251,7 @@ export default function SettingsPage() {
                           </select>
                           <button
                             onClick={handleAddField}
-                            className="h-9 px-4 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors"
+                            className="h-9 px-4 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors cursor-pointer"
                           >
                             บันทึก
                           </button>
@@ -260,26 +260,26 @@ export default function SettingsPage() {
                     )}
 
                     {customFieldDefs.length === 0 && !showAddField && (
-                      <div className="py-8 text-center border-2 border-dashed border-slate-200 rounded-2xl">
-                        <Database size={20} className="text-slate-300 mx-auto mb-2" />
+                      <div className="py-8 text-center border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
+                        <Database size={20} className="text-slate-300 dark:text-slate-600 mx-auto mb-2" />
                         <p className="text-sm text-slate-400 font-medium">ยังไม่มี Custom Fields</p>
-                        <p className="text-xs text-slate-300 mt-1">คลิก "เพิ่ม Field" เพื่อสร้างบันทึก field พิเศษของคุณเอง</p>
+                        <p className="text-xs text-slate-400/80 mt-1">คลิก "เพิ่ม Field" เพื่อสร้างบันทึก field พิเศษของคุณเอง</p>
                       </div>
                     )}
 
                     <div className="space-y-2">
                       {customFieldDefs.map((field, idx) => (
-                        <div key={field.key} className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-violet-100 transition-colors">
-                          <div className="w-8 h-8 rounded-xl bg-violet-100 flex items-center justify-center">
-                            <Database size={13} className="text-violet-600" />
+                        <div key={field.key} className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 hover:border-violet-200 dark:hover:border-violet-800/40 transition-colors">
+                          <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-950/50 flex items-center justify-center">
+                            <Database size={13} className="text-violet-600 dark:text-violet-400" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-slate-800">{field.label}</p>
+                            <p className="text-sm font-bold text-slate-800 dark:text-white">{field.label}</p>
                             <p className="text-xs text-slate-400">{field.key} · {field.type}</p>
                           </div>
                           <button
                             onClick={() => saveCustomFields(customFieldDefs.filter((_, i) => i !== idx))}
-                            className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                            className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -312,12 +312,12 @@ function NavItem({ s, isActive, onClick, isAdmin = false }) {
     <button
       onClick={onClick}
       className={cn(
-        'w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-200 relative overflow-hidden group',
+        'w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-200 relative overflow-hidden group cursor-pointer',
         isActive
           ? isAdmin
-            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/20'
-            : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25'
-          : 'text-slate-600 hover:bg-white/80 hover:text-violet-700 hover:shadow-sm'
+            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md'
+            : 'bg-violet-600 text-white shadow-md'
+          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white'
       )}
     >
       {/* Hover shimmer */}
@@ -326,25 +326,25 @@ function NavItem({ s, isActive, onClick, isAdmin = false }) {
       {/* Icon container */}
       <div className={cn(
         'w-7 h-7 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300',
-        isActive ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-violet-100 group-hover:scale-110'
+        isActive ? 'bg-white/20' : 'bg-slate-100 dark:bg-white/5 group-hover:bg-violet-100 dark:group-hover:bg-violet-950/50 group-hover:scale-110'
       )}>
         <Icon size={15} className={cn(
           'transition-all duration-300',
-          isActive ? 'text-white' : 'text-slate-400 group-hover:text-violet-600'
+          isActive ? 'text-white' : 'text-slate-400 group-hover:text-violet-600 dark:group-hover:text-violet-400'
         )} />
       </div>
 
       {/* Label + desc */}
       <div className="flex-1 text-left min-w-0">
         <p className={cn('text-[13px] font-bold leading-tight truncate', isActive ? 'text-white' : '')}>{s.label}</p>
-        {s.desc && <p className={cn('text-[10px] font-medium truncate leading-tight', isActive ? 'text-white/60' : 'text-slate-400')}>{s.desc}</p>}
+        {s.desc && <p className={cn('text-[10px] font-medium truncate leading-tight', isActive ? 'text-white/70' : 'text-slate-400 dark:text-slate-500')}>{s.desc}</p>}
       </div>
 
       {/* Active indicator */}
       {isActive && (
         <motion.div
           layoutId="activeNavIndicator"
-          className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-white/80 rounded-r-full"
+          className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-white rounded-r-full"
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
         />
       )}
