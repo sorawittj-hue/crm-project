@@ -28,7 +28,7 @@ import {
   Target, Clock, CalendarClock, ChevronRight, CheckCircle2,
   Phone, Mail, FileText, MessageSquare, Activity, Trophy,
   Star, Flame, BarChart3, Sparkles, Shield, Zap,
-  Wrench, ShieldCheck, Loader2, RefreshCw
+  Wrench, ShieldCheck, Loader2, RefreshCw, TrendingUp
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis,
