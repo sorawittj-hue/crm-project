@@ -453,12 +453,12 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-white dark:bg-[#0d0f1a] text-slate-900 dark:text-white transition-colors duration-300">
       {/* ── Header ── */}
       <div className="relative p-6 pb-0">
         {/* Gradient bg */}
         <div
-          className="absolute inset-x-0 top-0 h-32 opacity-10 pointer-events-none"
+          className="absolute inset-x-0 top-0 h-32 opacity-15 pointer-events-none"
           style={{ background: `linear-gradient(135deg, ${g1}, ${g2})` }}
         />
         <div className="relative z-10">
@@ -466,18 +466,18 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
           <div className="flex items-center justify-between mb-5">
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all cursor-pointer"
             >
               <X size={20} />
             </button>
             <div className="flex items-center gap-2">
               {customer.email && (
-                <a href={`mailto:${customer.email}`} className="p-2 rounded-xl text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-all" title="ส่งอีเมล">
+                <a href={`mailto:${customer.email}`} className="p-2 rounded-xl text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-white/10 transition-all" title="ส่งอีเมล">
                   <Mail size={18} />
                 </a>
               )}
               {customer.phone && (
-                <a href={`tel:${customer.phone}`} className="p-2 rounded-xl text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all" title="โทรออก">
+                <a href={`tel:${customer.phone}`} className="p-2 rounded-xl text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-white/10 transition-all" title="โทรออก">
                   <Phone size={18} />
                 </a>
               )}
@@ -487,7 +487,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                   setIsSidebarOpen(false);
                   navigate('/pipeline');
                 }}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-all shadow-md shadow-violet-500/20"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition-all shadow-md shadow-violet-500/20 cursor-pointer"
               >
                 <Plus size={14} /> สร้างดีล
               </button>
@@ -497,15 +497,15 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
           {/* Avatar + name */}
           <div className="flex items-center gap-4 mb-5">
             <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-xl ring-4 ring-white shrink-0"
+              className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-xl ring-4 ring-white dark:ring-white/10 shrink-0"
               style={{ background: `linear-gradient(135deg, ${g1}, ${g2})` }}
             >
               {customer.name?.charAt(0)?.toUpperCase() || '?'}
             </div>
             <div>
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">{customer.name}</h2>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{customer.name}</h2>
               {customer.company && (
-                <p className="text-sm text-slate-500 flex items-center gap-1 mt-0.5">
+                <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5 font-medium">
                   <Building2 size={13} /> {customer.company}
                 </p>
               )}
@@ -519,16 +519,16 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                 เกรด {customer.grade} — {gradeConf.desc}
               </span>
             )}
-            <span className={cn('px-2.5 py-1 rounded-lg text-[10px] font-bold border', healthConf.cls)}>
+            <span className={cn('px-2.5 py-1 rounded-lg text-[10px] font-bold border dark:bg-white/5 dark:border-white/10', healthConf.cls)}>
               <HeartPulse size={9} className="inline mr-1" />{healthConf.label} {customer.health?.score ?? 0}%
             </span>
             {customer.tier && (
-              <span className={cn('px-2.5 py-1 rounded-lg text-[10px] font-bold border', TIER_CONFIG[customer.tier]?.color || 'bg-slate-100 text-slate-500 border-slate-200')}>
+              <span className={cn('px-2.5 py-1 rounded-lg text-[10px] font-bold border dark:bg-white/5 dark:border-white/10', TIER_CONFIG[customer.tier]?.color || 'bg-slate-100 text-slate-500 border-slate-200')}>
                 {TIER_CONFIG[customer.tier]?.icon} {customer.tier}
               </span>
             )}
             {customer.industry && (
-              <span className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-slate-50 text-slate-500 border border-slate-200">
+              <span className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10">
                 {customer.industry}
               </span>
             )}
@@ -537,20 +537,20 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
           {/* KPI mini strip */}
           <div className="grid grid-cols-3 gap-2 mb-5">
             {[
-              { label: 'ดีลรวม', val: customer.dealStats.total, color: 'text-slate-800' },
-              { label: 'Won', val: customer.dealStats.won, color: 'text-emerald-600' },
-              { label: 'CLV', val: formatCurrency(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0)), color: 'text-violet-700' },
+              { label: 'ดีลรวม', val: customer.dealStats.total, color: 'text-slate-800 dark:text-white' },
+              { label: 'Won', val: customer.dealStats.won, color: 'text-emerald-600 dark:text-emerald-400' },
+              { label: 'CLV', val: formatCurrency(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0)), color: 'text-violet-700 dark:text-violet-400' },
             ].map(({ label, val, color }) => (
-              <div key={label} className="bg-slate-50 rounded-2xl p-3 text-center border border-slate-100">
-                <p className="text-[10px] text-slate-400 font-medium mb-0.5">{label}</p>
-                <p className={cn('text-sm font-black', color)}>{val}</p>
+              <div key={label} className="bg-slate-50 dark:bg-white/[0.04] rounded-2xl p-3 text-center border border-slate-100 dark:border-white/5">
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium mb-0.5">{label}</p>
+                <p className={cn('text-sm font-black tabular-nums', color)}>{val}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-100 -mx-6 px-6 gap-1">
+        <div className="flex border-b border-slate-100 dark:border-white/10 -mx-6 px-6 gap-1">
           {tabs.map(tab => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -559,10 +559,10 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px whitespace-nowrap',
+                  'flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px whitespace-nowrap cursor-pointer',
                   active
-                    ? 'border-violet-600 text-violet-700'
-                    : 'border-transparent text-slate-400 hover:text-slate-700'
+                    ? 'border-violet-600 text-violet-600 dark:text-violet-400'
+                    : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-white'
                 )}
               >
                 <Icon size={13} /> {tab.label}
@@ -579,7 +579,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
           {activeTab === 'profile' && localCustomer && (
             <motion.div key="profile" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="p-6 space-y-5">
               {customer._fromDeals && (
-                <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 text-xs font-semibold text-blue-800 flex items-start gap-2">
+                <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/50 text-xs font-semibold text-blue-800 dark:text-blue-300 flex items-start gap-2">
                   <AlertTriangle size={15} className="shrink-0 text-blue-500 mt-0.5" />
                   ระบบสร้างข้อมูลนี้จากดีล กรุณากด <strong>"บันทึกเป็นลูกค้าทางการ"</strong> เพื่อยืนยัน
                 </div>
@@ -590,29 +590,29 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                 <div className="space-y-3">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ชื่อลูกค้า *</label>
-                    <Input required value={localCustomer.name} onChange={e => setLocalCustomer(p => ({ ...p, name: e.target.value }))} className="h-11 rounded-xl text-sm font-semibold" />
+                    <Input required value={localCustomer.name} onChange={e => setLocalCustomer(p => ({ ...p, name: e.target.value }))} className="h-11 rounded-xl text-sm font-semibold dark:bg-white/[0.04] dark:border-white/10 dark:text-white" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">บริษัท</label>
-                      <Input value={localCustomer.company} onChange={e => setLocalCustomer(p => ({ ...p, company: e.target.value }))} className="h-11 rounded-xl text-sm" />
+                      <Input value={localCustomer.company} onChange={e => setLocalCustomer(p => ({ ...p, company: e.target.value }))} className="h-11 rounded-xl text-sm dark:bg-white/[0.04] dark:border-white/10 dark:text-white" />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">อุตสาหกรรม</label>
-                      <Input value={localCustomer.industry} onChange={e => setLocalCustomer(p => ({ ...p, industry: e.target.value }))} className="h-11 rounded-xl text-sm" />
+                      <Input value={localCustomer.industry} onChange={e => setLocalCustomer(p => ({ ...p, industry: e.target.value }))} className="h-11 rounded-xl text-sm dark:bg-white/[0.04] dark:border-white/10 dark:text-white" />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">อีเมล</label>
-                      <Input type="email" value={localCustomer.email} onChange={e => setLocalCustomer(p => ({ ...p, email: e.target.value }))} className="h-11 rounded-xl text-sm" />
+                      <Input type="email" value={localCustomer.email} onChange={e => setLocalCustomer(p => ({ ...p, email: e.target.value }))} className="h-11 rounded-xl text-sm dark:bg-white/[0.04] dark:border-white/10 dark:text-white" />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">เบอร์โทร</label>
-                      <Input value={localCustomer.phone} onChange={e => setLocalCustomer(p => ({ ...p, phone: e.target.value }))} className="h-11 rounded-xl text-sm" />
+                      <Input value={localCustomer.phone} onChange={e => setLocalCustomer(p => ({ ...p, phone: e.target.value }))} className="h-11 rounded-xl text-sm dark:bg-white/[0.04] dark:border-white/10 dark:text-white" />
                     </div>
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ระดับลูกค้า</label>
-                    <select value={localCustomer.tier} onChange={e => setLocalCustomer(p => ({ ...p, tier: e.target.value }))} className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 outline-none focus:border-violet-400">
+                    <select value={localCustomer.tier} onChange={e => setLocalCustomer(p => ({ ...p, tier: e.target.value }))} className="w-full h-11 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] px-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-violet-400 cursor-pointer">
                       <option value="Silver">🥈 Silver</option>
                       <option value="Gold">🥇 Gold</option>
                       <option value="Platinum">💎 Platinum</option>
@@ -620,26 +620,26 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tax ID</label>
-                    <Input placeholder="ระบุเลขประจำตัวผู้เสียภาษี" value={localCustomer.tax_id || ''} onChange={e => setLocalCustomer(p => ({ ...p, tax_id: e.target.value }))} className="h-11 rounded-xl text-sm" />
+                    <Input placeholder="ระบุเลขประจำตัวผู้เสียภาษี" value={localCustomer.tax_id || ''} onChange={e => setLocalCustomer(p => ({ ...p, tax_id: e.target.value }))} className="h-11 rounded-xl text-sm dark:bg-white/[0.04] dark:border-white/10 dark:text-white" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">บันทึก</label>
-                    <Textarea value={localCustomer.notes} onChange={e => setLocalCustomer(p => ({ ...p, notes: e.target.value }))} className="rounded-xl resize-none min-h-[80px] text-sm" />
+                    <Textarea value={localCustomer.notes} onChange={e => setLocalCustomer(p => ({ ...p, notes: e.target.value }))} className="rounded-xl resize-none min-h-[80px] text-sm dark:bg-white/[0.04] dark:border-white/10 dark:text-white" />
                   </div>
                 </div>
 
                 <div className="flex gap-3">
                   {customer._fromDeals ? (
-                    <Button type="button" onClick={() => handleConvertSynthetic(customer)} className="flex-1 h-11 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-xs border-0" disabled={createCustomerMutation.isPending}>
+                    <Button type="button" onClick={() => handleConvertSynthetic(customer)} className="flex-1 h-11 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-xs border-0 cursor-pointer" disabled={createCustomerMutation.isPending}>
                       <Plus size={14} className="mr-1.5" /> บันทึกเป็นลูกค้าทางการ
                     </Button>
                   ) : (
                     <>
-                      <Button type="submit" className="flex-[2] h-11 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-sm border-0 shadow-md" disabled={updateCustomerMutation.isPending}>
+                      <Button type="submit" className="flex-[2] h-11 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-sm border-0 shadow-md cursor-pointer" disabled={updateCustomerMutation.isPending}>
                         {updateCustomerMutation.isPending ? <Loader2 size={14} className="animate-spin mr-1.5" /> : <Settings size={14} className="mr-1.5" />}
                         บันทึก
                       </Button>
-                      <Button type="button" variant="ghost" className="flex-1 h-11 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 border border-rose-100 font-bold text-sm"
+                      <Button type="button" variant="ghost" className="flex-1 h-11 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/50 border border-rose-100 dark:border-rose-800/40 font-bold text-sm cursor-pointer"
                         onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setConfirmDelete({ open: true, customerId: customer.id })}>
                         <Trash2 size={14} />
                       </Button>
@@ -654,33 +654,33 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
           {activeTab === 'playbook' && (
             <motion.div key="playbook" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="p-6 space-y-5">
               {/* Health metrics */}
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+              <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-4 border border-slate-100 dark:border-white/5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <HeartPulse size={16} className="text-violet-500" />
-                    <span className="text-sm font-bold text-slate-800">Account Health</span>
+                    <span className="text-sm font-bold text-slate-800 dark:text-white">Account Health</span>
                   </div>
-                  <span className="text-xl font-black text-slate-900">{customer.health?.score ?? 0}%</span>
+                  <span className="text-xl font-black text-slate-900 dark:text-white">{customer.health?.score ?? 0}%</span>
                 </div>
                 <HealthBar score={customer.health?.score} status={customer.health?.status} />
                 <div className="grid grid-cols-3 gap-2 mt-3">
-                  <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-2 text-center">
-                    <p className="text-[9px] text-emerald-700 font-bold uppercase">Win Rate</p>
-                    <p className="text-sm font-black text-emerald-700">{customer.health?.winRate || 0}%</p>
+                  <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/40 rounded-xl p-2 text-center">
+                    <p className="text-[9px] text-emerald-700 dark:text-emerald-300 font-bold uppercase">Win Rate</p>
+                    <p className="text-sm font-black text-emerald-700 dark:text-emerald-300">{customer.health?.winRate || 0}%</p>
                   </div>
-                  <div className="bg-rose-50 border border-rose-100 rounded-xl p-2 text-center">
-                    <p className="text-[9px] text-rose-700 font-bold uppercase">Risks</p>
-                    <p className="text-sm font-black text-rose-600">{customer.health?.riskCount || 0}</p>
+                  <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-800/40 rounded-xl p-2 text-center">
+                    <p className="text-[9px] text-rose-700 dark:text-rose-300 font-bold uppercase">Risks</p>
+                    <p className="text-sm font-black text-rose-600 dark:text-rose-400">{customer.health?.riskCount || 0}</p>
                   </div>
-                  <div className="bg-slate-100 border border-slate-200 rounded-xl p-2 text-center">
-                    <p className="text-[9px] text-slate-500 font-bold uppercase">Idle Days</p>
-                    <p className="text-sm font-black text-slate-900">{customer.health?.inactiveDays ?? 0}</p>
+                  <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl p-2 text-center">
+                    <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase">Idle Days</p>
+                    <p className="text-sm font-black text-slate-900 dark:text-white">{customer.health?.inactiveDays ?? 0}</p>
                   </div>
                 </div>
                 {customer.health?.nextAction && (
-                  <div className="mt-3 bg-blue-50 border border-blue-100 rounded-xl p-3">
-                    <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1">Next Best Action</p>
-                    <p className="text-xs text-slate-700 font-medium leading-relaxed">{customer.health.nextAction}</p>
+                  <div className="mt-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-800/40 rounded-xl p-3">
+                    <p className="text-[9px] font-black text-blue-600 dark:text-blue-300 uppercase tracking-widest mb-1">Next Best Action</p>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">{customer.health.nextAction}</p>
                   </div>
                 )}
               </div>
@@ -690,7 +690,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                 {!aiPlaybook && !aiPlaybookLoading && (
                   <button
                     onClick={() => generateAIPlaybook(customer)}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all"
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all cursor-pointer"
                   >
                     <Sparkles size={16} />
                     วิเคราะห์ด้วย AI
@@ -699,19 +699,19 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                 {aiPlaybookLoading && (
                   <div className="flex items-center justify-center py-8 gap-3">
                     <Loader2 className="animate-spin text-violet-500" size={20} />
-                    <span className="text-sm text-slate-500">AI กำลังวิเคราะห์...</span>
+                    <span className="text-sm text-slate-500 dark:text-slate-400">AI กำลังวิเคราะห์...</span>
                   </div>
                 )}
                 {aiPlaybook && (
-                  <div className="bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-100 rounded-2xl p-4">
+                  <div className="bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-950/30 dark:to-indigo-950/30 border border-violet-100 dark:border-violet-800/40 rounded-2xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <Sparkles size={14} className="text-violet-500" />
-                      <p className="text-xs font-black text-violet-600 uppercase tracking-wide">AI Playbook</p>
+                      <p className="text-xs font-black text-violet-600 dark:text-violet-400 uppercase tracking-wide">AI Playbook</p>
                     </div>
-                    <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{aiPlaybook}</p>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">{aiPlaybook}</p>
                     <button
                       onClick={() => generateAIPlaybook(customer)}
-                      className="mt-3 text-xs text-violet-500 font-bold hover:text-violet-700"
+                      className="mt-3 text-xs text-violet-500 dark:text-violet-400 font-bold hover:underline cursor-pointer"
                     >
                       🔄 สร้างใหม่
                     </button>
@@ -736,37 +736,37 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
           {activeTab === 'deals' && (
             <motion.div key="deals" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
-                  <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest mb-1">ปิดได้รวม</p>
-                  <p className="text-lg font-black text-emerald-700">{formatFullCurrency(customer.dealStats.wonValue)}</p>
+                <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 rounded-2xl p-4">
+                  <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-widest mb-1">ปิดได้รวม</p>
+                  <p className="text-lg font-black text-emerald-700 dark:text-emerald-300 tabular-nums">{formatFullCurrency(customer.dealStats.wonValue)}</p>
                 </div>
-                <div className="bg-violet-50 border border-violet-200 rounded-2xl p-4">
-                  <p className="text-[10px] font-bold text-violet-600 uppercase tracking-widest mb-1">กำลังดำเนินการ</p>
-                  <p className="text-lg font-black text-violet-700">{formatFullCurrency(customer.dealStats.activeValue)}</p>
+                <div className="bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800/40 rounded-2xl p-4">
+                  <p className="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest mb-1">กำลังดำเนินการ</p>
+                  <p className="text-lg font-black text-violet-700 dark:text-violet-300 tabular-nums">{formatFullCurrency(customer.dealStats.activeValue)}</p>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                   ประวัติดีล ({customer.dealStats.deals.length})
                 </p>
                 <div className="space-y-2 max-h-[45vh] overflow-y-auto">
                   {customer.dealStats.deals.map(deal => (
-                    <div key={deal.id} className="bg-white border border-slate-100 rounded-2xl p-4 hover:border-violet-200 hover:shadow-sm transition-all group">
+                    <div key={deal.id} className="bg-white dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-4 hover:border-violet-200 dark:hover:border-violet-500/40 transition-all group">
                       <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-sm font-bold text-slate-900 truncate group-hover:text-violet-700 transition-colors">{deal.title}</p>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            <strong className="text-slate-800">{formatCurrency(deal.value)}</strong>
-                            <span className="mx-1 text-slate-300">·</span>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{deal.title}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            <strong className="text-slate-800 dark:text-slate-200">{formatCurrency(deal.value)}</strong>
+                            <span className="mx-1 text-slate-300 dark:text-slate-600">·</span>
                             {deal.probability}%
                           </p>
                         </div>
                         <span className={cn(
                           'text-[10px] font-black px-2.5 py-1 rounded-full border shrink-0',
-                          deal.stage === 'won' ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                            : deal.stage === 'lost' ? 'bg-rose-50 text-rose-600 border-rose-200'
-                            : 'bg-slate-50 text-slate-600 border-slate-200 group-hover:border-violet-200 group-hover:text-violet-600 group-hover:bg-violet-50 transition-colors'
+                          deal.stage === 'won' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800/40 dark:text-emerald-300'
+                            : deal.stage === 'lost' ? 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-950/40 dark:border-rose-800/40 dark:text-rose-400'
+                            : 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-white/5 dark:border-white/10 dark:text-slate-300 group-hover:border-violet-200 group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors'
                         )}>
                           {STAGE_LABELS[deal.stage] || deal.stage}
                         </span>
@@ -774,9 +774,9 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                     </div>
                   ))}
                   {customer.dealStats.deals.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                      <Target size={24} className="text-slate-300 mb-2" />
-                      <p className="text-xs text-slate-400">ยังไม่มีดีล</p>
+                    <div className="flex flex-col items-center justify-center py-10 bg-slate-50 dark:bg-white/[0.02] rounded-2xl border border-dashed border-slate-200 dark:border-white/10">
+                      <Target size={24} className="text-slate-300 dark:text-slate-600 mb-2" />
+                      <p className="text-xs text-slate-400 dark:text-slate-500">ยังไม่มีดีล</p>
                     </div>
                   )}
                 </div>
@@ -788,9 +788,9 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
           {activeTab === 'contacts' && (
             <motion.div key="contacts" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-bold text-slate-800">ผู้ติดต่อ ({contacts.length})</p>
+                <p className="text-sm font-bold text-slate-800 dark:text-white">ผู้ติดต่อ ({contacts.length})</p>
                 <Button onClick={() => { setEditingContact(null); setContactForm({ full_name: '', role: '', email: '', phone: '', is_primary: false }); setIsContactFormOpen(true); }}
-                  className="h-8 px-3 rounded-lg bg-violet-600 text-white text-xs font-bold border-0">
+                  className="h-8 px-3 rounded-lg bg-violet-600 text-white text-xs font-bold border-0 cursor-pointer">
                   <Plus size={13} className="mr-1" /> เพิ่ม
                 </Button>
               </div>
@@ -798,33 +798,33 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
               <AnimatePresence>
                 {isContactFormOpen && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                    <div className="bg-violet-50 border border-violet-200 rounded-2xl p-4">
+                    <div className="bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800/40 rounded-2xl p-4">
                       <form onSubmit={handleContactSubmit} className="space-y-3">
-                        <p className="text-xs font-bold text-violet-700">{editingContact ? 'แก้ไขผู้ติดต่อ' : 'เพิ่มผู้ติดต่อใหม่'}</p>
+                        <p className="text-xs font-bold text-violet-700 dark:text-violet-300">{editingContact ? 'แก้ไขผู้ติดต่อ' : 'เพิ่มผู้ติดต่อใหม่'}</p>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase">ชื่อ-นามสกุล *</label>
-                            <Input required value={contactForm.full_name} onChange={e => setContactForm(p => ({ ...p, full_name: e.target.value }))} className="h-9 text-xs bg-white" />
+                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">ชื่อ-นามสกุล *</label>
+                            <Input required value={contactForm.full_name} onChange={e => setContactForm(p => ({ ...p, full_name: e.target.value }))} className="h-9 text-xs bg-white dark:bg-[#171926] dark:border-white/10 dark:text-white" />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase">ตำแหน่ง</label>
-                            <Input value={contactForm.role} onChange={e => setContactForm(p => ({ ...p, role: e.target.value }))} className="h-9 text-xs bg-white" />
+                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">ตำแหน่ง</label>
+                            <Input value={contactForm.role} onChange={e => setContactForm(p => ({ ...p, role: e.target.value }))} className="h-9 text-xs bg-white dark:bg-[#171926] dark:border-white/10 dark:text-white" />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase">อีเมล</label>
-                            <Input type="email" value={contactForm.email} onChange={e => setContactForm(p => ({ ...p, email: e.target.value }))} className="h-9 text-xs bg-white" />
+                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">อีเมล</label>
+                            <Input type="email" value={contactForm.email} onChange={e => setContactForm(p => ({ ...p, email: e.target.value }))} className="h-9 text-xs bg-white dark:bg-[#171926] dark:border-white/10 dark:text-white" />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase">เบอร์โทร</label>
-                            <Input value={contactForm.phone} onChange={e => setContactForm(p => ({ ...p, phone: e.target.value }))} className="h-9 text-xs bg-white" />
+                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">เบอร์โทร</label>
+                            <Input value={contactForm.phone} onChange={e => setContactForm(p => ({ ...p, phone: e.target.value }))} className="h-9 text-xs bg-white dark:bg-[#171926] dark:border-white/10 dark:text-white" />
                           </div>
                         </div>
-                        <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                        <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
                           <input type="checkbox" checked={contactForm.is_primary} onChange={e => setContactForm(p => ({ ...p, is_primary: e.target.checked }))} className="rounded accent-violet-600" />
                           ตั้งเป็นผู้ติดต่อหลัก
                         </label>
                         <div className="flex gap-2">
-                          <Button type="button" variant="ghost" onClick={() => setIsContactFormOpen(false)} className="h-8 text-xs text-slate-500">ยกเลิก</Button>
+                          <Button type="button" variant="ghost" onClick={() => setIsContactFormOpen(false)} className="h-8 text-xs text-slate-500 dark:text-slate-400">ยกเลิก</Button>
                           <Button type="submit" className="h-8 px-4 rounded-lg bg-violet-600 text-white text-xs font-bold border-0">บันทึก</Button>
                         </div>
                       </form>
@@ -835,32 +835,32 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
 
               <div className="space-y-2">
                 {contacts.length === 0 && !isContactFormOpen && (
-                  <div className="flex flex-col items-center justify-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                    <Contact size={24} className="text-slate-300 mb-2" />
-                    <p className="text-xs text-slate-400">ยังไม่มีผู้ติดต่อ</p>
+                  <div className="flex flex-col items-center justify-center py-10 bg-slate-50 dark:bg-white/[0.02] rounded-2xl border border-dashed border-slate-200 dark:border-white/10">
+                    <Contact size={24} className="text-slate-300 dark:text-slate-600 mb-2" />
+                    <p className="text-xs text-slate-400 dark:text-slate-500">ยังไม่มีผู้ติดต่อ</p>
                   </div>
                 )}
                 {contacts.map(contact => (
-                  <div key={contact.id} className="bg-white border border-slate-100 rounded-2xl p-4 hover:border-violet-100 transition-all group flex items-center gap-3">
+                  <div key={contact.id} className="bg-white dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-4 hover:border-violet-100 dark:hover:border-violet-500/30 transition-all group flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-sm font-black shrink-0 shadow-sm">
                       {contact.full_name?.charAt(0) || '?'}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <p className="text-sm font-bold text-slate-900 truncate">{contact.full_name}</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{contact.full_name}</p>
                         {contact.is_primary && <Star size={11} className="fill-amber-400 text-amber-400 shrink-0" />}
                       </div>
-                      <p className="text-xs text-slate-500">{contact.role || '—'}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{contact.role || '—'}</p>
                       <div className="flex gap-3 mt-1">
                         {contact.email && <span className="text-[11px] text-slate-400">{contact.email}</span>}
                         {contact.phone && <span className="text-[11px] text-slate-400 font-mono">{contact.phone}</span>}
                       </div>
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => { setEditingContact(contact); setContactForm(contact); setIsContactFormOpen(true); }} className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-colors">
+                      <button onClick={() => { setEditingContact(contact); setContactForm(contact); setIsContactFormOpen(true); }} className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-white/10 transition-colors">
                         <Pencil size={13} />
                       </button>
-                      <button onClick={() => { if (confirm('ต้องการลบผู้ติดต่อนี้?')) deleteContact(contact.id); }} className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+                      <button onClick={() => { if (confirm('ต้องการลบผู้ติดต่อนี้?')) deleteContact(contact.id); }} className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-white/10 transition-colors">
                         <Trash2 size={13} />
                       </button>
                     </div>
@@ -1275,7 +1275,7 @@ export default function CustomersPage() {
               animate={{ opacity: 1, x: 0, width: 400 }}
               exit={{ opacity: 0, x: 40, width: 0 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="shrink-0 bg-white rounded-3xl border border-slate-100 shadow-[0_0_40px_rgba(0,0,0,0.08)] overflow-hidden sticky top-4 h-[calc(100vh-6rem)]"
+              className="shrink-0 bg-white dark:bg-[#0d0f1a] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.08)] dark:shadow-[0_0_40px_rgba(0,0,0,0.6)] overflow-hidden sticky top-4 h-[calc(100vh-6rem)]"
             >
               <CustomerDetailPanel
                 customer={selectedCustomer}
@@ -1316,17 +1316,17 @@ export default function CustomersPage() {
 
       {/* Add Customer Modal */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-lg bg-white rounded-3xl p-0 border border-slate-100 shadow-2xl overflow-hidden">
+        <DialogContent className="max-w-lg bg-white dark:bg-[#0d0f1a] text-slate-900 dark:text-white rounded-3xl p-0 border border-slate-200/80 dark:border-white/10 shadow-2xl overflow-hidden">
           <div className="h-1 bg-gradient-to-r from-violet-500 to-indigo-500" />
           <div className="p-7 space-y-5">
             <DialogHeader>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-violet-50 border border-violet-100 flex items-center justify-center">
-                  <Users size={22} className="text-violet-600" />
+                <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-950/40 border border-violet-100 dark:border-violet-800/40 flex items-center justify-center">
+                  <Users size={22} className="text-violet-600 dark:text-violet-400" />
                 </div>
                 <div>
-                  <DialogTitle className="text-xl font-black text-slate-900">เพิ่มลูกค้าใหม่</DialogTitle>
-                  <p className="text-sm text-slate-500 mt-0.5">กรอกข้อมูลลูกค้าเพื่อเพิ่มเข้าระบบ</p>
+                  <DialogTitle className="text-xl font-black text-slate-900 dark:text-white">เพิ่มลูกค้าใหม่</DialogTitle>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-medium">กรอกข้อมูลลูกค้าเพื่อเพิ่มเข้าระบบ</p>
                 </div>
               </div>
             </DialogHeader>
@@ -1334,27 +1334,27 @@ export default function CustomersPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ชื่อลูกค้า *</label>
-                  <Input required placeholder="เช่น คุณสมชาย ใจดี" value={newCustomer.name} onChange={e => setNewCustomer({ ...newCustomer, name: e.target.value })} className="h-11 rounded-xl text-sm font-semibold" />
+                  <Input required placeholder="เช่น คุณสมชาย ใจดี" value={newCustomer.name} onChange={e => setNewCustomer({ ...newCustomer, name: e.target.value })} className="h-11 rounded-xl text-sm font-semibold dark:bg-white/[0.04] dark:border-white/10 dark:text-white" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">บริษัท</label>
-                  <Input placeholder="บริษัท ABC จำกัด" value={newCustomer.company} onChange={e => setNewCustomer({ ...newCustomer, company: e.target.value })} className="h-11 rounded-xl text-sm" />
+                  <Input placeholder="บริษัท ABC จำกัด" value={newCustomer.company} onChange={e => setNewCustomer({ ...newCustomer, company: e.target.value })} className="h-11 rounded-xl text-sm dark:bg-white/[0.04] dark:border-white/10 dark:text-white" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">อุตสาหกรรม</label>
-                  <Input placeholder="IT, Manufacturing..." value={newCustomer.industry} onChange={e => setNewCustomer({ ...newCustomer, industry: e.target.value })} className="h-11 rounded-xl text-sm" />
+                  <Input placeholder="IT, Manufacturing..." value={newCustomer.industry} onChange={e => setNewCustomer({ ...newCustomer, industry: e.target.value })} className="h-11 rounded-xl text-sm dark:bg-white/[0.04] dark:border-white/10 dark:text-white" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">อีเมล</label>
-                  <Input type="email" placeholder="example@company.com" value={newCustomer.email} onChange={e => setNewCustomer({ ...newCustomer, email: e.target.value })} className="h-11 rounded-xl text-sm" />
+                  <Input type="email" placeholder="example@company.com" value={newCustomer.email} onChange={e => setNewCustomer({ ...newCustomer, email: e.target.value })} className="h-11 rounded-xl text-sm dark:bg-white/[0.04] dark:border-white/10 dark:text-white" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">เบอร์โทร</label>
-                  <Input placeholder="0XX-XXX-XXXX" value={newCustomer.phone} onChange={e => setNewCustomer({ ...newCustomer, phone: e.target.value })} className="h-11 rounded-xl text-sm" />
+                  <Input placeholder="0XX-XXX-XXXX" value={newCustomer.phone} onChange={e => setNewCustomer({ ...newCustomer, phone: e.target.value })} className="h-11 rounded-xl text-sm dark:bg-white/[0.04] dark:border-white/10 dark:text-white" />
                 </div>
                 <div className="col-span-2 space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ระดับลูกค้า</label>
-                  <select value={newCustomer.tier} onChange={e => setNewCustomer({ ...newCustomer, tier: e.target.value })} className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 outline-none focus:border-violet-400 cursor-pointer">
+                  <select value={newCustomer.tier} onChange={e => setNewCustomer({ ...newCustomer, tier: e.target.value })} className="w-full h-11 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] px-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-violet-400 cursor-pointer">
                     <option value="Silver">🥈 Silver</option>
                     <option value="Gold">🥇 Gold</option>
                     <option value="Platinum">💎 Platinum</option>
@@ -1362,12 +1362,12 @@ export default function CustomersPage() {
                 </div>
                 <div className="col-span-2 space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">บันทึกเพิ่มเติม</label>
-                  <Textarea placeholder="บันทึกข้อมูลเพิ่มเติม..." value={newCustomer.notes} onChange={e => setNewCustomer({ ...newCustomer, notes: e.target.value })} className="rounded-xl resize-none min-h-[80px] text-sm" />
+                  <Textarea placeholder="บันทึกข้อมูลเพิ่มเติม..." value={newCustomer.notes} onChange={e => setNewCustomer({ ...newCustomer, notes: e.target.value })} className="rounded-xl resize-none min-h-[80px] text-sm dark:bg-white/[0.04] dark:border-white/10 dark:text-white" />
                 </div>
               </div>
-              {formError && <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-600 font-semibold">{formError}</div>}
+              {formError && <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 text-sm text-rose-600 dark:text-rose-300 font-semibold">{formError}</div>}
               <div className="flex gap-3">
-                <Button type="button" variant="ghost" onClick={() => setIsAddModalOpen(false)} className="flex-1 h-11 rounded-xl text-slate-500 hover:bg-slate-100" disabled={createCustomerMutation.isPending}>ยกเลิก</Button>
+                <Button type="button" variant="ghost" onClick={() => setIsAddModalOpen(false)} className="flex-1 h-11 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10" disabled={createCustomerMutation.isPending}>ยกเลิก</Button>
                 <Button type="submit" className="flex-[2] h-11 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold border-0 shadow-md" disabled={createCustomerMutation.isPending}>
                   {createCustomerMutation.isPending ? <><Loader2 size={16} className="animate-spin mr-2" />กำลังบันทึก...</> : 'บันทึกลูกค้า'}
                 </Button>

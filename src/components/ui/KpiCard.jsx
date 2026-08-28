@@ -1,4 +1,4 @@
-﻿/**
+/**
  * KpiCard — Modern 2026 metric card with mini sparkline & trend badge
  */
 import { useMemo } from "react";
@@ -28,16 +28,23 @@ function buildSparklinePath(data) {
 
 export default function KpiCard({ title, value, formatter = v => v, sparkline, trend, color = "violet", icon: Icon, sub, className }) {
   const cfg = COLOR_MAP[color] || COLOR_MAP.violet;
-  const sparkPath = useMemo(() => buildSparklinePath(sparkline), [sparkline]);
-  const trendPositive = trend > 0;
-  const trendNeutral  = trend === 0 || trend == null;
+  // Safely convert trend to number — it may come in as string or NaN from API
+  const trendNum = trend != null ? parseFloat(trend) : null;
+  const safeTrend = (trendNum != null && !isNaN(trendNum)) ? trendNum : null;
+  // Filter sparkline to only valid numbers
+  const safeSparkline = Array.isArray(sparkline)
+    ? sparkline.map(v => (v != null && !isNaN(parseFloat(v)) ? parseFloat(v) : 0))
+    : undefined;
+  const sparkPath = useMemo(() => buildSparklinePath(safeSparkline), [safeSparkline]);
+  const trendPositive = safeTrend != null && safeTrend > 0;
+  const trendNeutral  = safeTrend === 0 || safeTrend == null;
 
   const lastDot = useMemo(() => {
-    if (!sparkPath || !sparkline || sparkline.length < 2) return null;
+    if (!sparkPath || !safeSparkline || safeSparkline.length < 2) return null;
     const pts = sparkPath.split(" ");
     const [lx, ly] = pts[pts.length - 1].split(",");
     return { x: parseFloat(lx), y: parseFloat(ly) };
-  }, [sparkPath, sparkline]);
+  }, [sparkPath, safeSparkline]);
 
   return (
     <div className={cn(
@@ -63,10 +70,10 @@ export default function KpiCard({ title, value, formatter = v => v, sparkline, t
             <div className={cn("flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0",
               trendPositive ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300")}>
               {trendPositive ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
-              {trendPositive ? "+" : ""}{trend?.toFixed(1)}%
+              {trendPositive ? "+" : ""}{safeTrend.toFixed(1)}%
             </div>
           )}
-          {trendNeutral && trend != null && (
+          {trendNeutral && safeTrend === 0 && (
             <div className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-white/40 shrink-0">
               <Minus size={9} />0%
             </div>
