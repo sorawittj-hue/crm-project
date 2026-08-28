@@ -87,31 +87,19 @@ function AnimatedNumber({ value, formatter, duration = 1.2 }) {
   return <span ref={ref}>{formatter ? formatter(0) : 0}</span>;
 }
 
-// --- Premium Metric Card ---
+// --- Premium 2026 KPI Metric Card ---
 const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Icon, trend, color = "primary", sparklineData, delay = 0 }) => {
-  const colorStyles = {
-    primary: "text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/40 border-violet-100 dark:border-violet-800/40",
-    emerald: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-800/40",
-    rose: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border-rose-100 dark:border-rose-800/40",
-    amber: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border-amber-100 dark:border-amber-800/40",
-    slate: "text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-white/5 border-slate-200/60 dark:border-white/5"
+  const colorMap = {
+    primary: { bg: "kpi-violet", accent: "#a78bfa", ring: "ring-violet-500/20", label: "text-violet-300/80", val: "text-white" },
+    emerald: { bg: "kpi-emerald", accent: "#34d399", ring: "ring-emerald-500/20", label: "text-emerald-300/80", val: "text-emerald-50" },
+    rose:    { bg: "kpi-rose", accent: "#fb7185", ring: "ring-rose-500/20", label: "text-rose-300/80", val: "text-rose-50" },
+    amber:   { bg: "kpi-amber", accent: "#fbbf24", ring: "ring-amber-500/20", label: "text-amber-300/80", val: "text-amber-50" },
+    cyan:    { bg: "kpi-cyan", accent: "#38bdf8", ring: "ring-cyan-500/20", label: "text-cyan-300/80", val: "text-cyan-50" },
+    slate:   { bg: "kpi-violet", accent: "#94a3b8", ring: "ring-slate-500/20", label: "text-slate-300/80", val: "text-white" }
   };
   
-  const glowStyles = {
-    primary: "hover:shadow-violet-500/10",
-    emerald: "hover:shadow-emerald-500/10",
-    rose: "hover:shadow-rose-500/10",
-    amber: "hover:shadow-amber-500/10",
-    slate: "hover:shadow-slate-500/10"
-  };
-
-  const topBarStyles = {
-    primary: "from-violet-500 to-indigo-500",
-    emerald: "from-emerald-500 to-teal-500",
-    rose: "from-rose-500 to-pink-500",
-    amber: "from-amber-500 to-orange-500",
-    slate: "from-slate-400 to-slate-600"
-  };
+  const cfg = colorMap[color] || colorMap.primary;
+  const safeTrend = (trend !== undefined && trend !== null && !isNaN(parseFloat(trend))) ? parseFloat(trend) : null;
 
   return (
     <motion.div 
@@ -120,35 +108,34 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
       transition={{ delay, duration: 0.4, ease: "easeOut" }}
       className="group"
     >
-      <Card className={cn(
-        "p-5 md:p-6 rounded-2xl md:rounded-3xl border transition-all duration-300 relative overflow-hidden group",
-        "bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border-slate-200/80 dark:border-white/10 shadow-sm hover:shadow-lg hover:-translate-y-1",
-        glowStyles[color]
+      <div className={cn(
+        "p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/[0.08] ring-1 card-inset-highlight transition-all duration-300 relative overflow-hidden group hover:-translate-y-1",
+        cfg.bg, cfg.ring
       )}>
-        {/* Top accent gradient bar */}
-        <div className={cn("absolute top-0 left-0 right-0 h-1 bg-gradient-to-r opacity-80 group-hover:opacity-100 transition-opacity duration-300", topBarStyles[color])} />
+        <div className="noise-overlay absolute inset-0 rounded-2xl md:rounded-3xl" />
+        <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-20 blur-2xl pointer-events-none" style={{ background: cfg.accent }} />
         
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-3.5">
-            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center border", colorStyles[color])}>
-              <Icon size={18} strokeWidth={2.5} />
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center border border-white/10 shadow-xs" style={{ background: `${cfg.accent}25`, color: cfg.accent }}>
+              <Icon size={16} strokeWidth={2.5} />
             </div>
-            {trend !== undefined && (
+            {safeTrend !== null && (
               <div className={cn(
-                "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold tracking-wide",
-                trend >= 0 
-                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40" 
-                  : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/40"
+                "flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide",
+                safeTrend >= 0 
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" 
+                  : "bg-rose-500/20 text-rose-300 border border-rose-500/30"
               )}>
-                {trend >= 0 ? <ArrowUpRight size={13} strokeWidth={3} /> : <ArrowDownRight size={13} strokeWidth={3} />}
-                {Math.abs(trend)}%
+                {safeTrend >= 0 ? <ArrowUpRight size={11} strokeWidth={3} /> : <ArrowDownRight size={11} strokeWidth={3} />}
+                {safeTrend > 0 ? "+" : ""}{safeTrend.toFixed(1)}%
               </div>
             )}
           </div>
           <div className="space-y-1">
-            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{title}</p>
+            <p className={cn("text-[10px] font-bold uppercase tracking-widest", cfg.label)}>{title}</p>
             <div className="flex items-baseline justify-between gap-2">
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white tabular-nums leading-none tracking-tight">
+              <h3 className={cn("number-display text-2xl md:text-3xl", cfg.val)}>
                 {numericValue !== undefined ? <AnimatedNumber value={numericValue} formatter={formatter} /> : value}
               </h3>
               
@@ -168,7 +155,7 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
                         }).join(' ');
                       })()}
                       fill="none"
-                      stroke={color === 'emerald' ? '#10b981' : color === 'rose' ? '#f43f5e' : color === 'amber' ? '#f59e0b' : color === 'slate' ? '#64748b' : '#8b5cf6'}
+                      stroke={cfg.accent}
                       strokeWidth="2.2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -180,10 +167,10 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
                 </div>
               )}
             </div>
-            {subValue && <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">{subValue}</p>}
+            {subValue && <p className="text-[10px] text-white/40 font-medium mt-1">{subValue}</p>}
           </div>
         </div>
-      </Card>
+      </div>
     </motion.div>
   );
 };

@@ -399,15 +399,15 @@ function DealCalculator() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {[
               { label: 'กำไรขั้นต้น', value: formatCurrency(calc.grossProfit), color: calc.grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-white/80 dark:bg-white/[0.04]', border: 'border-slate-200/80 dark:border-white/10' },
-              { label: 'Margin', value: `${calc.margin.toFixed(1)}%`, color: calc.margin >= 20 ? 'text-emerald-600 dark:text-emerald-400' : calc.margin >= 10 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-white/80 dark:bg-white/[0.04]', border: 'border-slate-200/80 dark:border-white/10' },
-              { label: 'ROI', value: `${calc.roi.toFixed(0)}%`, color: calc.roi >= 100 ? 'text-emerald-600 dark:text-emerald-400' : calc.roi >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-white/80 dark:bg-white/[0.04]', border: 'border-slate-200/80 dark:border-white/10' },
+              { label: 'Margin', value: `${(calc.margin != null && !isNaN(calc.margin)) ? calc.margin.toFixed(1) : '0.0'}%`, color: calc.margin >= 20 ? 'text-emerald-600 dark:text-emerald-400' : calc.margin >= 10 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-white/80 dark:bg-white/[0.04]', border: 'border-slate-200/80 dark:border-white/10' },
+              { label: 'ROI', value: `${(calc.roi != null && !isNaN(calc.roi)) ? calc.roi.toFixed(0) : '0'}%`, color: calc.roi >= 100 ? 'text-emerald-600 dark:text-emerald-400' : calc.roi >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-white/80 dark:bg-white/[0.04]', border: 'border-slate-200/80 dark:border-white/10' },
               { label: 'Expected Revenue', value: formatCurrency(calc.expectedRevenue), color: 'text-violet-700 dark:text-violet-300', bg: 'bg-violet-50/50 dark:bg-violet-950/30', border: 'border-violet-200/60 dark:border-violet-800/30' },
               { label: 'Expected Profit', value: formatCurrency(calc.expectedProfit), color: 'text-violet-700 dark:text-violet-300', bg: 'bg-violet-50/50 dark:bg-violet-950/30', border: 'border-violet-200/60 dark:border-violet-800/30' },
               { label: 'รายได้ต่อเดือน', value: formatCurrency(calc.monthlyRevenue), color: 'text-blue-700 dark:text-blue-300', bg: 'bg-blue-50/50 dark:bg-blue-950/30', border: 'border-blue-200/60 dark:border-blue-800/30' },
             ].map((m, i) => (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={m.label} 
                 className={cn('p-4 rounded-2xl border shadow-sm', m.bg, m.border)}>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{m.label}</p>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">{m.label}</p>
                 <p className={cn('text-lg sm:text-xl font-black tabular-nums tracking-tight', m.color)}>{m.value}</p>
               </motion.div>
             ))}

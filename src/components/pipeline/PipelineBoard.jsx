@@ -730,7 +730,7 @@ export default function PipelineBoard({
                           <button
                             disabled={STAGES.indexOf(deal.stage) === 0}
                             onClick={() => handleMoveDeal(deal.id, 'left')}
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-700 dark:hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all"
                           >
                             <ArrowLeft size={13} />
                           </button>
@@ -760,7 +760,7 @@ export default function PipelineBoard({
 
       {/* KANBAN BOARD (Desktop Only) */}
       {viewMode === 'kanban' && (
-        <div className="hidden md:block relative p-4 rounded-[2rem] bg-slate-100/30 backdrop-blur-2xl shadow-inner border border-white/60">
+        <div className="hidden md:block relative p-4 rounded-[2rem] bg-slate-100/40 dark:bg-white/[0.02] backdrop-blur-2xl shadow-inner border border-slate-200/60 dark:border-white/10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.05),transparent_40%),radial-gradient(circle_at_bottom_left,rgba(56,189,248,0.05),transparent_40%)] rounded-[2rem] pointer-events-none" />
           <DragDropContext onDragStart={handleDragStart} onDragUpdate={handleDragUpdate} onDragEnd={handleDragEnd}>
           <div
@@ -786,14 +786,14 @@ export default function PipelineBoard({
                         {...provided.droppableProps}
                         ref={provided.innerRef}
                         className={cn(
-                          'flex-shrink-0 flex flex-col w-[300px] h-full rounded-[1.5rem] border overflow-hidden bg-white/70 backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.03)]',
+                          'flex-shrink-0 flex flex-col w-[300px] h-full rounded-[1.5rem] border overflow-hidden bg-white/80 dark:bg-[#0d0f1a]/85 backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]',
                           snapshot.isDraggingOver
-                            ? `ring-2 ${stage.dragOverClass} transition-none bg-violet-50/40`
+                            ? `ring-2 ${stage.dragOverClass} transition-none bg-violet-50/40 dark:bg-violet-950/30`
                             : isCritical
-                              ? 'border-rose-200/80 bg-rose-50/20'
+                              ? 'border-rose-200/80 dark:border-rose-800/40 bg-rose-50/20 dark:bg-rose-950/20'
                               : isWarning
-                                ? 'border-amber-200/80 bg-amber-50/15'
-                                : `${stage.columnBorder}`,
+                                ? 'border-amber-200/80 dark:border-amber-800/40 bg-amber-50/15 dark:bg-amber-950/20'
+                                : `${stage.columnBorder} dark:border-white/10`,
                           !isDraggingAny && 'transition-all duration-300'
                         )}
                       >
@@ -807,7 +807,7 @@ export default function PipelineBoard({
                         />
 
                         {/* Column header */}
-                        <div className={cn('px-4.5 pt-3.5 pb-3 border-b border-slate-100/80', stage.headerBg)}>
+                        <div className={cn('px-4.5 pt-3.5 pb-3 border-b border-slate-100/80 dark:border-white/5', stage.headerBg, 'dark:bg-white/[0.02]')}>
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2.5">
                               <div
@@ -817,8 +817,8 @@ export default function PipelineBoard({
                                 <span className="text-[11px]">{stage.icon}</span>
                               </div>
                               <div>
-                                <h3 className="text-sm font-black text-slate-900 leading-tight tracking-tight">{stage.label}</h3>
-                                <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full bg-white/60 border border-slate-100/50 shadow-sm backdrop-blur-sm">
+                                <h3 className="text-sm font-black text-slate-900 dark:text-white leading-tight tracking-tight">{stage.label}</h3>
+                                <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full bg-white/60 dark:bg-white/10 border border-slate-100/50 dark:border-white/10 shadow-sm backdrop-blur-sm">
                                   <span className="text-[11px] font-extrabold tabular-nums leading-none bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(135deg, ${stage.dotColor}, ${stage.dotColor}99)` }}>
                                     {formatCurrency(totalValue)}
                                   </span>
@@ -837,9 +837,9 @@ export default function PipelineBoard({
                           {!['won', 'lost'].includes(stageId) && activeCount > 0 && (
                             <div className={cn(
                               'flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-extrabold w-fit mt-1',
-                              isCritical ? 'bg-rose-100 text-rose-600 border border-rose-200' :
-                              isWarning ? 'bg-amber-100 text-amber-700 border border-amber-200' :
-                              'bg-slate-100/80 text-slate-500 border border-slate-200/60'
+                              isCritical ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-800/40' :
+                              isWarning ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40' :
+                              'bg-slate-100/80 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200/60 dark:border-white/5'
                             )}>
                               {isCritical ? <AlertTriangle size={8} className="animate-pulse" /> :
                                isWarning ? <Clock size={8} /> : null}
@@ -1057,21 +1057,21 @@ const DealCard = memo(
               opacity: 0.98,
             } : {}}
             className={cn(
-              'group relative rounded-2xl border overflow-hidden bg-white/95 backdrop-blur-md cursor-grab active:cursor-grabbing touch-none select-none border-l-4',
-              !['won', 'lost'].includes(deal.stage) ? agingBorderColor[agingTier] : 'border-l-slate-300',
-              !isDraggingAny && 'transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-violet-300/80',
+              'group relative rounded-2xl border overflow-hidden bg-white/95 dark:bg-[#121524]/95 backdrop-blur-md cursor-grab active:cursor-grabbing touch-none select-none border-l-4',
+              !['won', 'lost'].includes(deal.stage) ? agingBorderColor[agingTier] : 'border-l-slate-300 dark:border-l-slate-600',
+              !isDraggingAny && 'transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-violet-300/80 dark:hover:border-violet-500/40',
               isDragging ? 'border-violet-500 ring-4 ring-violet-500/25 shadow-2xl z-50'
                 : isSelected ? 'border-violet-400 ring-2 ring-violet-500/20 shadow-md'
-                : isPinned ? 'border-amber-300 bg-gradient-to-br from-amber-50/30 to-white shadow-sm'
-                : isHighValue ? 'border-amber-300/90 bg-gradient-to-br from-amber-50/20 via-white to-white shadow-sm'
-                : isStagnant ? 'border-rose-200/90 bg-gradient-to-br from-rose-50/20 via-white to-white shadow-sm'
-                : 'border-slate-200/70 shadow-sm'
+                : isPinned ? 'border-amber-300 bg-gradient-to-br from-amber-50/30 to-white dark:from-amber-950/20 dark:to-transparent shadow-sm'
+                : isHighValue ? 'border-amber-300/90 bg-gradient-to-br from-amber-50/20 via-white to-white dark:from-amber-950/20 dark:via-transparent dark:to-transparent shadow-sm'
+                : isStagnant ? 'border-rose-200/90 bg-gradient-to-br from-rose-50/20 via-white to-white dark:from-rose-950/20 dark:via-transparent dark:to-transparent shadow-sm'
+                : 'border-slate-200/70 dark:border-white/10 shadow-sm'
             )}
           >
 
             {/* Drag handle */}
             <div
-              className="absolute top-0 right-0 w-8 h-full flex items-center justify-center cursor-grab active:cursor-grabbing z-10 text-slate-300 group-hover:text-violet-500 transition-colors border-l border-slate-100/60"
+              className="absolute top-0 right-0 w-8 h-full flex items-center justify-center cursor-grab active:cursor-grabbing z-10 text-slate-300 dark:text-slate-600 group-hover:text-violet-500 transition-colors border-l border-slate-100/60 dark:border-white/5"
               onClick={(e) => e.stopPropagation()}
             >
               <GripVertical size={13} />
@@ -1079,7 +1079,7 @@ const DealCard = memo(
 
             {/* Main clickable area */}
             <div
-              className="pl-4 pr-10 py-3.5 space-y-3 bg-gradient-to-r from-slate-50 to-violet-50/30"
+              className="pl-4 pr-10 py-3.5 space-y-3 bg-gradient-to-r from-slate-50 to-violet-50/30 dark:from-white/[0.03] dark:to-violet-950/20"
               role="button"
               tabIndex={0}
               aria-label={`เปิดดีล ${deal.title || deal.company || 'ไม่ระบุชื่อ'}`}
@@ -1100,7 +1100,7 @@ const DealCard = memo(
               <div className="flex items-start gap-2.5">
                 <div
                   className={cn(
-                    'w-9 h-9 rounded-2xl flex items-center justify-center text-xs font-black text-white shrink-0 shadow-md ring-2 ring-white',
+                    'w-9 h-9 rounded-2xl flex items-center justify-center text-xs font-black text-white shrink-0 shadow-md ring-2 ring-white dark:ring-white/10',
                     isHighValue ? 'bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500' : ''
                   )}
                   style={isHighValue ? { boxShadow: '0 4px 14px rgba(245,158,11,0.4)' } : { backgroundColor: avatarColor, boxShadow: `0 4px 14px ${avatarColor}40` }}
@@ -1109,7 +1109,7 @@ const DealCard = memo(
                 </div>
                 <div className="min-w-0 flex-1 pt-0.5">
                   <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                    <p className={cn('text-sm font-extrabold truncate leading-tight tracking-tight', isHighValue ? 'text-amber-900' : 'text-slate-900')}>
+                    <p className={cn('text-sm font-extrabold truncate leading-tight tracking-tight', isHighValue ? 'text-amber-900 dark:text-amber-300' : 'text-slate-900 dark:text-white')}>
                       {deal.company || 'ไม่ระบุบริษัท'}
                     </p>
                     {isHighValue && (
@@ -1119,13 +1119,13 @@ const DealCard = memo(
                     )}
                     {isPinned && <Star size={10} className="text-amber-500 fill-amber-400 shrink-0" />}
                     {showUrgency && urgencyConfig[urgency] && (
-                      <span className={cn('inline-flex items-center gap-0.5 text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 shadow-sm', urgencyConfig[urgency].color)}>
+                      <span className={cn('inline-flex items-center gap-0.5 text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 shadow-sm dark:bg-white/5 dark:border-white/10', urgencyConfig[urgency].color)}>
                         <Clock size={8} className={urgencyConfig[urgency].iconAnim} />
                         {urgencyConfig[urgency].label}
                       </span>
                     )}
                     {!showUrgency && isStagnant && (
-                      <span className="inline-flex items-center gap-1 text-[9px] font-bold bg-rose-50/80 text-rose-600 px-2 py-0.5 rounded-full border border-rose-200/80 shrink-0 shadow-sm">
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold bg-rose-50/80 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 px-2 py-0.5 rounded-full border border-rose-200/80 dark:border-rose-800/40 shrink-0 shadow-sm">
                         <span className="relative flex h-1.5 w-1.5">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
@@ -1134,7 +1134,7 @@ const DealCard = memo(
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-500 truncate leading-snug font-medium">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate leading-snug font-medium">
                     {deal.title || 'ไม่มีชื่อดีล'}
                   </p>
                 </div>
@@ -1144,17 +1144,17 @@ const DealCard = memo(
               <div className="flex items-center justify-between">
                 <span className={cn(
                   'text-lg font-black tabular-nums tracking-tight drop-shadow-sm',
-                  isHighValue ? 'text-amber-700' : 'text-slate-900'
+                  isHighValue ? 'text-amber-700 dark:text-amber-400' : 'text-slate-900 dark:text-white'
                 )}>
                   {formatCurrency(deal.value)}
                 </span>
                 {deal.probability !== undefined && deal.probability !== null && (
                   <span
-                    className="text-[10px] font-black tabular-nums px-2.5 py-0.5 rounded-full border shadow-2xs"
+                    className="text-[10px] font-black tabular-nums px-2.5 py-0.5 rounded-full border shadow-2xs dark:bg-white/10 dark:border-white/10 dark:text-slate-200"
                     style={{
-                      backgroundColor: deal.probability >= 70 ? '#dcfce7' : deal.probability >= 40 ? '#ede9fe' : '#f1f5f9',
-                      color: deal.probability >= 70 ? '#15803d' : deal.probability >= 40 ? '#6d28d9' : '#64748b',
-                      borderColor: deal.probability >= 70 ? '#bbf7d0' : deal.probability >= 40 ? '#ddd6fe' : '#e2e8f0',
+                      backgroundColor: deal.probability >= 70 ? '#dcfce7' : deal.probability >= 40 ? '#ede9fe' : undefined,
+                      color: deal.probability >= 70 ? '#15803d' : deal.probability >= 40 ? '#6d28d9' : undefined,
+                      borderColor: deal.probability >= 70 ? '#bbf7d0' : deal.probability >= 40 ? '#ddd6fe' : undefined,
                     }}
                   >
                     {deal.probability}%
@@ -1163,7 +1163,7 @@ const DealCard = memo(
               </div>
 
               {/* Progress bar with neon glow */}
-              <div className="h-1 bg-slate-100/80 rounded-full overflow-hidden">
+              <div className="h-1 bg-slate-100/80 dark:bg-white/10 rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{
@@ -1184,8 +1184,8 @@ const DealCard = memo(
 
               {/* Contact chip */}
               {deal.contact && (
-                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold pt-0.5">
-                  <div className="w-4 h-4 rounded-full bg-slate-100 flex items-center justify-center text-[8px] font-black text-slate-600">
+                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-500 font-semibold pt-0.5">
+                  <div className="w-4 h-4 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-[8px] font-black text-slate-600 dark:text-slate-300">
                     {deal.contact.charAt(0).toUpperCase()}
                   </div>
                   <span className="truncate max-w-[130px]">{deal.contact}</span>
@@ -1194,7 +1194,7 @@ const DealCard = memo(
             </div>
 
             {/* Action row — hover reveal */}
-            <div className="grid grid-cols-3 border-t border-slate-100/80 opacity-0 group-hover:opacity-100 transition-all duration-200 max-h-0 group-hover:max-h-10 overflow-hidden bg-slate-50/90 backdrop-blur-sm">
+            <div className="grid grid-cols-3 border-t border-slate-100/80 dark:border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-200 max-h-0 group-hover:max-h-10 overflow-hidden bg-slate-50/90 dark:bg-white/[0.06] backdrop-blur-sm">
               <button
                 onClick={(e) => { e.stopPropagation(); if (onMove) onMove(deal.id, 'left'); }}
                 disabled={!canMoveLeft}

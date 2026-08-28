@@ -194,10 +194,11 @@ export default function SalesTrackingPage() {
 
       {/* KPI HERO CARDS STRIP */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Annual Target Progress — Main Hero */}
-        <div className="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br from-slate-900 via-indigo-950 to-violet-950 text-white shadow-2xl shadow-violet-900/40 border border-violet-500/30 group hover:-translate-y-1 transition-all duration-500">
-          <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-violet-500/20 blur-[60px] group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
-          <div className="absolute -bottom-10 -left-10 w-44 h-44 rounded-full bg-indigo-500/20 blur-[50px] group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
+        {/* Annual Target Progress — Main Hero with Aurora */}
+        <div className="relative overflow-hidden rounded-3xl p-6 aurora-bg text-white border border-white/[0.08] card-inset-highlight group hover:-translate-y-1 transition-all duration-500">
+          <div className="noise-overlay absolute inset-0 rounded-3xl" />
+          <div className="glow-orb glow-orb-violet absolute -top-12 -left-12 w-48 h-48 opacity-40 pointer-events-none" />
+          <div className="glow-orb glow-orb-cyan absolute -bottom-10 -right-10 w-44 h-44 opacity-25 pointer-events-none" />
           
           <div className="relative z-10 space-y-4">
             <div className="flex items-center justify-between">
@@ -206,8 +207,8 @@ export default function SalesTrackingPage() {
                   <Trophy size={20} className="text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
                 </div>
                 <div>
-                  <p className="text-[11px] text-violet-200 font-extrabold uppercase tracking-widest">ยอดขายสะสมทั้งปี</p>
-                  <p className="text-[10px] text-violet-300/80">ปี {currentYear + 543}</p>
+                  <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest">ยอดขายสะสมทั้งปี</p>
+                  <p className="text-[10px] text-white/80 font-medium">ปี {currentYear + 543}</p>
                 </div>
               </div>
               <div className="px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-xs font-black shadow-[0_0_10px_rgba(255,255,255,0.1)]">
@@ -216,10 +217,10 @@ export default function SalesTrackingPage() {
             </div>
 
             <div className="pt-2">
-              <p className="text-4xl lg:text-5xl font-black tabular-nums tracking-tight leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+              <p className="number-display text-4xl lg:text-5xl text-white">
                 {formatCurrency(totalYearlySales)}
               </p>
-              <p className="text-xs text-violet-200/90 font-medium mt-2">
+              <p className="text-xs text-white/60 font-medium mt-2">
                 จากเป้าปี {formatCurrency(annualTarget)}
               </p>
             </div>
@@ -231,76 +232,78 @@ export default function SalesTrackingPage() {
                   style={{ width: `${annualProgress}%` }}
                 />
               </div>
-              <p className="text-[10px] text-violet-200 font-semibold tracking-wide">
+              <p className="text-[10px] text-white/70 font-semibold tracking-wide">
                 {annualProgress >= 100 ? '🎉 พิชิตเป้าหมายรายปีแล้ว!' : `ขาดอีก ${formatCurrency(Math.max(0, annualTarget - totalYearlySales))} เพื่อบรรลุเป้าปี`}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Current Month Live Pipeline */}
-        <div className="p-6 rounded-3xl bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-emerald-300/60 dark:border-emerald-500/30 shadow-sm hover:border-emerald-400 flex flex-col justify-between relative overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-          <div className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full bg-emerald-400/10 blur-[40px] pointer-events-none group-hover:scale-125 transition-transform duration-700" />
+        {/* Current Month Live Pipeline — KPI Emerald */}
+        <div className="p-6 rounded-3xl kpi-emerald border border-white/[0.08] ring-1 ring-emerald-500/20 card-inset-highlight flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+          <div className="noise-overlay absolute inset-0 rounded-3xl" />
+          <div className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full opacity-20 blur-2xl pointer-events-none" style={{ background: '#34d399' }} />
           
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-xs">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 flex items-center justify-center shadow-xs">
                 <Zap size={20} />
               </div>
               <div>
-                <p className="text-[10px] font-bold tracking-wider text-emerald-700 dark:text-emerald-400 uppercase">ยอดปิดได้เดือนนี้</p>
-                <p className="text-[10px] text-slate-400 font-bold">{MONTHS[currentMonth - 1].full}</p>
+                <p className="text-[10px] font-bold tracking-widest text-emerald-300/80 uppercase">ยอดปิดได้เดือนนี้</p>
+                <p className="text-[10px] text-white/50 font-bold">{MONTHS[currentMonth - 1].full}</p>
               </div>
             </div>
-            <span className="text-xs font-black px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40 shadow-xs">
+            <span className="text-xs font-black px-3 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-xs">
               {currentMonthProgress}% เป้าเดือน
             </span>
           </div>
 
           <div className="mt-6 relative z-10">
-            <h3 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
+            <h3 className="number-display text-3xl lg:text-4xl text-emerald-50">
               {formatCurrency(currentMonthPipelineSales)}
             </h3>
-            <div className="flex items-center gap-3 mt-3 bg-slate-50 dark:bg-white/[0.04] w-fit px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-white/5">
+            <div className="flex items-center gap-3 mt-3 bg-white/5 w-fit px-3 py-1.5 rounded-xl border border-white/10">
               {momGrowth !== null && (
                 <span className={cn('text-xs font-bold flex items-center gap-0.5 px-2 py-0.5 rounded-lg shadow-xs',
-                  momGrowth >= 0 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' : 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'
+                  momGrowth >= 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
                 )}>
                   {momGrowth >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                   {momGrowth > 0 ? `+${momGrowth}%` : `${momGrowth}%`} MoM
                 </span>
               )}
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">เป้าเดือน {formatCurrency(monthlyTarget)}</span>
+              <span className="text-xs text-white/50 font-bold">เป้าเดือน {formatCurrency(monthlyTarget)}</span>
             </div>
           </div>
         </div>
 
-        {/* Forecast / Quarter Summary Highlight */}
-        <div className="p-6 rounded-3xl bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-violet-300/60 dark:border-violet-500/30 shadow-sm hover:border-violet-400 flex flex-col justify-between relative overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-          <div className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full bg-violet-400/10 blur-[40px] pointer-events-none group-hover:scale-125 transition-transform duration-700" />
+        {/* Forecast / Quarter Summary Highlight — KPI Violet */}
+        <div className="p-6 rounded-3xl kpi-violet border border-white/[0.08] ring-1 ring-violet-500/20 card-inset-highlight flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+          <div className="noise-overlay absolute inset-0 rounded-3xl" />
+          <div className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full opacity-20 blur-2xl pointer-events-none" style={{ background: '#a78bfa' }} />
           
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-violet-600 text-white flex items-center justify-center shadow-xs">
+              <div className="w-10 h-10 rounded-2xl bg-violet-500/30 border border-violet-500/40 text-violet-300 flex items-center justify-center shadow-xs">
                 <Target size={20} />
               </div>
               <div>
-                <p className="text-[10px] font-bold tracking-wider text-violet-700 dark:text-violet-400 uppercase">เป้าหมายเฉลี่ย</p>
-                <p className="text-[10px] text-slate-400 font-bold">เป้าหมายต่อไตรมาส</p>
+                <p className="text-[10px] font-bold tracking-widest text-violet-300/80 uppercase">เป้าหมายเฉลี่ย</p>
+                <p className="text-[10px] text-white/50 font-bold">เป้าหมายต่อไตรมาส</p>
               </div>
             </div>
-            <span className="text-xs font-black px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800/40 shadow-xs">
+            <span className="text-xs font-black px-3 py-1.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30 shadow-xs">
               Q Target
             </span>
           </div>
 
           <div className="mt-6 relative z-10">
-            <h3 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
+            <h3 className="number-display text-3xl lg:text-4xl text-white">
               {formatCurrency(monthlyTarget * 3)}
             </h3>
-            <div className="flex items-center gap-2 mt-3 bg-slate-50 dark:bg-white/[0.04] w-fit px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-white/5">
-              <p className="text-xs text-slate-600 dark:text-slate-300 font-bold">
-                เฉลี่ยเดือนละ <span className="text-violet-600 dark:text-violet-400 font-black">{formatCurrency(monthlyTarget)}</span>
+            <div className="flex items-center gap-2 mt-3 bg-white/5 w-fit px-3 py-1.5 rounded-xl border border-white/10">
+              <p className="text-xs text-white/60 font-bold">
+                เฉลี่ยเดือนละ <span className="text-violet-300 font-black">{formatCurrency(monthlyTarget)}</span>
               </p>
             </div>
           </div>
@@ -374,34 +377,43 @@ export default function SalesTrackingPage() {
         {quarterlySales.map((q) => {
           const targetForQ = monthlyTarget * 3;
           const qProgress = targetForQ > 0 ? Math.min(100, Math.round((q.amount / targetForQ) * 100)) : 0;
+          const qColors = {
+            Q1: { bg: 'kpi-violet', ring: 'ring-violet-500/20', accent: '#a78bfa', text: 'text-white' },
+            Q2: { bg: 'kpi-cyan', ring: 'ring-cyan-500/20', accent: '#38bdf8', text: 'text-cyan-50' },
+            Q3: { bg: 'kpi-emerald', ring: 'ring-emerald-500/20', accent: '#34d399', text: 'text-emerald-50' },
+            Q4: { bg: 'kpi-amber', ring: 'ring-amber-500/20', accent: '#fbbf24', text: 'text-amber-50' },
+          };
+          const qCfg = qColors[q.id] || qColors.Q1;
+
           return (
-            <div key={q.id} className="p-5 rounded-3xl bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-sm space-y-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-              <div className="flex items-center justify-between">
+            <div key={q.id} className={cn("p-5 rounded-3xl border border-white/[0.08] ring-1 card-inset-highlight space-y-3 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden", qCfg.bg, qCfg.ring)}>
+              <div className="noise-overlay absolute inset-0 rounded-3xl" />
+              <div className="relative z-10 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300 flex items-center justify-center font-black text-xs">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs border border-white/10" style={{ background: `${qCfg.accent}25`, color: qCfg.accent }}>
                     {q.label}
                   </div>
                   <div>
-                    <h4 className="text-sm font-black text-slate-900 dark:text-white">{q.label}</h4>
-                    <p className="text-[10px] text-slate-400 font-medium">{q.sub}</p>
+                    <h4 className="text-sm font-black text-white">{q.label}</h4>
+                    <p className="text-[10px] text-white/50 font-medium">{q.sub}</p>
                   </div>
                 </div>
-                <span className="text-xs font-black text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/50 px-2 py-0.5 rounded-full border border-violet-100 dark:border-violet-800/40">
+                <span className="text-xs font-black px-2 py-0.5 rounded-full border" style={{ background: `${qCfg.accent}20`, color: qCfg.accent, borderColor: `${qCfg.accent}40` }}>
                   {qProgress}%
                 </span>
               </div>
 
-              <div>
-                <p className="text-xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">
+              <div className="relative z-10">
+                <p className={cn("number-display text-2xl", qCfg.text)}>
                   {formatCurrency(q.amount)}
                 </p>
-                <p className="text-[11px] text-slate-400 font-medium mt-0.5">จากเป้า {formatCurrency(targetForQ)}</p>
+                <p className="text-[10px] text-white/40 font-medium mt-0.5">จากเป้า {formatCurrency(targetForQ)}</p>
               </div>
 
-              <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div className="relative z-10 h-2 bg-black/40 rounded-full overflow-hidden p-0.5 border border-white/10">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 transition-all duration-500"
-                  style={{ width: `${qProgress}%` }}
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${qProgress}%`, background: qCfg.accent, boxShadow: `0 0 8px ${qCfg.accent}80` }}
                 />
               </div>
             </div>
