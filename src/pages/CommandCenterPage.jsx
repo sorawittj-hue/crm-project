@@ -21,7 +21,9 @@ import { useCommandCenterStats } from '../hooks/useCommandCenterStats';
 import FocusDealsCard from '../components/command-center/FocusDealsCard';
 import QuickWinModal from '../components/pipeline/QuickWinModal';
 import MetricTooltip from '../components/ui/MetricTooltip';
+import KpiCard from '../components/ui/KpiCard';
 import PageHeader from '../components/layout/PageHeader';
+
 import {
   Users, AlertCircle, LayoutDashboard,
   ArrowUpRight, ArrowDownRight, Briefcase,
@@ -605,154 +607,155 @@ export default function CommandCenterPage() {
 
         </div>
 
-        {/* RIGHT COLUMN: METRICS, GOALS, LEADERBOARD (1/3 width) */}
-        <div className="lg:col-span-1 space-y-6">
-          
-          {/* GOAL radial progress */}
-          <Card className="p-6 relative overflow-hidden bg-gradient-to-br from-violet-600 via-indigo-700 to-slate-900 text-white border-0 shadow-lg dark:shadow-violet-950/40">
-            <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+        {/* RIGHT COLUMN: KPI CARDS 3.0, GOAL, LEADERBOARD */}
+        <div className="lg:col-span-1 space-y-4">
+
+          {/* HERO GOAL CARD — aurora dark */}
+          <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] aurora-bg card-inset-highlight p-5">
+            <div className="noise-overlay absolute inset-0 rounded-2xl" />
+            <div className="glow-orb glow-orb-violet absolute -top-12 -left-12 w-40 h-40 opacity-40" />
+            <div className="glow-orb glow-orb-cyan absolute -bottom-8 -right-8 w-32 h-32 opacity-25" />
             <div className="relative z-10">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">เป้าหมายเดือนนี้</p>
-                  <p className="text-[11px] text-white/90 mt-0.5 font-bold">
-                    {stats?.hasPersonalTarget ? `เป้าหมายส่วนตัว ${formatCurrency(monthlyGoal)}` : 'ยังไม่ได้ตั้งเป้าหมายส่วนตัว'}
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">เป้าหมายเดือนนี้</p>
+                  <p className="text-[11px] text-white/70 mt-0.5 font-medium">
+                    {stats?.hasPersonalTarget ? `เป้า ${formatCurrency(monthlyGoal)}` : 'ยังไม่ได้ตั้งเป้าหมาย'}
                   </p>
                 </div>
-                <div className={cn('flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-xs',
-                  Number(stats?.growthPercent) >= 0 ? 'bg-emerald-500/25 text-emerald-200' : 'bg-rose-500/25 text-rose-200'
+                <div className={cn('flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold',
+                  Number(stats?.growthPercent) >= 0 ? 'bg-emerald-500/25 text-emerald-300' : 'bg-rose-500/25 text-rose-300'
                 )}>
                   {Number(stats?.growthPercent) >= 0 ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
                   {stats?.growthPercent > 0 ? '+' : ''}{stats?.growthPercent}%
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                {/* SVG Radial Gauge */}
-                <div className="relative w-20 h-20 shrink-0">
+                {/* Radial gauge */}
+                <div className="relative w-[72px] h-[72px] shrink-0">
                   <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
-                    <circle cx="40" cy="40" r="34" stroke="rgba(255,255,255,0.15)" strokeWidth="7" fill="transparent" />
+                    <circle cx="40" cy="40" r="34" stroke="rgba(255,255,255,0.08)" strokeWidth="7" fill="transparent" />
                     <motion.circle cx="40" cy="40" r="34"
-                      stroke="#38bdf8"
+                      stroke="url(#gaugeGrad)"
                       strokeWidth="7" fill="transparent"
                       strokeDasharray={2 * Math.PI * 34}
                       animate={{ strokeDashoffset: 2 * Math.PI * 34 * (1 - Math.min(100, stats?.achievementPercent || 0) / 100) }}
                       transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                       strokeLinecap="round"
                     />
+                    <defs>
+                      <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#818cf8" />
+                        <stop offset="100%" stopColor="#38bdf8" />
+                      </linearGradient>
+                    </defs>
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-lg font-black text-white tabular-nums leading-none tracking-tight">
+                    <span className="text-base font-black text-white tabular-nums leading-none">
                       <AnimatedNumber value={stats?.achievementPercent || 0} />%
                     </span>
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold text-white/70 uppercase tracking-wider">ยอดขายปัจจุบัน</p>
-                  <p className="text-xl md:text-2xl font-black text-white tabular-nums tracking-tight leading-none mt-1 truncate">
+                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">ยอดขายปัจจุบัน</p>
+                  <p className="number-display text-xl text-white mt-1 truncate">
                     {formatCurrency(stats?.totalWonValue || 0)}
                   </p>
-                  <p className="text-[10px] font-bold text-white/70 mt-1.5">เป้า: {formatCurrency(monthlyGoal)}</p>
+                  <p className="text-[10px] text-white/35 mt-1">เป้า {formatCurrency(monthlyGoal)}</p>
                 </div>
               </div>
             </div>
-          </Card>
-
-          {/* WEEKLY PULSE */}
-          <div className="space-y-3">
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-1">ยอดสัปดาห์นี้ (Weekly Pulse)</p>
-            {[
-              { label: 'ดีลใหม่สัปดาห์นี้', value: stats?.newDealsThisWeek || 0, icon: Flame, iconBg: 'bg-violet-500', valueColor: 'text-slate-900 dark:text-white' },
-              { label: 'ปิดได้สัปดาห์นี้', value: stats?.wonThisWeek || 0, icon: Trophy, iconBg: 'bg-emerald-500', valueColor: 'text-emerald-600 dark:text-emerald-400' },
-              { label: 'มูลค่าปิดสัปดาห์นี้', value: formatCurrency(stats?.wonThisWeekValue), icon: Star, iconBg: 'bg-cyan-500', valueColor: 'text-cyan-600 dark:text-cyan-400', isText: true },
-            ].map((item) => (
-              <motion.div key={item.label} whileHover={{ y: -2, scale: 1.01 }}>
-                <Card className="p-3.5 flex items-center gap-3.5 cursor-pointer">
-                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs text-white", item.iconBg)}>
-                    <item.icon size={16} />
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">{item.label}</p>
-                    <p className={cn("text-lg md:text-xl font-black tabular-nums leading-none mt-1", item.valueColor)}>
-                      {item.isText ? item.value : <AnimatedNumber value={item.value} />}
-                    </p>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
           </div>
 
-          {/* KPI CARDS */}
-          <div id="kpi-ribbon" className="space-y-3">
-            {[
-              { title: 'Active Pipeline', value: stats?.totalPipelineValue, formatter: v => formatCurrency(v), sub: `${stats?.activeCount || 0} active deals`, icon: Briefcase, color: 'text-violet-500' },
-              { title: 'Win Rate', value: stats?.winRate, formatter: v => `${Math.round(v)}%`, sub: 'สัดส่วนดีลสำเร็จทั้งหมด', icon: ShieldCheck, color: 'text-emerald-500' },
-              { title: 'Avg Velocity', value: stats?.avgDaysToClose, formatter: v => `${Math.round(v)} วัน`, sub: 'ระยะเวลาเฉลี่ยถึงปิดดีล', icon: Zap, color: 'text-amber-500' },
-            ].map((kpi) => (
-              <Card key={kpi.title} className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-100 dark:bg-white/5">
-                    <kpi.icon size={18} className={kpi.color} strokeWidth={2.5} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-                      <MetricTooltip label={kpi.title} />
-                    </span>
-                    <p className="text-xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight leading-none mt-1">
-                      <AnimatedNumber value={kpi.value || 0} formatter={kpi.formatter} />
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            ))}
+          {/* KPI CARDS 3.0 — 2-column grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <KpiCard
+              title="Active Pipeline"
+              value={stats?.totalPipelineValue}
+              formatter={formatCurrency}
+              sub={`${stats?.activeCount || 0} ดีล`}
+              color="violet"
+              icon={Briefcase}
+              sparkline={stats?.revenueStream?.map(r => r.forecast || 0)}
+              trend={stats?.growthPercent}
+            />
+            <KpiCard
+              title="Win Rate"
+              value={stats?.winRate}
+              formatter={v => `${Math.round(v)}%`}
+              sub="สัดส่วนดีลสำเร็จ"
+              color="emerald"
+              icon={ShieldCheck}
+              sparkline={[45,52,48,60,58,Math.round(stats?.winRate || 50)]}
+              trend={null}
+            />
+            <KpiCard
+              title="Avg Velocity"
+              value={stats?.avgDaysToClose}
+              formatter={v => `${Math.round(v)}วัน`}
+              sub="ระยะเวลาเฉลี่ย"
+              color="amber"
+              icon={Zap}
+              sparkline={[22,25,20,18,21,Math.round(stats?.avgDaysToClose || 20)]}
+              trend={null}
+            />
+            <KpiCard
+              title="Won This Week"
+              value={stats?.wonThisWeekValue}
+              formatter={formatCurrency}
+              sub={`${stats?.wonThisWeek || 0} ดีล`}
+              color="cyan"
+              icon={Trophy}
+              sparkline={stats?.revenueStream?.map(r => r.actual || 0)}
+              trend={null}
+            />
           </div>
 
           {/* TEAM LEADERBOARD */}
           {teamLeaderboard.length > 0 && (
-            <Card className="p-5">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                  <Trophy size={16} className="text-amber-600 dark:text-amber-400" strokeWidth={2.5} />
+            <div className="rounded-2xl border border-white/[0.07] bg-[#0d0f1a] overflow-hidden">
+              <div className="px-4 py-3 border-b border-white/[0.06] flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                  <Trophy size={14} className="text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="text-xs md:text-sm font-bold text-slate-900 dark:text-white tracking-tight">Team Leaderboard</h3>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">อันดับยอดขายทีมเดือนนี้</p>
+                  <h3 className="text-xs font-bold text-white">Team Leaderboard</h3>
+                  <p className="text-[10px] text-white/35 font-medium">อันดับยอดขายเดือนนี้</p>
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="p-3 space-y-2">
                 {teamLeaderboard.slice(0, 4).map((m, i) => {
                   const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
                   const goalPct = Math.min(100, m.goalAchievement || 0);
+                  const barColor = i === 0 ? 'from-amber-500 to-orange-400' : i === 1 ? 'from-slate-400 to-slate-300' : 'from-violet-600 to-indigo-500';
                   return (
-                    <div key={m.id} className="p-2.5 rounded-xl border border-slate-200/70 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02]">
-                      <div className="flex items-center justify-between gap-3 mb-1.5">
+                    <div key={m.id} className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.05] transition-colors">
+                      <div className="flex items-center justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <div className="relative shrink-0">
-                            <div className="w-7 h-7 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center">
                               {m.name.charAt(0)}
                             </div>
                             {medal && <span className="absolute -top-1.5 -right-1.5 text-xs">{medal}</span>}
                           </div>
                           <div className="min-w-0">
-                            <h4 className="font-bold text-slate-900 dark:text-white text-xs truncate leading-none">{m.name}</h4>
-                            <p className="text-[9px] text-slate-400 font-medium mt-0.5">{m.role}</p>
+                            <h4 className="font-bold text-white text-xs truncate leading-none">{m.name}</h4>
+                            <p className="text-[9px] text-white/30 font-medium mt-0.5">{m.role}</p>
                           </div>
                         </div>
                         <div className="text-right shrink-0">
-                          <span className="text-xs font-black text-slate-900 dark:text-white tabular-nums">{formatCurrency(m.wonThisMonthValue)}</span>
-                          <span className="text-[9px] text-slate-400 block font-bold">{m.goalAchievement}% Goal</span>
+                          <span className="text-xs font-black text-white tabular-nums">{formatCurrency(m.wonThisMonthValue)}</span>
+                          <span className="text-[9px] text-white/30 block font-medium">{m.goalAchievement}% Goal</span>
                         </div>
                       </div>
-                      <div className="h-1 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-violet-600 to-indigo-500"
-                          style={{ width: `${goalPct}%` }}
-                        />
+                      <div className="h-0.5 rounded-full bg-white/[0.08] overflow-hidden">
+                        <div className={cn("h-full rounded-full bg-gradient-to-r", barColor)} style={{ width: `${goalPct}%` }} />
                       </div>
                     </div>
                   );
                 })}
               </div>
-            </Card>
+            </div>
           )}
 
         </div>

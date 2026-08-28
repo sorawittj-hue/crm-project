@@ -488,54 +488,58 @@ export default function AppLayout() {
       <aside
         ref={sidebarRef}
         className={cn(
-          "w-64 md:w-72 flex flex-col flex-shrink-0 relative border-r transition-colors duration-300 z-30 select-none",
-          // Light Mode
-          "bg-white/95 border-slate-200/80 shadow-[2px_0_24px_rgba(0,0,0,0.03)] backdrop-blur-2xl",
-          // Dark Mode
-          "dark:bg-[#070b14]/95 dark:border-white/[0.08] dark:shadow-[4px_0_36px_rgba(0,0,0,0.5)]",
+          "w-64 flex flex-col flex-shrink-0 relative border-r z-30 select-none transition-all duration-300",
+          "bg-[#0d0f1a] border-white/[0.07] shadow-[1px_0_0_rgba(255,255,255,0.04)]",
           !isDesktop && "fixed inset-y-0 left-0 z-50 transform transition-transform duration-300",
           !isDesktop && !isSidebarOpen && "-translate-x-full",
           !isDesktop && isSidebarOpen && "translate-x-0"
         )}
       >
-        {/* Subtle Aurora Ambient Glow in Sidebar */}
-        <div className="absolute top-0 inset-x-0 h-48 bg-gradient-to-b from-violet-500/5 dark:from-violet-500/10 via-transparent to-transparent pointer-events-none" />
+        {/* Aurora glow orbs */}
+        <div className="absolute top-0 inset-x-0 h-64 pointer-events-none overflow-hidden">
+          <div className="glow-orb glow-orb-violet w-72 h-72 -top-32 -left-20 opacity-70" />
+          <div className="glow-orb glow-orb-cyan w-48 h-48 -top-12 right-0 opacity-30" />
+        </div>
 
         {/* Logo / Brand Header */}
-        <div className="h-16 flex items-center justify-between px-5 shrink-0 border-b border-slate-200/60 dark:border-white/[0.06] relative z-10">
+        <div className="h-[58px] flex items-center justify-between px-4 shrink-0 border-b border-white/[0.06] relative z-10">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-violet-500/20 shrink-0">
-              <Zap size={18} className="fill-current text-white" />
+            {/* Icon with glow halo */}
+            <div className="relative shrink-0">
+              <div className="absolute inset-0 rounded-xl bg-violet-500/40 blur-lg scale-110" />
+              <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg border border-white/15">
+                <Zap size={16} className="text-white fill-current" />
+              </div>
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-slate-900 dark:text-white text-base tracking-tight leading-none">Nova Sales</span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-black text-white text-sm tracking-tight leading-none">Nova Pipeline</span>
                 {isPro ? (
-                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-white shadow-xs uppercase tracking-wider">
+                  <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-black uppercase tracking-wider">
                     PRO
                   </span>
                 ) : (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10">
-                    FREE
+                  <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-white/10 text-white/40 border border-white/10 uppercase">
+                    Free
                   </span>
                 )}
               </div>
-              <p className="text-[10px] font-bold text-violet-600 dark:text-violet-400 leading-none mt-1 uppercase tracking-widest">
-                CRM Enterprise
+              <p className="text-[9px] font-bold text-violet-400/80 leading-none mt-0.5 tracking-[0.15em] uppercase">
+                Sales CRM
               </p>
             </div>
           </div>
           {!isDesktop && (
-            <button onClick={closeSidebar} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white">
-              <X size={18} />
+            <button onClick={closeSidebar} className="p-1.5 rounded-lg text-white/30 hover:text-white hover:bg-white/10 transition-colors">
+              <X size={16} />
             </button>
           )}
         </div>
 
         {/* Navigation */}
-        <nav id="sidebar-nav" className="flex-1 px-3 py-4 space-y-1 overflow-y-auto relative z-10">
-          <p className="px-3 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
-            เมนูหลัก
+        <nav id="sidebar-nav" className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto relative z-10">
+          <p className="px-3 text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-2 mt-1">
+            Navigation
           </p>
           {navItems.map((item) => {
             const isActive = location.pathname === item.to;
@@ -545,28 +549,28 @@ export default function AppLayout() {
                 to={item.to}
                 onClick={() => !isDesktop && closeSidebar()}
                 className={cn(
-                  "group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 relative overflow-hidden",
+                  "group flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 relative",
                   isActive
-                    ? "bg-violet-600 text-white shadow-md shadow-violet-600/25 font-bold scale-[1.01]"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06]"
+                    ? "bg-white/[0.08] text-white nav-active-glow"
+                    : "text-white/45 hover:text-white/80 hover:bg-white/[0.05]"
                 )}
               >
                 <div className={cn(
-                  "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all",
+                  "w-[30px] h-[30px] rounded-lg flex items-center justify-center shrink-0 transition-all duration-150",
                   isActive
-                    ? "bg-white/20 text-white"
-                    : "bg-slate-100 dark:bg-white/[0.05] text-slate-500 dark:text-slate-400 group-hover:text-violet-600 dark:group-hover:text-violet-300"
+                    ? "bg-violet-600/60 text-violet-200 shadow-sm"
+                    : "bg-white/[0.04] text-white/35 group-hover:bg-white/[0.07] group-hover:text-white/65"
                 )}>
-                  <item.icon size={15} strokeWidth={isActive ? 2.5 : 2} />
+                  <item.icon size={14} strokeWidth={isActive ? 2.5 : 2} />
                 </div>
                 <div className="flex flex-col min-w-0 flex-1">
-                  <span className="leading-tight text-sm tracking-tight">{item.label}</span>
-                  <span className={cn("text-[10px] font-medium leading-none mt-0.5", isActive ? "text-violet-100" : "text-slate-400 dark:text-slate-500")}>
+                  <span className={cn("leading-tight tracking-tight", isActive ? "font-bold" : "")}>{item.label}</span>
+                  <span className={cn("text-[10px] font-medium leading-none mt-0.5", isActive ? "text-violet-400/60" : "text-white/22 group-hover:text-white/35")}>
                     {item.sub}
                   </span>
                 </div>
-                {!isActive && (
-                  <ChevronRight size={12} className="text-slate-400 dark:text-slate-600 opacity-0 -translate-x-1 group-hover:translate-x-0 group-hover:opacity-100 transition-all" />
+                {isActive && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-violet-400 shadow-[0_0_6px_rgba(167,139,250,0.9)] shrink-0" />
                 )}
               </NavLink>
             );
@@ -575,55 +579,57 @@ export default function AppLayout() {
 
         {!isGuestAccount && <OnboardingChecklist />}
 
-        {/* Monthly Target Progress Card */}
-        <div className="px-3 pb-3 pt-2 relative z-10">
-          <div className="rounded-xl p-3.5 bg-slate-50 dark:bg-white/[0.03] border border-slate-200/70 dark:border-white/[0.07] space-y-2 shadow-2xs">
+        {/* Monthly Target Progress */}
+        <div className="px-3 pb-2 pt-1 relative z-10">
+          <div className="rounded-xl p-3 bg-white/[0.04] border border-white/[0.07] space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">เป้าหมายเดือนนี้</p>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-violet-500/15 text-violet-700 dark:text-violet-300 border border-violet-500/20">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-white/35">เป้าหมายเดือนนี้</p>
+              <span className={cn(
+                "text-[9px] font-bold px-1.5 py-0.5 rounded-full border",
+                goalProgress >= 100
+                  ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                  : goalProgress >= 75
+                  ? "bg-violet-500/20 text-violet-300 border-violet-500/30"
+                  : "bg-white/10 text-white/40 border-white/10"
+              )}>
                 {goalProgress}%
               </span>
             </div>
-            <div className="flex justify-between items-baseline">
-              <p className="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white tabular-nums">
-                {hasPersonalTarget ? formatCurrency(effectiveTarget) : 'ยังไม่ได้ตั้ง'}
-              </p>
-              <TrendingUp size={13} className={goalProgress >= 75 ? 'text-emerald-500' : 'text-slate-400'} />
-            </div>
-            <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+            <p className="text-sm font-black tracking-tight text-white/80 tabular-nums">
+              {hasPersonalTarget ? formatCurrency(effectiveTarget) : <span className="text-white/30 font-medium text-xs">ยังไม่ได้ตั้งเป้า</span>}
+            </p>
+            <div className="h-1 w-full rounded-full bg-white/10 overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${goalProgress}%` }}
                 transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
                 className={cn(
-                  'h-full rounded-full transition-all duration-500',
+                  'h-full rounded-full',
                   goalProgress >= 75
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
-                    : 'bg-gradient-to-r from-violet-600 to-indigo-500'
+                    ? 'bg-gradient-to-r from-emerald-400 to-teal-300'
+                    : 'bg-gradient-to-r from-violet-500 to-indigo-400'
                 )}
               />
             </div>
           </div>
         </div>
 
-        {/* Sidebar Footer with Theme Switcher & User Profile */}
-        <div className="px-3 pb-3 pt-2 border-t border-slate-200/60 dark:border-white/[0.06] relative z-10 flex flex-col gap-2">
-          <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/70 dark:border-white/[0.07]">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
-                {displayInitial}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-slate-900 dark:text-white truncate leading-tight">{displayName}</p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate leading-none mt-0.5">{user?.email || 'sales@company.com'}</p>
-              </div>
+        {/* Sidebar Footer — User Profile */}
+        <div className="px-3 pb-3 pt-2 border-t border-white/[0.06] relative z-10">
+          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.07] transition-colors cursor-pointer group">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-black text-xs flex items-center justify-center shrink-0 ring-2 ring-white/10">
+              {displayInitial}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-white/90 truncate leading-tight">{displayName}</p>
+              <p className="text-[10px] text-white/35 truncate leading-none mt-0.5">{user?.email || 'sales@company.com'}</p>
             </div>
             <button
               onClick={toggleTheme}
-              title={theme === 'dark' ? 'เปลี่ยนเป็น Light Mode' : 'เปลี่ยนเป็น Dark Mode'}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+              title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+              className="p-1.5 rounded-lg text-white/25 hover:text-white/70 hover:bg-white/10 transition-colors shrink-0"
             >
-              {theme === 'dark' ? <Sun size={15} className="text-amber-400" /> : <Moon size={15} className="text-violet-600" />}
+              {theme === 'dark' ? <Sun size={13} className="text-amber-400" /> : <Moon size={13} className="text-violet-300" />}
             </button>
           </div>
         </div>
