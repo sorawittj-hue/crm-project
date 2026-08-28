@@ -34,23 +34,23 @@ import CustomerCSVImport from '../components/CustomerCSVImport';
 
 // ─── Config ────────────────────────────────────────────────────────────────────
 const TIER_CONFIG = {
-  Silver: { color: 'bg-slate-100 text-slate-700 border-slate-200', icon: '🥈', gradient: 'from-slate-400 to-slate-500' },
-  Gold: { color: 'bg-amber-50 text-amber-700 border-amber-200', icon: '🥇', gradient: 'from-amber-400 to-orange-400' },
-  Platinum: { color: 'bg-violet-50 text-violet-700 border-violet-200', icon: '💎', gradient: 'from-violet-500 to-indigo-500' },
+  Silver: { color: 'bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10', icon: '🥈', gradient: 'from-slate-400 to-slate-500' },
+  Gold: { color: 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/40', icon: '🥇', gradient: 'from-amber-400 to-orange-400' },
+  Platinum: { color: 'bg-violet-50 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800/40', icon: '💎', gradient: 'from-violet-500 to-indigo-500' },
 };
 
 const GRADE_CONFIG = {
-  A: { color: 'bg-emerald-500 text-white border-emerald-500', label: 'A — VIP', desc: 'ลูกค้าทองคำ', priority: 'ประจบ / Keep อย่าปล่อย', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700' },
-  B: { color: 'bg-blue-500 text-white border-blue-500', label: 'B — ดี', desc: 'ลูกค้าดี มีศักยภาพ', priority: 'ดูแลสม่ำเสมอ / Upsell', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
-  C: { color: 'bg-amber-500 text-white border-amber-500', label: 'C — ปกติ', desc: 'ลูกค้าทั่วไป', priority: 'ดูแลปกติ', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700' },
-  D: { color: 'bg-rose-500 text-white border-rose-500', label: 'D — เสี่ยง', desc: 'ต้องฟื้นฟูหรือปล่อย', priority: 'ฟื้นฟูหรือลดลำดับ', bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-600' },
+  A: { color: 'bg-emerald-500 text-white border-emerald-500', label: 'A — VIP', desc: 'ลูกค้าทองคำ', priority: 'ประจบ / Keep อย่าปล่อย', bg: 'bg-emerald-50 dark:bg-emerald-950/30', border: 'border-emerald-200 dark:border-emerald-800/40', text: 'text-emerald-700 dark:text-emerald-300' },
+  B: { color: 'bg-blue-500 text-white border-blue-500', label: 'B — ดี', desc: 'ลูกค้าดี มีศักยภาพ', priority: 'ดูแลสม่ำเสมอ / Upsell', bg: 'bg-blue-50 dark:bg-blue-950/30', border: 'border-blue-200 dark:border-blue-800/40', text: 'text-blue-700 dark:text-blue-300' },
+  C: { color: 'bg-amber-500 text-white border-amber-500', label: 'C — ปกติ', desc: 'ลูกค้าทั่วไป', priority: 'ดูแลปกติ', bg: 'bg-amber-50 dark:bg-amber-950/30', border: 'border-amber-200 dark:border-amber-800/40', text: 'text-amber-700 dark:text-amber-300' },
+  D: { color: 'bg-rose-500 text-white border-rose-500', label: 'D — เสี่ยง', desc: 'ต้องฟื้นฟูหรือปล่อย', priority: 'ฟื้นฟูหรือลดลำดับ', bg: 'bg-rose-50 dark:bg-rose-950/30', border: 'border-rose-200 dark:border-rose-800/40', text: 'text-rose-600 dark:text-rose-300' },
 };
 
 const HEALTH_BADGE = {
-  healthy: { label: 'Healthy', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  growth: { label: 'Growth', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
-  watch: { label: 'Watch', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
-  at_risk: { label: 'At Risk', cls: 'bg-rose-50 text-rose-600 border-rose-200' },
+  healthy: { label: 'Healthy', cls: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/40' },
+  growth: { label: 'Growth', cls: 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/40' },
+  watch: { label: 'Watch', cls: 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/40' },
+  at_risk: { label: 'At Risk', cls: 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-300 border-rose-200 dark:border-rose-800/40' },
 };
 
 const EMPTY_FORM = { name: '', company: '', email: '', phone: '', industry: '', tier: 'Silver', notes: '' };

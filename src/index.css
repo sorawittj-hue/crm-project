@@ -408,6 +408,16 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 24px -4px rgba(0, 0, 0, 0.5);
 }
 
+/* Semantic typography & color aliases */
+.text-text-main { color: #0f172a; }
+.dark .text-text-main { color: #f8fafc; }
+.text-text-muted { color: #64748b; }
+.dark .text-text-muted { color: #94a3b8; }
+.text-accent { color: #7c3aed; }
+.dark .text-accent { color: #a78bfa; }
+.bg-accent { background-color: #7c3aed; }
+.dark .bg-accent { background-color: #8b5cf6; }
+
 /* Scrollbar invisible on pipeline */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

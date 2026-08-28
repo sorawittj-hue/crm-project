@@ -68,7 +68,7 @@ const MemberCard = ({ member, deals, formatCurrency, onDealClick }) => {
   const stageColors = { negotiation: '#F97316', proposal: '#EAB308', contact: '#3B82F6', lead: '#6B7280' };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-[28px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+    <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl rounded-[28px] border border-slate-200/80 dark:border-white/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
       {/* Header Band */}
       <div className="h-2" style={{ backgroundColor: member.color }} />
 
@@ -323,31 +323,31 @@ const TeamDashboard = ({ deals = [], teamMembers = [], onDealClick, formatCurren
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Leaderboard */}
-        <div className="bg-white dark:bg-gray-900 rounded-[24px] border border-gray-100 dark:border-white/5 shadow-sm p-6">
-          <h3 className="text-sm font-black text-text-muted uppercase tracking-widest mb-4 flex items-center gap-2">
+        <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl rounded-[24px] border border-slate-200/80 dark:border-white/10 shadow-sm p-6">
+          <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
             <Trophy size={14} className="text-yellow-500" /> Leaderboard (เดือนนี้)
           </h3>
           <div className="space-y-3">
             {leaderboard.map((m, i) => (
-              <div key={m.id} className="flex items-center gap-4 p-3 rounded-2xl bg-gray-50 dark:bg-gray-800">
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black ${i === 0 ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-100 text-gray-500'}`}>
+              <div key={m.id} className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border border-slate-100 dark:border-white/5">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black ${i === 0 ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-950/60 dark:text-yellow-300' : 'bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400'}`}>
                   #{i + 1}
                 </div>
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-sm" style={{ backgroundColor: m.color }}>
                   {m.name.charAt(0)}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-text-main">{m.name}</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{m.name}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <div className="flex-1 h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                    <div className="flex-1 h-1.5 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
                       <div className="h-full rounded-full transition-all duration-700" style={{ width: `${m.pct}%`, backgroundColor: m.color }} />
                     </div>
-                    <span className="text-[10px] font-bold text-text-muted">{m.pct}%</span>
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{m.pct}%</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-black text-text-main">{formatShort(m.wonRevenue)}</p>
-                  <p className="text-[10px] text-text-muted">/ {formatShort(m.goal)}</p>
+                  <p className="text-sm font-black text-slate-900 dark:text-white">{formatShort(m.wonRevenue)}</p>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500">/ {formatShort(m.goal)}</p>
                 </div>
               </div>
             ))}
@@ -355,9 +355,9 @@ const TeamDashboard = ({ deals = [], teamMembers = [], onDealClick, formatCurren
         </div>
 
         {/* Monthly Trend */}
-        <div className="bg-white dark:bg-gray-900 rounded-[24px] border border-gray-100 dark:border-white/5 shadow-sm p-6">
-          <h3 className="text-sm font-black text-text-muted uppercase tracking-widest mb-4 flex items-center gap-2">
-            <TrendingUp size={14} className="text-green-500" /> ยอดปิด 6 เดือนย้อนหลัง (ทีมรวม)
+        <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl rounded-[24px] border border-slate-200/80 dark:border-white/10 shadow-sm p-6">
+          <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <TrendingUp size={14} className="text-emerald-500" /> ยอดปิด 6 เดือนย้อนหลัง (ทีมรวม)
           </h3>
           <div className="flex items-end gap-2 h-40">
             {monthlyTrend.map((m, i) => {

@@ -371,22 +371,22 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '100%', opacity: 0.8 }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            className="relative z-10 w-full max-w-xl h-dvh bg-white shadow-[0_0_40px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden border-l border-white/20"
+            className="relative z-10 w-full max-w-xl h-dvh bg-white dark:bg-[#0d0f1a] shadow-[0_0_40px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden border-l border-slate-200/80 dark:border-white/10"
           >
             {/* ─── HEADER ─── */}
             <div className={cn(
-              'relative shrink-0 px-6 pt-6 pb-6 border-b border-slate-100/80 overflow-hidden',
-              deal.stage === 'lead' ? 'bg-gradient-to-br from-slate-50 via-white to-slate-100/50' :
-              deal.stage === 'contact' ? 'bg-gradient-to-br from-amber-50 via-orange-50/20 to-amber-100/40' :
-              deal.stage === 'proposal' ? 'bg-gradient-to-br from-sky-50 via-blue-50/20 to-indigo-50/40' :
-              deal.stage === 'negotiation' ? 'bg-gradient-to-br from-violet-50 via-purple-50/20 to-fuchsia-50/40' :
-              deal.stage === 'won' ? 'bg-gradient-to-br from-emerald-50 via-teal-50/20 to-emerald-100/40' :
-              deal.stage === 'lost' ? 'bg-gradient-to-br from-rose-50 via-red-50/20 to-rose-100/40' :
-              'bg-white'
+              'relative shrink-0 px-6 pt-6 pb-6 border-b border-slate-100/80 dark:border-white/5 overflow-hidden',
+              deal.stage === 'lead' ? 'bg-gradient-to-br from-slate-50 via-white to-slate-100/50 dark:from-white/[0.04] dark:to-transparent' :
+              deal.stage === 'contact' ? 'bg-gradient-to-br from-amber-50 via-orange-50/20 to-amber-100/40 dark:from-amber-950/30 dark:to-transparent' :
+              deal.stage === 'proposal' ? 'bg-gradient-to-br from-sky-50 via-blue-50/20 to-indigo-50/40 dark:from-sky-950/30 dark:to-transparent' :
+              deal.stage === 'negotiation' ? 'bg-gradient-to-br from-violet-50 via-purple-50/20 to-fuchsia-50/40 dark:from-violet-950/30 dark:to-transparent' :
+              deal.stage === 'won' ? 'bg-gradient-to-br from-emerald-50 via-teal-50/20 to-emerald-100/40 dark:from-emerald-950/30 dark:to-transparent' :
+              deal.stage === 'lost' ? 'bg-gradient-to-br from-rose-50 via-red-50/20 to-rose-100/40 dark:from-rose-950/30 dark:to-transparent' :
+              'bg-white dark:bg-[#0d0f1a]'
             )}>
               {/* Decorative gradient orb */}
               <div className={cn(
-                "absolute -top-24 -right-24 w-64 h-64 rounded-full blur-3xl opacity-40 pointer-events-none",
+                "absolute -top-24 -right-24 w-64 h-64 rounded-full blur-3xl opacity-40 dark:opacity-20 pointer-events-none",
                 deal.stage === 'lead' ? 'bg-slate-300' :
                 deal.stage === 'contact' ? 'bg-amber-300' :
                 deal.stage === 'proposal' ? 'bg-sky-300' :
@@ -398,7 +398,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
               {/* Top bar */}
               <div className="relative z-10 flex items-start justify-between gap-3 mb-5">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className={cn('inline-flex items-center px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border shrink-0 shadow-sm backdrop-blur-md bg-white/60', stageBadge.cls)}>
+                  <span className={cn('inline-flex items-center px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border shrink-0 shadow-sm backdrop-blur-md bg-white/60 dark:bg-white/10 dark:border-white/10', stageBadge.cls)}>
                     {stageBadge.label}
                   </span>
                 </div>
@@ -407,13 +407,13 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                     onClick={handleCloneDeal}
                     disabled={isCloning}
                     title="โคลนดีลนี้"
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-violet-600 hover:bg-white/80 transition-all shrink-0 bg-white/40 backdrop-blur-sm shadow-sm border border-white/50"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-violet-600 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/10 transition-all shrink-0 bg-white/40 dark:bg-white/5 backdrop-blur-sm shadow-sm border border-white/50 dark:border-white/10"
                   >
                     {isCloning ? <Loader2 size={14} className="animate-spin" /> : <Copy size={14} />}
                   </button>
                   <button
                     onClick={onClose}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-all shrink-0 bg-white/40 backdrop-blur-sm shadow-sm border border-white/50"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/10 transition-all shrink-0 bg-white/40 dark:bg-white/5 backdrop-blur-sm shadow-sm border border-white/50 dark:border-white/10"
                   >
                     <X size={18} />
                   </button>
@@ -422,14 +422,14 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
 
               {/* Deal name + company */}
               <div className="relative z-10 space-y-1.5 mb-5">
-                <h2 className="text-2xl font-black text-slate-900 leading-tight line-clamp-2 drop-shadow-sm">{deal.title}</h2>
-                <div className="flex items-center gap-1.5 text-sm text-slate-600 font-semibold bg-white/40 w-fit px-2.5 py-1 rounded-lg backdrop-blur-sm border border-white/60 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
-                  <Building2 size={14} className="text-slate-500" />
+                <h2 className="text-2xl font-black text-slate-900 dark:text-white leading-tight line-clamp-2 drop-shadow-sm">{deal.title}</h2>
+                <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300 font-semibold bg-white/40 dark:bg-white/5 w-fit px-2.5 py-1 rounded-lg backdrop-blur-sm border border-white/60 dark:border-white/10 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+                  <Building2 size={14} className="text-slate-500 dark:text-slate-400" />
                   <span>{deal.company || '—'}</span>
                   {deal.contact && (
                     <>
-                      <span className="text-slate-300 mx-0.5">•</span>
-                      <User size={14} className="text-slate-500" />
+                      <span className="text-slate-300 dark:text-slate-600 mx-0.5">•</span>
+                      <User size={14} className="text-slate-500 dark:text-slate-400" />
                       <span>{deal.contact}</span>
                     </>
                   )}
@@ -439,15 +439,15 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
               {/* KPI row */}
               <div className="grid grid-cols-3 gap-3 relative z-10">
                 {/* Value */}
-                <div className="bg-white/60 backdrop-blur-md rounded-2xl p-3.5 border border-white/60 shadow-sm transition-all hover:bg-white/80">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">มูลค่า</p>
+                <div className="bg-white/60 dark:bg-white/[0.04] backdrop-blur-md rounded-2xl p-3.5 border border-white/60 dark:border-white/10 shadow-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.08]">
+                  <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">มูลค่า</p>
                   <div className="mt-0.5">
                     {editingField === 'value' ? (
                       <input
                         type="number"
                         autoFocus
                         defaultValue={deal.value}
-                        className="text-lg font-black w-full border-b-2 border-violet-400 bg-transparent outline-none text-slate-900"
+                        className="text-lg font-black w-full border-b-2 border-violet-400 bg-transparent outline-none text-slate-900 dark:text-white"
                         onBlur={(e) => {
                           const val = parseFloat(e.target.value);
                           if (!isNaN(val) && val !== deal.value) {
@@ -459,7 +459,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       />
                     ) : (
                       <p
-                        className="text-lg font-black text-slate-900 tabular-nums leading-tight cursor-pointer hover:text-violet-600 transition-colors group flex items-center gap-1"
+                        className="text-lg font-black text-slate-900 dark:text-white tabular-nums leading-tight cursor-pointer hover:text-violet-600 dark:hover:text-violet-400 transition-colors group flex items-center gap-1"
                         onClick={() => setEditingField('value')}
                         title="คลิกเพื่อแก้ไข"
                       >
@@ -469,9 +469,10 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                     )}
                   </div>
                 </div>
+
                 {/* Probability */}
-                <div className="bg-white/60 backdrop-blur-md rounded-2xl p-3.5 border border-white/60 shadow-sm transition-all hover:bg-white/80">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">โอกาส</p>
+                <div className="bg-white/60 dark:bg-white/[0.04] backdrop-blur-md rounded-2xl p-3.5 border border-white/60 dark:border-white/10 shadow-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.08]">
+                  <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">โอกาส</p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {editingField === 'probability' ? (
                       <input
@@ -480,7 +481,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                         defaultValue={deal.probability}
                         min="0"
                         max="100"
-                        className="text-lg font-black w-full border-b-2 border-violet-400 bg-transparent outline-none text-slate-900"
+                        className="text-lg font-black w-full border-b-2 border-violet-400 bg-transparent outline-none text-slate-900 dark:text-white"
                         onBlur={(e) => {
                           const val = parseFloat(e.target.value);
                           if (!isNaN(val) && val !== deal.probability && val >= 0 && val <= 100) {
@@ -492,7 +493,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       />
                     ) : (
                       <p
-                        className="text-lg font-black text-slate-900 tabular-nums leading-tight cursor-pointer hover:text-violet-600 transition-colors group flex items-center gap-1"
+                        className="text-lg font-black text-slate-900 dark:text-white tabular-nums leading-tight cursor-pointer hover:text-violet-600 dark:hover:text-violet-400 transition-colors group flex items-center gap-1"
                         onClick={() => setEditingField('probability')}
                         title="คลิกเพื่อแก้ไข"
                       >
@@ -501,7 +502,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       </p>
                     )}
                   </div>
-                  <div className="mt-2 h-1.5 bg-slate-200/50 rounded-full overflow-hidden">
+                  <div className="mt-2 h-1.5 bg-slate-200/50 dark:bg-white/10 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${deal.probability}%` }}
@@ -513,15 +514,15 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                   </div>
                 </div>
                 {/* Expected Close Date */}
-                <div className="bg-white/60 backdrop-blur-md rounded-2xl p-3.5 border border-white/60 shadow-sm transition-all hover:bg-white/80">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">คาดว่าจะปิด</p>
+                <div className="bg-white/60 dark:bg-white/[0.04] backdrop-blur-md rounded-2xl p-3.5 border border-white/60 dark:border-white/10 shadow-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.08]">
+                  <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">คาดว่าจะปิด</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     {editingField === 'expected_close_date' ? (
                       <input
                         type="date"
                         autoFocus
                         defaultValue={deal.expected_close_date ? deal.expected_close_date.slice(0, 10) : ''}
-                        className="text-sm font-bold w-full border-b-2 border-violet-400 bg-transparent outline-none text-slate-900"
+                        className="text-sm font-bold w-full border-b-2 border-violet-400 bg-transparent outline-none text-slate-900 dark:text-white"
                         onBlur={(e) => {
                           const val = e.target.value;
                           if (val !== (deal.expected_close_date ? deal.expected_close_date.slice(0, 10) : '')) {
@@ -533,7 +534,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       />
                     ) : (
                       <p
-                        className="text-sm font-bold text-slate-800 truncate cursor-pointer hover:text-violet-600 transition-colors group flex items-center gap-1"
+                        className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate cursor-pointer hover:text-violet-600 dark:hover:text-violet-400 transition-colors group flex items-center gap-1"
                         onClick={() => setEditingField('expected_close_date')}
                         title="คลิกเพื่อแก้ไข"
                       >
@@ -613,7 +614,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
             </div>
 
             {/* ─── TAB BAR ─── */}
-            <div className="shrink-0 flex border-b border-slate-100 bg-white overflow-x-auto no-scrollbar">
+            <div className="shrink-0 flex border-b border-slate-100 dark:border-white/5 bg-white dark:bg-[#0d0f1a] overflow-x-auto no-scrollbar">
               {TABS.map(tab => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -626,11 +627,11 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                     className={cn(
                       'flex items-center gap-1.5 px-5 py-3.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-all relative',
                       isActive
-                        ? 'border-violet-600 text-violet-700 bg-gradient-to-t from-violet-50/50 to-transparent'
-                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50/50'
+                        ? 'border-violet-600 text-violet-700 dark:text-violet-400 bg-gradient-to-t from-violet-50/50 dark:from-violet-950/20 to-transparent'
+                        : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-50/50 dark:hover:bg-white/5'
                     )}
                   >
-                    <Icon size={13} className={isActive ? 'text-violet-600' : 'text-slate-400'} />
+                    <Icon size={13} className={isActive ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400 dark:text-slate-500'} />
                     {tab.label}
                   </button>
                 );
