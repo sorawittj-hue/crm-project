@@ -713,14 +713,14 @@ export default function CommandCenterPage() {
 
           {/* TEAM LEADERBOARD */}
           {teamLeaderboard.length > 0 && (
-            <div className="rounded-2xl border border-white/[0.07] bg-[#0d0f1a] overflow-hidden">
-              <div className="px-4 py-3 border-b border-white/[0.06] flex items-center gap-2.5">
+            <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.07] bg-white/80 dark:bg-[#0d0f1a] backdrop-blur-xl shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-slate-100 dark:border-white/[0.06] flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                  <Trophy size={14} className="text-amber-400" />
+                  <Trophy size={14} className="text-amber-500 dark:text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-white">Team Leaderboard</h3>
-                  <p className="text-[10px] text-white/35 font-medium">อันดับยอดขายเดือนนี้</p>
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-white">Team Leaderboard</h3>
+                  <p className="text-[10px] text-slate-500 dark:text-white/35 font-medium">อันดับยอดขายเดือนนี้</p>
                 </div>
               </div>
               <div className="p-3 space-y-2">
@@ -729,7 +729,7 @@ export default function CommandCenterPage() {
                   const goalPct = Math.min(100, m.goalAchievement || 0);
                   const barColor = i === 0 ? 'from-amber-500 to-orange-400' : i === 1 ? 'from-slate-400 to-slate-300' : 'from-violet-600 to-indigo-500';
                   return (
-                    <div key={m.id} className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.05] transition-colors">
+                    <div key={m.id} className="p-2.5 rounded-xl bg-slate-50/80 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.05] hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors">
                       <div className="flex items-center justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <div className="relative shrink-0">
@@ -739,16 +739,16 @@ export default function CommandCenterPage() {
                             {medal && <span className="absolute -top-1.5 -right-1.5 text-xs">{medal}</span>}
                           </div>
                           <div className="min-w-0">
-                            <h4 className="font-bold text-white text-xs truncate leading-none">{m.name}</h4>
-                            <p className="text-[9px] text-white/30 font-medium mt-0.5">{m.role}</p>
+                            <h4 className="font-bold text-slate-900 dark:text-white text-xs truncate leading-none">{m.name}</h4>
+                            <p className="text-[9px] text-slate-500 dark:text-white/30 font-medium mt-0.5">{m.role}</p>
                           </div>
                         </div>
                         <div className="text-right shrink-0">
-                          <span className="text-xs font-black text-white tabular-nums">{formatCurrency(m.wonThisMonthValue)}</span>
-                          <span className="text-[9px] text-white/30 block font-medium">{m.goalAchievement}% Goal</span>
+                          <span className="text-xs font-black text-slate-900 dark:text-white tabular-nums">{formatCurrency(m.wonThisMonthValue)}</span>
+                          <span className="text-[9px] text-slate-500 dark:text-white/30 block font-medium">{m.goalAchievement}% Goal</span>
                         </div>
                       </div>
-                      <div className="h-0.5 rounded-full bg-white/[0.08] overflow-hidden">
+                      <div className="h-1 rounded-full bg-slate-200 dark:bg-white/[0.08] overflow-hidden">
                         <div className={cn("h-full rounded-full bg-gradient-to-r", barColor)} style={{ width: `${goalPct}%` }} />
                       </div>
                     </div>

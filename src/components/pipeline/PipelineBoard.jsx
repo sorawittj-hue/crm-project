@@ -649,27 +649,27 @@ export default function PipelineBoard({
 
       {/* LIST VIEW (Desktop Only) */}
       {viewMode === 'list' && (
-        <div className="hidden md:block overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="hidden md:block overflow-y-auto rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-[#0f111a] shadow-sm">
           {processedDeals.length === 0 ? (
             <div className="py-20 text-center">
-              <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Filter size={24} className="text-slate-300" />
+              <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Filter size={24} className="text-slate-300 dark:text-slate-600" />
               </div>
               <p className="text-slate-400 text-sm font-medium">ไม่พบดีลที่ตรงกับเงื่อนไข</p>
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50/80 backdrop-blur-sm border-b border-slate-200/80">
-                  <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">บริษัท / ดีล</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">ขั้นตอน</th>
-                  <th className="text-right px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">มูลค่า</th>
-                  <th className="text-center px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">โอกาส</th>
-                  <th className="text-center px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">ไม่มีกิจกรรม</th>
-                  <th className="text-center px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">จัดการ</th>
+                <tr className="bg-slate-50/80 dark:bg-white/[0.04] backdrop-blur-sm border-b border-slate-200/80 dark:border-white/10">
+                  <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">บริษัท / ดีล</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">ขั้นตอน</th>
+                  <th className="text-right px-5 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">มูลค่า</th>
+                  <th className="text-center px-5 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">โอกาส</th>
+                  <th className="text-center px-5 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">ไม่มีกิจกรรม</th>
+                  <th className="text-center px-5 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">จัดการ</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
                 {processedDeals.map((deal, idx) => {
                   const stage = STAGE_CONFIG[deal.stage];
                   const isStagnant = deal.agingDays > 7 && !['won', 'lost'].includes(deal.stage);
@@ -893,31 +893,31 @@ export default function PipelineBoard({
           if (stageDeals.length === 0) return null;
 
           return (
-            <div key={stageId} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-              <div className={cn('px-4 py-3 border-b border-slate-100 flex items-center justify-between', stage.headerBg)}>
+            <div key={stageId} className="bg-white dark:bg-[#0f111a] rounded-2xl border border-slate-200/80 dark:border-white/10 overflow-hidden shadow-sm">
+              <div className={cn('px-4 py-3 border-b border-slate-100 dark:border-white/5 flex items-center justify-between', stage.headerBg, 'dark:bg-white/[0.02]')}>
                 <div className="flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-xl flex items-center justify-center text-white shadow-sm shrink-0" style={{ backgroundColor: stage.dotColor }}>
                     <span className="text-[10px]">{stage.icon}</span>
                   </div>
-                  <h3 className="text-sm font-bold text-slate-800">{stage.label}</h3>
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-white">{stage.label}</h3>
                 </div>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white/50 text-slate-700 shadow-sm border border-white/20">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white/50 dark:bg-white/10 text-slate-700 dark:text-slate-200 shadow-sm border border-white/20 dark:border-white/10">
                   {stageDeals.length} ดีล
                 </span>
               </div>
-              <div className="divide-y divide-slate-50">
+              <div className="divide-y divide-slate-100 dark:divide-white/[0.05]">
                 {stageDeals.map((deal) => (
-                  <div key={deal.id} onClick={() => onDealClick(deal)} className="p-4 hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer relative overflow-hidden">
+                  <div key={deal.id} onClick={() => onDealClick(deal)} className="p-4 hover:bg-slate-50 dark:hover:bg-white/[0.04] active:bg-slate-100 dark:active:bg-white/[0.08] transition-colors cursor-pointer relative overflow-hidden">
                     <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: stage.dotColor }} />
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-slate-900 truncate">{deal.company || '—'}</p>
-                        <p className="text-xs text-slate-500 truncate mt-0.5">{deal.title}</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{deal.company || '—'}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{deal.title}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-sm font-black text-slate-900 tabular-nums">{formatCurrency(deal.value)}</p>
+                        <p className="text-sm font-black text-slate-900 dark:text-white tabular-nums">{formatCurrency(deal.value)}</p>
                         {deal.probability !== undefined && deal.probability !== null && (
-                          <p className={cn("text-xs font-bold mt-1 tabular-nums", deal.probability >= 70 ? "text-emerald-600" : deal.probability >= 40 ? "text-violet-600" : "text-slate-400")}>
+                          <p className={cn("text-xs font-bold mt-1 tabular-nums", deal.probability >= 70 ? "text-emerald-600 dark:text-emerald-400" : deal.probability >= 40 ? "text-violet-600 dark:text-violet-400" : "text-slate-400 dark:text-slate-500")}>
                             {deal.probability}% โอกาส
                           </p>
                         )}

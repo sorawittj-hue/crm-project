@@ -1043,13 +1043,13 @@ export default function CustomersPage() {
   if (isLoading) return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="bg-white rounded-3xl border border-slate-100 p-5 space-y-4 animate-pulse">
+        <div key={i} className="bg-white dark:bg-[#0f111a] rounded-2xl border border-slate-200/80 dark:border-white/10 p-5 space-y-4 animate-pulse shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-slate-200 rounded-2xl" />
-            <div className="space-y-2 flex-1"><div className="h-3 bg-slate-200 rounded w-2/3" /><div className="h-2.5 bg-slate-100 rounded w-1/2" /></div>
+            <div className="w-11 h-11 bg-slate-200 dark:bg-white/10 rounded-2xl" />
+            <div className="space-y-2 flex-1"><div className="h-3 bg-slate-200 dark:bg-white/10 rounded w-2/3" /><div className="h-2.5 bg-slate-100 dark:bg-white/5 rounded w-1/2" /></div>
           </div>
-          <div className="h-2 bg-slate-100 rounded-full" />
-          <div className="grid grid-cols-3 gap-2"><div className="h-8 bg-slate-100 rounded-xl" /><div className="h-8 bg-slate-100 rounded-xl" /><div className="h-8 bg-slate-100 rounded-xl" /></div>
+          <div className="h-2 bg-slate-100 dark:bg-white/5 rounded-full" />
+          <div className="grid grid-cols-3 gap-2"><div className="h-8 bg-slate-100 dark:bg-white/5 rounded-xl" /><div className="h-8 bg-slate-100 dark:bg-white/5 rounded-xl" /><div className="h-8 bg-slate-100 dark:bg-white/5 rounded-xl" /></div>
         </div>
       ))}
     </div>

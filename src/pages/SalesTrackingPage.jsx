@@ -169,12 +169,12 @@ export default function SalesTrackingPage() {
         title={`ติดตามยอดขายประจำปี ${currentYear + 543}`}
         description="วิเคราะห์เป้าหมาย ยอดขายรายเดือน และยอดรวมสะสมแบบเรียลไทม์"
         rightContent={
-          <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 shadow-sm">
+          <div className="flex items-center gap-2 bg-white/80 dark:bg-white/[0.06] backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-sm">
             <button
               onClick={() => setChartType('bar')}
               className={cn(
-                'px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5',
-                chartType === 'bar' ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/20' : 'text-slate-500 hover:text-slate-900'
+                'px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
+                chartType === 'bar' ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               )}
             >
               <BarChart3 size={14} /> กราฟแท่ง
@@ -182,8 +182,8 @@ export default function SalesTrackingPage() {
             <button
               onClick={() => setChartType('area')}
               className={cn(
-                'px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5',
-                chartType === 'area' ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/20' : 'text-slate-500 hover:text-slate-900'
+                'px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
+                chartType === 'area' ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               )}
             >
               <TrendingUp size={14} /> กราฟแนวโน้ม
