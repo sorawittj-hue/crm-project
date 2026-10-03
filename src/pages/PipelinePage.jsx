@@ -211,6 +211,7 @@ export default function PipelinePage() {
 
 
 
+  const currentUserId = user?.id;
   const filteredDeals = useMemo(() => {
     let result = deals || [];
     if (debouncedSearchTerm) {
@@ -221,9 +222,9 @@ export default function PipelinePage() {
         (d.contact || '').toLowerCase().includes(s)
       );
     }
-    if (myDealsOnly && user?.id) result = result.filter(d => d.assigned_to === user.id);
+    if (myDealsOnly && currentUserId) result = result.filter(d => d.assigned_to === currentUserId);
     return result;
-  }, [deals, debouncedSearchTerm, myDealsOnly, user?.id]);
+  }, [deals, debouncedSearchTerm, myDealsOnly, currentUserId]);
 
   const pipelinePulse = useMemo(() => {
     const activeDeals = filteredDeals.filter((deal) => !['won', 'lost'].includes(deal.stage));
@@ -523,41 +524,41 @@ export default function PipelinePage() {
         className="grid grid-cols-1 gap-3 sm:grid-cols-3"
       >
         {/* Active Pipeline */}
-        <div className="rounded-2xl border border-violet-200/60 dark:border-violet-800/30 bg-gradient-to-br from-violet-50 via-white to-indigo-50 dark:from-violet-950/40 dark:via-[#0f111a] dark:to-indigo-950/30 p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-900/70">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-400">Active pipeline</p>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Active pipeline</p>
               <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
                 {new Intl.NumberFormat('th-TH', { notation: 'compact', maximumFractionDigits: 1 }).format(pipelinePulse.activeValue)}
                 <span className="ml-1 text-xs font-bold text-slate-400">THB</span>
               </p>
               <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{pipelinePulse.activeCount} open deals</p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-md shadow-violet-500/25 shrink-0">
-              <TrendingUp size={18} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700 dark:bg-violet-400/10 dark:text-violet-300">
+              <TrendingUp size={18} aria-hidden="true" />
             </div>
           </div>
         </div>
 
         {/* Working set */}
-        <div className="rounded-2xl border border-sky-200/60 dark:border-sky-800/30 bg-gradient-to-br from-sky-50 via-white to-cyan-50 dark:from-sky-950/40 dark:via-[#0f111a] dark:to-cyan-950/30 p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-900/70">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-sky-600 dark:text-sky-400">Working set</p>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Working set</p>
               <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">{filteredDeals.length}</p>
               <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">deals match current view</p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-600 text-white shadow-md shadow-sky-500/25 shrink-0">
-              <Briefcase size={18} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700 dark:bg-sky-400/10 dark:text-sky-300">
+              <Briefcase size={18} aria-hidden="true" />
             </div>
           </div>
         </div>
 
         {/* Needs attention */}
-        <div className="rounded-2xl border border-rose-200/60 dark:border-rose-800/30 bg-gradient-to-br from-rose-50 via-white to-orange-50 dark:from-rose-950/40 dark:via-[#0f111a] dark:to-orange-950/30 p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-900/70">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400">Needs attention</p>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Needs attention</p>
               <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
                 {pipelinePulse.atRiskCount}
                 <span className="ml-1 text-xs font-bold text-slate-400">deals</span>
@@ -566,8 +567,8 @@ export default function PipelinePage() {
                 {new Intl.NumberFormat('th-TH', { notation: 'compact', maximumFractionDigits: 1 }).format(pipelinePulse.atRiskValue)} THB at risk
               </p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-600 text-white shadow-md shadow-rose-500/25 shrink-0">
-              <AlertTriangle size={18} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300">
+              <AlertTriangle size={18} aria-hidden="true" />
             </div>
           </div>
         </div>

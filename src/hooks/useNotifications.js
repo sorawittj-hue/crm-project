@@ -93,13 +93,17 @@ export function useNotifications(userId) {
           console.error('Error loading notification preferences:', e);
         }
 
-        // Trigger notifications for new unread items
-        newUnread.forEach(notif => {
-          // 1. Toast Alert
-          toast.info(notif.title, { description: notif.message, duration: 5000 });
+        // A synchronized batch can contain many records; keep the in-app surface concise.
+        toast.info(
+          newUnread.length === 1
+            ? newUnread[0].title
+            : `มีการแจ้งเตือนใหม่ ${newUnread.length} รายการ`,
+          5000
+        );
 
-          // 2. Desktop Notification
-          if (settings.desktopEnabled && Notification.permission === 'granted' && document.hidden) {
+        if (settings.desktopEnabled && Notification.permission === 'granted' && document.hidden) {
+          const latestNotifications = newUnread.slice(0, 3);
+          for (const notif of latestNotifications) {
             try {
               new Notification(notif.title, {
                 body: notif.message,
@@ -109,7 +113,7 @@ export function useNotifications(userId) {
               console.error('Desktop notification failed:', e);
             }
           }
-        });
+        }
 
         // 3. Sound Chime (only play once per batch)
         if (settings.soundEnabled) {

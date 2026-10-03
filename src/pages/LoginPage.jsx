@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { startLocalTrial } from '../lib/localDb';
@@ -63,16 +63,16 @@ export default function LoginPage() {
 
   const inputStyle = (field) => ({
     width: '100%',
-    height: '52px',
-    padding: '0 1rem',
-    borderRadius: '14px',
-    border: `1.5px solid ${focusedField === field ? 'rgba(139,92,246,0.6)' : 'rgba(255,255,255,0.1)'}`,
-    background: focusedField === field ? 'rgba(139,92,246,0.08)' : 'rgba(255,255,255,0.05)',
+    height: '48px',
+    padding: '0 0.875rem',
+    borderRadius: '12px',
+    border: `1px solid ${focusedField === field ? 'rgba(167,139,250,0.9)' : 'rgba(255,255,255,0.16)'}`,
+    background: focusedField === field ? 'rgba(139,92,246,0.10)' : 'rgba(255,255,255,0.07)',
     color: 'white',
     fontSize: '14px',
     outline: 'none',
     transition: 'all 0.2s ease',
-    boxShadow: focusedField === field ? '0 0 0 3px rgba(139,92,246,0.15)' : 'none',
+    boxShadow: focusedField === field ? '0 0 0 3px rgba(139,92,246,0.22)' : 'none',
     fontFamily: 'inherit',
   });
 
@@ -106,21 +106,10 @@ export default function LoginPage() {
           background: 'radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 65%)',
           animation: 'float 15s ease-in-out infinite 2s',
         }} />
-        {/* Star dots */}
-        {[...Array(30)].map((_, i) => (
-          <div key={i} className="absolute rounded-full" style={{
-            width: `${Math.random() * 2 + 1}px`,
-            height: `${Math.random() * 2 + 1}px`,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            background: `rgba(255,255,255,${Math.random() * 0.4 + 0.1})`,
-            animation: `pulse ${Math.random() * 3 + 2}s ease-in-out infinite ${Math.random() * 2}s alternate`,
-          }} />
-        ))}
         {/* Grid overlay */}
         <div className="absolute inset-0" style={{
-          backgroundImage: 'linear-gradient(rgba(139,92,246,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.04) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
+          backgroundImage: 'linear-gradient(rgba(139,92,246,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.025) 1px, transparent 1px)',
+          backgroundSize: '72px 72px',
         }} />
       </div>
 
@@ -290,9 +279,9 @@ export default function LoginPage() {
             backdropFilter: 'blur(40px)',
             WebkitBackdropFilter: 'blur(40px)',
             border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '28px',
-            boxShadow: '0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12)',
-            padding: '2.5rem',
+            borderRadius: '24px',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.42)',
+            padding: 'clamp(1.25rem, 4vw, 2rem)',
           }}
         >
           {/* Top accent line */}
@@ -398,13 +387,15 @@ export default function LoginPage() {
 
               {!isLogin && (
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold" style={{color: 'rgba(255,255,255,0.5)'}}>ชื่อ-นามสกุล</label>
+                  <label htmlFor="full-name" className="text-sm font-medium text-white/75">ชื่อ-นามสกุล</label>
                   <input
+                    id="full-name"
                     type="text"
                     value={fullName}
                     onChange={e => setFullName(e.target.value)}
                     placeholder="เช่น สมชาย ใจดี"
                     disabled={loading}
+                    autoComplete="name"
                     onFocus={() => setFocusedField('name')}
                     onBlur={() => setFocusedField(null)}
                     style={{...inputStyle('name'), opacity: loading ? 0.6 : 1}}
@@ -413,13 +404,16 @@ export default function LoginPage() {
               )}
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold" style={{color: 'rgba(255,255,255,0.5)'}}>อีเมล</label>
+                <label htmlFor="email" className="text-sm font-medium text-white/75">อีเมล</label>
                 <input
+                  id="email"
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="your@email.com"
                   disabled={loading}
+                  autoComplete={isLogin ? 'username' : 'email'}
+                  required
                   onFocus={() => setFocusedField('email')}
                   onBlur={() => setFocusedField(null)}
                   style={{...inputStyle('email'), opacity: loading ? 0.6 : 1}}
@@ -427,20 +421,24 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold" style={{color: 'rgba(255,255,255,0.5)'}}>รหัสผ่าน</label>
+                <label htmlFor="password" className="text-sm font-medium text-white/75">รหัสผ่าน</label>
                 <div className="relative">
                   <input
+                    id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••"
                     disabled={loading}
+                    autoComplete={isLogin ? 'current-password' : 'new-password'}
+                    required
                     onFocus={() => setFocusedField('password')}
                     onBlur={() => setFocusedField(null)}
                     style={{...inputStyle('password'), paddingRight: '3rem', opacity: loading ? 0.6 : 1}}
                   />
                   <button
                     type="button"
+                    aria-label={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
                     onClick={() => setShowPassword(v => !v)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 transition-colors"
                     style={{color: 'rgba(255,255,255,0.3)'}}
@@ -454,13 +452,15 @@ export default function LoginPage() {
 
               {!isLogin && (
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold" style={{color: 'rgba(255,255,255,0.5)'}}>ยืนยันรหัสผ่าน</label>
+                  <label htmlFor="confirm-password" className="text-sm font-medium text-white/75">ยืนยันรหัสผ่าน</label>
                   <input
+                    id="confirm-password"
                     type={showPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
                     disabled={loading}
+                    autoComplete="new-password"
                     onFocus={() => setFocusedField('confirm')}
                     onBlur={() => setFocusedField(null)}
                     style={{...inputStyle('confirm'), opacity: loading ? 0.6 : 1}}

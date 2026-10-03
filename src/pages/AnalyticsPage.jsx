@@ -67,11 +67,11 @@ function TypewriterEffect({ text, speed = 18 }) {
 // --- Premium Animated Number Component ---
 function AnimatedNumber({ value, formatter, duration = 1.2 }) {
   const ref = useRef(null);
-  
+
   useEffect(() => {
     const numericValue = typeof value === 'number' ? value : parseFloat(value?.toString().replace(/[^0-9.-]+/g,"") || 0);
     if (isNaN(numericValue)) return;
-    
+
     const controls = animate(0, numericValue, {
       duration,
       ease: [0.19, 1, 0.22, 1], // Apple-like ease-out
@@ -90,42 +90,39 @@ function AnimatedNumber({ value, formatter, duration = 1.2 }) {
 // --- Premium 2026 KPI Metric Card ---
 const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Icon, trend, color = "primary", sparklineData, delay = 0 }) => {
   const colorMap = {
-    primary: { bg: "kpi-violet", accent: "#a78bfa", ring: "ring-violet-500/20", label: "text-violet-300/80", val: "text-white" },
-    emerald: { bg: "kpi-emerald", accent: "#34d399", ring: "ring-emerald-500/20", label: "text-emerald-300/80", val: "text-emerald-50" },
-    rose:    { bg: "kpi-rose", accent: "#fb7185", ring: "ring-rose-500/20", label: "text-rose-300/80", val: "text-rose-50" },
-    amber:   { bg: "kpi-amber", accent: "#fbbf24", ring: "ring-amber-500/20", label: "text-amber-300/80", val: "text-amber-50" },
-    cyan:    { bg: "kpi-cyan", accent: "#38bdf8", ring: "ring-cyan-500/20", label: "text-cyan-300/80", val: "text-cyan-50" },
-    slate:   { bg: "kpi-violet", accent: "#94a3b8", ring: "ring-slate-500/20", label: "text-slate-300/80", val: "text-white" }
+    primary: { bg: "bg-white dark:bg-[#111522]", accent: "#7c3aed", ring: "border-slate-200 dark:border-white/10", label: "text-slate-600 dark:text-slate-400", val: "text-slate-900 dark:text-white" },
+    emerald: { bg: "bg-white dark:bg-[#111522]", accent: "#059669", ring: "border-slate-200 dark:border-white/10", label: "text-slate-600 dark:text-slate-400", val: "text-slate-900 dark:text-white" },
+    rose:    { bg: "bg-white dark:bg-[#111522]", accent: "#e11d48", ring: "border-slate-200 dark:border-white/10", label: "text-slate-600 dark:text-slate-400", val: "text-slate-900 dark:text-white" },
+    amber:   { bg: "bg-white dark:bg-[#111522]", accent: "#d97706", ring: "border-slate-200 dark:border-white/10", label: "text-slate-600 dark:text-slate-400", val: "text-slate-900 dark:text-white" },
+    cyan:    { bg: "bg-white dark:bg-[#111522]", accent: "#0284c7", ring: "border-slate-200 dark:border-white/10", label: "text-slate-600 dark:text-slate-400", val: "text-slate-900 dark:text-white" },
+    slate:   { bg: "bg-white dark:bg-[#111522]", accent: "#64748b", ring: "border-slate-200 dark:border-white/10", label: "text-slate-600 dark:text-slate-400", val: "text-slate-900 dark:text-white" }
   };
-  
+
   const cfg = colorMap[color] || colorMap.primary;
   const safeTrend = (trend !== undefined && trend !== null && !isNaN(parseFloat(trend))) ? parseFloat(trend) : null;
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 16 }} 
-      animate={{ opacity: 1, y: 0 }} 
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4, ease: "easeOut" }}
       className="group"
     >
       <div className={cn(
-        "p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/[0.08] ring-1 card-inset-highlight transition-all duration-300 relative overflow-hidden group hover:-translate-y-1",
+        "p-5 rounded-xl border shadow-sm transition-colors duration-200 relative overflow-hidden group hover:border-slate-300 dark:hover:border-white/15",
         cfg.bg, cfg.ring
       )}>
-        <div className="noise-overlay absolute inset-0 rounded-2xl md:rounded-3xl" />
-        <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-20 blur-2xl pointer-events-none" style={{ background: cfg.accent }} />
-        
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-3.5">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center border border-white/10 shadow-xs" style={{ background: `${cfg.accent}25`, color: cfg.accent }}>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: `${cfg.accent}18`, color: cfg.accent }}>
               <Icon size={16} strokeWidth={2.5} />
             </div>
             {safeTrend !== null && (
               <div className={cn(
                 "flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide",
-                safeTrend >= 0 
-                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" 
-                  : "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                safeTrend >= 0
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/25"
+                  : "bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/25"
               )}>
                 {safeTrend >= 0 ? <ArrowUpRight size={11} strokeWidth={3} /> : <ArrowDownRight size={11} strokeWidth={3} />}
                 {safeTrend > 0 ? "+" : ""}{safeTrend.toFixed(1)}%
@@ -136,9 +133,9 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
             <p className={cn("text-[10px] font-bold uppercase tracking-widest", cfg.label)}>{title}</p>
             <div className="flex items-baseline justify-between gap-2">
               <h3 className={cn("number-display text-2xl md:text-3xl", cfg.val)}>
-                {numericValue !== undefined ? <AnimatedNumber value={numericValue} formatter={formatter} /> : value}
+                {numericValue !== undefined && numericValue !== null ? <AnimatedNumber value={numericValue} formatter={formatter} /> : (value ?? '—')}
               </h3>
-              
+
               {/* Sparkline */}
               {sparklineData && sparklineData.length > 1 && (
                 <div className="w-16 h-7 shrink-0 opacity-80">
@@ -167,7 +164,7 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
                 </div>
               )}
             </div>
-            {subValue && <p className="text-[10px] text-white/40 font-medium mt-1">{subValue}</p>}
+            {subValue && <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">{subValue}</p>}
           </div>
         </div>
       </div>
@@ -220,12 +217,12 @@ export default function AnalyticsPage() {
     }
 
     return allDeals.filter(deal => {
-      const dateToCheck = ['won', 'lost'].includes(deal.stage) 
-        ? new Date(deal.actual_close_date || deal.updated_at || deal.created_at) 
+      const dateToCheck = ['won', 'lost'].includes(deal.stage)
+        ? new Date(deal.actual_close_date || deal.updated_at || deal.created_at)
         : new Date(deal.created_at);
       return dateToCheck >= startDate;
     });
-  }, [allDeals, dateRange]);
+  }, [allDeals, dateRange, customDateFrom, customDateTo]);
 
   const [activeTab, setActiveTab] = useState('overview'); // overview, funnel, performance, segments
   const [selectedPrompt, setSelectedPrompt] = useState(null); // high-risk, quota, bottleneck
@@ -324,7 +321,7 @@ export default function AnalyticsPage() {
 
     const currentMonthActual = revenueStream[revenueStream.length - 1]?.actual || 0;
     const prevMonthActual = revenueStream[revenueStream.length - 2]?.actual || 0;
-    const growth = prevMonthActual > 0 ? Math.round(((currentMonthActual - prevMonthActual) / prevMonthActual) * 100) : 0;
+    const growth = prevMonthActual > 0 ? Math.round(((currentMonthActual - prevMonthActual) / prevMonthActual) * 100) : null;
 
     // Stage Distribution
     const stageData = [];
@@ -346,7 +343,7 @@ export default function AnalyticsPage() {
     const lostDeals = deals.filter(d => d.stage === 'lost');
     const winRate = (wonDeals.length + lostDeals.length) > 0
       ? Math.round((wonDeals.length / (wonDeals.length + lostDeals.length)) * 100)
-      : 0;
+      : null;
 
     const avgDealValue = wonDeals.length > 0
       ? Math.round(wonDeals.reduce((s, d) => s + Number(d.value || 0), 0) / wonDeals.length)
@@ -357,7 +354,7 @@ export default function AnalyticsPage() {
           const closed = new Date(d.actual_close_date || d.updated_at || d.created_at);
           return s + Math.max(0, (closed - created) / 86400000);
         }, 0) / wonDeals.length)
-      : 0;
+      : null;
 
     // Conversion Funnel
     const stageCounts = {};
@@ -529,7 +526,7 @@ Weighted Pipeline: ${(intel.weightedPipelineValue || 0).toLocaleString('th-TH')}
         prompt = `วิเคราะห์โอกาสบรรลุเป้ายอดขาย:
 
 ยอดปิดได้เดือนนี้: ${(intel.currentMonthWonValue || 0).toLocaleString('th-TH')} บาท
-Weighted Pipeline: ${(intel.weightedPipelineValue || 0).toLocaleString('th-TH')} บาท  
+Weighted Pipeline: ${(intel.weightedPipelineValue || 0).toLocaleString('th-TH')} บาท
 ดีลที่จะปิดใน 30 วัน: ${intel.closingSoonDeals?.length || 0} ดีล
 Win Rate: ${intel.winRate || 0}%
 
@@ -538,7 +535,7 @@ Win Rate: ${intel.winRate || 0}%
         prompt = `หา Bottleneck ในกระบวนการขาย:
 
 ดีลที่ไม่มี Next Step: ${intel.noNextStepDeals?.length || 0} ดีล
-ดีล Stale: ${intel.staleDeals?.length || 0} ดีล  
+ดีล Stale: ${intel.staleDeals?.length || 0} ดีล
 Avg Inactive Days: ${intel.averageInactiveDays || 0} วัน
 Win Rate: ${intel.winRate || 0}%
 
@@ -546,7 +543,7 @@ Win Rate: ${intel.winRate || 0}%
       }
       const response = await callGeminiAPI(prompt);
       setAiConsultantText(response);
-    } catch (e) {
+    } catch {
       setAiConsultantText('ไม่สามารถโหลดคำแนะนำ AI ได้ในขณะนี้ กรุณาลองอีกครั้ง');
     } finally {
       setAiConsultantLoading(false);
@@ -571,17 +568,17 @@ Win Rate: ${intel.winRate || 0}%
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[500px] rounded-full bg-violet-400/20 blur-[120px] pointer-events-none" />
       <div className="absolute top-[30%] right-[-5%] w-[30%] h-[400px] rounded-full bg-blue-400/10 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[600px] rounded-full bg-emerald-400/10 blur-[150px] pointer-events-none" />
-      
+
       {/* HEADER */}
-      <motion.div 
-        initial={{ opacity: 0, y: -10 }} 
-        animate={{ opacity: 1, y: 0 }} 
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
       >
         <PageHeader
           icon={Activity}
           title={<>Analytics <span className="text-cyan-300">Command Center</span></>}
           description="Deep insights and world-class pipeline intelligence."
-          children={
+          rightContent={
             <div className="flex flex-col md:flex-row items-center justify-between w-full gap-3">
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-1.5 bg-white/70 dark:bg-white/[0.06] p-1 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-sm">
@@ -615,7 +612,7 @@ Win Rate: ${intel.winRate || 0}%
               </div>
               <button
                 onClick={() => {
-                  const csvContent = "data:text/csv;charset=utf-8,Deal Name,Company,Value,Stage,Date\n" 
+                  const csvContent = "data:text/csv;charset=utf-8,Deal Name,Company,Value,Stage,Date\n"
                     + deals?.map(d => `${d.title},${d.company},${d.value},${d.stage},${d.created_at}`).join('\n');
                   const encodedUri = encodeURI(csvContent);
                   const link = document.createElement("a");
@@ -693,7 +690,7 @@ Win Rate: ${intel.winRate || 0}%
                       <p className="text-xs text-slate-400 font-medium">Recommended actions to hit quota and reduce risk.</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative z-10">
                     {analytics.intelligence.executiveActions.map((action) => (
                       <div key={action.id} className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
@@ -726,7 +723,7 @@ Win Rate: ${intel.winRate || 0}%
                   title="Revenue This Month"
                   numericValue={analytics?.currentMonthActual}
                   formatter={(v) => formatCurrency(v)}
-                  subValue={`Target: ${formatCurrency(monthlyTarget)}`}
+                  subValue={monthlyTarget > 0 ? `Target: ${formatCurrency(monthlyTarget)}` : 'ตั้งเป้าหมายเพื่อดูความคืบหน้า'}
                   trend={analytics?.growth}
                   icon={DollarSign}
                   color="emerald"
@@ -760,7 +757,7 @@ Win Rate: ${intel.winRate || 0}%
                   subValue={`12m Rolling: ${rollingWinRate12m}%`}
                   icon={Target}
                   color="emerald"
-                  sparklineData={[35, 38, 37, 42, 40, analytics?.winRate || 40]}
+                  sparklineData={undefined}
                   delay={0.3}
                 />
                 <MetricCard
@@ -770,7 +767,7 @@ Win Rate: ${intel.winRate || 0}%
                   subValue={`Avg Size ${formatCurrency(analytics?.avgDealValue)}`}
                   icon={Clock}
                   color="slate"
-                  sparklineData={[24, 22, 25, 20, 21, analytics?.avgDaysToClose || 20]}
+                  sparklineData={undefined}
                   delay={0.4}
                 />
               </div>
@@ -876,7 +873,7 @@ Win Rate: ${intel.winRate || 0}%
                 </div>
                 <div className="absolute -top-40 -left-40 w-80 h-80 bg-indigo-500/20 blur-[100px] rounded-full group-hover:bg-indigo-500/30 transition-all duration-700 pointer-events-none" />
                 <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-violet-500/20 blur-[100px] rounded-full group-hover:bg-violet-500/30 transition-all duration-700 pointer-events-none" />
-                
+
                 <div className="flex items-center gap-3.5 mb-5 relative z-10">
                   <div className="w-11 h-11 rounded-2xl bg-violet-500/20 flex items-center justify-center border border-violet-500/30 text-violet-300">
                     <Sparkles size={20} className="animate-pulse" />
@@ -944,7 +941,7 @@ Win Rate: ${intel.winRate || 0}%
                         ) : (
                           <TypewriterEffect text={aiConsultantText || ''} />
                         )}
-                        
+
                         {/* Quick-Action Buttons based on selected prompt */}
                         {selectedPrompt === 'high-risk' && (
                           <div className="flex gap-2 mt-4 flex-wrap">
@@ -981,7 +978,7 @@ Win Rate: ${intel.winRate || 0}%
                   )}
                 </AnimatePresence>
               </div>
-              
+
               {/* FORECAST ACCURACY DASHBOARD */}
               <Card className="p-8 rounded-[2.5rem] bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/5 dark:ring-white/5 relative overflow-hidden group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 dark:hover:border-violet-500/20 hover:-translate-y-0.5 transition-all duration-300 mt-8">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
@@ -1075,9 +1072,9 @@ Win Rate: ${intel.winRate || 0}%
                             animate={{ width: `${item.widthPct}%` }}
                             transition={{ duration: 1, delay: i * 0.15, ease: [0.19, 1, 0.22, 1] }}
                             className="absolute top-0 left-0 h-full rounded-2xl flex items-center px-4 gap-3 shadow-md border-r border-white/40 overflow-hidden group-hover:brightness-110 transition-all duration-300"
-                            style={{ 
-                              background: `linear-gradient(135deg, ${item.color}ee, ${item.color})`, 
-                              boxShadow: `0 8px 24px ${item.color}40` 
+                            style={{
+                              background: `linear-gradient(135deg, ${item.color}ee, ${item.color})`,
+                              boxShadow: `0 8px 24px ${item.color}40`
                             }}
                           >
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2s_infinite] skew-x-12" />
@@ -1295,7 +1292,7 @@ Win Rate: ${intel.winRate || 0}%
                       )}
                     >
                       {i === 0 && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 dark:via-white/10 to-transparent skew-x-12 -translate-x-[150%] animate-[shimmer_3s_infinite] pointer-events-none z-0" />}
-                      
+
                       {/* Ranking Medals */}
                       <div className="absolute top-4 right-4 flex items-center gap-1.5 relative z-10">
                         {i === 0 && (
@@ -1373,7 +1370,7 @@ Win Rate: ${intel.winRate || 0}%
                             className={cn(
                               "h-full rounded-full relative",
                               m.goalAchievement >= 100 ? "bg-gradient-to-r from-emerald-400 to-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" :
-                              m.goalAchievement >= 70 ? "bg-gradient-to-r from-amber-400 to-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" : 
+                              m.goalAchievement >= 70 ? "bg-gradient-to-r from-amber-400 to-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" :
                               "bg-gradient-to-r from-rose-400 to-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
                             )}
                           >
@@ -1513,7 +1510,7 @@ Win Rate: ${intel.winRate || 0}%
                       </div>
                       <h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">AI Sales Quota Simulator</h3>
                     </div>
-                    
+
                     <div className="space-y-4">
                       {/* Win Rate Slider */}
                       <div className="space-y-1.5">
@@ -1573,7 +1570,7 @@ Win Rate: ${intel.winRate || 0}%
                       <p className="text-xl font-black text-slate-900 dark:text-white tabular-nums">{formatCurrency(simulatedRevenue)}</p>
                       <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">เป้าหมายประจำเดือน: {formatCurrency(monthlyTarget)}</p>
                     </div>
-                    
+
                     <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
                       <svg className="w-full h-full transform -rotate-90 overflow-visible">
                         <defs>
@@ -1657,7 +1654,7 @@ Win Rate: ${intel.winRate || 0}%
           )}
         </motion.div>
       </AnimatePresence>
-      
+
       {selectedRep && (
         <RepDrilldown
           member={selectedRep}

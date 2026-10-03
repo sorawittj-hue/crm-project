@@ -48,7 +48,7 @@ export function ToastProvider({ children }) {
 
   const addToast = useCallback((message, type = 'info', duration = 4500) => {
     const id = Math.random().toString(36).substr(2, 9);
-    setToasts((prev) => [...prev, { id, message, type }]);
+    setToasts((prev) => [...prev, { id, message, type }].slice(-4));
     if (duration > 0) {
       setTimeout(() => {
         setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -69,7 +69,11 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ success, error, warning, info, addToast, removeToast }}>
       {children}
-      <div className="fixed top-4 right-4 z-[9999] space-y-2.5 max-w-sm w-full pointer-events-none">
+      <div
+        aria-live="polite"
+        aria-relevant="additions text"
+        className="fixed top-4 right-4 z-[9999] space-y-2 max-w-sm w-[calc(100%-2rem)] pointer-events-none"
+      >
         <AnimatePresence mode="popLayout">
           {toasts.map((toast) => {
             const Icon = icons[toast.type];
@@ -82,9 +86,10 @@ export function ToastProvider({ children }) {
                 exit={{ opacity: 0, x: 60, scale: 0.92, transition: { duration: 0.18 } }}
                 transition={{ type: 'spring', stiffness: 420, damping: 30 }}
                 className={cn(
-                  "relative flex items-start gap-3 p-4 rounded-2xl border backdrop-blur-xl shadow-xl overflow-hidden pointer-events-auto",
+                  "relative flex items-start gap-3 p-3.5 rounded-xl border shadow-lg overflow-hidden pointer-events-auto",
                   s.container
                 )}
+                role="status"
               >
                 {/* Color accent bar */}
                 <div className={cn("absolute bottom-0 left-0 right-0 h-0.5", s.bar)} />
@@ -101,6 +106,7 @@ export function ToastProvider({ children }) {
 
                 {/* Close */}
                 <button
+                  aria-label="ปิดการแจ้งเตือน"
                   onClick={() => removeToast(toast.id)}
                   className="shrink-0 w-6 h-6 flex items-center justify-center rounded-lg text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition-all duration-150 mt-0.5"
                 >

@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Target, Activity, ChevronLeft, ChevronRight, CalendarDays, AlertTriangle, Download, Zap, Sparkles, Briefcase } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, Activity, ChevronLeft, ChevronRight, CalendarDays, AlertTriangle, Download, Zap, Briefcase } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { downloadCsv } from '../../utils/exportUtils';
@@ -128,57 +128,52 @@ export default function PipelineHeader({
       {/* KPI STRIP */}
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-3.5">
         {/* Monthly Target — Hero Card with Aurora background */}
-        <div className="col-span-2 relative overflow-hidden rounded-2xl md:rounded-3xl p-5 md:p-6 aurora-bg text-white border border-white/[0.08] card-inset-highlight group hover:-translate-y-0.5 transition-all duration-300">
-          <div className="noise-overlay absolute inset-0 rounded-2xl md:rounded-3xl" />
-          <div className="glow-orb glow-orb-violet absolute -top-12 -left-12 w-40 h-40 opacity-40 pointer-events-none" />
-          <div className="glow-orb glow-orb-cyan absolute -bottom-8 -right-8 w-32 h-32 opacity-25 pointer-events-none" />
+        <div className="col-span-2 relative overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-white via-violet-50/70 to-indigo-50/60 p-5 shadow-sm transition-shadow hover:shadow-md dark:border-violet-300/10 dark:from-[#111827] dark:via-[#151a2b] dark:to-[#17172b] md:p-6">
 
           <div className="relative z-10 space-y-3 md:space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-center shadow-xs">
-                  <Zap size={15} className="text-amber-300 fill-amber-300" />
+                <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-400/10 flex items-center justify-center">
+                  <Zap size={15} className="text-violet-700 dark:text-violet-300" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest flex items-center gap-1">
-                    ยอดขายเดือนนี้ <Sparkles size={11} className="text-amber-300" />
+                  <p className="text-xs text-slate-600 dark:text-slate-300 font-semibold flex items-center gap-1">
+                    ยอดขายเดือนนี้
                   </p>
-                  <p className="text-[10px] text-white/80 font-medium">เป้าหมายประจำเดือน</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">เป้าหมายประจำเดือน</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-xs font-black">
-                <Target size={12} className="text-amber-300" />
+              <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-violet-100 text-violet-800 dark:bg-violet-400/10 dark:text-violet-200 text-xs font-semibold">
+                <Target size={12} />
                 <AnimatedNumber value={Math.round(progress)} suffix="%" />
               </div>
             </div>
 
             <div className="flex items-baseline gap-2 flex-wrap pt-1">
-              <span className="number-display text-2xl md:text-3xl lg:text-4xl text-white">
+              <span className="number-display text-2xl md:text-3xl lg:text-4xl text-slate-950 dark:text-white">
                 <AnimatedNumber value={formatValue(monthlyTotal)} />
               </span>
-              <span className="text-xs text-white/50 font-medium">จากเป้า {formatValue(monthlyTarget)}</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">จากเป้า {formatValue(monthlyTarget)}</span>
             </div>
 
             <div className="space-y-1.5 pt-1">
-              <div className="h-2 bg-black/40 backdrop-blur-md rounded-full overflow-hidden p-0.5 border border-white/10">
+              <div className="h-2 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.min(100, progress)}%` }}
                   transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                   className={cn(
                     'h-full rounded-full transition-all duration-500',
-                    progress >= 100
-                      ? 'bg-gradient-to-r from-emerald-400 to-teal-300'
-                      : 'bg-gradient-to-r from-amber-300 via-violet-300 to-fuchsia-300'
+                    progress >= 100 ? 'bg-emerald-500' : 'bg-violet-600 dark:bg-violet-400'
                   )}
                 />
               </div>
               {progress >= 100 ? (
-                <p className="text-[11px] text-emerald-300 font-bold tracking-wide flex items-center gap-1">
+                <p className="text-xs text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-1">
                   🎉 ปิดเป้าหมายสำเร็จแล้ว
                 </p>
               ) : (
-                <p className="text-[10px] text-white/50 font-medium">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                   เหลืออีก {formatValue(Math.max(0, monthlyTarget - monthlyTotal))} เพื่อพิชิตเป้า
                 </p>
               )}
@@ -187,82 +182,75 @@ export default function PipelineHeader({
         </div>
 
         {/* Growth MoM — KPI Emerald / Rose */}
-        <div className={cn(
-          "p-4 md:p-5 rounded-2xl md:rounded-3xl border border-white/[0.07] ring-1 card-inset-highlight relative overflow-hidden flex flex-col justify-between hover:-translate-y-0.5 transition-all duration-300",
-          isPositiveTrend ? "kpi-emerald ring-emerald-500/20" : "kpi-rose ring-rose-500/20"
-        )}>
-          <div className="noise-overlay absolute inset-0 rounded-2xl md:rounded-3xl" />
+        <div className="p-4 md:p-5 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522] shadow-sm relative overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-md">
           <div className="relative z-10 flex justify-between items-start">
-            <p className={cn("text-[10px] font-bold tracking-widest uppercase", isPositiveTrend ? "text-emerald-300/80" : "text-rose-300/80")}>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
               การเติบโต
             </p>
             <div className={cn(
-              'w-7 h-7 rounded-lg flex items-center justify-center text-white shadow-xs',
-              isPositiveTrend ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/30 text-rose-300 border border-rose-500/40'
+              'w-8 h-8 rounded-lg flex items-center justify-center',
+              isPositiveTrend ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300'
             )}>
               {isPositiveTrend ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
             </div>
           </div>
           <div className="relative z-10 mt-3">
-            <h3 className={cn('number-display text-2xl', isPositiveTrend ? 'text-emerald-50' : 'text-rose-50')}>
+            <h3 className="number-display text-2xl text-slate-950 dark:text-white">
               {trend > 0 ? '+' : ''}
               <AnimatedNumber value={trend.toFixed(1)} suffix="%" />
             </h3>
-            <p className="text-[10px] mt-1 font-medium text-white/35">เทียบกับเดือนก่อน</p>
+            <p className="text-xs mt-1 font-medium text-slate-500 dark:text-slate-400">เทียบกับเดือนก่อน</p>
           </div>
         </div>
 
         {/* Won deals count — KPI Amber */}
-        <div className="p-4 md:p-5 rounded-2xl md:rounded-3xl border border-white/[0.07] ring-1 ring-amber-500/20 kpi-amber card-inset-highlight relative overflow-hidden flex flex-col justify-between hover:-translate-y-0.5 transition-all duration-300">
-          <div className="noise-overlay absolute inset-0 rounded-2xl md:rounded-3xl" />
+        <div className="p-4 md:p-5 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522] shadow-sm relative overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-md">
           <div className="relative z-10 flex justify-between items-start">
-            <p className="text-[10px] text-amber-300/80 font-bold tracking-widest uppercase">ปิดได้เดือนนี้</p>
-            <div className="w-7 h-7 rounded-lg bg-amber-500/30 border border-amber-500/40 text-amber-300 flex items-center justify-center shadow-xs">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">ปิดได้เดือนนี้</p>
+            <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-400/10 text-amber-700 dark:text-amber-300 flex items-center justify-center">
               <Activity size={14} />
             </div>
           </div>
           <div className="relative z-10 mt-3">
-            <h3 className="number-display text-2xl text-amber-50">
+            <h3 className="number-display text-2xl text-slate-950 dark:text-white">
               <AnimatedNumber value={monthlyCount} />
-              <span className="text-xs font-bold text-amber-300/60 ml-1 font-sans">ดีล</span>
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 ml-1 font-sans">ดีล</span>
             </h3>
-            <p className="text-[10px] text-white/35 mt-1 font-medium">ในระบบ {totalDeals} ดีล</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">ในระบบ {totalDeals} ดีล</p>
           </div>
         </div>
 
         {/* At risk — KPI Rose */}
-        <div className="col-span-2 lg:col-span-1 p-4 md:p-5 rounded-2xl md:rounded-3xl border border-white/[0.07] ring-1 ring-rose-500/20 kpi-rose card-inset-highlight relative overflow-hidden flex flex-col justify-between hover:-translate-y-0.5 transition-all duration-300">
-          <div className="noise-overlay absolute inset-0 rounded-2xl md:rounded-3xl" />
+        <div className="col-span-2 lg:col-span-1 p-4 md:p-5 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522] shadow-sm relative overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-md">
           <div className="relative z-10 flex justify-between items-start">
-            <p className="text-[10px] text-rose-300/80 font-bold tracking-widest uppercase">ดีลค้าง/เสี่ยง</p>
-            <div className="w-7 h-7 rounded-lg bg-rose-500/30 border border-rose-500/40 text-rose-300 flex items-center justify-center shadow-xs">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">ดีลค้าง/เสี่ยง</p>
+            <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-400/10 text-rose-700 dark:text-rose-300 flex items-center justify-center">
               <AlertTriangle size={14} />
             </div>
           </div>
           <div className="relative z-10 mt-3">
-            <h3 className="number-display text-2xl text-rose-50">
+            <h3 className="number-display text-2xl text-slate-950 dark:text-white">
               <AnimatedNumber value={formatValue(atRiskValue)} />
             </h3>
-            <p className="text-[10px] text-rose-300/60 mt-1 font-medium flex items-center gap-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium flex items-center gap-1">
               {atRiskCount} ดีล (&gt;7 วัน)
             </p>
           </div>
         </div>
 
         {/* Weighted Pipeline — KPI Violet */}
-        <div className="col-span-2 lg:col-span-1 p-4 md:p-5 rounded-2xl md:rounded-3xl border border-white/[0.07] ring-1 ring-violet-500/20 kpi-violet card-inset-highlight relative overflow-hidden flex flex-col justify-between hover:-translate-y-0.5 transition-all duration-300">
-          <div className="noise-overlay absolute inset-0 rounded-2xl md:rounded-3xl" />
+        <div className="col-span-2 lg:col-span-1 p-4 md:p-5 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522] shadow-sm relative overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-md">
           <div className="relative z-10 flex justify-between items-start">
-            <p className="text-[10px] text-violet-300/80 font-bold tracking-widest uppercase">Weighted</p>
-            <div className="w-7 h-7 rounded-lg bg-violet-500/30 border border-violet-500/40 text-violet-300 flex items-center justify-center shadow-xs">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">Weighted</p>
+            <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-400/10 text-violet-700 dark:text-violet-300 flex items-center justify-center">
               <Briefcase size={14} />
             </div>
           </div>
           <div className="relative z-10 mt-3">
-            <h3 className="number-display text-2xl text-white">
+            <h3 className="number-display text-2xl text-slate-950 dark:text-white">
               <AnimatedNumber value={formatValue(weightedPipelineValue)} />
             </h3>
-            <p className="text-[10px] text-white/35 mt-1 font-medium">มูลค่าถ่วงน้ำหนัก</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">มูลค่าถ่วงน้ำหนัก</p>
           </div>
         </div>
       </div>

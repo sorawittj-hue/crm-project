@@ -6,13 +6,13 @@ const Card = React.forwardRef(({ className, hover = true, glow = false, glass = 
     <div
       ref={ref}
       className={cn(
-        "rounded-2xl border transition-all duration-300",
+        "rounded-xl border transition-colors duration-200",
         // Light mode
-        "bg-white/90 text-slate-900 border-slate-200/80 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.04)] backdrop-blur-xl",
+        "bg-white text-slate-900 border-slate-200 shadow-sm",
         // Dark mode
-        "dark:bg-[#0f111a]/80 dark:text-slate-100 dark:border-white/[0.08] dark:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)]",
+        "dark:bg-[#111522] dark:text-slate-100 dark:border-white/[0.08] dark:shadow-none",
         // Hover
-        hover && "hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-4px_rgba(0,0,0,0.08)] hover:border-slate-300 dark:hover:border-white/20 dark:hover:shadow-[0_16px_40px_-6px_rgba(0,0,0,0.6)]",
+        hover && "hover:border-slate-300 hover:shadow-md dark:hover:border-white/15 dark:hover:bg-[#141927]",
         glow && "border-violet-500/30 dark:border-violet-500/40 shadow-glow-brand",
         glass && "bg-white/70 dark:bg-white/[0.04] backdrop-blur-2xl border-white/60 dark:border-white/10",
         className

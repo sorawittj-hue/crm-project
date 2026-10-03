@@ -6,11 +6,9 @@ import { useAppStore } from '../store/useAppStore';
 import { useSubscription } from '../hooks/useSubscription';
 import { useCustomerContacts } from '../hooks/useCustomerContacts';
 import { useDebounce } from '../hooks/useDebounce';
-import MetricTooltip from '../components/ui/MetricTooltip';
 import PageHeader from '../components/layout/PageHeader';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Card } from '../components/ui/Card';
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../components/ui/Dialog';
 import { Textarea } from '../components/ui/Textarea';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,9 +24,9 @@ import { callGeminiAPI } from '../services/ai';
 import {
   Search, Plus, Users, Building2, Mail, Phone,
   ChevronRight, Loader2, Download, Upload,
-  TrendingUp, DollarSign, BarChart3, Trash2, AlertTriangle, HeartPulse,
-  Settings, Sparkles, Target, Filter, Contact, Pencil, Star, LayoutGrid, List,
-  ArrowUpDown, X, CheckCircle2, ExternalLink, ChevronDown, Activity, History
+  TrendingUp, DollarSign, Trash2, AlertTriangle, HeartPulse,
+  Settings, Sparkles, Target, Contact, Pencil, Star, LayoutGrid, List,
+  X, CheckCircle2, History
 } from 'lucide-react';
 import CustomerCSVImport from '../components/CustomerCSVImport';
 
@@ -344,7 +342,7 @@ function CustomerDetailPanel({
   customer, onClose, contacts, isContactFormOpen, setIsContactFormOpen,
   editingContact, setEditingContact, contactForm, setContactForm, handleContactSubmit,
   deleteContact, localCustomer, setLocalCustomer, handleSaveCustomer, updateCustomerMutation,
-  createCustomerMutation, deleteCustomerMutation, handleConvertSynthetic,
+  createCustomerMutation, handleConvertSynthetic,
   setConfirmDelete, setPendingNewDealCustomer, navigate, setIsSidebarOpen, shouldBlockBasic, openPaywall, isGuestAccount,
   deals, allActivities
 }) {
@@ -380,7 +378,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
 ให้กลยุทธ์การดูแลลูกค้า 4 ข้อ เฉพาะเจาะจงสำหรับลูกค้ารายนี้ ภาษาไทย กระชับ แต่ละข้อไม่เกิน 2 บรรทัด ตอบเป็นรายการหมายเลข`;
       const response = await callGeminiAPI(prompt);
       setAiPlaybook(response);
-    } catch (e) {
+    } catch {
       setAiPlaybook('ไม่สามารถโหลด AI Playbook ได้ในขณะนี้');
     } finally {
       setAiPlaybookLoading(false);
@@ -394,63 +392,6 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
     { id: 'deals', label: 'ดีล', icon: Target },
     { id: 'contacts', label: 'ผู้ติดต่อ', icon: Contact },
   ];
-
-  const playbookData = {
-    A: {
-      strategy: 'VIP High-touch Engagement',
-      detail: 'ลูกค้าทองคำ — ให้ความสำคัญสูงสุด เป็นรายได้หลักของทีม',
-      actions: [
-        'จัด Key Account Manager ดูแลโดยเฉพาะ',
-        'นัดคุยแบบ High-touch ทุก 3 เดือน',
-        'ส่งของขวัญ/สิทธิพิเศษ VIP ในโอกาสสำคัญ',
-        'จัดบริการ Premium Support ตลอด 24 ชม.',
-      ],
-      colorClass: 'from-emerald-50 to-green-50 border-emerald-200',
-      badge: 'bg-emerald-100 text-emerald-800',
-    },
-    B: {
-      strategy: 'Growth — Upsell & Expand',
-      detail: 'ลูกค้าที่มีศักยภาพขยายงบประมาณได้อีก',
-      actions: [
-        'แนะนำโซลูชัน/บริการใหม่อย่างสม่ำเสมอ',
-        'จัดเวิร์กชอปร่วมเพื่อหาโอกาส Cross-sell',
-        'เสนอแผนต่ออายุระยะยาวก่อนกำหนด',
-        'ตอบสนองคำขอภายใน 24 ชั่วโมง',
-      ],
-      colorClass: 'from-blue-50 to-sky-50 border-blue-200',
-      badge: 'bg-blue-100 text-blue-800',
-    },
-    C: {
-      strategy: 'Retention — Keep & Maintain',
-      detail: 'ลูกค้าสม่ำเสมอ ป้องกันไม่ให้เปลี่ยนใจไปคู่แข่ง',
-      actions: [
-        'ส่ง Newsletter ข่าวสารระบบรายสัปดาห์',
-        'ทำแบบสอบถามความพึงพอใจทุก 6 เดือน',
-        'ช่วยเหลือในช่องทาง Support ตามปกติ',
-        'หาโอกาสเลื่อนขึ้นไปเกรด B',
-      ],
-      colorClass: 'from-amber-50 to-yellow-50 border-amber-200',
-      badge: 'bg-amber-100 text-amber-800',
-    },
-    D: {
-      strategy: 'Recovery — Customer Rescue',
-      detail: 'ลูกค้าเสี่ยงหลุด ต้องเข้าแก้ไขด่วน',
-      actions: [
-        'นัดประชุมเปิดอกกับผู้บริหารลูกค้าโดยตรง',
-        'วิเคราะห์ปัญหาและ Blockers ที่มีอยู่',
-        'เสนอส่วนลดพิเศษหรือทดลองใช้งานฟรี',
-        'ประเมิน: ฟื้นฟูหรือจัดสรรทรัพยากรใหม่',
-      ],
-      colorClass: 'from-rose-50 to-red-50 border-rose-200',
-      badge: 'bg-rose-100 text-rose-800',
-    },
-  }[customer.grade] || {
-    strategy: 'Standard Care',
-    detail: 'ลูกค้าที่ยังไม่มีประวัติดีล',
-    actions: ['ทำความรู้จักธุรกิจเบื้องต้น', 'แนะนำบริการหลักของทีม'],
-    colorClass: 'from-slate-50 to-gray-50 border-slate-200',
-    badge: 'bg-slate-100 text-slate-700',
-  };
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-[#0d0f1a] text-slate-900 dark:text-white transition-colors duration-300">
@@ -581,7 +522,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
               {customer._fromDeals && (
                 <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/50 text-xs font-semibold text-blue-800 dark:text-blue-300 flex items-start gap-2">
                   <AlertTriangle size={15} className="shrink-0 text-blue-500 mt-0.5" />
-                  ระบบสร้างข้อมูลนี้จากดีล กรุณากด <strong>"บันทึกเป็นลูกค้าทางการ"</strong> เพื่อยืนยัน
+                  ระบบสร้างข้อมูลนี้จากดีล กรุณากด <strong>&quot;บันทึกเป็นลูกค้าทางการ&quot;</strong> เพื่อยืนยัน
                 </div>
               )}
 
@@ -1093,26 +1034,25 @@ export default function CustomersPage() {
           {/* KPI Ribbon */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: 'ลูกค้าทั้งหมด', val: totalStats.total, icon: Users, gradient: 'from-violet-500 to-indigo-600', shadow: 'shadow-violet-500/25' },
-              { label: 'ปิดได้รวม', val: formatCurrency(totalStats.totalWonValue), icon: DollarSign, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/25' },
-              { label: 'Pipeline ดำเนินการ', val: formatCurrency(totalStats.totalActiveValue), icon: TrendingUp, gradient: 'from-amber-500 to-orange-500', shadow: 'shadow-amber-500/25' },
-              { label: 'บัญชีต้องดูแลด่วน', val: totalStats.atRiskAccounts, icon: AlertTriangle, gradient: 'from-rose-500 to-red-600', shadow: 'shadow-rose-500/25' },
-            ].map(({ label, val, icon: Icon, gradient, shadow }) => (
-              <div key={label} className={cn('p-5 rounded-2xl bg-gradient-to-br text-white shadow-lg relative overflow-hidden group hover:-translate-y-1 transition-all duration-300', gradient, shadow)}>
-                <div className="absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-white/10 group-hover:scale-150 transition-transform duration-700" />
-                <div className="relative z-10 flex items-center justify-between mb-3">
-                  <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">{label}</p>
-                  <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center">
-                    <Icon size={16} />
+              { label: 'ลูกค้าทั้งหมด', val: totalStats.total, icon: Users, tone: 'text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-400/10' },
+              { label: 'ปิดได้รวม', val: formatCurrency(totalStats.totalWonValue), icon: DollarSign, tone: 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-400/10' },
+              { label: 'Pipeline ดำเนินการ', val: formatCurrency(totalStats.totalActiveValue), icon: TrendingUp, tone: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-400/10' },
+              { label: 'บัญชีต้องดูแลด่วน', val: totalStats.atRiskAccounts, icon: AlertTriangle, tone: 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-400/10' },
+            ].map(({ label, val, icon: Icon, tone }) => (
+              <div key={label} className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-900/70 sm:p-5">
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <p className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</p>
+                  <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', tone)}>
+                    <Icon size={17} aria-hidden="true" />
                   </div>
                 </div>
-                <p className="relative z-10 text-2xl font-black">{val}</p>
+                <p className="truncate text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">{val}</p>
               </div>
             ))}
           </div>
 
           {/* Search + Filter bar */}
-          <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-sm p-3 flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-slate-900/70 sm:flex-row">
             {/* Search */}
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
@@ -1294,7 +1234,6 @@ export default function CustomersPage() {
                 handleSaveCustomer={handleSaveCustomer}
                 updateCustomerMutation={updateCustomerMutation}
                 createCustomerMutation={createCustomerMutation}
-                deleteCustomerMutation={deleteCustomerMutation}
                 handleConvertSynthetic={handleConvertSynthetic}
                 setConfirmDelete={setConfirmDelete}
                 setPendingNewDealCustomer={setPendingNewDealCustomer}

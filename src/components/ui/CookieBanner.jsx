@@ -33,29 +33,30 @@ export function CookieBanner() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-[400px] bg-white/90 backdrop-blur-xl border border-slate-200/60 shadow-2xl shadow-slate-200/50 rounded-2xl p-5 z-[100]"
+          className="fixed bottom-3 left-3 right-3 md:bottom-4 md:left-auto md:right-4 md:w-[360px] bg-white dark:bg-[#111522] border border-slate-200 dark:border-white/10 shadow-xl rounded-xl p-4 z-[100]"
         >
           <button 
             onClick={handleDecline}
-            className="absolute top-3 right-3 text-slate-400 hover:text-slate-600 transition-colors"
+            aria-label="ปฏิเสธคุกกี้ที่ไม่จำเป็น"
+            className="absolute top-3 right-3 p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-white/10 dark:hover:text-white transition-colors"
           >
             <X size={16} />
           </button>
           
           <div className="flex gap-4">
-            <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center shrink-0 text-violet-600">
-              <Cookie size={20} />
+            <div className="w-9 h-9 rounded-lg bg-violet-50 dark:bg-violet-500/15 flex items-center justify-center shrink-0 text-violet-700 dark:text-violet-300">
+              <Cookie size={18} />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900 mb-1">เราใช้คุกกี้ (Cookies)</h3>
-              <p className="text-xs text-slate-500 mb-4 leading-relaxed">
-                เว็บไซต์นี้ใช้คุกกี้เพื่อประสบการณ์การใช้งานที่ดีขึ้น การใช้งานเว็บไซต์ต่อถือเป็นการยอมรับนโยบายความเป็นส่วนตัวของเรา
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">การตั้งค่าคุกกี้</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mb-3 leading-relaxed">
+                เลือกยอมรับคุกกี้ทั้งหมด หรือใช้เฉพาะคุกกี้ที่จำเป็นต่อการทำงานของแอป
               </p>
               <div className="flex gap-2">
                 <Button 
                   size="sm" 
                   onClick={handleAccept}
-                  className="flex-1 h-9 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-md shadow-violet-500/20"
+                  className="flex-1 h-9 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-sm"
                 >
                   ยอมรับทั้งหมด
                 </Button>
@@ -63,9 +64,9 @@ export function CookieBanner() {
                   size="sm" 
                   variant="outline" 
                   onClick={handleDecline}
-                  className="flex-1 h-9 text-xs font-bold text-slate-600"
+                  className="flex-1 h-9 text-xs font-semibold text-slate-700 dark:text-slate-200"
                 >
-                  ตั้งค่าคุกกี้
+                  ใช้เฉพาะที่จำเป็น
                 </Button>
               </div>
             </div>

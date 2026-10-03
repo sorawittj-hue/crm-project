@@ -30,18 +30,12 @@ import {
 import { useAutoBackup } from '../../hooks/useAutoBackup';
 import { cn, parseYearMonth } from '../../lib/utils';
 import { formatCurrency } from '../../lib/formatters';
-import { springSmooth } from '../../lib/motion';
 import CommandPalette from '../ui/CommandPalette';
 import PaywallModal from '../ui/PaywallModal';
 import WelcomeModal from '../ui/WelcomeModal';
 import OnboardingChecklist from '../ui/OnboardingChecklist';
 import GlobalAddDealModal from '../pipeline/GlobalAddDealModal';
 import GlobalSearch from '../ui/GlobalSearch';
-
-const sidebarVariants = {
-  open: { x: 0, opacity: 1, transition: springSmooth },
-  closed: { x: '-100%', opacity: 0, transition: { duration: 0.2, ease: [0.19, 1, 0.22, 1] } }
-};
 
 const navItems = [
   { to: '/command',   icon: LayoutDashboard, label: 'หน้าหลัก',      sub: 'Command Center' },
@@ -112,25 +106,25 @@ function SystemStatusBanner({ deals, customers, activities, effectiveTarget, nav
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        'mb-6 rounded-2xl border p-4 shadow-sm backdrop-blur-xl transition-all',
+        'mb-3 rounded-xl border px-3 py-2.5 transition-colors',
         legacyDataMode
           ? 'border-amber-200 bg-amber-50/90 text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-100'
           : 'border-slate-200 bg-white/80 text-slate-900 dark:border-white/10 dark:bg-[#0f111a]/80 dark:text-white'
       )}
     >
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-start gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-2.5">
           <div className={cn(
-            'mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
+            'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
             legacyDataMode ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' : 'bg-violet-50 text-violet-600 dark:bg-violet-950/60 dark:text-violet-300'
           )}>
-            {legacyDataMode ? <AlertCircle size={17} /> : <Target size={17} />}
+            {legacyDataMode ? <AlertCircle size={15} /> : <Target size={15} />}
           </div>
-          <div>
-            <p className="text-sm font-bold">
+          <div className="min-w-0">
+            <p className="truncate text-xs font-semibold sm:text-sm">
               {legacyDataMode ? 'ฐานข้อมูลยังอยู่โหมด Legacy' : 'ตั้งค่า flow เริ่มต้นให้ครบ'}
             </p>
-            <p className={cn('mt-1 text-xs leading-5', legacyDataMode ? 'text-amber-800 dark:text-amber-300/80' : 'text-slate-500 dark:text-slate-400')}>
+            <p className={cn('mt-0.5 truncate text-[11px] leading-4 sm:text-xs', legacyDataMode ? 'text-amber-800 dark:text-amber-300/80' : 'text-slate-500 dark:text-slate-400')}>
               {legacyDataMode
                 ? 'แอปใช้งานได้ แต่การแยกข้อมูลรายผู้ใช้จะสมบูรณ์หลังรัน migration ใน Supabase'
                 : `พร้อมใช้งานแล้ว ${completed}/${setupItems.length} ส่วน`}
@@ -138,8 +132,8 @@ function SystemStatusBanner({ deals, customers, activities, effectiveTarget, nav
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {setupItems.map((item) => (
+        <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+          {!legacyDataMode && setupItems.map((item) => (
             <span
               key={item.label}
               className={cn(
@@ -157,7 +151,7 @@ function SystemStatusBanner({ deals, customers, activities, effectiveTarget, nav
             type="button"
             onClick={() => navigate(legacyDataMode ? '/settings' : '/pipeline')}
             className={cn(
-              'ml-1 inline-flex h-8 items-center gap-1.5 rounded-xl px-3 text-xs font-bold shadow-sm transition-all',
+            'inline-flex h-8 items-center gap-1 rounded-lg px-3 text-xs font-semibold transition-colors',
               legacyDataMode
                 ? 'bg-amber-600 text-white hover:bg-amber-700'
                 : 'bg-violet-600 text-white hover:bg-violet-700'
@@ -215,9 +209,9 @@ function TrialBanner({ isTrialActive, isExpired, trialDaysLeft, trialMsLeft, isG
     : 'normal';
 
   const themes = {
-    normal:   { bg: 'from-indigo-950 via-slate-900 to-violet-950 border-violet-800/40', bar: 'bg-emerald-400', text: 'text-emerald-300', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-    warning:  { bg: 'from-amber-950 via-slate-900 to-orange-950 border-amber-800/40',   bar: 'bg-amber-400',   text: 'text-amber-300',   badge: 'bg-amber-500/20 text-amber-200 border-amber-500/30' },
-    critical: { bg: 'from-rose-950 via-slate-900 to-red-950 border-rose-800/40',       bar: 'bg-rose-400',    text: 'text-rose-300',    badge: 'bg-rose-500/20 text-rose-200 border-rose-500/30' },
+    normal: { bar: 'bg-violet-600 dark:bg-violet-400', icon: 'bg-violet-100 text-violet-700 dark:bg-violet-400/10 dark:text-violet-300', badge: 'border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-400/20 dark:bg-violet-400/10 dark:text-violet-300' },
+    warning: { bar: 'bg-amber-500', icon: 'bg-amber-100 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300', badge: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-300' },
+    critical: { bar: 'bg-rose-500', icon: 'bg-rose-100 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300', badge: 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-300' },
   };
   const theme = isExpired ? themes.critical : themes[urgency];
 
@@ -226,16 +220,12 @@ function TrialBanner({ isTrialActive, isExpired, trialDaysLeft, trialMsLeft, isG
       initial={{ opacity: 0, y: -10, height: 0 }}
       animate={{ opacity: 1, y: 0, height: 'auto' }}
       exit={{ opacity: 0, y: -10, height: 0 }}
-      className={cn(
-        'mb-6 rounded-2xl bg-gradient-to-r p-0 shadow-lg relative overflow-hidden border',
-        theme.bg
-      )}
+      className="relative mb-3 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522]"
     >
-      <div className="absolute -top-24 -right-24 w-64 h-64 bg-violet-500/20 blur-[80px] rounded-full pointer-events-none" />
-      <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-indigo-500/20 blur-[60px] rounded-full pointer-events-none" />
+      <div aria-hidden="true" className={cn('absolute inset-y-0 left-0 w-1', theme.bar)} />
 
       {isGuestAccount && isTrialActive && (
-        <div className="h-1 w-full bg-white/10">
+        <div className="h-1 w-full bg-slate-100 dark:bg-white/5">
           <motion.div
             className={cn('h-full', theme.bar)}
             initial={{ width: 0 }}
@@ -245,16 +235,16 @@ function TrialBanner({ isTrialActive, isExpired, trialDaysLeft, trialMsLeft, isG
         </div>
       )}
 
-      <div className="relative z-10 p-4 md:p-5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/15 shrink-0 mt-0.5">
-              {isExpired ? <AlertCircle className="text-rose-300" size={20} /> : <Timer className={theme.text} size={20} />}
+      <div className="relative z-10 px-3 py-2.5 md:px-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', theme.icon)}>
+              {isExpired ? <AlertCircle size={16} /> : <Timer size={16} />}
             </div>
 
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-white font-bold text-sm md:text-base tracking-tight">
+                <h3 className="text-slate-900 dark:text-white font-semibold text-xs sm:text-sm tracking-tight">
                   {isExpired
                     ? 'หมดเวลาทดลองใช้งาน'
                     : isGuestAccount
@@ -267,7 +257,7 @@ function TrialBanner({ isTrialActive, isExpired, trialDaysLeft, trialMsLeft, isG
                   </span>
                 )}
               </div>
-              <p className="text-white/60 text-xs font-medium mt-1 leading-relaxed">
+              <p className="hidden text-slate-500 dark:text-slate-400 text-[11px] font-medium leading-4 sm:block">
                 {isExpired
                   ? 'สมัครสมาชิกเพื่อเข้าถึงฐานข้อมูลส่วนตัวและฟีเจอร์ Pro อย่างต่อเนื่อง'
                   : isGuestAccount
@@ -277,17 +267,17 @@ function TrialBanner({ isTrialActive, isExpired, trialDaysLeft, trialMsLeft, isG
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => openPaywall(isExpired ? 'trial_ended' : isGuestAccount ? 'guest_upgrade' : 'default')}
-              className="whitespace-nowrap px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-amber-950 font-black rounded-xl shadow-md transition-all active:scale-95 text-xs md:text-sm"
+              className="whitespace-nowrap rounded-lg bg-violet-600 px-3 py-2 text-white text-xs font-semibold transition-colors hover:bg-violet-700"
             >
               {isGuestAccount ? '✨ สมัครสมาชิก' : isExpired ? 'อัปเกรดทันที' : 'อัปเกรด Pro'}
             </button>
             {!isExpired && (
               <button
                 onClick={handleDismiss}
-                className="p-2 text-white/40 hover:text-white rounded-lg transition-all"
+                className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-500 dark:hover:text-white dark:hover:bg-white/10 rounded-lg transition-colors"
                 title="ปิด"
               >
                 <X size={16} />
@@ -335,8 +325,9 @@ export default function AppLayout() {
 
   const { isPro, isTrialActive, isExpired, trialDaysLeft, trialMsLeft, isGuestAccount, isSuspended, openPaywall } = useSubscription();
 
-  const hasPersonalTarget = myProfile?.personal_target > 0;
+  const hasPersonalTarget = Number(myProfile?.personal_target) > 0;
   const effectiveTarget = hasPersonalTarget ? myProfile.personal_target : monthlyTarget;
+  const hasEffectiveTarget = Number(effectiveTarget) > 0;
 
   const { data: notifications = [] } = useNotifications(userId);
   const markRead = useMarkNotificationRead();
@@ -434,10 +425,6 @@ export default function AppLayout() {
     return Math.min(100, Math.round((wonThisMonth / effectiveTarget) * 100));
   }, [deals, effectiveTarget]);
 
-  const mobileSidebarMotion = shouldReduceMotion
-    ? { initial: false, animate: 'open', exit: undefined }
-    : { initial: 'closed', animate: 'open', exit: 'closed' };
-
   if (isSuspended) {
     return (
       <div className="fixed inset-0 z-[9999] bg-slate-950/95 backdrop-blur-2xl flex items-center justify-center p-6 text-center select-none">
@@ -489,48 +476,40 @@ export default function AppLayout() {
         ref={sidebarRef}
         className={cn(
           "w-64 flex flex-col flex-shrink-0 relative border-r z-30 select-none transition-all duration-300",
-          "bg-[#0d0f1a] border-white/[0.07] shadow-[1px_0_0_rgba(255,255,255,0.04)]",
+          "bg-white dark:bg-[#101727] border-slate-200 dark:border-white/[0.08] shadow-none",
           !isDesktop && "fixed inset-y-0 left-0 z-50 transform transition-transform duration-300",
           !isDesktop && !isSidebarOpen && "-translate-x-full",
           !isDesktop && isSidebarOpen && "translate-x-0"
         )}
       >
-        {/* Aurora glow orbs */}
-        <div className="absolute top-0 inset-x-0 h-64 pointer-events-none overflow-hidden">
-          <div className="glow-orb glow-orb-violet w-72 h-72 -top-32 -left-20 opacity-70" />
-          <div className="glow-orb glow-orb-cyan w-48 h-48 -top-12 right-0 opacity-30" />
-        </div>
-
         {/* Logo / Brand Header */}
-        <div className="h-[58px] flex items-center justify-between px-4 shrink-0 border-b border-white/[0.06] relative z-10">
+        <div className="h-16 flex items-center justify-between px-4 shrink-0 border-b border-slate-200 dark:border-white/[0.06] relative z-10">
           <div className="flex items-center gap-3">
-            {/* Icon with glow halo */}
             <div className="relative shrink-0">
-              <div className="absolute inset-0 rounded-xl bg-violet-500/40 blur-lg scale-110" />
-              <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg border border-white/15">
+              <div className="relative w-9 h-9 rounded-xl bg-violet-600 flex items-center justify-center border border-violet-500/20 shadow-sm shadow-violet-600/20">
                 <Zap size={16} className="text-white fill-current" />
               </div>
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-black text-white text-sm tracking-tight leading-none">Nova Pipeline</span>
+            <span className="font-bold text-slate-900 dark:text-white text-sm tracking-tight leading-none">Nova Pipeline</span>
                 {isPro ? (
                   <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-black uppercase tracking-wider">
                     PRO
                   </span>
                 ) : (
-                  <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-white/10 text-white/40 border border-white/10 uppercase">
+                  <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 dark:bg-white/10 dark:text-white/60 dark:border-white/10 uppercase">
                     Free
                   </span>
                 )}
               </div>
-              <p className="text-[9px] font-bold text-violet-400/80 leading-none mt-0.5 tracking-[0.15em] uppercase">
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 leading-none mt-1 tracking-[0.12em] uppercase">
                 Sales CRM
               </p>
             </div>
           </div>
           {!isDesktop && (
-            <button onClick={closeSidebar} className="p-1.5 rounded-lg text-white/30 hover:text-white hover:bg-white/10 transition-colors">
+            <button onClick={closeSidebar} className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-white/50 dark:hover:text-white dark:hover:bg-white/10 transition-colors">
               <X size={16} />
             </button>
           )}
@@ -538,7 +517,7 @@ export default function AppLayout() {
 
         {/* Navigation */}
         <nav id="sidebar-nav" className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto relative z-10">
-          <p className="px-3 text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-2 mt-1">
+          <p className="px-3 text-[10px] font-semibold text-slate-400 dark:text-white/40 uppercase tracking-[0.12em] mb-2 mt-3">
             Navigation
           </p>
           {navItems.map((item) => {
@@ -549,28 +528,28 @@ export default function AppLayout() {
                 to={item.to}
                 onClick={() => !isDesktop && closeSidebar()}
                 className={cn(
-                  "group flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 relative",
+                  "group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 relative",
                   isActive
-                    ? "bg-white/[0.08] text-white nav-active-glow"
-                    : "text-white/45 hover:text-white/80 hover:bg-white/[0.05]"
+                    ? "bg-violet-50 text-violet-800 dark:bg-violet-500/15 dark:text-white"
+                    : "text-slate-600 hover:text-slate-950 hover:bg-slate-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.05]"
                 )}
               >
                 <div className={cn(
                   "w-[30px] h-[30px] rounded-lg flex items-center justify-center shrink-0 transition-all duration-150",
                   isActive
-                    ? "bg-violet-600/60 text-violet-200 shadow-sm"
-                    : "bg-white/[0.04] text-white/35 group-hover:bg-white/[0.07] group-hover:text-white/65"
+                    ? "bg-violet-600 text-white shadow-sm shadow-violet-600/20"
+                    : "bg-slate-100 text-slate-500 group-hover:bg-slate-200/70 group-hover:text-slate-800 dark:bg-white/[0.04] dark:text-white/55 dark:group-hover:bg-white/[0.08] dark:group-hover:text-white"
                 )}>
                   <item.icon size={14} strokeWidth={isActive ? 2.5 : 2} />
                 </div>
                 <div className="flex flex-col min-w-0 flex-1">
                   <span className={cn("leading-tight tracking-tight", isActive ? "font-bold" : "")}>{item.label}</span>
-                  <span className={cn("text-[10px] font-medium leading-none mt-0.5", isActive ? "text-violet-400/60" : "text-white/22 group-hover:text-white/35")}>
+                  <span className={cn("text-[11px] font-medium leading-none mt-1", isActive ? "text-violet-600 dark:text-violet-200/75" : "text-slate-400 group-hover:text-slate-500 dark:text-white/45 dark:group-hover:text-white/65")}>
                     {item.sub}
                   </span>
                 </div>
                 {isActive && (
-                  <div className="w-1.5 h-1.5 rounded-full bg-violet-400 shadow-[0_0_6px_rgba(167,139,250,0.9)] shrink-0" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-violet-500 dark:bg-violet-300 shrink-0" />
                 )}
               </NavLink>
             );
@@ -581,25 +560,25 @@ export default function AppLayout() {
 
         {/* Monthly Target Progress */}
         <div className="px-3 pb-2 pt-1 relative z-10">
-          <div className="rounded-xl p-3 bg-white/[0.04] border border-white/[0.07] space-y-2">
+              <div className="rounded-xl p-3 bg-slate-50 border border-slate-200 space-y-2 dark:bg-white/[0.04] dark:border-white/[0.08]">
             <div className="flex items-center justify-between">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-white/35">เป้าหมายเดือนนี้</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">เป้าหมายเดือนนี้</p>
               <span className={cn(
                 "text-[9px] font-bold px-1.5 py-0.5 rounded-full border",
                 goalProgress >= 100
                   ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
                   : goalProgress >= 75
                   ? "bg-violet-500/20 text-violet-300 border-violet-500/30"
-                  : "bg-white/10 text-white/40 border-white/10"
+                  : "bg-slate-100 text-slate-500 border-slate-200 dark:bg-white/10 dark:text-white/50 dark:border-white/10"
               )}>
-                {goalProgress}%
+                {hasEffectiveTarget ? `${goalProgress}%` : '—'}
               </span>
             </div>
-            <p className="text-sm font-black tracking-tight text-white/80 tabular-nums">
-              {hasPersonalTarget ? formatCurrency(effectiveTarget) : <span className="text-white/30 font-medium text-xs">ยังไม่ได้ตั้งเป้า</span>}
+            <p className="text-sm font-bold tracking-tight text-slate-800 dark:text-white/80 tabular-nums">
+              {hasEffectiveTarget ? formatCurrency(effectiveTarget) : <span className="text-slate-500 dark:text-white/60 font-medium text-xs">ตั้งเป้าหมายเพื่อดูความคืบหน้า</span>}
             </p>
-            <div className="h-1 w-full rounded-full bg-white/10 overflow-hidden">
-              <motion.div
+            <div className="h-1 w-full rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
+              {hasEffectiveTarget && <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${goalProgress}%` }}
                 transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
@@ -609,25 +588,25 @@ export default function AppLayout() {
                     ? 'bg-gradient-to-r from-emerald-400 to-teal-300'
                     : 'bg-gradient-to-r from-violet-500 to-indigo-400'
                 )}
-              />
+              />}
             </div>
           </div>
         </div>
 
         {/* Sidebar Footer — User Profile */}
-        <div className="px-3 pb-3 pt-2 border-t border-white/[0.06] relative z-10">
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.07] transition-colors cursor-pointer group">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-black text-xs flex items-center justify-center shrink-0 ring-2 ring-white/10">
+        <div className="px-3 pb-3 pt-2 border-t border-slate-200 dark:border-white/[0.06] relative z-10">
+          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer group dark:bg-white/[0.04] dark:border-white/[0.06] dark:hover:bg-white/[0.07]">
+            <div className="w-9 h-9 rounded-xl bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-200 font-bold text-xs flex items-center justify-center shrink-0">
               {displayInitial}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-white/90 truncate leading-tight">{displayName}</p>
-              <p className="text-[10px] text-white/35 truncate leading-none mt-0.5">{user?.email || 'sales@company.com'}</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-white/90 truncate leading-tight">{displayName}</p>
+              <p className="text-[11px] text-slate-500 dark:text-white/55 truncate leading-none mt-1">{user?.email || 'sales@company.com'}</p>
             </div>
             <button
               onClick={toggleTheme}
               title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-              className="p-1.5 rounded-lg text-white/25 hover:text-white/70 hover:bg-white/10 transition-colors shrink-0"
+              className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0 dark:text-white/45 dark:hover:text-white dark:hover:bg-white/10"
             >
               {theme === 'dark' ? <Sun size={13} className="text-amber-400" /> : <Moon size={13} className="text-violet-300" />}
             </button>
@@ -639,14 +618,14 @@ export default function AppLayout() {
       <div className="flex-1 flex flex-col overflow-hidden bg-background">
         
         {/* TOPBAR */}
-        <header className="h-16 flex items-center justify-between px-4 md:px-6 z-20 shrink-0 border-b border-slate-200/70 dark:border-white/[0.07] bg-white/80 dark:bg-[#070b14]/80 backdrop-blur-xl transition-colors duration-300">
+        <header className="h-16 flex items-center justify-between px-4 md:px-6 z-20 shrink-0 border-b border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#0d111b] transition-colors duration-200">
           <div className="flex items-center gap-3">
             <button onClick={toggleSidebar} aria-label="เปิด/ปิดเมนู" className="lg:hidden p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all">
               <Menu size={19} />
             </button>
             <button
               onClick={() => setGlobalSearchOpen(true)}
-              className="hidden md:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-50/80 dark:bg-white/[0.04] hover:bg-white dark:hover:bg-white/[0.08] transition-all group text-xs text-slate-500 dark:text-slate-400 shadow-2xs"
+              className="hidden md:flex items-center gap-2.5 px-3.5 h-10 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.04] hover:bg-white dark:hover:bg-white/[0.08] transition-colors group text-sm text-slate-600 dark:text-slate-300"
             >
               <Search size={14} className="text-slate-400 group-hover:text-violet-500" />
               <span>ค้นหาดีล ลูกค้า รายงาน...</span>
@@ -658,7 +637,7 @@ export default function AppLayout() {
             {/* Quick Add Button */}
             <button
               onClick={() => openQuickAdd()}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-xs shadow-violet-500/20 active:scale-95 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 h-10 rounded-lg font-semibold text-sm bg-violet-600 hover:bg-violet-700 text-white shadow-sm active:bg-violet-800 transition-colors cursor-pointer"
               title="สร้างดีลใหม่ (กด C)"
             >
               <Plus size={14} />
@@ -668,7 +647,7 @@ export default function AppLayout() {
             {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-50/80 dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all cursor-pointer"
+              className="p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.08] transition-colors cursor-pointer"
               title={theme === 'dark' ? 'เปลี่ยนเป็น Light Mode' : 'เปลี่ยนเป็น Dark Mode'}
             >
               {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-violet-600" />}
@@ -679,7 +658,7 @@ export default function AppLayout() {
               <button
                 aria-label="การแจ้งเตือน"
                 onClick={() => setIsNotifOpen(v => !v)}
-                className="relative p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-all cursor-pointer border border-slate-200/80 dark:border-white/10 bg-slate-50/80 dark:bg-white/[0.04]"
+                className="relative p-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04]"
               >
                 <Bell size={16} />
                 {unreadCount > 0 && (

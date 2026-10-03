@@ -65,13 +65,13 @@
      DARK MODE (Deep Obsidian & Aurora Glass)
   ══════════════════════════════════════════════════ */
   .dark {
-    --background: 236 22% 4.5%;
+    --background: 222 25% 8%;
     --foreground: 220 20% 98%;
 
-    --card: 235 20% 7.5%;
+    --card: 222 24% 11%;
     --card-foreground: 220 20% 98%;
 
-    --popover: 235 20% 9%;
+    --popover: 222 23% 13%;
     --popover-foreground: 220 20% 98%;
 
     /* Radiant Violet */
@@ -88,11 +88,11 @@
     --primary-800: 256 94% 86%;
     --primary-900: 258 98% 94%;
 
-    --secondary: 235 18% 13%;
+    --secondary: 222 20% 16%;
     --secondary-foreground: 220 20% 98%;
 
-    --muted: 235 16% 12%;
-    --muted-foreground: 220 12% 60%;
+    --muted: 222 20% 15%;
+    --muted-foreground: 220 12% 68%;
 
     --accent: 192 90% 50%;
     --accent-foreground: 0 0% 100%;
@@ -100,8 +100,8 @@
     --destructive: 350 84% 62%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 235 15% 15%;
-    --input: 235 15% 15%;
+    --border: 220 17% 21%;
+    --input: 220 17% 21%;
     --ring: 250 84% 64%;
 
     /* Semantics */
@@ -129,6 +129,8 @@
     @apply bg-background text-foreground selection:bg-primary/20 selection:text-primary;
     letter-spacing: -0.011em;
     min-height: 100vh;
+    line-height: 1.5;
+    overflow-x: hidden;
     transition: background-color 0.25s ease, color 0.25s ease;
   }
 
@@ -139,6 +141,25 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     letter-spacing: -0.025em;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

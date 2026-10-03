@@ -48,8 +48,8 @@ const calculateStats = (deals, monthlyGoal, now) => {
     const prevMonthActual = months[months.length - 2]?.actual || 0;
     const currentMonthActual = months[months.length - 1]?.actual || 0;
     const growthPercent = prevMonthActual > 0
-      ? ((currentMonthActual - prevMonthActual) / prevMonthActual * 100).toFixed(1)
-      : 0;
+      ? Number(((currentMonthActual - prevMonthActual) / prevMonthActual * 100).toFixed(1))
+      : null;
 
     const weekAgo = now.getTime() - 7 * 86_400_000;
     const newDealsThisWeek = deals.filter(d => new Date(d.created_at).getTime() >= weekAgo).length;
@@ -108,13 +108,18 @@ const calculateStats = (deals, monthlyGoal, now) => {
     const winRate = (wonDeals.length + lostDeals.length) > 0
       ? Math.round((wonDeals.length / (wonDeals.length + lostDeals.length)) * 100)
       : 0;
-    const avgDaysToClose = wonDeals.length > 0
-      ? Math.round(wonDeals.reduce((s, d) => {
-          const created = new Date(d.created_at);
-          const closed = new Date(d.actual_close_date || d.updated_at || d.created_at);
-          return s + Math.max(0, (closed - created) / 86400000);
-        }, 0) / wonDeals.length)
-      : 0;
+    const validCloseDurations = wonDeals
+      .map((deal) => {
+        const createdAt = new Date(deal.created_at).getTime();
+        const closedAt = new Date(deal.actual_close_date || deal.updated_at || deal.created_at).getTime();
+        return Number.isFinite(createdAt) && Number.isFinite(closedAt)
+          ? Math.max(0, (closedAt - createdAt) / 86_400_000)
+          : null;
+      })
+      .filter((duration) => duration !== null);
+    const avgDaysToClose = validCloseDurations.length > 0
+      ? Math.round(validCloseDurations.reduce((sum, duration) => sum + duration, 0) / validCloseDurations.length)
+      : null;
 
     const focusDeals = getTopFocusDeals(deals, now, 3);
 
@@ -142,7 +147,7 @@ const calculateStats = (deals, monthlyGoal, now) => {
     };
 };
 
-export function useCommandCenterStats(deals, monthlyGoal, currentUserId = null) {
+export function useCommandCenterStats(deals, monthlyGoal, currentUserId = null, personalGoal = monthlyGoal) {
   return useMemo(() => {
     if (!deals) return null;
     const now = new Date();
@@ -151,12 +156,12 @@ export function useCommandCenterStats(deals, monthlyGoal, currentUserId = null) 
     let myStats = null;
     if (currentUserId) {
       const myDeals = deals.filter(d => d.assigned_to === currentUserId);
-      myStats = calculateStats(myDeals, monthlyGoal, now);
+      myStats = calculateStats(myDeals, personalGoal, now);
     }
 
     return {
       ...stats,
       myStats
     };
-  }, [deals, monthlyGoal, currentUserId]);
+  }, [deals, monthlyGoal, currentUserId, personalGoal]);
 }

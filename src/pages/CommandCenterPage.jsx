@@ -1,9 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeals } from '../hooks/useDeals';
 import { useTeam } from '../hooks/useTeam';
 import { useActivities, useUpdateActivity } from '../hooks/useActivities';
-import { useCustomers } from '../hooks/useCustomers';
 import { useSubscription } from '../hooks/useSubscription';
 import { useAppStore } from '../store/useAppStore';
 import { useAuth } from '../hooks/useAuth';
@@ -13,24 +12,21 @@ import { Button } from '../components/ui/Button';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { formatCurrency, daysSince } from '../lib/formatters';
-import { buildCustomerHealth } from '../utils/customerIntelligence';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
 import { AnimatedNumber } from '../components/ui/AnimatedNumber';
 import { useCommandCenterStats } from '../hooks/useCommandCenterStats';
 import FocusDealsCard from '../components/command-center/FocusDealsCard';
 import QuickWinModal from '../components/pipeline/QuickWinModal';
-import MetricTooltip from '../components/ui/MetricTooltip';
 import KpiCard from '../components/ui/KpiCard';
-import PageHeader from '../components/layout/PageHeader';
 
 import {
   Users, AlertCircle, LayoutDashboard,
   ArrowUpRight, ArrowDownRight, Briefcase,
   Target, Clock, CalendarClock, ChevronRight, CheckCircle2,
   Phone, Mail, FileText, MessageSquare, Activity, Trophy,
-  Star, Flame, BarChart3, Sparkles, Shield, Zap,
-  Wrench, ShieldCheck, Loader2, RefreshCw, TrendingUp
+  Flame, BarChart3, Zap,
+  Wrench, ShieldCheck, Loader2, TrendingUp
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis,
@@ -67,38 +63,29 @@ export default function CommandCenterPage() {
   const { data: teamMembers = [], isLoading: teamLoading } = useTeam();
   const { data: activities = [] } = useActivities();
   const updateActivityMutation = useUpdateActivity();
-  const { data: customers = [] } = useCustomers();
   const { setPendingOpenDeal, openPaywall } = useAppStore();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
 
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setCurrentTime(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
   const [isQuickWinOpen, setIsQuickWinOpen] = useState(false);
 
-  const hasPersonalTarget = myProfile?.personal_target > 0;
-  const monthlyGoal = hasPersonalTarget ? myProfile.personal_target : 0;
-
   const [viewMode, setViewMode] = useState('team');
-  const baseStats = useCommandCenterStats(deals, monthlyGoal, user?.id);
+  const personalGoal = Number(myProfile?.personal_target) > 0 ? Number(myProfile.personal_target) : 0;
+  const teamGoal = teamMembers.reduce((sum, member) => sum + Number(member.goal || 0), 0);
+  const monthlyGoal = viewMode === 'personal' ? personalGoal : teamGoal;
+  const baseStats = useCommandCenterStats(deals, teamGoal, user?.id, personalGoal);
   const stats = viewMode === 'personal' && baseStats?.myStats ? baseStats.myStats : baseStats;
-
-  // Customer Health
-  const customerStats = useMemo(() => {
-    if (!customers.length && !deals?.length) return null;
-    const health = buildCustomerHealth(customers, deals || [], { now: new Date() });
-    const gradeCount = { A: 0, B: 0, C: 0, D: 0 };
-    const atRiskCustomers = [];
-    health.forEach(c => {
-      if (gradeCount[c.grade] !== undefined) gradeCount[c.grade]++;
-      if (c.health?.status === 'at_risk') atRiskCustomers.push(c);
-    });
-    atRiskCustomers.sort((a, b) => (b.dealStats?.wonValue || 0) - (a.dealStats?.wonValue || 0));
-    return { gradeCount, atRiskCustomers: atRiskCustomers.slice(0, 3), total: health.length };
-  }, [customers, deals]);
 
   // Today's Action Plan
   const actionPlan = useMemo(() => {
     if (!deals) return { followUps: [], closingThisWeek: [], stale: [] };
-    const now = Date.now();
+    const now = currentTime;
     const endOfToday = new Date(now); endOfToday.setHours(23, 59, 59, 999);
+    const startOfToday = new Date(now); startOfToday.setHours(0, 0, 0, 0);
     const dealMap = Object.fromEntries(deals.map(d => [d.id, d]));
 
     const followUps = activities
@@ -107,7 +94,7 @@ export default function CommandCenterPage() {
       .map(a => ({
         ...a,
         deal: dealMap[a.deal_id],
-        overdue: new Date(a.scheduled_at).getTime() < new Date().setHours(0, 0, 0, 0),
+        overdue: new Date(a.scheduled_at).getTime() < startOfToday.getTime(),
       }))
       .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at));
 
@@ -125,7 +112,7 @@ export default function CommandCenterPage() {
       .slice(0, 5);
 
     return { followUps, closingThisWeek, stale };
-  }, [deals, activities]);
+  }, [deals, activities, currentTime]);
 
   // Activity feed
   const todayActivities = useMemo(() => {
@@ -213,86 +200,78 @@ export default function CommandCenterPage() {
   return (
     <div className="relative max-w-[1600px] mx-auto space-y-6 pb-20">
       
-      {/* Dynamic atmospheric ambient glows */}
-      <div className="ambient-glow-brand -top-20 left-1/4 w-96 h-96" />
-      <div className="ambient-glow-cyan top-96 right-1/4 w-96 h-96" />
-
       {/* HEADER */}
-      <PageHeader
-        icon={LayoutDashboard}
-        title={
-          <div className="flex items-center gap-2 flex-wrap">
-            <span>{getGreeting()},</span>
-            <span className="gradient-text-brand font-black">{userName}</span>
-          </div>
-        }
-        description={
-          <span className="flex items-center gap-1.5 font-medium">
-            <CalendarClock size={14} className="text-violet-500" /> {getDateString()}
-          </span>
-        }
-        badge={
-          <div className="flex items-center gap-2">
-            <div className="flex items-center bg-slate-100 dark:bg-white/10 p-0.5 rounded-xl border border-slate-200/80 dark:border-white/10">
-              <button
-                onClick={() => setViewMode('team')}
-                className={cn(
-                  "px-3 py-1 text-xs font-bold rounded-lg transition-all",
-                  viewMode === 'team'
-                    ? "bg-white dark:bg-violet-600 text-violet-700 dark:text-white shadow-xs"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
-                )}
+      <header className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#111827] px-5 py-5 text-white shadow-sm sm:px-7 sm:py-6">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-28 h-72 w-72 rounded-full bg-violet-600/15 blur-3xl" />
+        <div className="relative flex flex-col gap-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-300">
+                <LayoutDashboard size={13} /> Revenue command center
+              </p>
+              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                {getGreeting()}{userName ? `, ${userName}` : ''}
+              </h1>
+              <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-slate-300">
+                <CalendarClock size={13} className="text-violet-300" /> {getDateString()}
+                <span aria-hidden="true" className="mx-1 text-slate-600">·</span>
+                <span>ภาพรวมผลการขายและงานที่ควรโฟกัส</span>
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center rounded-xl border border-white/10 bg-white/[0.06] p-1">
+                {[
+                  { id: 'team', label: 'ทีม' },
+                  { id: 'personal', label: 'ของฉัน' },
+                ].map((mode) => (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    onClick={() => setViewMode(mode.id)}
+                    aria-pressed={viewMode === mode.id}
+                    className={cn(
+                      'rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors',
+                      viewMode === mode.id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-300 hover:text-white'
+                    )}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+              <Button
+                onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsQuickWinOpen(true)}
+                variant="primary"
+                size="sm"
+                className="border border-white/10 bg-violet-500 text-white hover:bg-violet-400"
               >
-                ทีม
-              </button>
-              <button
-                onClick={() => setViewMode('personal')}
-                className={cn(
-                  "px-3 py-1 text-xs font-bold rounded-lg transition-all",
-                  viewMode === 'personal'
-                    ? "bg-white dark:bg-violet-600 text-violet-700 dark:text-white shadow-xs"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
-                )}
-              >
-                ของฉัน
-              </button>
+                <Zap size={14} className="mr-1.5" /> บันทึกยอดด่วน
+              </Button>
             </div>
           </div>
-        }
-        rightContent={
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button
-              onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsQuickWinOpen(true)}
-              variant="emerald"
-              size="sm"
-            >
-              <Zap size={14} className="mr-1.5" />
-              บันทึกยอดด่วน
-            </Button>
-          </div>
-        }
-      >
-        <div className="flex items-center gap-2 w-full overflow-x-auto pb-1">
-          {[
-            { label: 'Pipeline', icon: Briefcase, to: '/pipeline', primary: true },
-            { label: 'ลูกค้า', icon: Users, to: '/customers' },
-            { label: 'ยอดขาย', icon: TrendingUp, to: '/sales' },
-            { label: 'Analytics', icon: BarChart3, to: '/analytics' },
-            { label: 'เครื่องมือ', icon: Wrench, to: '/tools' },
-          ].map(btn => (
-            <Button
-              key={btn.to}
-              onClick={() => navigate(btn.to)}
-              variant={btn.primary ? 'primary' : 'outline'}
-              size="sm"
-              className="shrink-0"
-            >
-              <btn.icon size={13} className="mr-1.5" />
-              {btn.label}
-            </Button>
-          ))}
+
+          <nav aria-label="ทางลัด" className="flex flex-wrap items-center gap-1.5 border-t border-white/10 pt-3">
+            {[
+              { label: 'Pipeline', icon: Briefcase, to: '/pipeline', primary: true },
+              { label: 'ลูกค้า', icon: Users, to: '/customers' },
+              { label: 'ยอดขาย', icon: TrendingUp, to: '/sales' },
+              { label: 'Analytics', icon: BarChart3, to: '/analytics' },
+              { label: 'เครื่องมือ', icon: Wrench, to: '/tools' },
+            ].map((link) => (
+              <button
+                key={link.to}
+                type="button"
+                onClick={() => navigate(link.to)}
+                className={cn(
+                  'inline-flex min-h-9 items-center gap-2 rounded-lg px-3 text-xs font-medium transition-colors',
+                  link.primary ? 'bg-white text-slate-900' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                )}
+              >
+                <link.icon size={14} /> {link.label}
+              </button>
+            ))}
+          </nav>
         </div>
-      </PageHeader>
+      </header>
 
       {/* ONBOARDING CTA */}
       {hasNoDeals && (
@@ -329,7 +308,7 @@ export default function CommandCenterPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* LEFT COLUMN: ACTION & DATA VISUALS (2/3 width) */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="order-2 space-y-6 lg:order-2 lg:col-span-3">
           
           <FocusDealsCard focusDeals={stats?.focusDeals} onOpenDeal={openDeal} />
 
@@ -608,33 +587,33 @@ export default function CommandCenterPage() {
         </div>
 
         {/* RIGHT COLUMN: KPI CARDS 3.0, GOAL, LEADERBOARD */}
-        <div className="lg:col-span-1 space-y-4">
+        <div className="order-1 space-y-4 lg:order-1 lg:col-span-3">
 
-          {/* HERO GOAL CARD — aurora dark */}
-          <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] aurora-bg card-inset-highlight p-5">
-            <div className="noise-overlay absolute inset-0 rounded-2xl" />
-            <div className="glow-orb glow-orb-violet absolute -top-12 -left-12 w-40 h-40 opacity-40" />
-            <div className="glow-orb glow-orb-cyan absolute -bottom-8 -right-8 w-32 h-32 opacity-25" />
-            <div className="relative z-10">
-              <div className="flex items-start justify-between mb-4">
+          {/* MONTHLY GOAL — primary business outcome */}
+          <div className="relative overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-white via-violet-50/70 to-indigo-50/60 p-5 shadow-sm dark:border-violet-300/10 dark:from-[#111827] dark:via-[#151a2b] dark:to-[#17172b]">
+            <div aria-hidden="true" className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-violet-300/15 blur-3xl dark:bg-violet-400/10" />
+            <div className="relative z-10 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+              <div className="flex items-start justify-between gap-4 sm:mb-0">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">เป้าหมายเดือนนี้</p>
-                  <p className="text-[11px] text-white/70 mt-0.5 font-medium">
-                    {stats?.hasPersonalTarget ? `เป้า ${formatCurrency(monthlyGoal)}` : 'ยังไม่ได้ตั้งเป้าหมาย'}
+                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">เป้าหมายเดือนนี้</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                    {monthlyGoal > 0 ? `เป้า ${formatCurrency(monthlyGoal)}` : 'ยังไม่ได้ตั้งเป้าหมาย'}
                   </p>
                 </div>
-                <div className={cn('flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold',
-                  Number(stats?.growthPercent) >= 0 ? 'bg-emerald-500/25 text-emerald-300' : 'bg-rose-500/25 text-rose-300'
-                )}>
-                  {Number(stats?.growthPercent) >= 0 ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
-                  {stats?.growthPercent > 0 ? '+' : ''}{stats?.growthPercent}%
-                </div>
+                {stats?.growthPercent !== null && stats?.growthPercent !== undefined && (
+                  <div className={cn('flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold',
+                    stats.growthPercent >= 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300'
+                  )}>
+                    {stats.growthPercent >= 0 ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
+                    {stats.growthPercent > 0 ? '+' : ''}{stats.growthPercent}%
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-4">
                 {/* Radial gauge */}
                 <div className="relative w-[72px] h-[72px] shrink-0">
                   <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
-                    <circle cx="40" cy="40" r="34" stroke="rgba(255,255,255,0.08)" strokeWidth="7" fill="transparent" />
+                    <circle cx="40" cy="40" r="34" className="stroke-slate-200 dark:stroke-white/10" strokeWidth="7" fill="transparent" />
                     <motion.circle cx="40" cy="40" r="34"
                       stroke="url(#gaugeGrad)"
                       strokeWidth="7" fill="transparent"
@@ -651,24 +630,34 @@ export default function CommandCenterPage() {
                     </defs>
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-base font-black text-white tabular-nums leading-none">
-                      <AnimatedNumber value={stats?.achievementPercent || 0} />%
+                    <span className="text-base font-bold text-slate-900 dark:text-white tabular-nums leading-none">
+                      {monthlyGoal > 0 ? <><AnimatedNumber value={stats?.achievementPercent || 0} />%</> : '—'}
                     </span>
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">ยอดขายปัจจุบัน</p>
-                  <p className="number-display text-xl text-white mt-1 truncate">
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">ยอดขายปัจจุบัน</p>
+                  <p className="number-display text-2xl font-semibold text-slate-950 dark:text-white mt-1 truncate">
                     {formatCurrency(stats?.totalWonValue || 0)}
                   </p>
-                  <p className="text-[10px] text-white/35 mt-1">เป้า {formatCurrency(monthlyGoal)}</p>
+                  {monthlyGoal > 0 ? (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">เป้า {formatCurrency(monthlyGoal)}</p>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => navigate('/settings')}
+                      className="mt-1 text-left text-xs font-semibold text-violet-700 hover:text-violet-900 dark:text-violet-300 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300 rounded"
+                    >
+                      ตั้งเป้าหมายเพื่อดูความคืบหน้า <span aria-hidden="true">→</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
           {/* KPI CARDS 3.0 — 2-column grid */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
             <KpiCard
               title="Active Pipeline"
               value={stats?.totalPipelineValue}
@@ -677,7 +666,7 @@ export default function CommandCenterPage() {
               color="violet"
               icon={Briefcase}
               sparkline={stats?.revenueStream?.map(r => r.forecast || 0)}
-              trend={stats?.growthPercent}
+              trend={null}
             />
             <KpiCard
               title="Win Rate"
@@ -686,17 +675,17 @@ export default function CommandCenterPage() {
               sub="สัดส่วนดีลสำเร็จ"
               color="emerald"
               icon={ShieldCheck}
-              sparkline={[45,52,48,60,58,Math.round(stats?.winRate || 50)]}
+              sparkline={undefined}
               trend={null}
             />
             <KpiCard
               title="Avg Velocity"
               value={stats?.avgDaysToClose}
-              formatter={v => `${Math.round(v)}วัน`}
-              sub="ระยะเวลาเฉลี่ย"
+              formatter={() => stats?.avgDaysToClose == null ? '—' : `${Math.round(stats.avgDaysToClose)} วัน`}
+              sub={stats?.avgDaysToClose == null ? 'ยังไม่มีดีลที่ปิดแล้ว' : 'ระยะเวลาเฉลี่ย'}
               color="amber"
               icon={Zap}
-              sparkline={[22,25,20,18,21,Math.round(stats?.avgDaysToClose || 20)]}
+              sparkline={undefined}
               trend={null}
             />
             <KpiCard
