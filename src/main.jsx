@@ -1,4 +1,5 @@
 import ReactDOM from 'react-dom/client'
+import { MotionConfig } from 'framer-motion'
 import App from './App.jsx'
 import { ToastProvider } from './components/ui/Toast.jsx'
 import ErrorBoundary from './components/layout/ErrorBoundary.jsx'
@@ -21,7 +22,9 @@ console.error = (...args) => {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <ErrorBoundary>
     <ToastProvider>
-      <App />
+      <MotionConfig reducedMotion="user">
+        <App />
+      </MotionConfig>
     </ToastProvider>
   </ErrorBoundary>
 )

@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trophy, Target, TrendingUp, DollarSign } from 'lucide-react';
+import { Trophy, Target, TrendingUp, DollarSign } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { formatCurrency } from '../../lib/formatters';
 import { STAGE_LABELS } from '../../lib/constants';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../ui/Dialog';
 
 const STAGE_COLOR = {
   lead: 'bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-300',
@@ -36,30 +36,18 @@ export default function RepDrilldown({ member, deals = [], monthlyTarget = 0, on
   const avatarLetter = (member.name || member.full_name || '?')[0].toUpperCase();
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-          className="bg-white/95 dark:bg-[#0f111a]/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-slate-200/80 dark:border-white/10 w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
-          onClick={e => e.stopPropagation()}
-        >
+    <Dialog open onOpenChange={(isOpen) => { if (!isOpen) onClose?.(); }} className="max-w-2xl">
+      <DialogContent showCloseButton={false} className="flex max-h-[85dvh] flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 p-0 shadow-2xl dark:border-white/10 dark:bg-[#0f111a]/95">
           {/* Header */}
           <div className="relative p-6 border-b border-slate-100 dark:border-white/10 bg-gradient-to-r from-violet-600 to-indigo-700">
             <div className="absolute inset-0 bg-gradient-to-br from-violet-600/90 to-indigo-800/90" />
             <button
+              type="button"
               onClick={onClose}
+              aria-label="ปิดรายละเอียดทีมขาย"
               className="absolute top-4 right-4 z-10 w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-colors cursor-pointer"
             >
-              <X size={16} />
+              <span aria-hidden="true">×</span>
             </button>
             <div className="relative z-10 flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center text-2xl font-black text-white">
@@ -67,7 +55,8 @@ export default function RepDrilldown({ member, deals = [], monthlyTarget = 0, on
               </div>
               <div>
                 <p className="text-xs text-white/70 font-bold uppercase tracking-widest">Sales Rep Performance</p>
-                <h2 className="text-xl font-black text-white">{member.name || member.full_name}</h2>
+                <DialogTitle className="text-xl font-bold text-white">{member.name || member.full_name}</DialogTitle>
+                <DialogDescription className="sr-only">ผลการขายและดีลทั้งหมดของสมาชิกทีมนี้</DialogDescription>
                 <p className="text-sm text-white/70">{member.role || 'Sales'}</p>
               </div>
             </div>
@@ -114,8 +103,7 @@ export default function RepDrilldown({ member, deals = [], monthlyTarget = 0, on
               )}
             </div>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+      </DialogContent>
+    </Dialog>
   );
 }

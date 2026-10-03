@@ -1,120 +1,147 @@
-import { useEffect, useCallback } from "react"
-import { createPortal } from "react-dom"
-import { X } from "lucide-react"
-import { cn } from "../../lib/utils"
-import { motion, AnimatePresence } from "framer-motion"
+import { createContext, useContext, useEffect, useState } from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { motion, useReducedMotion } from 'framer-motion';
+import { X } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
-/**
- * Dialog — fully-animated premium modal with:
- * - AnimatePresence for smooth open/close transitions
- * - Scroll lock on body when open
- * - Escape key to close
- * - Portal rendered to document.body
- */
-const Dialog = ({ open, onOpenChange, children, className }) => {
-  // Scroll lock
+const DialogContext = createContext({ open: false, className: '', placement: 'center' });
+const EXIT_DURATION_MS = 220;
+
+function Dialog({ open = false, onOpenChange, children, className = '', placement = 'center' }) {
+  return (
+    <DialogContext.Provider value={{ open, className, placement }}>
+      <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+        {children}
+      </DialogPrimitive.Root>
+    </DialogContext.Provider>
+  );
+}
+
+function DialogContent({ className = '', children, showCloseButton = true, ...props }) {
+  const { open, className: dialogClassName, placement } = useContext(DialogContext);
+  const shouldReduceMotion = useReducedMotion();
+  const [isMounted, setIsMounted] = useState(open);
+
   useEffect(() => {
-    if (!open || typeof document === "undefined") return undefined
-    const { body, documentElement } = document
-    const prev = body.style.overflow
-    const prevPad = body.style.paddingRight
-    const scrollbarWidth = window.innerWidth - documentElement.clientWidth
-    body.style.overflow = "hidden"
-    if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`
-    return () => {
-      body.style.overflow = prev
-      body.style.paddingRight = prevPad
+    if (open) {
+      setIsMounted(true);
+      return undefined;
     }
-  }, [open])
 
-  // Escape key
-  const handleKeyDown = useCallback(
-    (e) => { if (e.key === "Escape") onOpenChange?.(false) },
-    [onOpenChange]
-  )
-  useEffect(() => {
-    if (!open) return undefined
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [open, handleKeyDown])
+    if (!isMounted) return undefined;
 
-  if (typeof document === "undefined") return null
+    const timeoutId = window.setTimeout(() => setIsMounted(false), EXIT_DURATION_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [isMounted, open]);
 
-  return createPortal(
-    <AnimatePresence>
-      {open && (
+  if (!isMounted) return null;
+
+  const overlayMotion = shouldReduceMotion
+    ? { initial: false, animate: { opacity: open ? 1 : 0 }, transition: { duration: 0.12 } }
+    : { initial: { opacity: 0 }, animate: { opacity: open ? 1 : 0 }, transition: { duration: open ? 0.22 : 0.18 } };
+  const panelMotion = placement === 'right'
+    ? shouldReduceMotion
+      ? { initial: false, animate: { x: open ? 0 : '100%' }, transition: { duration: 0.12 } }
+      : {
+          initial: { x: '100%' },
+          animate: { x: open ? 0 : '100%' },
+          transition: open
+            ? { type: 'spring', damping: 30, stiffness: 260, mass: 0.9 }
+            : { duration: 0.18, ease: 'easeIn' },
+        }
+    : shouldReduceMotion
+      ? { initial: false, animate: { opacity: open ? 1 : 0 }, transition: { duration: 0.12 } }
+      : {
+        initial: { opacity: 0, scale: 0.96, y: 18 },
+        animate: { opacity: open ? 1 : 0, scale: open ? 1 : 0.98, y: open ? 0 : 10 },
+        transition: open
+          ? { type: 'spring', damping: 27, stiffness: 330, mass: 0.8 }
+          : { duration: 0.16, ease: 'easeOut' },
+      };
+
+  return (
+    <DialogPrimitive.Portal forceMount>
+      <DialogPrimitive.Overlay forceMount asChild>
         <motion.div
-          key="dialog-wrapper"
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          {...overlayMotion}
+          aria-hidden="true"
+          className="fixed inset-0 z-[100] overflow-hidden bg-slate-950/65 backdrop-blur-[7px]"
         >
-          {/* Backdrop */}
-          <motion.div
-            key="dialog-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.22 }}
-            className="fixed inset-0 bg-slate-950/55 backdrop-blur-md"
-            onClick={() => onOpenChange?.(false)}
-          />
-          {/* Panel */}
-          <motion.div
-            key="dialog-panel"
-            initial={{ opacity: 0, scale: 0.94, y: 24 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 12 }}
-            transition={{ type: "spring", damping: 28, stiffness: 350 }}
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_8%,rgba(139,92,246,0.20),transparent_48%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_85%_90%,rgba(56,189,248,0.08),transparent_38%)]" />
+        </motion.div>
+      </DialogPrimitive.Overlay>
+
+      <DialogPrimitive.Content
+        forceMount
+        asChild
+        aria-modal="true"
+        aria-label="หน้าต่างโต้ตอบ"
+        {...props}
+      >
+        <motion.div
+          {...panelMotion}
+          style={{ pointerEvents: open ? 'auto' : 'none' }}
+          className={cn(
+            'fixed inset-0 z-[101] flex overflow-y-auto overscroll-contain outline-none',
+            placement === 'right' ? 'justify-end p-0' : 'items-center justify-center p-3 sm:p-6'
+          )}
+        >
+          <div
             className={cn(
-              "relative z-[101] w-full max-w-lg max-h-[90vh] overflow-y-auto ui-enter",
+              'relative isolate w-full overflow-hidden border border-white/70 bg-white/95 text-slate-900 shadow-[0_32px_100px_rgba(2,6,23,0.38),0_8px_30px_rgba(109,40,217,0.16)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#0f111a]/95 dark:text-white dark:shadow-[0_32px_100px_rgba(0,0,0,0.62)]',
+              placement === 'right' ? 'h-dvh max-h-none max-w-xl rounded-l-[28px] rounded-r-none' : 'max-h-[90dvh] max-w-lg rounded-[28px]',
+              dialogClassName,
               className
             )}
           >
-            {children}
-            <button
-              onClick={() => onOpenChange?.(false)}
-              className="absolute right-4 top-4 w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-violet-300 z-10"
-              aria-label="ปิด"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </motion.div>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-10 top-0 z-20 h-px bg-gradient-to-r from-transparent via-violet-400/80 to-transparent"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-20 -top-24 z-0 h-48 w-48 rounded-full bg-violet-400/10 blur-3xl dark:bg-violet-400/15"
+            />
+            <div className="relative z-[1]">{children}</div>
+            {showCloseButton && (
+              <DialogPrimitive.Close asChild>
+                <button
+                  type="button"
+                  className="absolute right-3 top-3 z-30 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/70 bg-white/80 text-slate-500 shadow-sm backdrop-blur-md transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+                  aria-label="ปิดหน้าต่าง"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </DialogPrimitive.Close>
+            )}
+          </div>
         </motion.div>
-      )}
-    </AnimatePresence>,
-    document.body
-  )
+      </DialogPrimitive.Content>
+    </DialogPrimitive.Portal>
+  );
 }
 
 const DialogHeader = ({ className, ...props }) => (
-  <div className={cn("flex flex-col space-y-1.5 mb-5", className)} {...props} />
-)
+  <div className={cn('mb-5 flex flex-col space-y-1.5', className)} {...props} />
+);
 
 const DialogTitle = ({ className, ...props }) => (
-  <h2 className={cn("text-xl font-black tracking-tight text-slate-900 dark:text-white", className)} {...props} />
-)
+  <DialogPrimitive.Title
+    className={cn('text-xl font-bold tracking-tight text-slate-900 dark:text-white', className)}
+    {...props}
+  />
+);
 
 const DialogDescription = ({ className, ...props }) => (
-  <p className={cn("text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed", className)} {...props} />
-)
+  <DialogPrimitive.Description
+    className={cn('text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400', className)}
+    {...props}
+  />
+);
 
 const DialogFooter = ({ className, ...props }) => (
-  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 mt-6", className)} {...props} />
-)
+  <div className={cn('mt-6 flex flex-col-reverse gap-2.5 sm:flex-row sm:justify-end', className)} {...props} />
+);
 
-const DialogContent = ({ className, children, ...props }) => (
-  <div
-    className={cn(
-      "relative w-full bg-white/95 dark:bg-[#0f111a]/95 backdrop-blur-xl rounded-2xl border border-slate-200/70 dark:border-white/10",
-      "shadow-[0_24px_64px_rgba(15,23,42,0.18),0_8px_24px_rgba(79,70,229,0.08)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.5)]",
-      "p-6",
-      className
-    )}
-    {...props}
-  >
-    {/* Top shimmer */}
-    <div className="absolute top-0 left-8 right-8 h-px rounded-full bg-gradient-to-r from-transparent via-violet-300/50 to-transparent" />
-    {children}
-  </div>
-)
-
-export { Dialog, DialogHeader, DialogFooter, DialogTitle, DialogDescription, DialogContent }
+export { Dialog, DialogHeader, DialogFooter, DialogTitle, DialogDescription, DialogContent };

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, Briefcase, Users, Zap, ArrowRight } from 'lucide-react';
+import { Search, X, Briefcase, Zap, ArrowRight } from 'lucide-react';
+import { Dialog, DialogContent, DialogTitle } from './Dialog';
 import { cn } from '../../lib/utils';
 import { formatCurrency } from '../../lib/formatters';
 
@@ -14,12 +14,6 @@ export default function GlobalSearch({ deals = [], customers = [], onNavigate, o
   const inputRef = useRef(null);
 
   useEffect(() => { inputRef.current?.focus(); }, []);
-
-  useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') onClose?.(); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
 
   const results = useMemo(() => {
     const q = query.toLowerCase().trim();
@@ -37,19 +31,9 @@ export default function GlobalSearch({ deals = [], customers = [], onNavigate, o
   const hasResults = results.deals.length > 0 || results.customers.length > 0;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] flex items-start justify-center pt-[10vh] px-4 bg-black/40 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: -16 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: -16 }}
-        transition={{ type: 'spring', stiffness: 420, damping: 30 }}
-        className="w-full max-w-xl bg-white/98 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-slate-900/20 border border-slate-200/80 overflow-hidden"
-        onClick={e => e.stopPropagation()}
-      >
+    <Dialog open onOpenChange={(isOpen) => { if (!isOpen) onClose?.(); }} className="max-w-xl">
+      <DialogContent showCloseButton={false} className="max-h-[85dvh] overflow-hidden rounded-3xl border border-slate-200/80 bg-white/98 p-0 shadow-2xl shadow-slate-900/30 dark:border-white/10 dark:bg-[#111522]/98">
+        <DialogTitle className="sr-only">ค้นหาดีลและลูกค้า</DialogTitle>
         <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
           <Search size={18} className="text-violet-500 shrink-0" />
           <input
@@ -61,7 +45,7 @@ export default function GlobalSearch({ deals = [], customers = [], onNavigate, o
           />
           <div className="flex items-center gap-2">
             <kbd className="hidden sm:block text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5">ESC</kbd>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+            <button type="button" onClick={onClose} aria-label="ปิดการค้นหา" className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-white">
               <X size={16} />
             </button>
           </div>
@@ -79,7 +63,7 @@ export default function GlobalSearch({ deals = [], customers = [], onNavigate, o
           )}
           {query && !hasResults && (
             <div className="py-10 text-center">
-              <p className="text-sm font-bold text-slate-400">ไม่พบ "{query}"</p>
+              <p className="text-sm font-bold text-slate-400">ไม่พบ &quot;{query}&quot;</p>
             </div>
           )}
           {results.deals.length > 0 && (
@@ -127,7 +111,7 @@ export default function GlobalSearch({ deals = [], customers = [], onNavigate, o
           <kbd className="text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5">ESC</kbd>
           <span className="text-[11px] text-slate-400">ปิด</span>
         </div>
-      </motion.div>
-    </motion.div>
+      </DialogContent>
+    </Dialog>
   );
 }

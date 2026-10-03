@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Plug, Webhook, MessageCircle, Send, Loader2, Save, AlertCircle, ToggleLeft, ToggleRight, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import { Dialog, DialogContent, DialogTitle } from '../ui/Dialog';
 import { cn } from '../../lib/utils';
 import { useToast } from '../ui/Toast';
 import { useSettings, useUpdateSettings } from '../../hooks/useSettings';
@@ -218,24 +219,15 @@ export function IntegrationSection() {
         })}
       </div>
 
-      {/* Configuration Modal */}
-      <AnimatePresence>
-        {activePlugin && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md"
-              onClick={() => setActivePlugin(null)}
-            />
-            
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white/95 dark:bg-[#0f111a]/95 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)] border border-white/50 dark:border-white/10 overflow-hidden"
-            >
+      {/* Configuration Dialog */}
+      <Dialog
+        open={Boolean(activePlugin)}
+        onOpenChange={(isOpen) => { if (!isOpen) setActivePlugin(null); }}
+        className="max-w-lg"
+      >
+        <DialogContent showCloseButton={false} className="max-h-[90dvh] overflow-y-auto rounded-[2.5rem] border-white/50 bg-white/95 p-0 shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)] dark:border-white/10 dark:bg-[#0f111a]/95">
+          {activePlugin && (
+            <>
               <div className={cn("h-2 w-full", activePlugin.color)} />
               
               <div className="p-8">
@@ -246,12 +238,14 @@ export function IntegrationSection() {
                       <activePlugin.icon size={26} className="relative z-10 drop-shadow-md" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-black text-slate-900 dark:text-white leading-tight">{activePlugin.name}</h2>
+                      <DialogTitle className="text-2xl font-bold leading-tight">{activePlugin.name}</DialogTitle>
                       <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Configuration</p>
                     </div>
                   </div>
                   <button 
+                    type="button"
                     onClick={() => setActivePlugin(null)}
+                    aria-label="ปิดหน้าต่างตั้งค่าการเชื่อมต่อ"
                     className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-slate-500 transition-colors cursor-pointer"
                   >
                     <X size={20} />
@@ -310,10 +304,10 @@ export function IntegrationSection() {
                   </p>
                 </div>
               </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

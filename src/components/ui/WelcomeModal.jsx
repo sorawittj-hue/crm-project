@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-  X, Sparkles, LayoutDashboard, Target, Bot,
-  ArrowRight, ChevronLeft, Users, Clock,
+  X, LayoutDashboard, Target, Bot,
+  ArrowRight, ChevronLeft, Users,
   Timer, CheckCircle2,
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogTitle } from './Dialog';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 import { cn } from '../../lib/utils';
@@ -97,30 +98,17 @@ export default function WelcomeModal() {
   }, [navigate]);
 
   const current = TOUR_STEPS[step];
-  const isLast = step === TOUR_STEPS.length - 1;
   const isFirst = step === 0;
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={handleClose}
-            className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
-          />
-
-          {/* Modal */}
+    <Dialog open={isOpen} onOpenChange={setIsOpen} className="max-w-lg">
+      <DialogContent showCloseButton={false} className="max-h-[90dvh] overflow-y-auto rounded-[2rem] border-white/80 bg-white p-0 shadow-2xl dark:border-white/10 dark:bg-[#101522]">
+          <DialogTitle className="sr-only">{current.title}</DialogTitle>
           <motion.div
             key={step}
-            initial={{ opacity: 0, scale: 0.95, y: 16 }}
+            initial={{ opacity: 0, scale: 0.97, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: -8 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="relative w-full max-w-lg bg-white rounded-[2rem] shadow-2xl shadow-slate-900/20 overflow-hidden"
+            transition={{ type: 'spring', stiffness: 360, damping: 28 }}
           >
             {/* Gradient header */}
             <div className="h-2 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500" />
@@ -143,7 +131,9 @@ export default function WelcomeModal() {
                 ))}
               </div>
               <button
+                type="button"
                 onClick={handleClose}
+                aria-label="ปิดหน้าต่างต้อนรับ"
                 className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all"
               >
                 <X size={16} />
@@ -272,8 +262,7 @@ export default function WelcomeModal() {
               </div>
             </div>
           </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+      </DialogContent>
+    </Dialog>
   );
 }

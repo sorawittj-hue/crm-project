@@ -18,7 +18,7 @@ import { useDealActivities, useAddActivity } from '../../hooks/useActivities';
 import { useEmailTemplates } from '../../hooks/useEmailTemplates';
 import { useAddDeal } from '../../hooks/useDeals';
 import ConfirmDialog from '../ui/ConfirmDialog';
-import { createPortal } from 'react-dom';
+import { Dialog, DialogContent } from '../ui/Dialog';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -135,6 +135,12 @@ const TABS = [
   { id: 'edit',        label: 'แก้ไข',      icon: Settings },
 ];
 
+const CLONE_OMIT_FIELDS = new Set([
+  'id', 'actual_close_date', 'created_at', 'updated_at', 'last_activity',
+  '_agingDays', 'agingDays', 'focusScore', 'weightedValue', 'daysInactive',
+  'daysUntilClose', 'isActive', 'isAtRisk', 'recommendedAction',
+]);
+
 export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onRequestDelete, onRequestCloseStage, onRequestCloneDeal }) {
   const { openPaywall } = useAppStore();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
@@ -155,6 +161,11 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [checkedItems, setCheckedItems] = useState(() => deal?.metadata?.checklist_progress || {});
   const [editingField, setEditingField] = useState(null);
+  const [currentTime, setCurrentTime] = useState(null);
+
+  useEffect(() => {
+    if (isOpen) setCurrentTime(Date.now());
+  }, [isOpen, deal?.id, deal?.last_activity]);
 
   const addDealMutation = useAddDeal();
   const [isCloning, setIsCloning] = useState(false);
@@ -163,7 +174,9 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
     if (!deal || isCloning) return;
     setIsCloning(true);
     try {
-      const { id, actual_close_date, created_at, updated_at, last_activity, _agingDays, agingDays, focusScore, weightedValue, daysInactive, daysUntilClose, isActive, isAtRisk, recommendedAction, ...rest } = deal;
+      const rest = Object.fromEntries(
+        Object.entries(deal).filter(([key]) => !CLONE_OMIT_FIELDS.has(key))
+      );
       await addDealMutation.mutateAsync({
         ...rest,
         title: `${deal.title} (สำเนา)`,
@@ -351,28 +364,15 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
   const stageBadge = STAGE_BADGE[deal.stage] || STAGE_BADGE.lead;
   const wf = STAGE_WORKFLOW[deal.stage];
 
-  return createPortal(
-    <AnimatePresence>
-      {isOpen && deal && (
-        <div className="fixed inset-0 z-[100] flex justify-end">
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-md"
-            onClick={onClose}
-          />
-
-          {/* Drawer Panel */}
-          <motion.div
-            initial={{ x: '100%', opacity: 0.8 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: '100%', opacity: 0.8 }}
-            transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            className="relative z-10 w-full max-w-xl h-dvh bg-white dark:bg-[#0d0f1a] shadow-[0_0_40px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden border-l border-slate-200/80 dark:border-white/10"
-          >
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={(isOpen) => { if (!isOpen) onClose?.(); }}
+      className="max-w-xl"
+      placement="right"
+    >
+      <DialogContent showCloseButton={false} className="h-dvh max-h-none max-w-xl rounded-l-[28px] rounded-r-none border-l border-slate-200/80 bg-white p-0 shadow-[0_0_60px_rgba(0,0,0,0.42)] dark:border-white/10 dark:bg-[#0d0f1a]">
+        <div className="flex h-full flex-col overflow-hidden">
             {/* ─── HEADER ─── */}
             <div className={cn(
               'relative shrink-0 px-6 pt-6 pb-6 border-b border-slate-100/80 dark:border-white/5 overflow-hidden',
@@ -994,7 +994,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                           </div>
                         )}
                         {['proposal', 'negotiation'].includes(deal.stage) && (() => {
-                          const days = Math.floor((Date.now() - new Date(deal.last_activity || deal.created_at).getTime()) / 86_400_000);
+                          if (!currentTime) return null;
+                          const days = Math.floor((currentTime - new Date(deal.last_activity || deal.created_at).getTime()) / 86_400_000);
                           if (days < 3) return null;
                           const cls = days >= 7 ? 'bg-rose-600 text-white' : days >= 5 ? 'bg-orange-500 text-white' : 'bg-amber-500 text-white';
                           return (
@@ -1229,10 +1230,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                 setShowDeleteConfirm(false);
               }}
             />
-          </motion.div>
         </div>
-      )}
-    </AnimatePresence>,
-    document.body
+      </DialogContent>
+    </Dialog>
   );
 }
