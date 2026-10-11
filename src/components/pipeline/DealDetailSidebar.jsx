@@ -12,6 +12,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { cn } from '../../lib/utils';
+import { containerVariants, cardVariants } from '../../lib/animations';
 import { formatFullCurrency as formatCurrency } from '../../lib/formatters';
 import { callGeminiAPI } from '../../services/ai';
 import { useDealActivities, useAddActivity } from '../../hooks/useActivities';
@@ -437,9 +438,9 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
               </div>
 
               {/* KPI row */}
-              <div className="grid grid-cols-3 gap-3 relative z-10">
+              <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-3 gap-3 relative z-10">
                 {/* Value */}
-                <div className="bg-white/60 dark:bg-white/[0.04] backdrop-blur-md rounded-2xl p-3.5 border border-white/60 dark:border-white/10 shadow-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.08]">
+                <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }} className="bg-white/60 dark:bg-white/[0.04] backdrop-blur-md rounded-2xl p-3.5 border border-white/60 dark:border-white/10 shadow-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.08]">
                   <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">มูลค่า</p>
                   <div className="mt-0.5">
                     {editingField === 'value' ? (
@@ -468,10 +469,10 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       </p>
                     )}
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Probability */}
-                <div className="bg-white/60 dark:bg-white/[0.04] backdrop-blur-md rounded-2xl p-3.5 border border-white/60 dark:border-white/10 shadow-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.08]">
+                <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }} className="bg-white/60 dark:bg-white/[0.04] backdrop-blur-md rounded-2xl p-3.5 border border-white/60 dark:border-white/10 shadow-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.08]">
                   <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">โอกาส</p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {editingField === 'probability' ? (
@@ -512,9 +513,9 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       )}
                     />
                   </div>
-                </div>
+                </motion.div>
                 {/* Expected Close Date */}
-                <div className="bg-white/60 dark:bg-white/[0.04] backdrop-blur-md rounded-2xl p-3.5 border border-white/60 dark:border-white/10 shadow-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.08]">
+                <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }} className="bg-white/60 dark:bg-white/[0.04] backdrop-blur-md rounded-2xl p-3.5 border border-white/60 dark:border-white/10 shadow-sm transition-all hover:bg-white/80 dark:hover:bg-white/[0.08]">
                   <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">คาดว่าจะปิด</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     {editingField === 'expected_close_date' ? (
@@ -543,8 +544,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       </p>
                     )}
                   </div>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
 
               <div className="relative z-10 flex gap-2 mt-5">
                 <Button
