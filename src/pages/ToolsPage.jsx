@@ -533,7 +533,7 @@ export default function ToolsPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="max-w-[1400px] mx-auto pb-20 px-2 sm:px-4 md:px-6 relative ui-enter"
+      className="mesh-bg max-w-[1400px] mx-auto pb-20 px-2 sm:px-4 md:px-6 relative ui-enter"
     >
       {/* Global Ambient Glow for Tools Page */}
       <div className="absolute top-0 right-0 w-full max-w-3xl h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-violet-300/30 via-indigo-100/10 to-transparent -z-10 pointer-events-none blur-3xl" />
@@ -553,8 +553,11 @@ export default function ToolsPage() {
             const Icon = tool.icon;
             const isActive = activeTab === tool.key;
             return (
-              <button
+              <motion.button
                 key={tool.key}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                 onClick={() => setActiveTab(tool.key)}
                 className={cn(
                   'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap cursor-pointer',
@@ -568,7 +571,7 @@ export default function ToolsPage() {
                 {isActive && (
                   <span className="absolute inset-0 rounded-xl ring-1 ring-white/20" />
                 )}
-              </button>
+              </motion.button>
             );
           })}
         </div>

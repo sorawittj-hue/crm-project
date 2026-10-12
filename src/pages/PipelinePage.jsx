@@ -20,6 +20,7 @@ import { DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { motion, AnimatePresence } from 'framer-motion';
+import { containerVariants, cardVariants, hoverLift, pageVariants } from '../lib/animations';
 import { cn } from '../lib/utils';
 import PageHeader from '../components/layout/PageHeader';
 
@@ -328,9 +329,10 @@ export default function PipelinePage() {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="max-w-[1600px] mx-auto space-y-6 pb-20 px-2 sm:px-4 md:px-6 mt-4 relative overflow-hidden ui-enter"
+      variants={pageVariants}
+      initial="hidden"
+      animate="visible"
+      className="mesh-bg max-w-[1600px] mx-auto space-y-6 pb-20 px-2 sm:px-4 md:px-6 mt-4 relative overflow-hidden ui-enter"
     >
       {/* Ambient Glowing Orbs */}
       <div className="absolute top-[-5%] left-[-10%] w-[50%] h-[600px] rounded-full bg-violet-500/10 blur-[130px] pointer-events-none" />
@@ -368,7 +370,9 @@ export default function PipelinePage() {
         }
       >
           <div className="flex bg-white/70 dark:bg-white/[0.06] backdrop-blur-sm p-1 rounded-2xl border border-slate-200/80 dark:border-white/10 mr-2 shadow-xs">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => setBoardType('pipeline')}
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
@@ -378,8 +382,10 @@ export default function PipelinePage() {
               )}
             >
               <Briefcase size={14} /> Pipeline
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => setBoardType('renewals')}
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
@@ -389,11 +395,13 @@ export default function PipelinePage() {
               )}
             >
               <Calendar size={14} /> Renewals
-            </button>
+            </motion.button>
           </div>
 
           <div className="flex bg-white/70 dark:bg-white/[0.06] backdrop-blur-sm p-1 rounded-2xl border border-slate-200/80 dark:border-white/10 mr-2 shadow-xs">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => setViewMode('kanban')}
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
@@ -403,8 +411,10 @@ export default function PipelinePage() {
               )}
             >
               <LayoutGrid size={14} /> Kanban
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => setViewMode('list')}
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
@@ -414,7 +424,7 @@ export default function PipelinePage() {
               )}
             >
               <List size={14} /> List
-            </button>
+            </motion.button>
           </div>
 
           {/* Ghost actions */}

@@ -19,6 +19,7 @@ import { cn } from '../lib/utils';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import PageHeader from '../components/layout/PageHeader';
+import { containerVariants, cardVariants } from '../lib/animations';
 
 const MONTHS = [
   { value: 1, label: 'ม.ค.', full: 'มกราคม' },
@@ -143,7 +144,7 @@ export default function SalesTrackingPage() {
   };
 
   return (
-    <motion.div {...pageMotion} className="max-w-[1600px] mx-auto space-y-6 pb-20 px-4 md:px-6 mt-4 relative overflow-hidden">
+    <motion.div {...pageMotion} className="mesh-bg max-w-[1600px] mx-auto space-y-6 pb-20 px-4 md:px-6 mt-4 relative overflow-hidden">
       {/* Ambient background glows */}
       <div className="absolute top-[-5%] left-[-10%] w-[50%] h-[600px] rounded-full bg-violet-500/10 blur-[130px] pointer-events-none" />
       <div className="absolute top-[30%] right-[-5%] w-[40%] h-[500px] rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none" />
@@ -155,7 +156,9 @@ export default function SalesTrackingPage() {
         description="วิเคราะห์เป้าหมาย ยอดขายรายเดือน และยอดรวมสะสมแบบเรียลไทม์"
         rightContent={
           <div className="flex items-center gap-2 bg-white/80 dark:bg-white/[0.06] backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-sm">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => setChartType('bar')}
               className={cn(
                 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
@@ -163,8 +166,10 @@ export default function SalesTrackingPage() {
               )}
             >
               <BarChart3 size={14} /> กราฟแท่ง
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => setChartType('area')}
               className={cn(
                 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
@@ -172,15 +177,26 @@ export default function SalesTrackingPage() {
               )}
             >
               <TrendingUp size={14} /> กราฟแนวโน้ม
-            </button>
+            </motion.button>
           </div>
         }
       />
 
       {/* KPI HERO CARDS STRIP */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+      >
         {/* Annual Target Progress — Main Hero with Aurora */}
-        <div className="relative overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-white via-violet-50/70 to-indigo-50/60 p-6 shadow-sm transition-shadow hover:shadow-md dark:border-violet-300/10 dark:from-[#111827] dark:via-[#151a2b] dark:to-[#17172b]">
+        <motion.div
+          variants={cardVariants}
+          whileHover={{ y: -3, scale: 1.015 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+          className="relative overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-white via-violet-50/70 to-indigo-50/60 p-6 shadow-sm transition-shadow hover:shadow-md dark:border-violet-300/10 dark:from-[#111827] dark:via-[#151a2b] dark:to-[#17172b] card-glow-overlay hover-lift"
+        >
           
           <div className="relative z-10 space-y-4">
             <div className="flex items-center justify-between">
@@ -219,11 +235,16 @@ export default function SalesTrackingPage() {
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Current Month Live Pipeline — KPI Emerald */}
-        <div className="p-6 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522] shadow-sm flex flex-col justify-between transition-shadow hover:shadow-md">
-          
+        <motion.div
+          variants={cardVariants}
+          whileHover={{ y: -3, scale: 1.015 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+          className="p-6 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522] shadow-sm flex flex-col justify-between transition-all hover:shadow-md card-glow-overlay hover-lift"
+        >
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-400/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-center">
@@ -255,11 +276,16 @@ export default function SalesTrackingPage() {
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">เป้าเดือน {formatCurrency(monthlyTarget)}</span>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Forecast / Quarter Summary Highlight — KPI Violet */}
-        <div className="p-6 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522] shadow-sm flex flex-col justify-between transition-shadow hover:shadow-md">
-          
+        <motion.div
+          variants={cardVariants}
+          whileHover={{ y: -3, scale: 1.015 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+          className="p-6 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522] shadow-sm flex flex-col justify-between transition-all hover:shadow-md card-glow-overlay hover-lift"
+        >
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-400/10 text-violet-700 dark:text-violet-300 flex items-center justify-center">
@@ -285,8 +311,8 @@ export default function SalesTrackingPage() {
               </p>
             </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* CHART SECTION */}
       <div className="p-6 rounded-3xl bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-sm space-y-4">

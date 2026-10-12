@@ -29,6 +29,7 @@ import {
 } from '../../hooks/useNotifications';
 import { useAutoBackup } from '../../hooks/useAutoBackup';
 import { cn, parseYearMonth } from '../../lib/utils';
+import { navContainerVariants, navItemVariants } from '../../lib/animations';
 import { formatCurrency } from '../../lib/formatters';
 import CommandPalette from '../ui/CommandPalette';
 import PaywallModal from '../ui/PaywallModal';
@@ -472,8 +473,11 @@ export default function AppLayout() {
       </AnimatePresence>
 
       {/* SIDEBAR */}
-      <aside
+      <motion.aside
         ref={sidebarRef}
+        initial={shouldReduceMotion ? false : { x: -280, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 350, damping: 35 }}
         className={cn(
           "w-64 flex flex-col flex-shrink-0 relative border-r z-30 select-none transition-all duration-300",
           "bg-white dark:bg-[#101727] border-slate-200 dark:border-white/[0.08] shadow-none",
@@ -516,45 +520,57 @@ export default function AppLayout() {
         </div>
 
         {/* Navigation */}
-        <nav id="sidebar-nav" className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto relative z-10">
+        <motion.nav
+          id="sidebar-nav"
+          variants={navContainerVariants}
+          initial="hidden"
+          animate="visible"
+          className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto relative z-10"
+        >
           <p className="px-3 text-[10px] font-semibold text-slate-400 dark:text-white/40 uppercase tracking-[0.12em] mb-2 mt-3">
             Navigation
           </p>
           {navItems.map((item) => {
             const isActive = location.pathname === item.to;
             return (
-              <NavLink
+              <motion.div
                 key={item.to}
-                to={item.to}
-                onClick={() => !isDesktop && closeSidebar()}
-                className={cn(
-                  "group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 relative",
-                  isActive
-                    ? "bg-violet-50 text-violet-800 dark:bg-violet-500/15 dark:text-white"
-                    : "text-slate-600 hover:text-slate-950 hover:bg-slate-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.05]"
-                )}
+                variants={navItemVariants}
+                whileHover={{ x: 3 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <div className={cn(
-                  "w-[30px] h-[30px] rounded-lg flex items-center justify-center shrink-0 transition-all duration-150",
-                  isActive
-                    ? "bg-violet-600 text-white shadow-sm shadow-violet-600/20"
-                    : "bg-slate-100 text-slate-500 group-hover:bg-slate-200/70 group-hover:text-slate-800 dark:bg-white/[0.04] dark:text-white/55 dark:group-hover:bg-white/[0.08] dark:group-hover:text-white"
-                )}>
-                  <item.icon size={14} strokeWidth={isActive ? 2.5 : 2} />
-                </div>
-                <div className="flex flex-col min-w-0 flex-1">
-                  <span className={cn("leading-tight tracking-tight", isActive ? "font-bold" : "")}>{item.label}</span>
-                  <span className={cn("text-[11px] font-medium leading-none mt-1", isActive ? "text-violet-600 dark:text-violet-200/75" : "text-slate-400 group-hover:text-slate-500 dark:text-white/45 dark:group-hover:text-white/65")}>
-                    {item.sub}
-                  </span>
-                </div>
-                {isActive && (
-                  <div className="w-1.5 h-1.5 rounded-full bg-violet-500 dark:bg-violet-300 shrink-0" />
-                )}
-              </NavLink>
+                <NavLink
+                  to={item.to}
+                  onClick={() => !isDesktop && closeSidebar()}
+                  className={cn(
+                    "group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 relative",
+                    isActive
+                      ? "bg-violet-50 text-violet-800 dark:bg-violet-500/15 dark:text-white nav-active-glow"
+                      : "text-slate-600 hover:text-slate-950 hover:bg-slate-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.05]"
+                  )}
+                >
+                  <div className={cn(
+                    "w-[30px] h-[30px] rounded-lg flex items-center justify-center shrink-0 transition-all duration-150",
+                    isActive
+                      ? "bg-violet-600 text-white shadow-sm shadow-violet-600/20"
+                      : "bg-slate-100 text-slate-500 group-hover:bg-slate-200/70 group-hover:text-slate-800 dark:bg-white/[0.04] dark:text-white/55 dark:group-hover:bg-white/[0.08] dark:group-hover:text-white"
+                  )}>
+                    <item.icon size={14} strokeWidth={isActive ? 2.5 : 2} />
+                  </div>
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className={cn("leading-tight tracking-tight", isActive ? "font-bold" : "")}>{item.label}</span>
+                    <span className={cn("text-[11px] font-medium leading-none mt-1", isActive ? "text-violet-600 dark:text-violet-200/75" : "text-slate-400 group-hover:text-slate-500 dark:text-white/45 dark:group-hover:text-white/65")}>
+                      {item.sub}
+                    </span>
+                  </div>
+                  {isActive && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-violet-500 dark:bg-violet-300 shrink-0" />
+                  )}
+                </NavLink>
+              </motion.div>
             );
           })}
-        </nav>
+        </motion.nav>
 
         {!isGuestAccount && <OnboardingChecklist />}
 
@@ -612,7 +628,7 @@ export default function AppLayout() {
             </button>
           </div>
         </div>
-      </aside>
+      </motion.aside>
 
       {/* MAIN CONTAINER */}
       <div className="flex-1 flex flex-col overflow-hidden bg-background">
@@ -635,27 +651,36 @@ export default function AppLayout() {
 
           <div className="flex items-center gap-2 md:gap-3">
             {/* Quick Add Button */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.03, y: -1 }}
+              whileTap={{ scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               onClick={() => openQuickAdd()}
               className="flex items-center gap-1.5 px-3.5 h-10 rounded-lg font-semibold text-sm bg-violet-600 hover:bg-violet-700 text-white shadow-sm active:bg-violet-800 transition-colors cursor-pointer"
               title="สร้างดีลใหม่ (กด C)"
             >
               <Plus size={14} />
               <span className="hidden sm:inline">สร้างดีล</span>
-            </button>
+            </motion.button>
 
             {/* Theme Toggle Button */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.08, rotate: 12 }}
+              whileTap={{ scale: 0.92 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 25 }}
               onClick={toggleTheme}
               className="p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.08] transition-colors cursor-pointer"
               title={theme === 'dark' ? 'เปลี่ยนเป็น Light Mode' : 'เปลี่ยนเป็น Dark Mode'}
             >
               {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-violet-600" />}
-            </button>
+            </motion.button>
 
             {/* Notification Bell */}
             <div className="relative" ref={notifRef}>
-              <button
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                 aria-label="การแจ้งเตือน"
                 onClick={() => setIsNotifOpen(v => !v)}
                 className="relative p-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04]"
@@ -671,7 +696,7 @@ export default function AppLayout() {
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </motion.span>
                 )}
-              </button>
+              </motion.button>
 
               <AnimatePresence>
                 {isNotifOpen && (

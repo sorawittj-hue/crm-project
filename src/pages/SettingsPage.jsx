@@ -101,7 +101,7 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="max-w-[1200px] mx-auto pb-20 px-2 sm:px-4 md:px-6 relative ui-enter">
+    <div className="mesh-bg max-w-[1200px] mx-auto pb-20 px-2 sm:px-4 md:px-6 relative ui-enter">
       {/* Ambient glows */}
       <div className="fixed top-20 left-1/4 w-[500px] h-[500px] bg-violet-600/5 dark:bg-violet-600/10 rounded-full blur-[130px] pointer-events-none -z-10" />
       <div className="fixed bottom-20 right-10 w-80 h-80 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none -z-10" />
@@ -308,7 +308,10 @@ export default function SettingsPage() {
 function NavItem({ s, isActive, onClick, isAdmin = false }) {
   const Icon = s.icon;
   return (
-    <button
+    <motion.button
+      whileHover={{ x: 2 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
       onClick={onClick}
       className={cn(
         'w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-200 relative overflow-hidden group cursor-pointer',
@@ -347,6 +350,6 @@ function NavItem({ s, isActive, onClick, isAdmin = false }) {
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
         />
       )}
-    </button>
+    </motion.button>
   );
 }

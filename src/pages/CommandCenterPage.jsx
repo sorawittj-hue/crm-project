@@ -10,6 +10,10 @@ import { useMyProfile } from '../hooks/useUserProfiles';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { motion } from 'framer-motion';
+import {
+  containerVariants, cardVariants, cardSlideLeft,
+  sectionHeaderVariants,
+} from '../lib/animations';
 import { cn } from '../lib/utils';
 import { formatCurrency, daysSince } from '../lib/formatters';
 import CustomTooltip from '../components/ui/CustomTooltip';
@@ -198,7 +202,7 @@ export default function CommandCenterPage() {
   );
 
   return (
-    <div className="relative max-w-[1600px] mx-auto space-y-6 pb-20">
+    <div className="mesh-bg relative max-w-[1600px] mx-auto space-y-6 pb-20">
       
       {/* HEADER */}
       <header className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#111827] px-5 py-5 text-white shadow-sm sm:px-7 sm:py-6">
@@ -257,17 +261,20 @@ export default function CommandCenterPage() {
               { label: 'Analytics', icon: BarChart3, to: '/analytics' },
               { label: 'เครื่องมือ', icon: Wrench, to: '/tools' },
             ].map((link) => (
-              <button
+              <motion.button
                 key={link.to}
                 type="button"
                 onClick={() => navigate(link.to)}
+                whileHover={{ y: -3, scale: 1.015 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 className={cn(
                   'inline-flex min-h-9 items-center gap-2 rounded-lg px-3 text-xs font-medium transition-colors',
                   link.primary ? 'bg-white text-slate-900' : 'text-slate-300 hover:bg-white/10 hover:text-white'
                 )}
               >
                 <link.icon size={14} /> {link.label}
-              </button>
+              </motion.button>
             ))}
           </nav>
         </div>
@@ -656,49 +663,62 @@ export default function CommandCenterPage() {
             </div>
           </div>
 
-          {/* KPI CARDS 3.0 — 2-column grid */}
-          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-            <KpiCard
-              title="Active Pipeline"
-              value={stats?.totalPipelineValue}
-              formatter={formatCurrency}
-              sub={`${stats?.activeCount || 0} ดีล`}
-              color="violet"
-              icon={Briefcase}
-              sparkline={stats?.revenueStream?.map(r => r.forecast || 0)}
-              trend={null}
-            />
-            <KpiCard
-              title="Win Rate"
-              value={stats?.winRate}
-              formatter={v => `${Math.round(v)}%`}
-              sub="สัดส่วนดีลสำเร็จ"
-              color="emerald"
-              icon={ShieldCheck}
-              sparkline={undefined}
-              trend={null}
-            />
-            <KpiCard
-              title="Avg Velocity"
-              value={stats?.avgDaysToClose}
-              formatter={() => stats?.avgDaysToClose == null ? '—' : `${Math.round(stats.avgDaysToClose)} วัน`}
-              sub={stats?.avgDaysToClose == null ? 'ยังไม่มีดีลที่ปิดแล้ว' : 'ระยะเวลาเฉลี่ย'}
-              color="amber"
-              icon={Zap}
-              sparkline={undefined}
-              trend={null}
-            />
-            <KpiCard
-              title="Won This Week"
-              value={stats?.wonThisWeekValue}
-              formatter={formatCurrency}
-              sub={`${stats?.wonThisWeek || 0} ดีล`}
-              color="cyan"
-              icon={Trophy}
-              sparkline={stats?.revenueStream?.map(r => r.actual || 0)}
-              trend={null}
-            />
-          </div>
+          {/* KPI CARDS 3.0 — Staggered entrance */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-2 gap-3 xl:grid-cols-4"
+          >
+            <motion.div variants={cardVariants}>
+              <KpiCard
+                title="Active Pipeline"
+                value={stats?.totalPipelineValue}
+                formatter={formatCurrency}
+                sub={`${stats?.activeCount || 0} ดีล`}
+                color="violet"
+                icon={Briefcase}
+                sparkline={stats?.revenueStream?.map(r => r.forecast || 0)}
+                trend={null}
+              />
+            </motion.div>
+            <motion.div variants={cardVariants}>
+              <KpiCard
+                title="Win Rate"
+                value={stats?.winRate}
+                formatter={v => `${Math.round(v)}%`}
+                sub="สัดส่วนดีลสำเร็จ"
+                color="emerald"
+                icon={ShieldCheck}
+                sparkline={undefined}
+                trend={null}
+              />
+            </motion.div>
+            <motion.div variants={cardVariants}>
+              <KpiCard
+                title="Avg Velocity"
+                value={stats?.avgDaysToClose}
+                formatter={() => stats?.avgDaysToClose == null ? '—' : `${Math.round(stats.avgDaysToClose)} วัน`}
+                sub={stats?.avgDaysToClose == null ? 'ยังไม่มีดีลที่ปิดแล้ว' : 'ระยะเวลาเฉลี่ย'}
+                color="amber"
+                icon={Zap}
+                sparkline={undefined}
+                trend={null}
+              />
+            </motion.div>
+            <motion.div variants={cardVariants}>
+              <KpiCard
+                title="Won This Week"
+                value={stats?.wonThisWeekValue}
+                formatter={formatCurrency}
+                sub={`${stats?.wonThisWeek || 0} ดีล`}
+                color="cyan"
+                icon={Trophy}
+                sparkline={stats?.revenueStream?.map(r => r.actual || 0)}
+                trend={null}
+              />
+            </motion.div>
+          </motion.div>
 
           {/* TEAM LEADERBOARD */}
           {teamLeaderboard.length > 0 && (

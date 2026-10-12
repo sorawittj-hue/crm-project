@@ -12,6 +12,7 @@ import { Input } from '../components/ui/Input';
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../components/ui/Dialog';
 import { Textarea } from '../components/ui/Textarea';
 import { motion, AnimatePresence } from 'framer-motion';
+import { containerVariants, cardVariants, hoverLiftSoft } from '../lib/animations';
 import { cn } from '../lib/utils';
 import { formatCurrency, formatFullCurrency } from '../lib/formatters';
 import { STAGE_LABELS } from '../lib/constants';
@@ -997,7 +998,7 @@ export default function CustomersPage() {
   );
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-[1600px] mx-auto pb-20 px-2 sm:px-4 md:px-6 relative ui-enter">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mesh-bg max-w-[1600px] mx-auto pb-20 px-2 sm:px-4 md:px-6 relative ui-enter">
       {/* Ambient glows */}
       <div className="fixed top-20 right-0 w-[500px] h-[500px] bg-violet-400/5 rounded-full blur-[120px] pointer-events-none -z-10" />
       <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-fuchsia-400/5 rounded-full blur-[100px] pointer-events-none -z-10" />
@@ -1032,24 +1033,36 @@ export default function CustomersPage() {
           />
 
           {/* KPI Ribbon */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-2 md:grid-cols-4 gap-3"
+          >
             {[
               { label: 'ลูกค้าทั้งหมด', val: totalStats.total, icon: Users, tone: 'text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-400/10' },
               { label: 'ปิดได้รวม', val: formatCurrency(totalStats.totalWonValue), icon: DollarSign, tone: 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-400/10' },
               { label: 'Pipeline ดำเนินการ', val: formatCurrency(totalStats.totalActiveValue), icon: TrendingUp, tone: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-400/10' },
               { label: 'บัญชีต้องดูแลด่วน', val: totalStats.atRiskAccounts, icon: AlertTriangle, tone: 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-400/10' },
             ].map(({ label, val, icon: Icon, tone }) => (
-              <div key={label} className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-900/70 sm:p-5">
+              <motion.div
+                key={label}
+                variants={cardVariants}
+                whileHover={{ y: -3, scale: 1.015 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-white/10 dark:bg-slate-900/70 sm:p-5 card-glow-overlay hover-lift cursor-default"
+              >
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <p className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</p>
-                  <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', tone)}>
+                  <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105', tone)}>
                     <Icon size={17} aria-hidden="true" />
                   </div>
                 </div>
                 <p className="truncate text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">{val}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           {/* Search + Filter bar */}
           <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-slate-900/70 sm:flex-row">
