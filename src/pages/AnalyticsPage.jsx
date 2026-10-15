@@ -109,7 +109,7 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
       className="group"
     >
       <div className={cn(
-        "p-5 rounded-xl border shadow-sm transition-colors duration-200 relative overflow-hidden group hover:border-slate-300 dark:hover:border-white/15",
+        "p-5 rounded-2xl border shadow-sm transition-all duration-300 relative overflow-hidden group hover:-translate-y-1 hover:shadow-lg hover:border-violet-200 dark:hover:border-violet-500/30 card-glow-overlay",
         cfg.bg, cfg.ring
       )}>
         <div className="relative z-10">
@@ -576,7 +576,7 @@ Win Rate: ${intel.winRate || 0}%
       >
         <PageHeader
           icon={Activity}
-          title={<>Analytics <span className="text-cyan-300">Command Center</span></>}
+          title={<>Analytics <span className="gradient-text-brand">Command Center</span></>}
           description="Deep insights and world-class pipeline intelligence."
           rightContent={
             <div className="flex flex-col md:flex-row items-center justify-between w-full gap-3">

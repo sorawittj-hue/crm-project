@@ -205,7 +205,7 @@ export default function CommandCenterPage() {
     <div className="mesh-bg relative max-w-[1600px] mx-auto space-y-6 pb-20">
       
       {/* HEADER */}
-      <header className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#111827] px-5 py-5 text-white shadow-sm sm:px-7 sm:py-6">
+      <header className="relative isolate overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#0f1322] via-[#17153a] to-[#0d1220] border border-white/10 px-6 py-6 text-white shadow-[0_20px_50px_-12px_rgba(15,23,42,0.35)] sm:px-8 sm:py-7">
         <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-28 h-72 w-72 rounded-full bg-violet-600/15 blur-3xl" />
         <div className="relative flex flex-col gap-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -315,7 +315,7 @@ export default function CommandCenterPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* LEFT COLUMN: ACTION & DATA VISUALS (2/3 width) */}
-        <div className="order-2 space-y-6 lg:order-2 lg:col-span-3">
+        <div className="order-2 space-y-6 lg:order-2 lg:col-span-2">
           
           <FocusDealsCard focusDeals={stats?.focusDeals} onOpenDeal={openDeal} />
 
@@ -720,6 +720,10 @@ export default function CommandCenterPage() {
             </motion.div>
           </motion.div>
 
+        </div>
+
+        {/* RIGHT SIDEBAR COLUMN: TEAM LEADERBOARD (1/3 width) */}
+        <div className="order-3 space-y-6 lg:order-3 lg:col-span-1">
           {/* TEAM LEADERBOARD */}
           {teamLeaderboard.length > 0 && (
             <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.07] bg-white/80 dark:bg-[#0d0f1a] backdrop-blur-xl shadow-sm overflow-hidden">

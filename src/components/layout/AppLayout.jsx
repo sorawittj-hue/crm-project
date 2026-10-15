@@ -480,7 +480,7 @@ export default function AppLayout() {
         transition={{ type: 'spring', stiffness: 350, damping: 35 }}
         className={cn(
           "w-64 flex flex-col flex-shrink-0 relative border-r z-30 select-none transition-all duration-300",
-          "bg-white dark:bg-[#101727] border-slate-200 dark:border-white/[0.08] shadow-none",
+          "bg-white/90 dark:bg-[#0b0e17]/90 backdrop-blur-2xl border-slate-200/80 dark:border-white/[0.08] shadow-[4px_0_24px_-4px_rgba(15,23,42,0.03)]",
           !isDesktop && "fixed inset-y-0 left-0 z-50 transform transition-transform duration-300",
           !isDesktop && !isSidebarOpen && "-translate-x-full",
           !isDesktop && isSidebarOpen && "translate-x-0"
@@ -490,7 +490,7 @@ export default function AppLayout() {
         <div className="h-16 flex items-center justify-between px-4 shrink-0 border-b border-slate-200 dark:border-white/[0.06] relative z-10">
           <div className="flex items-center gap-3">
             <div className="relative shrink-0">
-              <div className="relative w-9 h-9 rounded-xl bg-violet-600 flex items-center justify-center border border-violet-500/20 shadow-sm shadow-violet-600/20">
+              <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-600 flex items-center justify-center border border-white/20 shadow-[0_4px_14px_rgba(124,58,237,0.35)]">
                 <Zap size={16} className="text-white fill-current" />
               </div>
             </div>
@@ -634,7 +634,7 @@ export default function AppLayout() {
       <div className="flex-1 flex flex-col overflow-hidden bg-background">
         
         {/* TOPBAR */}
-        <header className="h-16 flex items-center justify-between px-4 md:px-6 z-20 shrink-0 border-b border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#0d111b] transition-colors duration-200">
+        <header className="h-16 flex items-center justify-between px-4 md:px-6 z-20 shrink-0 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/85 dark:bg-[#0b0e17]/85 backdrop-blur-2xl transition-colors duration-200">
           <div className="flex items-center gap-3">
             <button onClick={toggleSidebar} aria-label="เปิด/ปิดเมนู" className="lg:hidden p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all">
               <Menu size={19} />
@@ -656,7 +656,7 @@ export default function AppLayout() {
               whileTap={{ scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               onClick={() => openQuickAdd()}
-              className="flex items-center gap-1.5 px-3.5 h-10 rounded-lg font-semibold text-sm bg-violet-600 hover:bg-violet-700 text-white shadow-sm active:bg-violet-800 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-4 h-10 rounded-xl font-bold text-xs md:text-sm bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-[0_4px_14px_-2px_rgba(124,58,237,0.4)] transition-all cursor-pointer"
               title="สร้างดีลใหม่ (กด C)"
             >
               <Plus size={14} />

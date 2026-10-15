@@ -718,7 +718,7 @@ export default function PipelinePage() {
 
       {/* ADD ASSET MODAL */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-4xl lg:max-w-5xl p-0 border-0 shadow-2xl overflow-hidden rounded-[2rem] bg-white/95 backdrop-blur-2xl">
+        <DialogContent className="max-w-4xl lg:max-w-5xl p-0 border border-slate-200/80 dark:border-white/10 shadow-2xl overflow-hidden rounded-[2rem] bg-white/95 dark:bg-[#0f111a]/95 backdrop-blur-2xl">
           {/* Top Gradient Ribbon */}
           <div className="h-2 bg-gradient-to-r from-violet-600 via-indigo-600 to-fuchsia-600" />
           
@@ -728,7 +728,7 @@ export default function PipelinePage() {
                 <Plus size={22} className="text-violet-600" />
               </div>
               <div>
-                <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                   เพิ่มดีลการขายใหม่ 
                   <Sparkles size={16} className="text-amber-400 fill-amber-400/10" />
                 </h2>
@@ -940,10 +940,13 @@ export default function PipelinePage() {
                               value={newDeal.company}
                               onChange={(e) => {
                                 const company = e.target.value;
-                                const matched = customers.find(c =>
-                                  (c.company || '').toLowerCase() === company.toLowerCase() ||
-                                  (c.name || '').toLowerCase() === company.toLowerCase()
-                                );
+                                const trimmed = company.trim().toLowerCase();
+                                const matched = trimmed
+                                  ? customers.find(c =>
+                                      (c.company || '').trim().toLowerCase() === trimmed ||
+                                      (c.name || '').trim().toLowerCase() === trimmed
+                                    )
+                                  : null;
                                 setNewDeal({
                                   ...newDeal,
                                   company,
@@ -1233,7 +1236,7 @@ export default function PipelinePage() {
               </div>
 
               {/* Right Column: Live Card Preview & AI Guidance (5 cols) */}
-              <div className="xl:col-span-5 bg-gradient-to-br from-slate-50 to-slate-100/50 p-6 rounded-3xl border border-violet-100/60 flex flex-col justify-between space-y-6 max-h-[78vh] overflow-y-auto">
+              <div className="xl:col-span-5 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-white/[0.03] dark:to-white/[0.01] p-6 rounded-3xl border border-violet-100/60 dark:border-white/10 flex flex-col justify-between space-y-6 max-h-[78vh] overflow-y-auto">
                 <div className="space-y-6">
                   <div>
                     <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
@@ -1383,7 +1386,7 @@ export default function PipelinePage() {
       </Dialog>
       {/* SYNC MODAL */}
       <Dialog open={isScanOpen} onOpenChange={setIsScanOpen}>
-        <DialogContent className="max-w-xl p-0 overflow-hidden rounded-2xl bg-white border-0 shadow-2xl">
+        <DialogContent className="max-w-xl p-0 overflow-hidden rounded-2xl bg-white dark:bg-[#0f111a] border border-slate-200/80 dark:border-white/10 shadow-2xl">
           {/* Scanner ribbon */}
           <div className="h-1.5 bg-gradient-to-r from-violet-500 via-indigo-500 to-blue-500" />
           <div className="p-8">

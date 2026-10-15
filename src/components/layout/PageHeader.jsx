@@ -25,24 +25,24 @@ export default function PageHeader({
       <div className="relative z-10 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <div className="flex min-w-0 items-center gap-4">
           {Icon && (
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-violet-200/80 bg-violet-50 text-violet-700 dark:border-violet-400/15 dark:bg-violet-400/10 dark:text-violet-300">
-                <Icon size={20} strokeWidth={2} />
+            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-violet-200/80 bg-gradient-to-br from-violet-50 via-white to-indigo-50 text-violet-700 shadow-[0_4px_14px_-2px_rgba(124,58,237,0.15)] dark:border-violet-400/20 dark:from-violet-500/20 dark:via-indigo-500/10 dark:to-transparent dark:text-violet-300">
+              <Icon size={21} strokeWidth={2.2} />
             </div>
           )}
 
           <div>
+            {breadcrumb && <div className="mb-1">{breadcrumb}</div>}
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-2xl md:text-[28px] font-semibold tracking-tight text-slate-950 dark:text-white">
+              <h1 className="text-2xl md:text-[28px] font-extrabold tracking-tight text-slate-950 dark:text-white">
                 {title}
               </h1>
               {badge}
             </div>
             {description && (
-              <div className="mt-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed">
+              <div className="mt-1 text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed">
                 {description}
               </div>
             )}
-            {breadcrumb && <div className="mt-2">{breadcrumb}</div>}
           </div>
         </div>
 
@@ -50,7 +50,7 @@ export default function PageHeader({
       </div>
 
       {children && (
-        <div className="relative z-10 mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200 dark:border-white/10 pt-4 md:flex-nowrap">
+        <div className="relative z-10 mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200/80 dark:border-white/[0.08] pt-4 md:flex-nowrap">
           {children}
         </div>
       )}

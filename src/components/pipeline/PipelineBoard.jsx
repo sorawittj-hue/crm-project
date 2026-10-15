@@ -508,7 +508,7 @@ export default function PipelineBoard({
                   'flex items-center gap-2 px-4 h-9 rounded-full text-xs font-bold transition-all duration-300 whitespace-nowrap border',
                   isActive
                     ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-transparent shadow-md shadow-violet-500/25 ring-2 ring-violet-400/20'
-                    : 'bg-white/80 backdrop-blur-md text-slate-600 border-slate-200/80 hover:bg-violet-50/50 hover:text-violet-700 hover:border-violet-200'
+                    : 'bg-white/80 dark:bg-white/[0.05] backdrop-blur-md text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-white/10 hover:bg-violet-50/50 dark:hover:bg-violet-500/15 hover:text-violet-700 dark:hover:text-violet-300 hover:border-violet-200 dark:hover:border-violet-500/30'
                 )}
               >
                 <filter.icon size={13} strokeWidth={2.5} />
@@ -529,7 +529,7 @@ export default function PipelineBoard({
               'flex items-center gap-1.5 h-8 px-3 rounded-xl text-xs font-bold border transition-all',
               bulkMode
                 ? 'bg-violet-600 text-white border-violet-600'
-                : 'bg-white/80 text-slate-600 border-slate-200 hover:border-violet-300 hover:text-violet-600'
+                : 'bg-white/80 dark:bg-white/[0.05] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-violet-300 dark:hover:border-violet-500/30 hover:text-violet-600 dark:hover:text-violet-300'
             )}
           >
             <CheckSquare size={13} />
@@ -549,7 +549,7 @@ export default function PipelineBoard({
               ลากเพื่อย้ายขั้นตอน
             </p>
           )}
-          <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 gap-1 shadow-sm">
+          <div className="flex items-center bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 rounded-xl p-1 gap-1 shadow-sm">
             <button
               onClick={() => handleViewModeChange('kanban')}
               aria-label="แสดงแบบคัมบัง"
@@ -680,7 +680,7 @@ export default function PipelineBoard({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.03 }}
                       onClick={() => onDealClick(deal)}
-                      className={cn('hover:bg-gradient-to-r hover:from-violet-50/50 hover:to-white cursor-pointer transition-all duration-300 group hover:shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] relative z-10 hover:z-20', isStagnant && 'bg-rose-50/30')}
+                      className={cn('hover:bg-gradient-to-r hover:from-violet-50/50 hover:to-white dark:hover:from-violet-950/30 dark:hover:to-transparent cursor-pointer transition-all duration-300 group hover:shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] relative z-10 hover:z-20', isStagnant && 'bg-rose-50/30 dark:bg-rose-950/20')}
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
@@ -689,7 +689,7 @@ export default function PipelineBoard({
                             {(deal.company || 'D').charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="font-semibold text-slate-900 group-hover:text-violet-700 transition-colors truncate max-w-[180px]">{deal.company || '—'}</p>
+                            <p className="font-semibold text-slate-900 dark:text-white group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors truncate max-w-[180px]">{deal.company || '—'}</p>
                             <p className="text-xs text-slate-400 truncate max-w-[180px]">{deal.title}</p>
                           </div>
                         </div>
@@ -701,7 +701,7 @@ export default function PipelineBoard({
                           {stage.label}
                         </span>
                       </td>
-                      <td className="px-5 py-3.5 text-right font-black text-slate-900 tabular-nums text-sm">{formatCurrency(deal.value)}</td>
+                      <td className="px-5 py-3.5 text-right font-black text-slate-900 dark:text-white tabular-nums text-sm">{formatCurrency(deal.value)}</td>
                       <td className="px-5 py-3.5 text-center">
                         <div className="flex flex-col items-center gap-1">
                           <span className={cn('text-xs font-bold tabular-nums',
