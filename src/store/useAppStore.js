@@ -83,7 +83,7 @@ export const useAppStore = create(
       closePaywall: () => set({ isPaywallOpen: false }),
     }),
     {
-      name: 'nova-pipeline-store',
+      name: 'nova-pipeline-store-2026-v3',
       partialize: (state) => ({
         monthlyTarget: state.monthlyTarget,
         theme: state.theme,

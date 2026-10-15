@@ -689,3 +689,41 @@
 .stat-bar-cyan    { background: linear-gradient(90deg, #0284c7, #38bdf8); }
 .stat-bar-rose    { background: linear-gradient(90deg, #e11d48, #fb7185); }
 
+
+
+/* ─── 2026 SPATIAL AURORA & CYBER GRID OVERHAUL ─── */
+.mesh-bg {
+  background-color: hsl(var(--background));
+  background-image:
+    radial-gradient(at 12% 15%, rgba(124, 58, 237, 0.10) 0%, transparent 45%),
+    radial-gradient(at 88% 12%, rgba(6, 182, 212, 0.09) 0%, transparent 45%),
+    radial-gradient(at 50% 85%, rgba(236, 72, 153, 0.06) 0%, transparent 45%),
+    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+}
+.dark .mesh-bg {
+  background-color: #060811;
+  background-image:
+    radial-gradient(at 12% 15%, rgba(139, 92, 246, 0.18) 0%, transparent 48%),
+    radial-gradient(at 88% 12%, rgba(56, 189, 248, 0.14) 0%, transparent 45%),
+    radial-gradient(at 50% 85%, rgba(16, 185, 129, 0.08) 0%, transparent 45%),
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+}
+
+.spatial-card {
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow:
+    0 10px 30px -6px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.dark .spatial-card {
+  background: linear-gradient(165deg, rgba(20, 25, 43, 0.88) 0%, rgba(12, 15, 27, 0.92) 100%);
+  border-color: rgba(255, 255, 255, 0.09);
+  box-shadow:
+    0 16px 40px -8px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}

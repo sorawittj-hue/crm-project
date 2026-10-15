@@ -6,7 +6,7 @@ const Card = React.forwardRef(({ className, hover = true, glow = false, glass = 
     <div
       ref={ref}
       className={cn(
-        "rounded-2xl border transition-all duration-300",
+        "rounded-2xl border transition-all duration-300 spatial-card",
         // Light mode — crisp alabaster glass with subtle depth
         "bg-white/90 text-slate-900 border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.04),0_2px_6px_-1px_rgba(15,23,42,0.02)] backdrop-blur-xl",
         // Dark mode — deep obsidian with top specular highlight
