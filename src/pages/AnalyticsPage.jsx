@@ -109,12 +109,12 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
       className="group"
     >
       <div className={cn(
-        "p-5 rounded-2xl border shadow-sm transition-all duration-300 relative overflow-hidden group hover:-translate-y-1 hover:shadow-lg hover:border-violet-200 dark:hover:border-violet-500/30 card-glow-overlay",
+        "p-5 rounded-2xl border shadow-sm transition-all duration-300 relative overflow-hidden group card-lift depth-2 premium-border card-glow-overlay hover:-translate-y-1 hover:shadow-[0_16px_40px_-8px_rgba(124,58,237,0.2)] hover:border-violet-200 dark:hover:border-violet-500/30",
         cfg.bg, cfg.ring
       )}>
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-3.5">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: `${cfg.accent}18`, color: cfg.accent }}>
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-md" style={{ background: `linear-gradient(135deg, ${cfg.accent}28, ${cfg.accent}10)`, color: cfg.accent }}>
               <Icon size={16} strokeWidth={2.5} />
             </div>
             {safeTrend !== null && (
@@ -132,7 +132,7 @@ const MetricCard = ({ title, value, numericValue, formatter, subValue, icon: Ico
           <div className="space-y-1">
             <p className={cn("text-[10px] font-bold uppercase tracking-widest", cfg.label)}>{title}</p>
             <div className="flex items-baseline justify-between gap-2">
-              <h3 className={cn("number-display text-2xl md:text-3xl", cfg.val)}>
+              <h3 className={cn("number-display gradient-text-brand text-2xl md:text-3xl", cfg.val)}>
                 {numericValue !== undefined && numericValue !== null ? <AnimatedNumber value={numericValue} formatter={formatter} /> : (value ?? '—')}
               </h3>
 

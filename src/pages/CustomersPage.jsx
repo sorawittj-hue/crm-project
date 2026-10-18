@@ -100,7 +100,7 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        'group rounded-2xl border p-5 cursor-pointer relative overflow-hidden transition-all duration-300',
+        'group rounded-2xl border p-5 cursor-pointer relative overflow-hidden transition-all duration-300 card-lift card-glow-overlay',
         'bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border-slate-200/80 dark:border-white/10 shadow-sm',
         'hover:border-violet-300 dark:hover:border-violet-500/40 hover:shadow-lg dark:hover:shadow-violet-950/20 hover:-translate-y-1',
         isSelected ? 'border-violet-500 ring-2 ring-violet-500/20' : '',
@@ -1051,7 +1051,7 @@ export default function CustomersPage() {
                 whileHover={{ y: -3, scale: 1.015 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ type: 'spring', stiffness: 450, damping: 30 }}
-                className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-white/10 dark:bg-slate-900/70 sm:p-5 card-glow-overlay hover-lift cursor-default"
+                className="min-w-0 rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#0f111a]/90 sm:p-5 card-glow-overlay card-lift depth-2 cursor-default"
               >
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <p className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</p>
@@ -1065,7 +1065,7 @@ export default function CustomersPage() {
           </motion.div>
 
           {/* Search + Filter bar */}
-          <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-slate-900/70 sm:flex-row">
+          <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white/80 backdrop-blur-xl p-3 shadow-sm dark:border-white/10 dark:bg-[#0f111a]/80 sm:flex-row">
             {/* Search */}
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />

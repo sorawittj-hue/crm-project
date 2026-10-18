@@ -490,7 +490,7 @@ export default function AppLayout() {
         <div className="h-16 flex items-center justify-between px-4 shrink-0 border-b border-slate-200 dark:border-white/[0.06] relative z-10">
           <div className="flex items-center gap-3">
             <div className="relative shrink-0">
-              <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-600 flex items-center justify-center border border-white/20 shadow-[0_4px_14px_rgba(124,58,237,0.35)]">
+              <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-700 flex items-center justify-center border border-white/20 shadow-[0_4px_16px_rgba(124,58,237,0.5)]">
                 <Zap size={16} className="text-white fill-current" />
               </div>
             </div>
@@ -543,10 +543,10 @@ export default function AppLayout() {
                   to={item.to}
                   onClick={() => !isDesktop && closeSidebar()}
                   className={cn(
-                    "group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 relative",
+                    "group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium relative transition-all duration-200",
                     isActive
-                      ? "bg-violet-50 text-violet-800 dark:bg-violet-500/15 dark:text-white nav-active-glow"
-                      : "text-slate-600 hover:text-slate-950 hover:bg-slate-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.05]"
+                      ? "bg-gradient-to-r from-violet-600/20 to-indigo-600/10 dark:from-violet-500/20 dark:to-indigo-500/10 text-violet-700 dark:text-violet-300 border-l-2 border-violet-600 dark:border-violet-400 nav-active-glow"
+                      : "hover:bg-slate-100/70 dark:hover:bg-white/[0.06] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   )}
                 >
                   <div className={cn(
@@ -634,7 +634,7 @@ export default function AppLayout() {
       <div className="flex-1 flex flex-col overflow-hidden bg-background">
         
         {/* TOPBAR */}
-        <header className="h-16 flex items-center justify-between px-4 md:px-6 z-20 shrink-0 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/85 dark:bg-[#0b0e17]/85 backdrop-blur-2xl transition-colors duration-200">
+        <header className="h-16 flex items-center justify-between px-4 md:px-6 z-20 shrink-0 border-b border-slate-200/70 dark:border-white/[0.08] bg-white/80 dark:bg-[#060811]/80 backdrop-blur-2xl transition-colors duration-200">
           <div className="flex items-center gap-3">
             <button onClick={toggleSidebar} aria-label="เปิด/ปิดเมนู" className="lg:hidden p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all">
               <Menu size={19} />
@@ -656,7 +656,7 @@ export default function AppLayout() {
               whileTap={{ scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               onClick={() => openQuickAdd()}
-              className="flex items-center gap-1.5 px-4 h-10 rounded-xl font-bold text-xs md:text-sm bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-[0_4px_14px_-2px_rgba(124,58,237,0.4)] transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-4 h-10 rounded-xl font-bold text-xs md:text-sm bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-[0_4px_16px_rgba(124,58,237,0.4)] hover:shadow-[0_6px_24px_rgba(124,58,237,0.5)] transition-all cursor-pointer"
               title="สร้างดีลใหม่ (กด C)"
             >
               <Plus size={14} />
@@ -669,7 +669,7 @@ export default function AppLayout() {
               whileTap={{ scale: 0.92 }}
               transition={{ type: 'spring', stiffness: 500, damping: 25 }}
               onClick={toggleTheme}
-              className="p-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.08] transition-colors cursor-pointer"
+              className="rounded-xl p-2 hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all duration-200 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white cursor-pointer border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04]"
               title={theme === 'dark' ? 'เปลี่ยนเป็น Light Mode' : 'เปลี่ยนเป็น Dark Mode'}
             >
               {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-violet-600" />}

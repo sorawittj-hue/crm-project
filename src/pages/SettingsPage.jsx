@@ -157,7 +157,7 @@ export default function SettingsPage() {
           transition={{ duration: 0.4, delay: 0.1 }}
           className="lg:w-68 shrink-0"
         >
-          <nav className="lg:sticky lg:top-8 bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl p-3 rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-sm space-y-4">
+          <nav className="lg:sticky lg:top-8 bg-white/90 dark:bg-[#0f111a]/90 backdrop-blur-xl p-3.5 rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.6)] space-y-4">
             {/* Base groups */}
             {SECTION_GROUPS.map((group) => (
               <div key={group.groupLabel}>
@@ -314,12 +314,12 @@ function NavItem({ s, isActive, onClick, isAdmin = false }) {
       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
       onClick={onClick}
       className={cn(
-        'w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-200 relative overflow-hidden group cursor-pointer',
+        'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-200 relative overflow-hidden group cursor-pointer',
         isActive
           ? isAdmin
             ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md'
-            : 'bg-violet-600 text-white shadow-md'
-          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white'
+            : 'bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-600 bg-[length:200%_auto] text-white shadow-[0_4px_16px_rgba(124,58,237,0.35)]'
+          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-white/[0.08] hover:text-slate-900 dark:hover:text-white'
       )}
     >
       {/* Hover shimmer */}

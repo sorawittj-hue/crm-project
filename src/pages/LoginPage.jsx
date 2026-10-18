@@ -85,20 +85,19 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex overflow-hidden relative"
-      style={{ background: 'linear-gradient(135deg, #08031f 0%, #0d0630 40%, #130540 70%, #0a0225 100%)' }}
+      className="min-h-screen bg-gradient-to-br from-[#04050a] via-[#0a0816] to-[#060811] flex overflow-hidden relative"
     >
       {/* ─── Animated Background ─── */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Large ambient orbs */}
         <FloatingOrb style={{
           top: '-15%', left: '-10%', width: '600px', height: '600px',
-          background: 'radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 65%)',
+          background: 'radial-gradient(circle, rgba(124,58,237,0.28) 0%, transparent 65%)',
           animation: 'float 12s ease-in-out infinite',
         }} />
         <FloatingOrb style={{
-          bottom: '-10%', right: '-5%', width: '500px', height: '500px',
-          background: 'radial-gradient(circle, rgba(236,72,153,0.14) 0%, transparent 65%)',
+          bottom: '-10%', right: '-5%', width: '520px', height: '520px',
+          background: 'radial-gradient(circle, rgba(6,182,212,0.22) 0%, transparent 65%)',
           animation: 'float 9s ease-in-out infinite alternate',
         }} />
         <FloatingOrb style={{
@@ -273,16 +272,7 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 32, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-md relative"
-          style={{
-            background: 'rgba(255,255,255,0.05)',
-            backdropFilter: 'blur(40px)',
-            WebkitBackdropFilter: 'blur(40px)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '24px',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.42)',
-            padding: 'clamp(1.25rem, 4vw, 2rem)',
-          }}
+          className="w-full max-w-md relative bg-white/[0.05] backdrop-blur-2xl border border-white/[0.12] rounded-3xl shadow-[0_32px_80px_rgba(0,0,0,0.8)] p-8 md:p-10"
         >
           {/* Top accent line */}
           <div className="absolute top-0 left-8 right-8 h-px rounded-full" style={{
@@ -341,9 +331,8 @@ export default function LoginPage() {
             ))}
           </div>
 
-          {/* Heading */}
           <div className="mb-6">
-            <h2 className="text-2xl font-black text-white mb-1">
+            <h2 className="text-3xl font-black tracking-tight text-white mb-1">
               {isLogin ? 'ยินดีต้อนรับกลับมา' : 'สร้างบัญชีใหม่'}
             </h2>
             <p className="text-sm" style={{color: 'rgba(255,255,255,0.4)'}}>
@@ -481,6 +470,8 @@ export default function LoginPage() {
                   boxShadow: '0 8px 24px rgba(124,58,237,0.4), inset 0 1px 0 rgba(255,255,255,0.15)',
                   border: '1px solid rgba(167,139,250,0.3)',
                 }}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 12px 32px rgba(124,58,237,0.6), inset 0 1px 0 rgba(255,255,255,0.15)'}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(124,58,237,0.4), inset 0 1px 0 rgba(255,255,255,0.15)'}
               >
                 {loading ? (
                   <><Loader2 size={16} className="animate-spin" /> กำลังดำเนินการ...</>

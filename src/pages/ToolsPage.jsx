@@ -369,7 +369,7 @@ function DealCalculator() {
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">{f.prefix}</span>
                   <Input type="number" value={f.value} onChange={e => f.setter(e.target.value)}
-                    placeholder={f.placeholder} className="h-12 pl-8 rounded-xl text-base font-bold bg-white/80 dark:bg-[#171926] border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:border-violet-400 focus:ring-violet-400/20" />
+                    placeholder={f.placeholder} className="h-12 pl-8 rounded-xl text-base font-bold border border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-white/[0.06] backdrop-blur-md text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500/40 focus:border-violet-400" />
                 </div>
               </div>
             ))}
@@ -378,14 +378,14 @@ function DealCalculator() {
                 <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">โอกาสปิด (%)</label>
                 <div className="relative">
                   <Input type="number" min="0" max="100" value={probability} onChange={e => setProbability(e.target.value)}
-                    className="h-12 pr-8 rounded-xl text-base font-bold bg-white/80 dark:bg-[#171926] border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:border-amber-400 focus:ring-amber-400/20" />
+                    className="h-12 pr-8 rounded-xl text-base font-bold border border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-white/[0.06] backdrop-blur-md text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500/40 focus:border-violet-400" />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
                 </div>
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">ระยะเวลา (ด.)</label>
                 <Input type="number" min="1" value={months} onChange={e => setMonths(e.target.value)}
-                  className="h-12 rounded-xl text-base font-bold bg-white/80 dark:bg-[#171926] border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:border-blue-400 focus:ring-blue-400/20" />
+                  className="h-12 rounded-xl text-base font-bold border border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-white/[0.06] backdrop-blur-md text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500/40 focus:border-violet-400" />
               </div>
             </div>
           </div>
@@ -393,20 +393,23 @@ function DealCalculator() {
 
         {/* Results */}
         <div className="lg:col-span-7 space-y-5">
-          <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-2">
-            <Sparkles size={14} className="text-amber-500" /> การวิเคราะห์ผลตอบแทน (ROI Analysis)
+          <h3 className="flex items-center gap-3 font-black text-xl tracking-tight text-slate-900 dark:text-white">
+            <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-md shadow-amber-500/30 shrink-0">
+              <Sparkles size={15} strokeWidth={2.5} />
+            </span>
+            การวิเคราะห์ผลตอบแทน (ROI Analysis)
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {[
-              { label: 'กำไรขั้นต้น', value: formatCurrency(calc.grossProfit), color: calc.grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-white/80 dark:bg-white/[0.04]', border: 'border-slate-200/80 dark:border-white/10' },
-              { label: 'Margin', value: `${(calc.margin != null && !isNaN(calc.margin)) ? calc.margin.toFixed(1) : '0.0'}%`, color: calc.margin >= 20 ? 'text-emerald-600 dark:text-emerald-400' : calc.margin >= 10 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-white/80 dark:bg-white/[0.04]', border: 'border-slate-200/80 dark:border-white/10' },
-              { label: 'ROI', value: `${(calc.roi != null && !isNaN(calc.roi)) ? calc.roi.toFixed(0) : '0'}%`, color: calc.roi >= 100 ? 'text-emerald-600 dark:text-emerald-400' : calc.roi >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-white/80 dark:bg-white/[0.04]', border: 'border-slate-200/80 dark:border-white/10' },
-              { label: 'Expected Revenue', value: formatCurrency(calc.expectedRevenue), color: 'text-violet-700 dark:text-violet-300', bg: 'bg-violet-50/50 dark:bg-violet-950/30', border: 'border-violet-200/60 dark:border-violet-800/30' },
-              { label: 'Expected Profit', value: formatCurrency(calc.expectedProfit), color: 'text-violet-700 dark:text-violet-300', bg: 'bg-violet-50/50 dark:bg-violet-950/30', border: 'border-violet-200/60 dark:border-violet-800/30' },
-              { label: 'รายได้ต่อเดือน', value: formatCurrency(calc.monthlyRevenue), color: 'text-blue-700 dark:text-blue-300', bg: 'bg-blue-50/50 dark:bg-blue-950/30', border: 'border-blue-200/60 dark:border-blue-800/30' },
+              { label: 'กำไรขั้นต้น', value: formatCurrency(calc.grossProfit), color: calc.grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-gradient-to-br from-violet-50/80 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/20', border: 'border-violet-200/60 dark:border-violet-500/20' },
+              { label: 'Margin', value: `${(calc.margin != null && !isNaN(calc.margin)) ? calc.margin.toFixed(1) : '0.0'}%`, color: calc.margin >= 20 ? 'text-emerald-600 dark:text-emerald-400' : calc.margin >= 10 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-gradient-to-br from-violet-50/80 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/20', border: 'border-violet-200/60 dark:border-violet-500/20' },
+              { label: 'ROI', value: `${(calc.roi != null && !isNaN(calc.roi)) ? calc.roi.toFixed(0) : '0'}%`, color: calc.roi >= 100 ? 'text-emerald-600 dark:text-emerald-400' : calc.roi >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-gradient-to-br from-violet-50/80 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/20', border: 'border-violet-200/60 dark:border-violet-500/20' },
+              { label: 'Expected Revenue', value: formatCurrency(calc.expectedRevenue), color: 'text-violet-700 dark:text-violet-300', bg: 'bg-gradient-to-br from-violet-50/80 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/20', border: 'border-violet-200/60 dark:border-violet-500/20' },
+              { label: 'Expected Profit', value: formatCurrency(calc.expectedProfit), color: 'text-violet-700 dark:text-violet-300', bg: 'bg-gradient-to-br from-violet-50/80 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/20', border: 'border-violet-200/60 dark:border-violet-500/20' },
+              { label: 'รายได้ต่อเดือน', value: formatCurrency(calc.monthlyRevenue), color: 'text-blue-700 dark:text-blue-300', bg: 'bg-gradient-to-br from-violet-50/80 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/20', border: 'border-violet-200/60 dark:border-violet-500/20' },
             ].map((m, i) => (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={m.label} 
-                className={cn('p-4 rounded-2xl border shadow-sm', m.bg, m.border)}>
+                className={cn('p-5 rounded-2xl border shadow-sm', m.bg, m.border)}>
                 <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">{m.label}</p>
                 <p className={cn('text-lg sm:text-xl font-black tabular-nums tracking-tight', m.color)}>{m.value}</p>
               </motion.div>

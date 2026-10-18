@@ -726,7 +726,7 @@ export default function CommandCenterPage() {
         <div className="order-3 space-y-6 lg:order-3 lg:col-span-1">
           {/* TEAM LEADERBOARD */}
           {teamLeaderboard.length > 0 && (
-            <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.07] bg-white/80 dark:bg-[#0d0f1a] backdrop-blur-xl shadow-sm overflow-hidden">
+            <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.07] bg-white/90 dark:bg-[#0d0f1a]/90 backdrop-blur-xl shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.6)] overflow-hidden card-lift">
               <div className="px-4 py-3 border-b border-slate-100 dark:border-white/[0.06] flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-lg bg-amber-500/20 flex items-center justify-center">
                   <Trophy size={14} className="text-amber-500 dark:text-amber-400" />
@@ -742,7 +742,7 @@ export default function CommandCenterPage() {
                   const goalPct = Math.min(100, m.goalAchievement || 0);
                   const barColor = i === 0 ? 'from-amber-500 to-orange-400' : i === 1 ? 'from-slate-400 to-slate-300' : 'from-violet-600 to-indigo-500';
                   return (
-                    <div key={m.id} className="p-2.5 rounded-xl bg-slate-50/80 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.05] hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors">
+                    <div key={m.id} className="p-2.5 rounded-xl bg-slate-50/80 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.05] hover:bg-violet-50/60 dark:hover:bg-white/[0.07] hover:border-violet-200/60 transition-all duration-200">
                       <div className="flex items-center justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <div className="relative shrink-0">

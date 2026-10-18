@@ -534,7 +534,7 @@ export default function PipelinePage() {
         className="grid grid-cols-1 gap-3 sm:grid-cols-3"
       >
         {/* Active Pipeline */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-900/70">
+        <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#0f111a]/90 card-glow-overlay card-lift depth-2">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Active pipeline</p>
@@ -551,7 +551,7 @@ export default function PipelinePage() {
         </div>
 
         {/* Working set */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-900/70">
+        <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#0f111a]/90 card-glow-overlay card-lift depth-2">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Working set</p>
@@ -565,7 +565,7 @@ export default function PipelinePage() {
         </div>
 
         {/* Needs attention */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-900/70">
+        <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#0f111a]/90 card-glow-overlay card-lift depth-2">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Needs attention</p>

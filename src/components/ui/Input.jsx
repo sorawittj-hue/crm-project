@@ -18,11 +18,11 @@ const Input = React.forwardRef(({ className, type, label, error, hint, icon: Ico
         <input
           type={type}
           className={cn(
-            "flex h-11 w-full rounded-lg border px-3.5 py-2 text-sm transition-colors duration-150 ease-out outline-none",
+            "flex h-11 w-full rounded-xl border px-4 py-2 text-sm transition-all duration-200 ease-out outline-none",
             // Light
-            "bg-white text-slate-900 border-slate-300 placeholder:text-slate-400 hover:border-slate-400 focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20",
+            "bg-white/90 text-slate-900 border-slate-200/90 placeholder:text-slate-400 hover:border-slate-300 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/15 backdrop-blur-md shadow-sm",
             // Dark
-            "dark:bg-[#0c101a] dark:text-white dark:border-white/15 dark:placeholder:text-slate-500 dark:hover:border-white/25 dark:focus:border-violet-400 dark:focus:ring-2 dark:focus:ring-violet-400/25",
+            "dark:bg-[#0c101a]/90 dark:text-white dark:border-white/10 dark:placeholder:text-slate-500 dark:hover:border-white/20 dark:focus:border-violet-400 dark:focus:ring-4 dark:focus:ring-violet-400/20",
             Icon && "pl-10",
             error && "border-rose-500 dark:border-rose-500 focus:ring-rose-500/20",
             className

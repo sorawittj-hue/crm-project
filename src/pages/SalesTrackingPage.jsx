@@ -195,7 +195,7 @@ export default function SalesTrackingPage() {
           whileHover={{ y: -3, scale: 1.015 }}
           whileTap={{ scale: 0.98 }}
           transition={{ type: 'spring', stiffness: 450, damping: 30 }}
-          className="relative overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-white via-violet-50/70 to-indigo-50/60 p-6 shadow-sm transition-shadow hover:shadow-md dark:border-violet-300/10 dark:from-[#111827] dark:via-[#151a2b] dark:to-[#17172b] card-glow-overlay hover-lift"
+          className="relative overflow-hidden rounded-2xl border border-violet-200/80 bg-gradient-to-br from-white via-violet-50/70 to-indigo-50/60 p-6 shadow-sm transition-all hover:shadow-xl dark:border-violet-500/20 dark:from-[#111827] dark:via-[#151a2b] dark:to-[#17172b] card-glow-overlay hover-lift depth-2"
         >
           
           <div className="relative z-10 space-y-4">
@@ -226,7 +226,7 @@ export default function SalesTrackingPage() {
             <div className="space-y-2 pt-2">
               <div className="h-2 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-violet-600 transition-all duration-700 dark:bg-violet-400"
+                  className="h-full rounded-full progress-gradient transition-all duration-700"
                   style={{ width: `${annualProgress}%` }}
                 />
               </div>
@@ -243,7 +243,7 @@ export default function SalesTrackingPage() {
           whileHover={{ y: -3, scale: 1.015 }}
           whileTap={{ scale: 0.98 }}
           transition={{ type: 'spring', stiffness: 450, damping: 30 }}
-          className="p-6 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522] shadow-sm flex flex-col justify-between transition-all hover:shadow-md card-glow-overlay hover-lift"
+          className="p-6 rounded-2xl border border-slate-200/80 bg-white/90 dark:border-white/10 dark:bg-[#111522]/90 backdrop-blur-xl shadow-sm flex flex-col justify-between transition-all hover:shadow-xl card-glow-overlay hover-lift depth-2"
         >
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center gap-3">
@@ -284,7 +284,7 @@ export default function SalesTrackingPage() {
           whileHover={{ y: -3, scale: 1.015 }}
           whileTap={{ scale: 0.98 }}
           transition={{ type: 'spring', stiffness: 450, damping: 30 }}
-          className="p-6 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522] shadow-sm flex flex-col justify-between transition-all hover:shadow-md card-glow-overlay hover-lift"
+          className="p-6 rounded-2xl border border-slate-200/80 bg-white/90 dark:border-white/10 dark:bg-[#111522]/90 backdrop-blur-xl shadow-sm flex flex-col justify-between transition-all hover:shadow-xl card-glow-overlay hover-lift depth-2"
         >
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center gap-3">
@@ -315,7 +315,7 @@ export default function SalesTrackingPage() {
       </motion.div>
 
       {/* CHART SECTION */}
-      <div className="p-6 rounded-3xl bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-sm space-y-4">
+      <div className="p-6 rounded-3xl bg-white/90 dark:bg-[#0f111a]/90 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.6)] space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
             <h3 className="text-base md:text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
