@@ -55,4 +55,16 @@ describe('Customer Intelligence Utilities - Unit Tests', () => {
     expect(result[0].dealStats.wonValue).toBe(500000);
     expect(result[0].health.score).toBeGreaterThan(50);
   });
+  it('displays legacy customer names and links company deals without duplicates', () => {
+    const result = buildCustomerHealth(
+      [{ id: 'legacy-1', contact_name: 'Somchai', company_name: 'Acme' }],
+      [{ id: 'deal-1', company: 'Acme', stage: 'proposal', value: 1000 }],
+      { now: new Date('2026-11-04T00:00:00Z') },
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Somchai');
+    expect(result[0].company).toBe('Acme');
+    expect(result[0].dealStats.total).toBe(1);
+  });
+
 });

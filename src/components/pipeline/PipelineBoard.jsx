@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
-  Search, Filter, Star, TrendingUp, AlertTriangle, CheckSquare, Check,
+  Search, Filter, Star, TrendingUp, AlertTriangle, CheckSquare,
 
   Zap, Users,
   ArrowLeft,
@@ -220,7 +220,7 @@ export default function PipelineBoard({
 
     result = result.filter((deal) => {
       const isClosed = ['won', 'lost'].includes(deal.stage);
-      
+
       if (isClosed) {
         const parsedClose = parseYearMonth(deal.actual_close_date || deal.updated_at || deal.created_at);
         if (!parsedClose) return false;
@@ -361,7 +361,7 @@ export default function PipelineBoard({
         const cloned = [...prev];
         const fromIndex = cloned.findIndex(d => d.id === removed.id);
         if (fromIndex !== -1) cloned.splice(fromIndex, 1);
-        
+
         if (destination.index === 0) {
             const firstItem = stageDeals.find(d => d.id !== removed.id);
             if (firstItem) {
@@ -469,8 +469,8 @@ export default function PipelineBoard({
           <p className="text-slate-500 text-sm mb-8 leading-relaxed font-medium">
             พื้นที่ทำงานหลักสำหรับบริหารจัดการการขายของคุณ เริ่มต้นสร้างดีลแรกของคุณเพื่อติดตามความคืบหน้าและปิดการขายอย่างมืออาชีพ
           </p>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             onClick={() => useAppStore.getState().setIsQuickAddOpen(true)}
             className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/20 px-8 py-6 rounded-2xl text-base font-bold transition-all hover:scale-105"
           >
@@ -522,7 +522,7 @@ export default function PipelineBoard({
               </motion.button>
             );
           })}
-          
+
           <button
             onClick={() => { setBulkMode(b => !b); setBulkSelected(new Set()); }}
             className={cn(
@@ -604,7 +604,7 @@ export default function PipelineBoard({
           >
             <span>เลือกแล้ว {selectedDealIds.length} ดีล</span>
             <div className="h-4 w-px bg-slate-700" />
-            
+
             <div className="flex items-center gap-2">
               <span className="text-slate-400 text-[10px] uppercase font-black">ย้ายด่าน:</span>
               {STAGES.map(sId => (
@@ -709,7 +709,7 @@ export default function PipelineBoard({
                           )}>{deal.probability ?? '—'}%</span>
                           <div className="w-12 h-1 bg-slate-100 rounded-full overflow-hidden">
                             <div className="h-full rounded-full transition-all"
-                              style={{ 
+                              style={{
                                 width: `${deal.probability || 0}%`,
                                 backgroundColor: deal.probability >= 70 ? '#10b981' : deal.probability >= 40 ? '#8b5cf6' : '#cbd5e1'
                               }} />
@@ -786,7 +786,7 @@ export default function PipelineBoard({
                         {...provided.droppableProps}
                         ref={provided.innerRef}
                         className={cn(
-                          'flex-shrink-0 flex flex-col w-[300px] h-full rounded-[1.5rem] border overflow-hidden bg-white/80 dark:bg-[#0d0f1a]/85 backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]',
+                          'flex-shrink-0 flex flex-col w-[270px] h-full rounded-xl border overflow-hidden bg-white/80 dark:bg-[#0d0f1a]/85 backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]',
                           snapshot.isDraggingOver
                             ? `ring-2 ${stage.dragOverClass} transition-none bg-violet-50/40 dark:bg-violet-950/30`
                             : isCritical
@@ -800,7 +800,7 @@ export default function PipelineBoard({
                         {/* Top gradient accent line */}
                         <div
                           className="h-1.5 w-full relative z-10"
-                          style={{ 
+                          style={{
                             background: `linear-gradient(90deg, ${stage.dotColor}, ${stage.dotColor}88)`,
                             boxShadow: `0 0 12px 1px ${stage.dotColor}66`
                           }}
@@ -849,11 +849,11 @@ export default function PipelineBoard({
                         </div>
 
                         {/* Cards */}
-                        <div 
+                        <div
                           className="flex-1 min-h-[180px] overflow-y-auto px-3 py-3 custom-scrollbar-thin"
                         >
-                          <InnerList 
-                            deals={stageDeals} 
+                          <InnerList
+                            deals={stageDeals}
                             stageColor={stage.dotColor}
                             selectedDealId={selectedDealId}
                             pinnedDealIds={pinnedDealIds}
@@ -1016,18 +1016,18 @@ const DealCard = memo(
     ) => {
       const isStagnant = deal.agingDays > 7 && !['won', 'lost'].includes(deal.stage);
       const isHighValue = Number(deal.value) >= 1000000;
-      
+
       const normalizedDeal = useMemo(() => normalizeDealForIntelligence(deal), [deal]);
       const agingTier = getAgingTier(deal.agingDays || 0);
       const urgency = getCloseDateUrgency(normalizedDeal);
-      
+
       const agingBorderColor = {
         fresh: 'border-l-emerald-400',
         watch: 'border-l-amber-400',
         stale: 'border-l-orange-500',
         critical: 'border-l-rose-500'
       };
-      
+
       const showUrgency = !['won', 'lost'].includes(deal.stage) && urgency && ['overdue', 'critical', 'warning'].includes(urgency);
       const urgencyConfig = {
         overdue: { label: `เลยกำหนด ${Math.abs(normalizedDeal.daysUntilClose)} วัน`, color: 'bg-rose-50 text-rose-600 border-rose-200/80', iconAnim: 'animate-pulse' },

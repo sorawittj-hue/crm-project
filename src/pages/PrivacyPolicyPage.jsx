@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="bg-violet-600 p-8 text-white">
-          <Link to="/" className="inline-flex items-center text-violet-200 hover:text-white mb-6 transition-colors">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto bg-white dark:bg-slate-900 dark:text-slate-200 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="bg-slate-900 p-8 text-white">
+          <Link to="/" className="inline-flex items-center text-slate-300 hover:text-white mb-6 transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
             กลับหน้าหลัก
           </Link>
@@ -14,9 +14,9 @@ export default function PrivacyPolicyPage() {
             <Shield className="w-8 h-8" />
             <h1 className="text-3xl font-bold">นโยบายความเป็นส่วนตัว (Privacy Policy)</h1>
           </div>
-          <p className="mt-4 text-violet-100">อัปเดตล่าสุด: มิถุนายน 2026</p>
+          <p className="mt-4 text-slate-300">อัปเดตล่าสุด: มิถุนายน 2026</p>
         </div>
-        
+
         <div className="p-8 prose prose-slate max-w-none">
           <h2>1. ข้อมูลที่เราจัดเก็บ</h2>
           <p>เรารวบรวมข้อมูลที่คุณให้ไว้กับเราโดยตรง เช่น เมื่อคุณสร้างบัญชีผู้ใช้ อัปเดตโปรไฟล์ หรือใช้บริการของเรา ข้อมูลที่จัดเก็บอาจรวมถึง:</p>

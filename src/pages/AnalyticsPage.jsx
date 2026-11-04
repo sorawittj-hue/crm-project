@@ -323,7 +323,7 @@ export default function AnalyticsPage() {
     const prevMonthActual = revenueStream[revenueStream.length - 2]?.actual || 0;
     const growth = prevMonthActual > 0 ? Math.round(((currentMonthActual - prevMonthActual) / prevMonthActual) * 100) : null;
 
-    // Stage Distribution
+    // สัดส่วนขั้นตอนดีล
     const stageData = [];
     const stageOrder = ['lead', 'contact', 'proposal', 'negotiation', 'won', 'lost'];
     stageOrder.forEach(stage => {
@@ -649,15 +649,14 @@ Win Rate: ${intel.winRate || 0}%
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                aria-pressed={isActive}
                 onClick={() => { setActiveTab(tab.id); setSelectedPrompt(null); }}
                 className={cn(
                   'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap cursor-pointer',
-                  isActive ? 'bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-[0_8px_24px_rgba(139,92,246,0.4)] ring-1 ring-white/20' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white hover:shadow-sm'
+                  isActive ? 'bg-violet-100 text-violet-800 dark:bg-violet-400/15 dark:text-violet-200' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white hover:shadow-sm'
                 )}
               >
-                {isActive && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)] animate-pulse" />
-                )}
+
                 <Icon size={14} strokeWidth={2.5} />
                 {tab.label}
               </motion.button>
@@ -690,8 +689,8 @@ Win Rate: ${intel.winRate || 0}%
                       <Sparkles size={20} className="text-violet-300" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-white tracking-tight">AI Executive Insights</h3>
-                      <p className="text-xs text-slate-400 font-medium">Recommended actions to hit quota and reduce risk.</p>
+                      <h3 className="text-lg font-bold text-white tracking-tight">ประเด็นที่ควรติดตาม</h3>
+                      <p className="text-xs text-slate-400 font-medium">งานที่ช่วยให้ทีมเข้าใกล้เป้าหมายและลดความเสี่ยง</p>
                     </div>
                   </div>
 
@@ -781,8 +780,8 @@ Win Rate: ${intel.winRate || 0}%
                 <Card className="lg:col-span-2 p-7 rounded-[2rem] bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 dark:ring-white/5 relative overflow-hidden group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 dark:hover:border-violet-500/20 hover:-translate-y-0.5 transition-all duration-300">
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-8">
                     <div>
-                      <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">Revenue Trend</h3></div>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Actuals vs Forecast vs Goal</p>
+                      <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">แนวโน้มยอดขาย</h3></div>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">ยอดขายจริง เทียบคาดการณ์และเป้าหมาย</p>
                     </div>
                     <div className="flex items-center gap-5 bg-slate-50 dark:bg-white/[0.04] px-4 py-2 rounded-2xl border border-slate-200/60 dark:border-white/[0.06]">
                       <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" /><span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Actual</span></div>
@@ -816,7 +815,7 @@ Win Rate: ${intel.winRate || 0}%
                         </defs>
                         <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(148, 163, 184, 0.15)" />
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} dy={15} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={formatCurrency} dx={-10} />
                         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.05)' }} />
                         <Bar dataKey="unweighted" name="Pipeline Volume" fill="url(#colorPipeline)" radius={[8, 8, 0, 0]} barSize={40} isAnimationActive={false} />
                         <Area type="monotone" dataKey="actual" name="Actual Revenue" stroke="#10b981" strokeWidth={4} fill="url(#colorActualAnalytics)" isAnimationActive={false} />
@@ -830,8 +829,8 @@ Win Rate: ${intel.winRate || 0}%
 
                 <Card className="lg:col-span-1 p-7 rounded-[2rem] bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 dark:ring-white/5 flex flex-col items-center group hover:shadow-[0_8px_32px_rgba(139,92,246,0.10)] hover:border-violet-100 dark:hover:border-violet-500/20 hover:-translate-y-0.5 transition-all duration-300">
                   <div className="w-full mb-6">
-                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">Stage Distribution</h3></div>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Pipeline health by volume</p>
+                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-violet-500/20" style={{background: 'linear-gradient(135deg, #7c3aed, #6d28d9)'}}><Sparkles size={18} /></div><h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">สัดส่วนขั้นตอนดีล</h3></div>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">จำนวนดีลในแต่ละขั้นตอน</p>
                   </div>
                   <div className="relative w-full aspect-square max-w-[260px] min-w-0 min-h-0">
                     <SafeResponsiveContainer>
@@ -1003,7 +1002,7 @@ Win Rate: ${intel.winRate || 0}%
                       <ComposedChart data={analytics?.forecastAccuracyData}>
                         <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(148, 163, 184, 0.15)" />
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} dy={15} />
-                        <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
+                        <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={formatCurrency} dx={-10} />
                         <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v}%`} dx={10} />
                         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.05)' }} />
                         <Bar yAxisId="left" dataKey="forecast" name="Forecast" fill="#cbd5e1" radius={[4, 4, 0, 0]} barSize={30} isAnimationActive={false} opacity={0.6} />
@@ -1247,7 +1246,7 @@ Win Rate: ${intel.winRate || 0}%
                     <ComposedChart data={analytics?.revenueByMember}>
                       <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(148, 163, 184, 0.15)" />
                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} dy={15} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={formatCurrency} dx={-10} />
                       <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.05)' }} />
                       {(teamMembers || []).map((m, idx) => (
                         <Area
@@ -1462,7 +1461,7 @@ Win Rate: ${intel.winRate || 0}%
                         </defs>
                         <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(148, 163, 184, 0.15)" />
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000000}M`} dx={-10} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: '700' }} tickFormatter={formatCurrency} dx={-10} />
                         <Tooltip content={<CustomTooltip />} />
                         <Bar dataKey="revenue" name="Closed Won Revenue" fill="url(#colorTierRevenue)" radius={[6, 6, 0, 0]} barSize={25} isAnimationActive={false} />
                         <Bar dataKey="pipeline" name="Active Pipeline" fill="url(#colorTierPipeline)" radius={[6, 6, 0, 0]} barSize={25} isAnimationActive={false} />
@@ -1490,7 +1489,7 @@ Win Rate: ${intel.winRate || 0}%
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="4 4" horizontal={false} stroke="rgba(148, 163, 184, 0.15)" />
-                          <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: '700' }} tickFormatter={(v) => `${v / 1000}k`} />
+                          <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: '700' }} tickFormatter={formatCurrency} />
                           <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: '700' }} width={80} />
                           <Tooltip content={<CustomTooltip />} />
                           <Bar dataKey="revenue" name="Revenue" fill="url(#colorIndustryRevenue)" radius={[0, 6, 6, 0]} barSize={16} isAnimationActive={false} />

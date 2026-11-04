@@ -38,7 +38,7 @@ export default function CustomerTimeline({ customer, deals = [], allActivities =
     // Get all deal IDs linked to this customer
     const customerDealIds = new Set(
       deals
-        .filter(d => d.customer_id === customer?.id || 
+        .filter(d => d.customer_id === customer?.id ||
           (customer?.company && d.company?.toLowerCase() === customer?.company?.toLowerCase()))
         .map(d => d.id)
     );
@@ -72,7 +72,7 @@ export default function CustomerTimeline({ customer, deals = [], allActivities =
           {/* Date separator */}
           <div className="flex items-center gap-3 mb-3">
             <div className="h-px flex-1 bg-slate-100 dark:bg-white/10" />
-            <span className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2">
+            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2">
               {dateLabel}
             </span>
             <div className="h-px flex-1 bg-slate-100 dark:bg-white/10" />

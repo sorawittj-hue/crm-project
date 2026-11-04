@@ -12,7 +12,7 @@ import { Input } from '../components/ui/Input';
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../components/ui/Dialog';
 import { Textarea } from '../components/ui/Textarea';
 import { motion, AnimatePresence } from 'framer-motion';
-import { containerVariants, cardVariants, hoverLiftSoft } from '../lib/animations';
+import { containerVariants, cardVariants } from '../lib/animations';
 import { cn } from '../lib/utils';
 import { formatCurrency, formatFullCurrency } from '../lib/formatters';
 import { STAGE_LABELS } from '../lib/constants';
@@ -666,7 +666,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
           {/* ── TIMELINE tab ── */}
           {activeTab === 'timeline' && (
             <motion.div key="timeline" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="p-6 space-y-4">
-              <CustomerTimeline 
+              <CustomerTimeline
                 customer={customer}
                 deals={deals || []}
                 allActivities={allActivities || []}
@@ -840,7 +840,7 @@ export default function CustomersPage() {
   const [newCustomer, setNewCustomer] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState('list');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
   const [localCustomer, setLocalCustomer] = useState(null);
@@ -1008,7 +1008,7 @@ export default function CustomersPage() {
         isSidebarOpen ? 'pr-0' : ''
       )}>
         {/* ── LEFT: Main content ── */}
-        <div className={cn('flex-1 min-w-0 space-y-5 transition-all duration-500', isSidebarOpen && 'lg:max-w-[calc(100%-420px)]')}>
+        <div className={cn('flex-1 min-w-0 space-y-5 transition-all duration-500', isSidebarOpen && '2xl:max-w-[calc(100%-420px)]')}>
           {/* Header */}
           <PageHeader
             icon={Users}
@@ -1228,7 +1228,7 @@ export default function CustomersPage() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 40 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-y-0 right-0 z-50 w-full max-w-[400px] lg:relative lg:inset-auto lg:z-auto lg:w-[400px] shrink-0 bg-white dark:bg-[#0d0f1a] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.08)] dark:shadow-[0_0_40px_rgba(0,0,0,0.6)] overflow-hidden lg:sticky lg:top-4 h-[100dvh] lg:h-[calc(100vh-6rem)]"
+              className="fixed inset-y-0 right-0 z-50 w-full max-w-[400px] 2xl:relative 2xl:inset-auto 2xl:z-auto 2xl:w-[400px] shrink-0 bg-white dark:bg-[#0d0f1a] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.08)] dark:shadow-[0_0_40px_rgba(0,0,0,0.6)] overflow-hidden 2xl:sticky 2xl:top-4 h-[100dvh] 2xl:h-[calc(100vh-6rem)]"
             >
               <CustomerDetailPanel
                 customer={selectedCustomer}

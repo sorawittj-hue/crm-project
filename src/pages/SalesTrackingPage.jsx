@@ -61,7 +61,8 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 export default function SalesTrackingPage() {
-  const currentYear = new Date().getFullYear();
+  const calendarYear = new Date().getFullYear();
+  const [currentYear, setCurrentYear] = useState(calendarYear);
   const currentMonth = new Date().getMonth() + 1;
   const { monthlyTarget, openPaywall } = useAppStore();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
@@ -90,7 +91,7 @@ export default function SalesTrackingPage() {
     const data = [];
     let cumulative = 0;
     for (const m of MONTHS) {
-      const isCurrentMonth = m.value === currentMonth;
+      const isCurrentMonth = currentYear === calendarYear && m.value === currentMonth;
       let amount = 0;
       if (isCurrentMonth) {
         amount = currentMonthPipelineSales;
@@ -105,7 +106,7 @@ export default function SalesTrackingPage() {
       });
     }
     return data;
-  }, [dbSales, currentMonthPipelineSales, currentMonth, currentYear]);
+  }, [dbSales, currentMonthPipelineSales, currentMonth, currentYear, calendarYear]);
 
   const totalYearlySales = mergedSalesData[mergedSalesData.length - 1].cumulative;
   const annualProgress = annualTarget > 0 ? Math.min(100, Math.round((totalYearlySales / annualTarget) * 100)) : 0;
@@ -155,7 +156,10 @@ export default function SalesTrackingPage() {
         title={`ติดตามยอดขายประจำปี ${currentYear + 543}`}
         description="วิเคราะห์เป้าหมาย ยอดขายรายเดือน และยอดรวมสะสมแบบเรียลไทม์"
         rightContent={
-          <div className="flex items-center gap-2 bg-white/80 dark:bg-white/[0.06] backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-sm">
+          <div className="flex flex-wrap items-center gap-2 bg-white/80 dark:bg-white/[0.06] backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-sm">
+            <select aria-label="ปีที่แสดงยอดขาย" value={currentYear} onChange={event => { setCurrentYear(Number(event.target.value)); setEditingMonth(null); setEditValues({}); }} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200">
+              {Array.from({length: 5}, (_, index) => calendarYear - index).map(year => <option key={year} value={year}>ปี {year + 543}</option>)}
+            </select>
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
@@ -199,7 +203,7 @@ export default function SalesTrackingPage() {
           transition={{ type: 'spring', stiffness: 450, damping: 30 }}
           className="relative overflow-hidden rounded-2xl border border-violet-200/80 bg-gradient-to-br from-white via-violet-50/70 to-indigo-50/60 p-6 shadow-sm transition-all hover:shadow-xl dark:border-violet-500/20 dark:from-[#111827] dark:via-[#151a2b] dark:to-[#17172b] card-glow-overlay hover-lift depth-2"
         >
-          
+
           <div className="relative z-10 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

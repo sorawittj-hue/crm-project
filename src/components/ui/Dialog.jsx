@@ -65,7 +65,7 @@ function DialogContent({ className = '', children, showCloseButton = true, ...pr
         <motion.div
           {...overlayMotion}
           aria-hidden="true"
-          className="fixed inset-0 z-[100] overflow-hidden bg-slate-950/65 backdrop-blur-[7px]"
+          className="fixed inset-0 z-[100] overflow-hidden bg-slate-950/65 backdrop-blur-sm"
         >
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_8%,rgba(139,92,246,0.20),transparent_48%)]" />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_85%_90%,rgba(56,189,248,0.08),transparent_38%)]" />
@@ -90,7 +90,7 @@ function DialogContent({ className = '', children, showCloseButton = true, ...pr
           <div
             className={cn(
               'relative isolate w-full overflow-hidden border border-white/70 bg-white/95 text-slate-900 shadow-[0_32px_100px_rgba(2,6,23,0.38),0_8px_30px_rgba(109,40,217,0.16)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#0f111a]/95 dark:text-white dark:shadow-[0_32px_100px_rgba(0,0,0,0.62)]',
-              placement === 'right' ? 'h-dvh max-h-none max-w-xl rounded-l-[28px] rounded-r-none' : 'max-h-[90dvh] max-w-lg rounded-[28px]',
+              placement === 'right' ? 'h-dvh max-h-none max-w-xl rounded-l-2xl rounded-r-none' : 'max-h-[90dvh] max-w-lg rounded-2xl',
               dialogClassName,
               className
             )}

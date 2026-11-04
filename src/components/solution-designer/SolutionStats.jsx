@@ -41,7 +41,7 @@ const SolutionStats = ({ rackItems }) => {
                     </span>
                     {isOverloaded && <span className="text-xs font-bold text-red-600 flex items-center gap-1 bg-red-100 px-2 py-0.5 rounded-full"><AlertCircle size={12} /> OVERLOAD</span>}
                 </div>
-                <div className="text-2xl font-black text-text-main mb-1">
+                <div className="text-2xl font-semibold text-text-main mb-1">
                     {stats.totalWatts.toLocaleString()} <span className="text-sm font-medium text-gray-400">Watts</span>
                 </div>
 
@@ -88,7 +88,7 @@ const SolutionStats = ({ rackItems }) => {
                 <div className="text-xs font-bold text-accent mb-1 flex items-center gap-1">
                     <CircleDollarSign size={14} /> Estimated Hardware Cost
                 </div>
-                <div className="text-2xl font-black text-accent">
+                <div className="text-2xl font-semibold text-accent">
                     {formatCurrency(stats.totalPrice)}
                 </div>
                 <p className="text-[10px] text-accent/60 mt-1">*Excluding licensing & implementation</p>

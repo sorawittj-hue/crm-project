@@ -16,7 +16,7 @@ export function TargetsSection() {
 
   const { openPaywall } = useAppStore();
   const { shouldBlockBasic, isGuestAccount } = useSubscription();
-  
+
   const [targetForm, setTargetForm] = useState(null);
   const [savingTargets, setSavingTargets] = useState(false);
 
@@ -46,11 +46,11 @@ export function TargetsSection() {
   };
 
   return (
-    <Card className="p-8 rounded-[2rem] bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
+    <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">เป้าหมายยอดขาย</h2>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">เป้าหมายยอดขาย</h2>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">กำหนดเป้าหมายรายเดือนของทีม</p>
         </div>
         {!targetForm && (
@@ -72,7 +72,7 @@ export function TargetsSection() {
               </div>
               <p className="text-sm font-bold text-slate-700 dark:text-slate-200">เป้าหมายรวมทีม (ต่อเดือน)</p>
             </div>
-            <p className="text-2xl font-black tabular-nums tracking-tight text-violet-700 dark:text-violet-400">{formatFullCurrency(settings?.monthly_target)}</p>
+            <p className="text-2xl font-semibold tabular-nums tracking-tight text-violet-700 dark:text-violet-400">{formatFullCurrency(settings?.monthly_target)}</p>
           </div>
           <p className="text-xs font-medium text-slate-400 dark:text-slate-500 px-2">
             💡 เป้าหมายยอดขายส่วนตัวของแต่ละคน สามารถตั้งค่าแยกได้ที่หน้า <span className="font-bold text-violet-600 dark:text-violet-400">บัญชีผู้ใช้</span>

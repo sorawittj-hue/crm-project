@@ -55,7 +55,7 @@ function EmailTemplates() {
   const getCatConfig = (id) => CATEGORIES.find(c => c.id === id) || CATEGORIES[5];
 
   const filtered = templates.filter(t =>
-    !search || 
+    !search ||
     (t.name || '').toLowerCase().includes(search.toLowerCase()) ||
     (t.subject || '').toLowerCase().includes(search.toLowerCase()) ||
     (t.category || '').toLowerCase().includes(search.toLowerCase())
@@ -322,7 +322,7 @@ function EmailTemplates() {
 
 // ─── Deal ROI Calculator ───────────────────────────────────────────────────────
 function DealCalculator() {
-  
+
   const [dealValue, setDealValue] = useState('');
   const [cost, setCost] = useState('');
   const [probability, setProbability] = useState('70');
@@ -408,7 +408,7 @@ function DealCalculator() {
               { label: 'Expected Profit', value: formatCurrency(calc.expectedProfit), color: 'text-violet-700 dark:text-violet-300', bg: 'bg-gradient-to-br from-violet-50/80 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/20', border: 'border-violet-200/60 dark:border-violet-500/20' },
               { label: 'รายได้ต่อเดือน', value: formatCurrency(calc.monthlyRevenue), color: 'text-blue-700 dark:text-blue-300', bg: 'bg-gradient-to-br from-violet-50/80 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/20', border: 'border-violet-200/60 dark:border-violet-500/20' },
             ].map((m, i) => (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={m.label} 
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={m.label}
                 className={cn('p-5 rounded-2xl border shadow-sm', m.bg, m.border)}>
                 <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">{m.label}</p>
                 <p className={cn('text-lg sm:text-xl font-black tabular-nums tracking-tight', m.color)}>{m.value}</p>
@@ -420,7 +420,7 @@ function DealCalculator() {
             <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">ฉากทัศน์คาดการณ์ (Forecast Scenarios)</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {SCENARIOS.map((s, i) => (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 + (i * 0.1) }} 
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 + (i * 0.1) }}
                   key={s.label} className={cn('p-5 rounded-2xl border bg-gradient-to-br shadow-sm relative overflow-hidden group', s.bg, s.border)}>
                   <div className="absolute inset-0 bg-white/20 dark:bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <p className={cn('text-[10px] font-black uppercase tracking-wider mb-1 opacity-70', s.text)}>{s.label}</p>
@@ -549,41 +549,24 @@ export default function ToolsPage() {
         badge={<span className="text-[10px] font-bold text-violet-500 uppercase tracking-widest mt-1 ml-2">Nova Pipeline</span>}
       />
 
-      <label htmlFor="tool-selection" className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200 md:hidden">เลือกเครื่องมือ</label>
-      <select id="tool-selection" value={activeTab} onChange={e => setActiveTab(e.target.value)} className="mb-5 h-12 w-full rounded-xl border border-slate-300 bg-white px-3 text-slate-900 dark:border-white/20 dark:bg-slate-900 dark:text-white md:hidden">
+      <label htmlFor="tool-selection" className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200 lg:hidden">เลือกเครื่องมือ</label>
+      <select id="tool-selection" value={activeTab} onChange={e => setActiveTab(e.target.value)} className="mb-5 h-12 w-full rounded-xl border border-slate-300 bg-white px-3 text-slate-900 dark:border-white/20 dark:bg-slate-900 dark:text-white lg:hidden">
         {TOOLS.map(tool => <option key={tool.key} value={tool.key}>{tool.title}</option>)}
       </select>
-      {/* Tab List */}
-      <div className="hidden md:block mb-8 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 pb-1">
-        <div className="inline-flex gap-1.5 bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 p-1.5 rounded-2xl shadow-sm min-w-max">
+      <div className="lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-6">
+      <nav aria-label="หมวดเครื่องมือ" className="hidden lg:block">
+        <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">เครื่องมือสำหรับทีมขาย</p>
+        <div className="space-y-1">
           {TOOLS.map(tool => {
             const Icon = tool.icon;
-            const isActive = activeTab === tool.key;
-            return (
-              <motion.button
-                key={tool.key}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                onClick={() => setActiveTab(tool.key)}
-                className={cn(
-                  'relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap cursor-pointer',
-                  isActive
-                    ? `bg-gradient-to-r ${tool.gradient} text-white shadow-md ${tool.shadowClass}`
-                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white'
-                )}
-              >
-                <Icon size={14} strokeWidth={2.5} />
-                {tool.title}
-                {isActive && (
-                  <span className="absolute inset-0 rounded-xl ring-1 ring-white/20" />
-                )}
-              </motion.button>
-            );
+            return <button key={tool.key} type="button" onClick={() => setActiveTab(tool.key)} aria-current={activeTab === tool.key ? 'page' : undefined} className={cn('w-full rounded-xl p-3 text-left transition-colors', activeTab === tool.key ? 'bg-violet-100 text-violet-800 dark:bg-violet-400/15 dark:text-violet-200' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5')}>
+              <span className="flex items-center gap-3 text-sm font-semibold"><Icon size={17} />{tool.title}</span>
+              <span className="mt-1 block pl-7 text-xs leading-5 opacity-75">{tool.subtitle}</span>
+            </button>;
           })}
         </div>
-      </div>
-
+      </nav>
+      <div className="min-w-0">
       {/* Active Tool Panel */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -596,10 +579,10 @@ export default function ToolsPage() {
         >
           {/* Glass glare effect */}
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-10" />
-          
+
           <div className={`h-1.5 bg-gradient-to-r ${activeTool.gradient} relative z-10`} />
 
-          <div className="px-6 py-8 md:px-10 md:py-8 border-b border-slate-100 dark:border-white/5 relative bg-gradient-to-b from-white/40 dark:from-white/[0.02] to-transparent">
+          <div className="px-5 py-5 md:px-6 border-b border-slate-100 dark:border-white/5 relative bg-gradient-to-b from-white/40 dark:from-white/[0.02] to-transparent">
             <div className="flex flex-col sm:flex-row sm:items-center gap-5 relative z-10">
               <div className={cn("w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center text-white shadow-md shrink-0", activeTool.gradient, activeTool.shadowClass || "shadow-violet-500/30")}>
                 <activeTool.icon size={26} strokeWidth={2.5} />
@@ -616,11 +599,12 @@ export default function ToolsPage() {
             </div>
           </div>
 
-          <div className="p-6 md:p-10 relative z-10">
+          <div className="p-5 md:p-6 relative z-10">
             {ActiveComponent && <ActiveComponent />}
           </div>
         </motion.div>
       </AnimatePresence>
+      </div></div>
     </motion.div>
   );
 }

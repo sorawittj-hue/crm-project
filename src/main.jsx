@@ -4,6 +4,7 @@ import App from './App.jsx'
 import { ToastProvider } from './components/ui/Toast.jsx'
 import ErrorBoundary from './components/layout/ErrorBoundary.jsx'
 import './index.css'
+import './workspace.css'
 
 // Suppress harmless third-party and Vercel injected console warnings
 const originalWarn = console.warn;

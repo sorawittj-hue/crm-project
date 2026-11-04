@@ -28,7 +28,7 @@ export function AccountSection() {
   const { data: myProfile } = useMyProfile(user?.id);
   const updatePersonalTarget = useUpdateMyPersonalTarget();
   const { success, error } = useToast();
-  
+
   const isAdmin = myProfile?.role === 'admin';
 
   const [personalTargetForm, setPersonalTargetForm] = useState(null);
@@ -97,11 +97,11 @@ export function AccountSection() {
 
   return (
     <div className="space-y-6">
-      <Card className="p-8 rounded-[2rem] bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
+      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
         <div className="flex items-center justify-between relative z-10">
           <div>
-            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight relative z-10">โปรไฟล์ของคุณ</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight relative z-10">โปรไฟล์ของคุณ</h2>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1 relative z-10">ข้อมูลส่วนตัวและภาพประจำตัว</p>
           </div>
           {!isEditingProfile && (
@@ -150,17 +150,17 @@ export function AccountSection() {
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
-                <Button 
-                  type="button" 
-                  variant="ghost" 
+                <Button
+                  type="button"
+                  variant="ghost"
                   onClick={() => setIsEditingProfile(false)}
                   className="flex-1 h-9 rounded-xl text-slate-500 dark:text-slate-400 text-xs border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
                   disabled={savingProfile}
                 >
                   ยกเลิก
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="flex-1 h-9 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-semibold border-0 shadow-md shadow-violet-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
                   disabled={savingProfile}
                 >
@@ -172,7 +172,7 @@ export function AccountSection() {
           ) : (
             <div className={cn("flex items-center gap-4 p-5 rounded-2xl border transition-all duration-300", theme.text)}>
               <div className={cn("p-0.5 rounded-2xl bg-gradient-to-br shrink-0", theme.ring)}>
-                <div className={cn("w-12 h-12 rounded-[14px] flex items-center justify-center text-white text-xl font-black shadow-inner border border-white/20", theme.bg)}>
+                <div className={cn("w-12 h-12 rounded-[14px] flex items-center justify-center text-white text-xl font-semibold shadow-inner border border-white/20", theme.bg)}>
                   {(user?.user_metadata?.full_name || user?.email || 'U').charAt(0).toUpperCase()}
                 </div>
               </div>
@@ -200,7 +200,7 @@ export function AccountSection() {
       </Card>
 
       {/* Personal Target Card */}
-      <Card className="p-8 rounded-[2rem] bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
+      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
         <div className="flex items-center justify-between relative z-10">
           <div>
@@ -225,7 +225,7 @@ export function AccountSection() {
               </div>
               <p className="text-sm font-medium text-slate-600 dark:text-slate-300">เป้าหมายรายเดือน</p>
             </div>
-            <p className="text-xl font-black tabular-nums text-violet-600 dark:text-violet-400">
+            <p className="text-xl font-semibold tabular-nums text-violet-600 dark:text-violet-400">
               {myProfile?.personal_target > 0 ? formatFullCurrency(myProfile.personal_target) : '—'}
             </p>
           </div>
@@ -257,7 +257,7 @@ export function AccountSection() {
       </Card>
 
       {/* Privacy & Legal Card */}
-      <Card className="p-8 rounded-[2rem] bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-6 relative overflow-hidden">
+      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-rose-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
         <div className="relative z-10">
           <h3 className="text-base font-bold text-slate-900 dark:text-white">การจัดการข้อมูลและความเป็นส่วนตัว</h3>

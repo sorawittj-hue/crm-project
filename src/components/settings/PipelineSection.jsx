@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../ui/Card';
 import { cn } from '../../lib/utils';
 import { STAGES as DEFAULT_STAGES } from '../../lib/constants';
@@ -30,10 +30,6 @@ export function PipelineSection() {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ label: '', color: 'indigo' });
 
-  useEffect(() => {
-    loadStages();
-  }, []);
-
   async function loadStages() {
     setIsLoading(true);
     const data = await fetchPipelineStages();
@@ -51,12 +47,16 @@ export function PipelineSection() {
     setIsLoading(false);
   }
 
+  useEffect(() => {
+    loadStages();
+  }, []);
+
   const handleDragEnd = (result) => {
     if (!result.destination) return;
     const items = Array.from(stages);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
-    
+
     const newStages = items.map((item, index) => ({ ...item, position: index }));
     setStages(newStages);
     saveStages(newStages);
@@ -100,7 +100,7 @@ export function PipelineSection() {
     const isTemp = String(id).startsWith('temp_');
     const newStages = stages.filter(s => s.id !== id).map((s, i) => ({ ...s, position: i }));
     setStages(newStages);
-    
+
     if (!isTemp) {
       setIsSaving(true);
       try {
@@ -125,11 +125,11 @@ export function PipelineSection() {
   };
 
   return (
-    <Card className="p-8 rounded-[2rem] bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
+    <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
       <div className="flex items-center justify-between mb-8 relative z-10">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">ขั้นตอนดีล (Pipeline Stages)</h2>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">ขั้นตอนดีล (Pipeline Stages)</h2>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 text-xs font-bold mr-2">{stages.length} ขั้นตอน</span>
             ปรับแต่งลำดับขั้นตอนของคุณ
@@ -154,11 +154,11 @@ export function PipelineSection() {
               {(provided) => (
                 <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3 relative min-h-[100px]">
                   <div className="absolute left-[33px] top-6 bottom-6 w-px bg-gradient-to-b from-indigo-200 via-violet-200 to-rose-200 dark:from-indigo-800 dark:via-violet-800 dark:to-rose-800" />
-                  
+
                   {stages.map((s, i) => {
                     const style = getStageStyle(s.color);
                     const isEditing = editingId === s.id;
-                    
+
                     return (
                       <Draggable key={s.id} draggableId={String(s.id)} index={i} isDragDisabled={editingId !== null}>
                         {(provided, snapshot) => (
@@ -173,7 +173,7 @@ export function PipelineSection() {
                             <div {...provided.dragHandleProps} className="text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 cursor-grab active:cursor-grabbing p-1">
                               <GripVertical size={20} />
                             </div>
-                            
+
                             <div className="relative z-10 flex-shrink-0">
                               <div className={cn('w-[10px] h-[10px] rounded-full ring-4 ring-white dark:ring-[#171926] shadow-sm', style.dot)} />
                             </div>

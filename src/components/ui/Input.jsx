@@ -2,10 +2,13 @@ import * as React from "react"
 import { cn } from "../../lib/utils"
 
 const Input = React.forwardRef(({ className, type, label, error, hint, icon: Icon, ...props }, ref) => {
+  const generatedId = React.useId()
+  const inputId = props.id || generatedId
+  const messageId = `${inputId}-message`
   return (
     <div className="relative w-full">
       {label && (
-        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+        <label htmlFor={inputId} className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
           {label}
         </label>
       )}
@@ -16,6 +19,9 @@ const Input = React.forwardRef(({ className, type, label, error, hint, icon: Ico
           </div>
         )}
         <input
+          id={inputId}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error || hint ? messageId : undefined}
           type={type}
           className={cn(
             "flex h-11 w-full rounded-xl border px-4 py-2 text-sm transition-all duration-200 ease-out outline-none",
@@ -31,8 +37,8 @@ const Input = React.forwardRef(({ className, type, label, error, hint, icon: Ico
           {...props}
         />
       </div>
-      {error && <p className="mt-1.5 text-[11px] font-semibold text-rose-500 ml-0.5">{error}</p>}
-      {hint && !error && <p className="mt-1.5 text-[11px] font-medium text-slate-400 dark:text-slate-500 ml-0.5">{hint}</p>}
+      {error && <p id={messageId} role="alert" className="mt-1.5 text-[11px] font-semibold text-rose-500 ml-0.5">{error}</p>}
+      {hint && !error && <p id={messageId} className="mt-1.5 text-[11px] font-medium text-slate-400 dark:text-slate-500 ml-0.5">{hint}</p>}
     </div>
   )
 })

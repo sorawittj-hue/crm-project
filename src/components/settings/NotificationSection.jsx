@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Card } from '../ui/Card';
 import { cn } from '../../lib/utils';
-import { 
-  Bell, Volume2, ShieldAlert, CalendarClock, Briefcase, 
+import {
+  Bell, Volume2, ShieldAlert, CalendarClock, Briefcase,
   Clock, BarChart2, Play, Info
 } from 'lucide-react';
 import { useToast } from '../ui/Toast';
@@ -27,7 +27,7 @@ function playNotificationChime() {
     if (!AudioContext) return;
     const ctx = new AudioContext();
     const now = ctx.currentTime;
-    
+
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     osc1.type = 'sine';
@@ -37,7 +37,7 @@ function playNotificationChime() {
     gain1.gain.setValueAtTime(0, now);
     gain1.gain.linearRampToValueAtTime(0.08, now + 0.05);
     gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
-    
+
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
     osc2.type = 'sine';
@@ -47,7 +47,7 @@ function playNotificationChime() {
     gain2.gain.setValueAtTime(0, now);
     gain2.gain.linearRampToValueAtTime(0.08, now + 0.13);
     gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
-    
+
     osc1.start(now);
     osc1.stop(now + 0.4);
     osc2.start(now + 0.08);
@@ -162,12 +162,12 @@ export function NotificationSection() {
   ];
 
   return (
-    <Card className="p-8 rounded-[2rem] bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
+    <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
-      
+
       <div className="flex items-center justify-between mb-8 relative z-10">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">ตั้งค่าการแจ้งเตือน (Notification Settings)</h2>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">ตั้งค่าการแจ้งเตือน (Notification Settings)</h2>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">ตั้งค่าช่องทางการรับข่าวสาร เสียง และตัวกรองอัจฉริยะ</p>
         </div>
       </div>
@@ -187,8 +187,8 @@ export function NotificationSection() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button 
-                onClick={playNotificationChime} 
+              <button
+                onClick={playNotificationChime}
                 className="p-2 hover:bg-slate-200/60 dark:hover:bg-white/10 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl transition-all cursor-pointer"
                 title="ทดสอบเสียงกระดิ่ง"
               >
@@ -242,18 +242,18 @@ export function NotificationSection() {
         {/* Categories Section */}
         <div className="space-y-3 pt-2">
           <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 tracking-tight">เลือกเปิด/ปิด แต่ละประเภทการแจ้งเตือน</h3>
-          
+
           <div className="space-y-2">
             {CATEGORY_ITEMS.map((cat) => {
               const Icon = cat.icon;
               const isEnabled = settings.enabledCategories[cat.id];
               return (
-                <div 
-                  key={cat.id} 
+                <div
+                  key={cat.id}
                   className={cn(
                     "flex items-start justify-between p-4 rounded-2xl border transition-all duration-300",
-                    isEnabled 
-                      ? "bg-white dark:bg-[#171926] border-slate-100 dark:border-white/10 hover:border-violet-100 dark:hover:border-violet-500/30 hover:shadow-sm" 
+                    isEnabled
+                      ? "bg-white dark:bg-[#171926] border-slate-100 dark:border-white/10 hover:border-violet-100 dark:hover:border-violet-500/30 hover:shadow-sm"
                       : "bg-slate-50/50 dark:bg-white/[0.02] border-slate-100 dark:border-white/[0.06] opacity-60"
                   )}
                 >

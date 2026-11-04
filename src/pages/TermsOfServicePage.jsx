@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto bg-white dark:bg-slate-900 dark:text-slate-200 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div className="bg-slate-900 p-8 text-white">
           <Link to="/" className="inline-flex items-center text-slate-300 hover:text-white mb-6 transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -16,7 +16,7 @@ export default function TermsOfServicePage() {
           </div>
           <p className="mt-4 text-slate-400">อัปเดตล่าสุด: มิถุนายน 2026</p>
         </div>
-        
+
         <div className="p-8 prose prose-slate max-w-none">
           <h2>1. การยอมรับข้อตกลง</h2>
           <p>เมื่อคุณเข้าถึงและใช้บริการของ Zenith CRM (&ldquo;บริการ&rdquo;) หมายความว่าคุณได้อ่าน เข้าใจ และตกลงที่จะปฏิบัติตามข้อตกลงและเงื่อนไขเหล่านี้ทุกประการ หากคุณไม่เห็นด้วยกับข้อตกลงนี้ โปรดงดเว้นจากการใช้บริการของเรา</p>

@@ -7,7 +7,7 @@ import SolutionStats from './SolutionStats';
 import BundleLibrary from './BundleLibrary';
 
 const SolutionLayout = ({ deals, onUpdateDeal }) => {
-    // Rack State: Array of 42 slots (1 to 42). 
+    // Rack State: Array of 42 slots (1 to 42).
     // Each slot can hold a reference to an item.
     const [rackItems, setRackItems] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -224,18 +224,18 @@ ${rackItems.sort((a, b) => b.uPosition - a.uPosition).map(i => `- [U${i.uPositio
             )}
 
             <div className="w-1/4 min-w-[320px] flex flex-col gap-4">
-                <div className="bg-surface rounded-3xl p-6 shadow-clay-md border border-white/60 h-full overflow-hidden flex flex-col">
+                <div className="bg-surface rounded-xl p-6 shadow-clay-md border border-white/60 h-full overflow-hidden flex flex-col">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex bg-gray-100 dark:bg-gray-900 p-1 rounded-xl w-full">
                             <button
                                 onClick={() => setLeftPanelTab('library')}
-                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-black transition-all ${leftPanelTab === 'library' ? 'bg-white dark:bg-gray-800 shadow-sm text-accent' : 'text-text-muted hover:text-text-main'}`}
+                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${leftPanelTab === 'library' ? 'bg-white dark:bg-gray-800 shadow-sm text-accent' : 'text-text-muted hover:text-text-main'}`}
                             >
                                 COMPONENTS
                             </button>
                             <button
                                 onClick={() => setLeftPanelTab('bundles')}
-                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-black transition-all ${leftPanelTab === 'bundles' ? 'bg-white dark:bg-gray-800 shadow-sm text-accent' : 'text-text-muted hover:text-text-main'}`}
+                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${leftPanelTab === 'bundles' ? 'bg-white dark:bg-gray-800 shadow-sm text-accent' : 'text-text-muted hover:text-text-main'}`}
                             >
                                 SOLUTION SETS
                             </button>
@@ -255,7 +255,7 @@ ${rackItems.sort((a, b) => b.uPosition - a.uPosition).map(i => `- [U${i.uPositio
 
             {/* CENTER: Rack Visualization */}
             <div className="flex-1 flex flex-col gap-4">
-                <div className="bg-surface rounded-3xl p-6 shadow-clay-md border border-white/60 h-full overflow-hidden flex flex-col relative">
+                <div className="bg-surface rounded-xl p-6 shadow-clay-md border border-white/60 h-full overflow-hidden flex flex-col relative">
                     <div className="absolute top-6 right-6 flex gap-2 z-10">
                         <button onClick={handleExportBOM} className="p-2 rounded-xl hover:bg-blue-100 text-blue-500 transition-colors" title="Export BOM (CSV)"><Download size={20} /></button>
                         <button onClick={() => setIsSaveModalOpen(true)} className="p-2 rounded-xl hover:bg-green-100 text-green-500 transition-colors" title="Save to Deal"><Save size={20} /></button>
@@ -281,7 +281,7 @@ ${rackItems.sort((a, b) => b.uPosition - a.uPosition).map(i => `- [U${i.uPositio
 
             {/* RIGHT: Stats & Solutions */}
             <div className="w-1/4 min-w-[300px] flex flex-col gap-4">
-                <div className="bg-surface rounded-3xl p-6 shadow-clay-md border border-white/60 h-full overflow-y-auto">
+                <div className="bg-surface rounded-xl p-6 shadow-clay-md border border-white/60 h-full overflow-y-auto">
                     <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                         <Activity className="text-accent" /> Solution Analysis
                     </h2>

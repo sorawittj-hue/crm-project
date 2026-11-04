@@ -453,7 +453,7 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="flex h-[100dvh] w-full overflow-hidden bg-background text-foreground transition-colors duration-300">
+    <div className="crm-workspace flex h-[100dvh] w-full overflow-hidden bg-background text-foreground transition-colors duration-300">
 
       {/* MOBILE BACKDROP */}
       <AnimatePresence>
@@ -480,7 +480,7 @@ export default function AppLayout() {
         animate={{ x: isDesktop || isSidebarOpen ? 0 : '-100%', opacity: 1 }}
         transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
         className={cn(
-          "w-64 flex flex-col flex-shrink-0 relative border-r z-30 select-none transition-all duration-300",
+          "w-56 flex flex-col flex-shrink-0 relative border-r z-30 select-none transition-all duration-300",
           "bg-white/90 dark:bg-[#0b0e17]/90 backdrop-blur-2xl border-slate-200/80 dark:border-white/[0.08] shadow-[4px_0_24px_-4px_rgba(15,23,42,0.03)]",
           !isDesktop && "fixed inset-y-0 left-0 z-50"
         )}
@@ -631,10 +631,12 @@ export default function AppLayout() {
 
       {/* MAIN CONTAINER */}
       <div className="flex-1 flex flex-col overflow-hidden bg-background">
-        
+
         {/* TOPBAR */}
         <header className="h-16 flex items-center justify-between px-4 md:px-6 z-20 shrink-0 border-b border-slate-200/70 dark:border-white/[0.08] bg-white/80 dark:bg-[#060811]/80 backdrop-blur-2xl transition-colors duration-200">
           <div className="flex items-center gap-3">
+            <span className="hidden lg:block text-sm font-semibold text-slate-800 dark:text-slate-200">{navItems.find(item => item.to === location.pathname)?.label || 'พื้นที่ทำงาน'}</span>
+            <span className="hidden lg:block text-slate-300 dark:text-slate-700">/</span>
             <button onClick={toggleSidebar} aria-label="เปิด/ปิดเมนู" className="lg:hidden p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all">
               <Menu size={19} />
             </button>
@@ -644,7 +646,7 @@ export default function AppLayout() {
             >
               <Search size={14} className="text-slate-400 group-hover:text-violet-500" />
               <span>ค้นหาดีล ลูกค้า รายงาน...</span>
-              <kbd className="text-[10px] px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 text-slate-400 ml-3">⌘K</kbd>
+              <kbd className="text-[10px] px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 text-slate-400 ml-3">Ctrl K</kbd>
             </button>
           </div>
 
@@ -745,7 +747,7 @@ export default function AppLayout() {
                         { id: 'activities', label: 'นัดหมาย' },
                         { id: 'goals', label: 'เป้าหมาย' },
                       ].map(tab => {
-                        const count = tab.id === 'all' ? totalCount : 
+                        const count = tab.id === 'all' ? totalCount :
                                       tab.id === 'critical' ? notifications.filter(n => n.priority === 'critical' || n.priority === 'high' || n.type === 'deal_at_risk' || n.type === 'deal_closing_overdue').length :
                                       tab.id === 'activities' ? notifications.filter(n => n.type === 'follow_up_overdue').length :
                                       notifications.filter(n => n.type === 'monthly_goal_at_risk' || n.type === 'deal_stale' || n.type === 'deal_closing_soon').length;
@@ -871,14 +873,14 @@ export default function AppLayout() {
 
         {/* MAIN CONTENT AREA */}
         <main className="flex-1 overflow-y-auto">
-          <div className="p-4 md:p-6 lg:p-8 min-h-full max-w-[1700px] mx-auto">
-            <TrialBanner 
-              isTrialActive={isTrialActive} 
-              isExpired={isExpired} 
+          <div className="p-4 md:p-6 lg:px-7 lg:py-5 min-h-full max-w-[1700px] mx-auto">
+            <TrialBanner
+              isTrialActive={isTrialActive}
+              isExpired={isExpired}
               trialDaysLeft={trialDaysLeft}
               trialMsLeft={trialMsLeft}
-              isGuestAccount={isGuestAccount} 
-              openPaywall={openPaywall} 
+              isGuestAccount={isGuestAccount}
+              openPaywall={openPaywall}
             />
             {!isGuestAccount && <SystemStatusBanner
               deals={deals}

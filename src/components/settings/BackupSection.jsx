@@ -23,7 +23,7 @@ export function BackupSection() {
   const [isExporting, setIsExporting] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  
+
   const [autoBackups, setAutoBackups] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
@@ -71,13 +71,13 @@ export function BackupSection() {
     setIsExporting(true);
     try {
       const data = await exportWorkspaceData(user.id);
-      
+
       // Convert Deals to CSV
       if (data.deals && data.deals.length > 0) {
         const dealsHeaders = Object.keys(data.deals[0]).join(',');
         const dealsRows = data.deals.map(d => Object.values(d).map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
         const dealsCSV = [dealsHeaders, ...dealsRows].join('\n');
-        
+
         const blob = new Blob(['\ufeff' + dealsCSV], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -157,11 +157,11 @@ export function BackupSection() {
 
   return (
     <div className="space-y-6">
-      <Card className="p-8 rounded-[2rem] bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
+      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
         <div className="flex items-center justify-between relative z-10">
           <div>
-            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
               <Database className="text-violet-600 dark:text-violet-400" size={24} /> จัดการข้อมูล
             </h2>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">สำรอง กู้คืน และจัดการข้อมูลทั้งหมดในพื้นที่ทำงานของคุณ</p>
@@ -296,10 +296,10 @@ export function BackupSection() {
       </Card>
 
       {/* Danger Zone */}
-      <Card className="p-8 rounded-[2rem] bg-rose-50/30 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 shadow-sm space-y-6 relative overflow-hidden">
+      <Card className="p-8 rounded-xl bg-rose-50/30 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 shadow-sm space-y-6 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h3 className="text-base font-black text-rose-600 dark:text-rose-400 flex items-center gap-2">
+            <h3 className="text-base font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-2">
               <AlertTriangle size={18} /> โซนอันตราย (Danger Zone)
             </h3>
             <p className="text-xs font-medium text-rose-500/80 dark:text-rose-400/80 mt-1">ลบข้อมูลลูกค้า, ดีล, และกิจกรรมทั้งหมดออกจากระบบ</p>

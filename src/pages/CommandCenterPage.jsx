@@ -11,26 +11,25 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { motion } from 'framer-motion';
 import {
-  containerVariants, cardVariants, cardSlideLeft,
-  sectionHeaderVariants,
+  containerVariants, cardVariants,
 } from '../lib/animations';
 import { cn } from '../lib/utils';
 import { formatCurrency, daysSince } from '../lib/formatters';
 import CustomTooltip from '../components/ui/CustomTooltip';
 import SafeResponsiveContainer from '../components/charts/SafeResponsiveContainer';
-import { AnimatedNumber } from '../components/ui/AnimatedNumber';
 import { useCommandCenterStats } from '../hooks/useCommandCenterStats';
 import FocusDealsCard from '../components/command-center/FocusDealsCard';
 import QuickWinModal from '../components/pipeline/QuickWinModal';
 import KpiCard from '../components/ui/KpiCard';
+import PageHeader from '../components/layout/PageHeader';
 
 import {
   Users, AlertCircle, LayoutDashboard,
-  ArrowUpRight, ArrowDownRight, Briefcase,
+  Briefcase,
   Target, Clock, CalendarClock, ChevronRight, CheckCircle2,
   Phone, Mail, FileText, MessageSquare, Activity, Trophy,
   Flame, Zap,
-  ShieldCheck, Loader2, TrendingUp
+  ShieldCheck, Loader2
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis,
@@ -203,71 +202,19 @@ export default function CommandCenterPage() {
 
   return (
     <div className="mesh-bg relative max-w-[1600px] mx-auto space-y-6 pb-20">
-      
-      {/* HEADER */}
-      <header className="relative isolate overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#0f1322] via-[#17153a] to-[#0d1220] border border-white/10 px-6 py-6 text-white shadow-[0_20px_50px_-12px_rgba(15,23,42,0.35)] sm:px-8 sm:py-7">
-        <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-28 h-72 w-72 rounded-full bg-violet-600/15 blur-3xl" />
-        <div className="relative flex flex-col gap-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-300">
-                <LayoutDashboard size={13} /> Revenue command center
-              </p>
-              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                {getGreeting()}{userName ? `, ${userName}` : ''}
-              </h1>
-              <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-slate-300">
-                <CalendarClock size={13} className="text-violet-300" /> {getDateString()}
-                <span aria-hidden="true" className="mx-1 text-slate-600">·</span>
-                <span>ภาพรวมผลการขายและงานที่ควรโฟกัส</span>
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center rounded-xl border border-white/10 bg-white/[0.06] p-1">
-                {[
-                  { id: 'team', label: 'ทีม' },
-                  { id: 'personal', label: 'ของฉัน' },
-                ].map((mode) => (
-                  <button
-                    key={mode.id}
-                    type="button"
-                    onClick={() => setViewMode(mode.id)}
-                    aria-pressed={viewMode === mode.id}
-                    className={cn(
-                      'rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors',
-                      viewMode === mode.id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-300 hover:text-white'
-                    )}
-                  >
-                    {mode.label}
-                  </button>
-                ))}
-              </div>
-              <Button
-                onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsQuickWinOpen(true)}
-                variant="primary"
-                size="sm"
-                className="border border-white/10 bg-violet-500 text-white hover:bg-violet-400"
-              >
-                <Zap size={14} className="mr-1.5" /> บันทึกยอดด่วน
-              </Button>
-            </div>
-          </div>
 
-          <nav aria-label="ไปยังส่วนของแดชบอร์ด" className="grid gap-2 border-t border-white/15 pt-4 sm:grid-cols-3">
-            {[
-              { id: 'ai-insights-card', label: 'งานวันนี้', detail: 'ดูงานติดตามและดีลเร่งด่วน', icon: CalendarClock },
-              { id: 'monthly-summary', label: 'เป้าหมายเดือนนี้', detail: 'ดูยอดขายเทียบเป้าหมาย', icon: Target },
-              { id: 'revenue-trend', label: 'แนวโน้มยอดขาย', detail: 'ดูผลย้อนหลัง 6 เดือน', icon: TrendingUp },
-            ].map(({ id, label, detail, icon: Icon }) => (
-              <a key={id} href={'#' + id} className="group flex items-center gap-3 rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white transition-colors hover:bg-white/10">
-                <Icon size={19} className="shrink-0 text-violet-300" />
-                <span className="flex-1"><strong className="block text-sm">{label}</strong><span className="text-xs text-slate-300">{detail}</span></span>
-                <ChevronRight size={15} />
-              </a>
-            ))}
-          </nav>
+      <PageHeader icon={LayoutDashboard} title="ภาพรวมการขาย" description={`${getGreeting()}${userName ? `, ${userName}` : ''} · ${getDateString()}`} rightContent={
+        <div className="flex items-center gap-3">
+          <div className="flex rounded-lg border border-slate-200 p-1 dark:border-white/10">
+            {[{id:'team',label:'ภาพรวมทีม'},{id:'personal',label:'ของฉัน'}].map(mode => <button type="button" key={mode.id} aria-pressed={viewMode === mode.id} onClick={() => setViewMode(mode.id)} className={cn('rounded-md px-3 py-2 text-sm font-semibold', viewMode === mode.id ? 'bg-violet-100 text-violet-800 dark:bg-violet-500/20 dark:text-violet-200' : 'text-slate-500 dark:text-slate-400')}>{mode.label}</button>)}
+          </div>
+          <Button onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsQuickWinOpen(true)}><Zap size={16} className="mr-2" />บันทึกยอดขาย</Button>
         </div>
-      </header>
+      }>
+        <nav aria-label="ไปยังส่วนของแดชบอร์ด" className="flex flex-wrap gap-2">
+          {[{id:'ai-insights-card',label:'งานวันนี้'},{id:'monthly-summary',label:'ยอดขายและเป้าหมาย'},{id:'revenue-trend',label:'แนวโน้มยอดขาย'}].map(item => <a key={item.id} href={'#'+item.id} className="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5">{item.label}</a>)}
+        </nav>
+      </PageHeader>
 
       {/* ONBOARDING CTA */}
       {hasNoDeals && (
@@ -301,11 +248,11 @@ export default function CommandCenterPage() {
       )}
 
       {/* TWO-COLUMN GRID LAYOUT */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
         {/* LEFT COLUMN: ACTION & DATA VISUALS (2/3 width) */}
         <div className="order-2 space-y-6 lg:order-2 lg:col-span-2">
-          
+
           <FocusDealsCard focusDeals={stats?.focusDeals} onOpenDeal={openDeal} />
 
           {/* TODAY'S FOCUS / ACTIONS */}
@@ -396,7 +343,7 @@ export default function CommandCenterPage() {
                       isCompleting && 'opacity-50 pointer-events-none scale-95'
                     )}
                   >
-                    <div 
+                    <div
                       onClick={(e) => handleCompleteTask(e, a.id)}
                       className={cn(
                         'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover/follow:scale-105 cursor-pointer',
@@ -585,72 +532,11 @@ export default function CommandCenterPage() {
         {/* RIGHT COLUMN: KPI CARDS 3.0, GOAL, LEADERBOARD */}
         <div id="monthly-summary" className="order-1 scroll-mt-4 space-y-4 lg:col-span-3">
 
-          {/* MONTHLY GOAL — primary business outcome */}
-          <div className="relative overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-white via-violet-50/70 to-indigo-50/60 p-5 shadow-sm dark:border-violet-300/10 dark:from-[#111827] dark:via-[#151a2b] dark:to-[#17172b]">
-            <div aria-hidden="true" className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-violet-300/15 blur-3xl dark:bg-violet-400/10" />
-            <div className="relative z-10 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
-              <div className="flex items-start justify-between gap-4 sm:mb-0">
-                <div>
-                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">เป้าหมายเดือนนี้</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                    {monthlyGoal > 0 ? `เป้า ${formatCurrency(monthlyGoal)}` : 'ยังไม่ได้ตั้งเป้าหมาย'}
-                  </p>
-                </div>
-                {stats?.growthPercent !== null && stats?.growthPercent !== undefined && (
-                  <div className={cn('flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold',
-                    stats.growthPercent >= 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300'
-                  )}>
-                    {stats.growthPercent >= 0 ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
-                    {stats.growthPercent > 0 ? '+' : ''}{stats.growthPercent}%
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center gap-4">
-                {/* Radial gauge */}
-                <div className="relative w-[72px] h-[72px] shrink-0">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
-                    <circle cx="40" cy="40" r="34" className="stroke-slate-200 dark:stroke-white/10" strokeWidth="7" fill="transparent" />
-                    <motion.circle cx="40" cy="40" r="34"
-                      stroke="url(#gaugeGrad)"
-                      strokeWidth="7" fill="transparent"
-                      strokeDasharray={2 * Math.PI * 34}
-                      animate={{ strokeDashoffset: 2 * Math.PI * 34 * (1 - Math.min(100, stats?.achievementPercent || 0) / 100) }}
-                      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                      strokeLinecap="round"
-                    />
-                    <defs>
-                      <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#818cf8" />
-                        <stop offset="100%" stopColor="#38bdf8" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-base font-bold text-slate-900 dark:text-white tabular-nums leading-none">
-                      {monthlyGoal > 0 ? <><AnimatedNumber value={stats?.achievementPercent || 0} />%</> : '—'}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">ยอดขายปัจจุบัน</p>
-                  <p className="number-display text-2xl font-semibold text-slate-950 dark:text-white mt-1 truncate">
-                    {formatCurrency(stats?.totalWonValue || 0)}
-                  </p>
-                  {monthlyGoal > 0 ? (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">เป้า {formatCurrency(monthlyGoal)}</p>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => navigate('/settings')}
-                      className="mt-1 text-left text-xs font-semibold text-violet-700 hover:text-violet-900 dark:text-violet-300 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300 rounded"
-                    >
-                      ตั้งเป้าหมายเพื่อดูความคืบหน้า <span aria-hidden="true">→</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          <section className="crm-goal-strip flex flex-wrap items-center justify-between gap-5 rounded-xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-[#161b28]">
+            <div><p className="text-sm text-slate-500 dark:text-slate-400">ยอดขายเดือนนี้</p><p className="mt-1 text-3xl font-semibold tabular-nums text-slate-950 dark:text-white">{formatCurrency(stats?.totalWonValue || 0)}</p></div>
+            <div className="min-w-[240px] flex-1 lg:max-w-md"><div className="mb-2 flex justify-between gap-4 text-sm text-slate-600 dark:text-slate-300"><span>{monthlyGoal > 0 ? `เป้าหมาย ${formatCurrency(monthlyGoal)}` : 'กำหนดเป้าหมายเพื่อวัดผลการขาย'}</span><strong>{monthlyGoal > 0 ? `${Math.round(stats?.achievementPercent || 0)}%` : '—'}</strong></div><div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10"><div className="h-full rounded-full bg-violet-600" style={{width: `${Math.min(100, Math.max(0, stats?.achievementPercent || 0))}%`}} /></div></div>
+            <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>ตั้งเป้าหมาย <ChevronRight size={14} className="ml-2" /></Button>
+          </section>
 
           {/* KPI CARDS 3.0 — Staggered entrance */}
           <motion.div

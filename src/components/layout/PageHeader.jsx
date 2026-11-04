@@ -17,14 +17,14 @@ export default function PageHeader({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        'relative mb-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16182b] sm:px-6 sm:py-4',
+        'crm-page-header relative mb-6 border-b border-slate-200 pb-5 dark:border-white/10',
         className,
       )}
     >
       <div className="relative z-10 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <div className="flex min-w-0 items-center gap-4">
           {Icon && (
-            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-violet-200/80 bg-gradient-to-br from-violet-50 via-white to-indigo-50 text-violet-700 shadow-[0_4px_14px_-2px_rgba(124,58,237,0.15)] dark:border-violet-400/20 dark:from-violet-500/20 dark:via-indigo-500/10 dark:to-transparent dark:text-violet-300">
+            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-violet-200/80 bg-gradient-to-br from-violet-50 via-white to-indigo-50 text-violet-700 shadow-[0_4px_14px_-2px_rgba(124,58,237,0.15)] dark:border-violet-400/20 dark:from-violet-500/20 dark:via-indigo-500/10 dark:to-transparent dark:text-violet-300">
               <Icon size={21} strokeWidth={2.2} />
             </div>
           )}
@@ -32,7 +32,7 @@ export default function PageHeader({
           <div>
             {breadcrumb && <div className="mb-1">{breadcrumb}</div>}
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-2xl md:text-[28px] font-extrabold tracking-tight text-slate-950 dark:text-white">
+              <h1 className="text-2xl md:text-[28px] font-semibold tracking-tight text-slate-950 dark:text-white">
                 {title}
               </h1>
               {badge}

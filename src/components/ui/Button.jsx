@@ -52,6 +52,7 @@ const Button = React.forwardRef(({
   }
 
   const buttonVariants = cn(
+    "crm-button",
     baseStyles,
     variants[variant] || variants.default,
     sizes[size] || sizes.default,
@@ -73,6 +74,7 @@ const Button = React.forwardRef(({
   return (
     <motion.button
       ref={ref}
+      data-variant={variant}
       className={buttonVariants}
       whileHover={pressMotion.whileHover}
       whileTap={pressMotion.whileTap}

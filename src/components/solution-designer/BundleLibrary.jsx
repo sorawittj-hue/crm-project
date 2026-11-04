@@ -49,7 +49,7 @@ const BundleLibrary = ({ onApplyRackTemplate, onExportBOM }) => {
                         >
                             <div className="p-4 flex flex-col">
                                 <div className="flex justify-between items-start mb-2">
-                                    <span className="px-2 py-0.5 bg-accent/10 text-accent rounded text-[10px] font-black uppercase tracking-wider">{bundle.category}</span>
+                                    <span className="px-2 py-0.5 bg-accent/10 text-accent rounded text-[10px] font-semibold uppercase tracking-wider">{bundle.category}</span>
                                     {bundle.tag && <span className="text-[10px] font-bold text-warm-green-dark flex items-center gap-1"><CheckCircle2 size={10} /> {bundle.tag}</span>}
                                 </div>
 
@@ -88,7 +88,7 @@ const BundleLibrary = ({ onApplyRackTemplate, onExportBOM }) => {
                                             bundle.items.map((item, idx) => (
                                                 <div key={idx} className="space-y-1.5 pt-2 first:pt-0 border-t border-gray-100 dark:border-gray-800 first:border-none">
                                                     <div className="flex justify-between items-center">
-                                                        <span className="text-xs font-black text-text-main">{item.name} <span className="text-accent">x{item.qty}</span></span>
+                                                        <span className="text-xs font-semibold text-text-main">{item.name} <span className="text-accent">x{item.qty}</span></span>
                                                     </div>
 
                                                     {typeof item.specs === 'object' ? (
@@ -121,10 +121,10 @@ const BundleLibrary = ({ onApplyRackTemplate, onExportBOM }) => {
 
                             {/* Bottom Footer */}
                             <div className="p-4 pt-3 flex items-center justify-between border-t border-gray-50 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-800/30 mt-auto">
-                                <span className="font-black text-sm text-text-main">{formatCurrency(bundle.totalPrice)}</span>
+                                <span className="font-semibold text-sm text-text-main">{formatCurrency(bundle.totalPrice)}</span>
                                 <button
                                     onClick={() => handleAction(bundle)}
-                                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all flex items-center gap-1 shadow-clay-sm
+                                    className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold transition-all flex items-center gap-1 shadow-clay-sm
                                         ${bundle.isRackTemplate ? 'bg-accent text-white hover:bg-accent/80' : 'bg-warm-blue text-white hover:bg-warm-blue/80'}
                                     `}
                                 >

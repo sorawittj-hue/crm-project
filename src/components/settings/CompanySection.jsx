@@ -47,11 +47,11 @@ export function CompanySection() {
   };
 
   return (
-    <Card className="p-8 rounded-[2rem] bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
+    <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
       <div className="flex items-center justify-between relative z-10">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight relative z-10">บริษัท</h2>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight relative z-10">บริษัท</h2>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1 relative z-10">ข้อมูลบริษัทและการตั้งค่าระบบพื้นฐาน</p>
         </div>
         {!companyForm && (
@@ -114,7 +114,7 @@ export function CompanySection() {
               <option value="SGD">SGD — ดอลลาร์สิงคโปร์</option>
             </select>
           </div>
-          
+
           <div className="flex items-center justify-between p-4 rounded-xl border border-rose-150 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/30 mt-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-white dark:bg-white/10 text-rose-500 dark:text-rose-400 flex items-center justify-center shadow-sm border border-rose-100 dark:border-rose-800/40">
@@ -126,8 +126,8 @@ export function CompanySection() {
               </div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 className="sr-only peer"
                 checked={companyForm.disable_ai}
                 onChange={(e) => setCompanyForm({ ...companyForm, disable_ai: e.target.checked })}
@@ -135,7 +135,7 @@ export function CompanySection() {
               <div className="w-11 h-6 bg-slate-200 dark:bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-500"></div>
             </label>
           </div>
-          
+
           <div className="flex gap-3 pt-2">
             <Button
               type="button"

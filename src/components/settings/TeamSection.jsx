@@ -82,11 +82,11 @@ export function TeamSection() {
 
   return (
     <div className="space-y-4">
-      <Card className="p-8 rounded-[2rem] bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
+      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
         <div className="flex items-center justify-between mb-8 relative z-10">
           <div>
-            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight relative z-10 flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight relative z-10 flex items-center gap-2">
               ทีมงาน
               <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300">{teamMembers.length} คน</span>
             </h2>
@@ -206,7 +206,7 @@ export function TeamSection() {
 
           {teamMembers.length === 0 && (
             <div className="text-center py-14">
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20 border border-violet-100 dark:border-white/10 flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20 border border-violet-100 dark:border-white/10 flex items-center justify-center mx-auto mb-4">
                 <Users size={32} className="text-violet-400" />
               </div>
               <p className="text-sm font-bold text-slate-600 dark:text-slate-300">ยังไม่มีสมาชิกในทีม</p>

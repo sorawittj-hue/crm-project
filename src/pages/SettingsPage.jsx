@@ -155,13 +155,13 @@ export default function SettingsPage() {
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="lg:w-68 shrink-0"
+          className="lg:w-60 shrink-0"
         >
           <label className="mb-2 block text-sm font-semibold lg:hidden" htmlFor="settings-section">หัวข้อการตั้งค่า</label>
           <select id="settings-section" value={activeSection} onChange={e => setActiveSection(e.target.value)} className="mb-4 h-12 w-full rounded-xl border border-slate-300 bg-white px-3 text-slate-900 dark:border-white/20 dark:bg-slate-900 dark:text-white lg:hidden">
             {allSections.map(section => <option key={section.id} value={section.id}>{section.label}</option>)}
           </select>
-          <nav className="hidden lg:block lg:sticky lg:top-8 bg-white/90 dark:bg-[#0f111a]/90 backdrop-blur-xl p-3.5 rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.6)] space-y-4">
+          <nav className="hidden lg:block lg:sticky lg:top-4 bg-white/90 dark:bg-[#0f111a]/90 backdrop-blur-xl p-2 rounded-xl border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.6)] space-y-4">
             {/* Base groups */}
             {SECTION_GROUPS.map((group) => (
               <div key={group.groupLabel}>
@@ -209,7 +209,7 @@ export default function SettingsPage() {
               {activeSection === 'pipeline'      && (
                 <div className="space-y-6">
                   <PipelineSection />
-                  
+
                   {/* Custom Fields Card */}
                   <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-5">
@@ -266,7 +266,7 @@ export default function SettingsPage() {
                       <div className="py-8 text-center border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
                         <Database size={20} className="text-slate-300 dark:text-slate-600 mx-auto mb-2" />
                         <p className="text-sm text-slate-400 font-medium">ยังไม่มี Custom Fields</p>
-                        <p className="text-xs text-slate-400/80 dark:text-slate-500 mt-1">คลิก "เพิ่ม Field" เพื่อสร้างบันทึก field พิเศษของคุณเอง</p>
+                        <p className="text-xs text-slate-400/80 dark:text-slate-500 mt-1">คลิก &quot;เพิ่ม Field&quot; เพื่อสร้างบันทึก field พิเศษของคุณเอง</p>
                       </div>
                     )}
 

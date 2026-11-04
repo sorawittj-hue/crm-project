@@ -110,7 +110,13 @@ export const buildCustomerHealth = (customers = [], deals = [], options = {}) =>
   const now = parseDateValue(options.now) || new Date();
   const normalizedDeals = deals.map((deal) => normalizeDealForIntelligence(deal, now));
 
-  const companyToCustomerId = customers.reduce((acc, c) => {
+  const normalizedCustomers = customers.map(customer => ({
+    ...customer,
+    name: customer.name || customer.contact_name || customer.company || customer.company_name || 'ไม่ระบุชื่อ',
+    company: customer.company || customer.company_name || '',
+  }));
+
+  const companyToCustomerId = normalizedCustomers.reduce((acc, c) => {
     if (c.company) acc[c.company.trim().toLowerCase()] = c.id;
     if (c.name) acc[c.name.trim().toLowerCase()] = c.id;
     return acc;
@@ -132,7 +138,7 @@ export const buildCustomerHealth = (customers = [], deals = [], options = {}) =>
     }
   });
 
-  const enrichedCustomers = customers.map((customer) => {
+  const enrichedCustomers = normalizedCustomers.map((customer) => {
     const customerDeals = dealsByCustomer[customer.id] || [];
     const stats = buildCustomerStats(customerDeals, customer.tier, now);
     return { ...customer, ...stats };

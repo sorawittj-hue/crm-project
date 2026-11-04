@@ -37,7 +37,7 @@ export default function RepDrilldown({ member, deals = [], monthlyTarget = 0, on
 
   return (
     <Dialog open onOpenChange={(isOpen) => { if (!isOpen) onClose?.(); }} className="max-w-2xl">
-      <DialogContent showCloseButton={false} className="flex max-h-[85dvh] flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 p-0 shadow-2xl dark:border-white/10 dark:bg-[#0f111a]/95">
+      <DialogContent showCloseButton={false} className="flex max-h-[85dvh] flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white/95 p-0 shadow-2xl dark:border-white/10 dark:bg-[#0f111a]/95">
           {/* Header */}
           <div className="relative p-6 border-b border-slate-100 dark:border-white/10 bg-gradient-to-r from-violet-600 to-indigo-700">
             <div className="absolute inset-0 bg-gradient-to-br from-violet-600/90 to-indigo-800/90" />
@@ -50,7 +50,7 @@ export default function RepDrilldown({ member, deals = [], monthlyTarget = 0, on
               <span aria-hidden="true">×</span>
             </button>
             <div className="relative z-10 flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center text-2xl font-black text-white">
+              <div className="w-16 h-16 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center text-2xl font-semibold text-white">
                 {avatarLetter}
               </div>
               <div>
@@ -74,15 +74,15 @@ export default function RepDrilldown({ member, deals = [], monthlyTarget = 0, on
                 <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center mb-2', color)}>
                   <Icon size={14} />
                 </div>
-                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide">{label}</p>
-                <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{value}</p>
+                <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide">{label}</p>
+                <p className="text-lg font-semibold text-slate-900 dark:text-white leading-tight">{value}</p>
               </div>
             ))}
           </div>
 
           {/* Deals List */}
           <div className="flex-1 overflow-y-auto p-6">
-            <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">ดีลทั้งหมด ({stats.repDeals.length})</p>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">ดีลทั้งหมด ({stats.repDeals.length})</p>
             <div className="space-y-2">
               {stats.repDeals.slice(0, 20).map(deal => (
                 <div key={deal.id} className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/80 dark:bg-white/[0.03] hover:bg-slate-100/80 dark:hover:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.06] transition-colors">
@@ -91,8 +91,8 @@ export default function RepDrilldown({ member, deals = [], monthlyTarget = 0, on
                     <p className="text-xs text-slate-400">{deal.company}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-black text-slate-900 dark:text-white">{formatCurrency(deal.value)}</p>
-                    <span className={cn('text-[10px] font-black px-2 py-0.5 rounded-full', STAGE_COLOR[deal.stage] || 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300')}>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{formatCurrency(deal.value)}</p>
+                    <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full', STAGE_COLOR[deal.stage] || 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300')}>
                       {STAGE_LABELS?.[deal.stage] || deal.stage}
                     </span>
                   </div>

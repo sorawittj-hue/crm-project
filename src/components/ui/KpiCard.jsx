@@ -5,7 +5,6 @@ import { useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "../../lib/utils";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { hoverLiftSoft } from "../../lib/animations";
 
 const COLOR_MAP = {
   violet: {
@@ -100,7 +99,7 @@ export default function KpiCard({ title, value, formatter = v => v, sparkline, t
     <motion.div
       {...motionProps}
       className={cn(
-        "relative rounded-2xl p-4 md:p-5 overflow-hidden border backdrop-blur-xl transition-all duration-300 card-glow-overlay hover-lift",
+        "crm-kpi relative rounded-xl p-4 md:p-5 overflow-hidden border transition-colors duration-150 h-full",
         cfg.lightBg, cfg.darkBg, className
       )}
     >

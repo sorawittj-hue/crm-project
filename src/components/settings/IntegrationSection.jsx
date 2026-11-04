@@ -96,7 +96,7 @@ export function IntegrationSection() {
   const handleSave = async (e) => {
     e.preventDefault();
     setIsSaving(true);
-    
+
     try {
       await updateSettings.mutateAsync({ integrations: settings });
       setActivePlugin(null); // close modal
@@ -118,7 +118,7 @@ export function IntegrationSection() {
       }
     };
     setSettings(newSettings);
-    
+
     try {
       await updateSettings.mutateAsync({ integrations: newSettings });
       toast.success(newSettings[pluginId].enabled ? `เปิดใช้งาน ${pluginId} แล้ว` : `ปิดใช้งาน ${pluginId} แล้ว`);
@@ -143,7 +143,7 @@ export function IntegrationSection() {
             <Plug size={20} strokeWidth={2.5} />
           </div>
           <div>
-            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">ปลั๊กอิน & การเชื่อมต่อ</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">ปลั๊กอิน & การเชื่อมต่อ</h2>
             <p className="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest mt-0.5">Integrations</p>
           </div>
         </div>
@@ -162,8 +162,8 @@ export function IntegrationSection() {
               key={plugin.id}
               whileHover={{ y: -6, scale: 1.02 }}
               className={cn(
-                "group relative overflow-hidden bg-white/70 dark:bg-[#0f111a]/80 backdrop-blur-2xl rounded-[2rem] border transition-all duration-500 cursor-pointer",
-                isEnabled 
+                "group relative overflow-hidden bg-white/70 dark:bg-[#0f111a]/80 backdrop-blur-2xl rounded-xl border transition-all duration-500 cursor-pointer",
+                isEnabled
                   ? `border-${plugin.textColor.split('-')[1]}-300/50 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.12)] ${plugin.glow}`
                   : "border-white/80 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 dark:ring-white/5 hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)]"
               )}
@@ -171,19 +171,19 @@ export function IntegrationSection() {
             >
               {/* Premium Glow effect behind active card */}
               {isEnabled && <div className={cn("absolute inset-0 opacity-5 bg-gradient-to-br from-transparent to-current", plugin.textColor)} />}
-              
+
               {isEnabled && (
                 <div className="absolute top-0 right-0 p-5 z-10">
-                  <div className={cn("flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border shadow-sm backdrop-blur-md", 
-                    plugin.color.replace('bg-', 'bg-').replace(']', ']/10'), 
-                    plugin.color.replace('bg-', 'border-').replace(']', ']/20'), 
+                  <div className={cn("flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full border shadow-sm backdrop-blur-md",
+                    plugin.color.replace('bg-', 'bg-').replace(']', ']/10'),
+                    plugin.color.replace('bg-', 'border-').replace(']', ']/20'),
                     plugin.textColor)}>
                     <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse shadow-[0_0_8px_currentColor]", plugin.color)} />
                     Connected
                   </div>
                 </div>
               )}
-              
+
               <div className="p-7 relative z-10">
                 <div className={cn(
                   "w-14 h-14 rounded-[1.25rem] flex items-center justify-center text-white mb-5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 relative",
@@ -193,8 +193,8 @@ export function IntegrationSection() {
                   <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-[1.25rem]" />
                   <Icon size={26} strokeWidth={2.5} className="relative z-10 drop-shadow-md" />
                 </div>
-                
-                <h3 className="text-base font-black text-slate-900 dark:text-white mb-2.5">{plugin.name}</h3>
+
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-2.5">{plugin.name}</h3>
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 leading-relaxed mb-6 line-clamp-2">
                   {plugin.desc}
                 </p>
@@ -203,7 +203,7 @@ export function IntegrationSection() {
                   <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">
                     {isEnabled ? 'Configure' : 'Setup Now'}
                   </span>
-                  <button 
+                  <button
                     onClick={(e) => togglePlugin(plugin.id, e)}
                     className={cn(
                       "transition-all duration-300 cursor-pointer",
@@ -225,11 +225,11 @@ export function IntegrationSection() {
         onOpenChange={(isOpen) => { if (!isOpen) setActivePlugin(null); }}
         className="max-w-lg"
       >
-        <DialogContent showCloseButton={false} className="max-h-[90dvh] overflow-y-auto rounded-[2.5rem] border-white/50 bg-white/95 p-0 shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)] dark:border-white/10 dark:bg-[#0f111a]/95">
+        <DialogContent showCloseButton={false} className="max-h-[90dvh] overflow-y-auto rounded-xl border-white/50 bg-white/95 p-0 shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)] dark:border-white/10 dark:bg-[#0f111a]/95">
           {activePlugin && (
             <>
               <div className={cn("h-2 w-full", activePlugin.color)} />
-              
+
               <div className="p-8">
                 <div className="flex items-start justify-between mb-8">
                   <div className="flex items-center gap-5">
@@ -242,7 +242,7 @@ export function IntegrationSection() {
                       <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Configuration</p>
                     </div>
                   </div>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setActivePlugin(null)}
                     aria-label="ปิดหน้าต่างตั้งค่าการเชื่อมต่อ"
@@ -296,7 +296,7 @@ export function IntegrationSection() {
                     </Button>
                   </div>
                 </form>
-                
+
                 <div className="mt-8 p-4 rounded-2xl bg-slate-50/80 dark:bg-white/[0.03] flex gap-3 border border-slate-100/50 dark:border-white/[0.06]">
                   <AlertCircle size={20} className="text-slate-400 dark:text-slate-500 shrink-0" />
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">

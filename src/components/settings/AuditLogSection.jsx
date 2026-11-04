@@ -23,12 +23,12 @@ export function AuditLogSection() {
 
   const filteredLogs = useMemo(() => {
     return logs.filter(log => {
-      const matchesSearch = 
+      const matchesSearch =
         log.table_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         log.record_id.toLowerCase().includes(searchTerm.toLowerCase());
-      
+
       const matchesAction = actionFilter === 'ALL' || log.action === actionFilter;
-      
+
       return matchesSearch && matchesAction;
     });
   }, [logs, searchTerm, actionFilter]);
@@ -52,7 +52,7 @@ export function AuditLogSection() {
 
   const renderDataDiff = (log) => {
     const { action, old_data, new_data } = log;
-    
+
     if (action === 'INSERT' && new_data) {
       return (
         <div className="space-y-1 text-slate-600 dark:text-slate-300 font-mono text-[11px]">
@@ -88,14 +88,14 @@ export function AuditLogSection() {
     if (action === 'UPDATE' && old_data && new_data) {
       const diff = [];
       const keys = new Set([...Object.keys(old_data), ...Object.keys(new_data)]);
-      
+
       keys.forEach(key => {
         // Skip metadata keys to keep clean
         if (['updated_at', 'created_at', 'last_seen_at'].includes(key)) return;
-        
+
         const oldVal = old_data[key];
         const newVal = new_data[key];
-        
+
         if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
           diff.push({
             key,
@@ -127,13 +127,13 @@ export function AuditLogSection() {
   };
 
   return (
-    <Card className="p-8 rounded-[2rem] bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-3xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden font-sans">
+    <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden font-sans">
       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-indigo-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
-      
+
       {/* Header */}
       <div className="flex items-center justify-between mb-8 relative z-10 flex-wrap gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
             <History className="text-indigo-500" size={20} />
             ประวัติการทำงาน (Audit Logs)
           </h2>
@@ -201,17 +201,17 @@ export function AuditLogSection() {
             {filteredLogs.map(log => {
               const isExpanded = expandedLogId === log.id;
               const userLabel = userMap[log.changed_by] || log.changed_by || 'ระบบ';
-              
+
               return (
-                <div 
-                  key={log.id} 
+                <div
+                  key={log.id}
                   className={cn(
-                    "transition-all", 
+                    "transition-all",
                     isExpanded ? "bg-slate-50/70 dark:bg-white/[0.04]" : "hover:bg-slate-50/30 dark:hover:bg-white/[0.02]"
                   )}
                 >
                   {/* Row Header */}
-                  <div 
+                  <div
                     onClick={() => toggleExpand(log.id)}
                     className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 cursor-pointer select-none"
                   >
@@ -236,9 +236,9 @@ export function AuditLogSection() {
                         {userLabel}
                       </span>
                       <span>
-                        {new Date(log.created_at).toLocaleString('th-TH', { 
-                          day: 'numeric', month: 'short', year: 'numeric', 
-                          hour: '2-digit', minute: '2-digit', second: '2-digit' 
+                        {new Date(log.created_at).toLocaleString('th-TH', {
+                          day: 'numeric', month: 'short', year: 'numeric',
+                          hour: '2-digit', minute: '2-digit', second: '2-digit'
                         })}
                       </span>
                     </div>
