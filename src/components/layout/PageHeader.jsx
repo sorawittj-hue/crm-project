@@ -17,8 +17,7 @@ export default function PageHeader({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        'relative mb-7 transition-colors duration-200',
-        'py-1',
+        'relative mb-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#16182b] sm:px-6 sm:py-4',
         className,
       )}
     >
@@ -50,7 +49,7 @@ export default function PageHeader({
       </div>
 
       {children && (
-        <div className="relative z-10 mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200/80 dark:border-white/[0.08] pt-4 md:flex-nowrap">
+        <div className="relative z-10 mt-3 flex flex-wrap items-center gap-2 border-t border-slate-200/80 dark:border-white/[0.08] pt-3 md:flex-wrap">
           {children}
         </div>
       )}

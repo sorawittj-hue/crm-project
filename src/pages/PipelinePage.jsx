@@ -348,7 +348,7 @@ export default function PipelinePage() {
           <div className="relative w-full md:w-72">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={15} />
             <Input
-              placeholder="ค้นหาดีล บริษัท หรือผู้ติดต่อ..."
+              aria-label="ค้นหาดีล" placeholder="ค้นหาดีล บริษัท หรือผู้ติดต่อ..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 h-11 w-full rounded-2xl border-slate-200/80 dark:border-white/10 bg-white/60 dark:bg-white/[0.05] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-[#171926] focus:border-violet-400 shadow-sm transition-all"
@@ -373,6 +373,7 @@ export default function PipelinePage() {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
+              aria-pressed={boardType === 'pipeline'}
               onClick={() => setBoardType('pipeline')}
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
@@ -386,6 +387,7 @@ export default function PipelinePage() {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
+              aria-pressed={boardType === 'renewals'}
               onClick={() => setBoardType('renewals')}
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
@@ -402,6 +404,7 @@ export default function PipelinePage() {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
+              aria-pressed={viewMode === 'kanban'}
               onClick={() => setViewMode('kanban')}
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
@@ -415,6 +418,7 @@ export default function PipelinePage() {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
+              aria-pressed={viewMode === 'list'}
               onClick={() => setViewMode('list')}
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
@@ -526,23 +530,25 @@ export default function PipelinePage() {
           </Button>
       </PageHeader>
 
+      <details className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#16182b]">
+        <summary className="cursor-pointer font-semibold text-slate-800 dark:text-white">ภาพรวม Pipeline</summary>
       <motion.section
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
-        aria-label="Pipeline workspace snapshot"
-        className="grid grid-cols-1 gap-3 sm:grid-cols-3"
+        aria-label="ภาพรวม Pipeline"
+        className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3"
       >
         {/* Active Pipeline */}
         <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#0f111a]/90 card-glow-overlay card-lift depth-2">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Active pipeline</p>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">มูลค่าดีลที่กำลังดำเนินการ</p>
               <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
                 {new Intl.NumberFormat('th-TH', { notation: 'compact', maximumFractionDigits: 1 }).format(pipelinePulse.activeValue)}
                 <span className="ml-1 text-xs font-bold text-slate-400">THB</span>
               </p>
-              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{pipelinePulse.activeCount} open deals</p>
+              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{pipelinePulse.activeCount} ดีลที่เปิดอยู่</p>
             </div>
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700 dark:bg-violet-400/10 dark:text-violet-300">
               <TrendingUp size={18} aria-hidden="true" />
@@ -550,13 +556,13 @@ export default function PipelinePage() {
           </div>
         </div>
 
-        {/* Working set */}
+        {/* ดีลในมุมมองนี้ */}
         <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#0f111a]/90 card-glow-overlay card-lift depth-2">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Working set</p>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">ดีลในมุมมองนี้</p>
               <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">{filteredDeals.length}</p>
-              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">deals match current view</p>
+              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">ดีลที่ตรงกับตัวกรอง</p>
             </div>
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700 dark:bg-sky-400/10 dark:text-sky-300">
               <Briefcase size={18} aria-hidden="true" />
@@ -564,17 +570,17 @@ export default function PipelinePage() {
           </div>
         </div>
 
-        {/* Needs attention */}
+        {/* ดีลที่ควรติดตาม */}
         <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#0f111a]/90 card-glow-overlay card-lift depth-2">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Needs attention</p>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">ดีลที่ควรติดตาม</p>
               <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
                 {pipelinePulse.atRiskCount}
-                <span className="ml-1 text-xs font-bold text-slate-400">deals</span>
+                <span className="ml-1 text-xs font-bold text-slate-400">ดีล</span>
               </p>
               <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {new Intl.NumberFormat('th-TH', { notation: 'compact', maximumFractionDigits: 1 }).format(pipelinePulse.atRiskValue)} THB at risk
+                {new Intl.NumberFormat('th-TH', { notation: 'compact', maximumFractionDigits: 1 }).format(pipelinePulse.atRiskValue)} บาทที่มีความเสี่ยง
               </p>
             </div>
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300">
@@ -583,6 +589,7 @@ export default function PipelinePage() {
           </div>
         </div>
       </motion.section>
+      </details>
 
       {/* QUICK ADD DIALOG */}
       <Dialog open={isQuickAddOpen} onOpenChange={(v) => { setIsQuickAddOpen(v); if (!v) { setQuickDeal({ company: '', title: '', value: '', expected_close_date: '' }); setQuickError(null); } }}>

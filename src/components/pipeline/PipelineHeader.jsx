@@ -125,8 +125,9 @@ export default function PipelineHeader({
         </button>
       </div>
 
-      {/* KPI STRIP */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3.5">
+      <details className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#16182b]">
+        <summary className="cursor-pointer font-semibold text-slate-800 dark:text-white">สรุปยอดขายรายเดือน</summary>
+      <div className="mt-4 grid grid-cols-2 lg:grid-cols-6 gap-3.5">
         {/* Monthly Target — Hero Card with Aurora background */}
         <div className="col-span-2 relative overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-white via-violet-50/70 to-indigo-50/60 p-5 shadow-sm transition-shadow hover:shadow-md dark:border-violet-300/10 dark:from-[#111827] dark:via-[#151a2b] dark:to-[#17172b] md:p-6">
 
@@ -254,6 +255,7 @@ export default function PipelineHeader({
           </div>
         </div>
       </div>
+      </details>
     </div>
   );
 }

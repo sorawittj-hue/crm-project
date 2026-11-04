@@ -902,3 +902,14 @@
   background: rgba(255,255,255,0.12);
   box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
+/* Shared workspace surfaces */
+.mesh-bg, .dark .mesh-bg { background: transparent; }
+.mesh-bg > [class*="blur-"] { display: none; }
+.mesh-bg .card-glow-overlay::after { display: none; }
+.mesh-bg .card-lift:hover, .mesh-bg .hover-lift:hover { transform: none; }
+@media (min-width: 1024px) {
+  .mesh-bg { padding-left: 0; padding-right: 0; margin-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}

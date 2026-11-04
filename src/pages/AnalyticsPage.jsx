@@ -576,8 +576,8 @@ Win Rate: ${intel.winRate || 0}%
       >
         <PageHeader
           icon={Activity}
-          title={<>Analytics <span className="gradient-text-brand">Command Center</span></>}
-          description="Deep insights and world-class pipeline intelligence."
+          title="รายงานและการวิเคราะห์"
+          description="ติดตามผลการขายและแนวโน้มของทีมในช่วงเวลาที่เลือก"
           rightContent={
             <div className="flex flex-col md:flex-row items-center justify-between w-full gap-3">
               <div className="flex flex-wrap items-center gap-3">
@@ -593,6 +593,7 @@ Win Rate: ${intel.winRate || 0}%
                     }}
                   />
                 </div>
+                <select aria-label="ช่วงแนวโน้ม" value={timeRange} onChange={e => setTimeRange(e.target.value)} className="h-10 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 dark:border-white/20 dark:bg-slate-900 dark:text-white lg:hidden"><option value="3m">แนวโน้ม 3 เดือน</option><option value="6m">แนวโน้ม 6 เดือน</option><option value="12m">แนวโน้ม 12 เดือน</option></select>
                 <div className="flex items-center gap-1.5 bg-white/70 dark:bg-white/[0.06] p-1 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-sm hidden lg:flex">
                   {[['3m', '3 Months Trend'], ['6m', '6 Months Trend'], ['12m', '12 Months Trend']].map(([val, label]) => (
                     <button

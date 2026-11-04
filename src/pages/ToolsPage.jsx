@@ -549,8 +549,12 @@ export default function ToolsPage() {
         badge={<span className="text-[10px] font-bold text-violet-500 uppercase tracking-widest mt-1 ml-2">Nova Pipeline</span>}
       />
 
+      <label htmlFor="tool-selection" className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200 md:hidden">เลือกเครื่องมือ</label>
+      <select id="tool-selection" value={activeTab} onChange={e => setActiveTab(e.target.value)} className="mb-5 h-12 w-full rounded-xl border border-slate-300 bg-white px-3 text-slate-900 dark:border-white/20 dark:bg-slate-900 dark:text-white md:hidden">
+        {TOOLS.map(tool => <option key={tool.key} value={tool.key}>{tool.title}</option>)}
+      </select>
       {/* Tab List */}
-      <div className="mb-8 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 pb-1">
+      <div className="hidden md:block mb-8 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 pb-1">
         <div className="inline-flex gap-1.5 bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 p-1.5 rounded-2xl shadow-sm min-w-max">
           {TOOLS.map(tool => {
             const Icon = tool.icon;

@@ -1008,7 +1008,7 @@ export default function CustomersPage() {
         isSidebarOpen ? 'pr-0' : ''
       )}>
         {/* ── LEFT: Main content ── */}
-        <div className={cn('flex-1 min-w-0 space-y-5 transition-all duration-500', isSidebarOpen && 'max-w-[calc(100%-420px)]')}>
+        <div className={cn('flex-1 min-w-0 space-y-5 transition-all duration-500', isSidebarOpen && 'lg:max-w-[calc(100%-420px)]')}>
           {/* Header */}
           <PageHeader
             icon={Users}
@@ -1070,13 +1070,13 @@ export default function CustomersPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <input
-                placeholder="ค้นหาชื่อ, บริษัท, อีเมล..."
+                aria-label="ค้นหาลูกค้า" placeholder="ค้นหาชื่อ, บริษัท, อีเมล..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-50 dark:bg-white/[0.04] text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-[#171926] focus:border-violet-400 outline-none transition-all"
               />
               {searchTerm && (
-                <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-white">
+                <button aria-label="ล้างคำค้นหา" onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-white">
                   <X size={14} />
                 </button>
               )}
@@ -1126,10 +1126,10 @@ export default function CustomersPage() {
                 <option value="date-desc">อัปเดตล่าสุด</option>
               </select>
               <div className="flex bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 p-1 rounded-xl">
-                <button onClick={() => setViewMode('grid')} className={cn('p-1.5 rounded-lg transition-all cursor-pointer', viewMode === 'grid' ? 'bg-white dark:bg-violet-600 text-violet-600 dark:text-white shadow-xs' : 'text-slate-400 hover:text-slate-700 dark:hover:text-white')}>
+                <button aria-label="แสดงแบบการ์ด" aria-pressed={viewMode === 'grid'} onClick={() => setViewMode('grid')} className={cn('p-1.5 rounded-lg transition-all cursor-pointer', viewMode === 'grid' ? 'bg-white dark:bg-violet-600 text-violet-600 dark:text-white shadow-xs' : 'text-slate-400 hover:text-slate-700 dark:hover:text-white')}>
                   <LayoutGrid size={15} />
                 </button>
-                <button onClick={() => setViewMode('list')} className={cn('p-1.5 rounded-lg transition-all cursor-pointer', viewMode === 'list' ? 'bg-white dark:bg-violet-600 text-violet-600 dark:text-white shadow-xs' : 'text-slate-400 hover:text-slate-700 dark:hover:text-white')}>
+                <button aria-label="แสดงแบบตาราง" aria-pressed={viewMode === 'list'} onClick={() => setViewMode('list')} className={cn('p-1.5 rounded-lg transition-all cursor-pointer', viewMode === 'list' ? 'bg-white dark:bg-violet-600 text-violet-600 dark:text-white shadow-xs' : 'text-slate-400 hover:text-slate-700 dark:hover:text-white')}>
                   <List size={15} />
                 </button>
               </div>
@@ -1224,11 +1224,11 @@ export default function CustomersPage() {
         <AnimatePresence>
           {isSidebarOpen && selectedCustomer && (
             <motion.div
-              initial={{ opacity: 0, x: 40, width: 0 }}
-              animate={{ opacity: 1, x: 0, width: 400 }}
-              exit={{ opacity: 0, x: 40, width: 0 }}
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="shrink-0 bg-white dark:bg-[#0d0f1a] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.08)] dark:shadow-[0_0_40px_rgba(0,0,0,0.6)] overflow-hidden sticky top-4 h-[calc(100vh-6rem)]"
+              className="fixed inset-y-0 right-0 z-50 w-full max-w-[400px] lg:relative lg:inset-auto lg:z-auto lg:w-[400px] shrink-0 bg-white dark:bg-[#0d0f1a] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.08)] dark:shadow-[0_0_40px_rgba(0,0,0,0.6)] overflow-hidden lg:sticky lg:top-4 h-[100dvh] lg:h-[calc(100vh-6rem)]"
             >
               <CustomerDetailPanel
                 customer={selectedCustomer}

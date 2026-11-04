@@ -159,6 +159,7 @@ export default function SalesTrackingPage() {
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
+              aria-pressed={chartType === 'bar'}
               onClick={() => setChartType('bar')}
               className={cn(
                 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
@@ -170,6 +171,7 @@ export default function SalesTrackingPage() {
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
+              aria-pressed={chartType === 'area'}
               onClick={() => setChartType('area')}
               className={cn(
                 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
