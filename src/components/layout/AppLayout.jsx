@@ -453,7 +453,7 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground transition-colors duration-300">
+    <div className="flex h-[100dvh] w-full overflow-hidden bg-background text-foreground transition-colors duration-300">
 
       {/* MOBILE BACKDROP */}
       <AnimatePresence>
@@ -475,15 +475,14 @@ export default function AppLayout() {
       {/* SIDEBAR */}
       <motion.aside
         ref={sidebarRef}
-        initial={shouldReduceMotion ? false : { x: -280, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 350, damping: 35 }}
+        inert={!isDesktop && !isSidebarOpen ? "" : undefined}
+        initial={false}
+        animate={{ x: isDesktop || isSidebarOpen ? 0 : '-100%', opacity: 1 }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
         className={cn(
           "w-64 flex flex-col flex-shrink-0 relative border-r z-30 select-none transition-all duration-300",
           "bg-white/90 dark:bg-[#0b0e17]/90 backdrop-blur-2xl border-slate-200/80 dark:border-white/[0.08] shadow-[4px_0_24px_-4px_rgba(15,23,42,0.03)]",
-          !isDesktop && "fixed inset-y-0 left-0 z-50 transform transition-transform duration-300",
-          !isDesktop && !isSidebarOpen && "-translate-x-full",
-          !isDesktop && isSidebarOpen && "translate-x-0"
+          !isDesktop && "fixed inset-y-0 left-0 z-50"
         )}
       >
         {/* Logo / Brand Header */}
@@ -881,13 +880,13 @@ export default function AppLayout() {
               isGuestAccount={isGuestAccount} 
               openPaywall={openPaywall} 
             />
-            <SystemStatusBanner
+            {!isGuestAccount && <SystemStatusBanner
               deals={deals}
               customers={customers}
               activities={activities}
               effectiveTarget={effectiveTarget}
               navigate={navigate}
-            />
+            />}
             <Suspense fallback={
               <div className="flex-1 flex items-center justify-center min-h-[400px]">
                 <div className="flex flex-col items-center gap-3">
@@ -904,6 +903,14 @@ export default function AppLayout() {
             </Suspense>
           </div>
         </main>
+        <nav aria-label="เมนูหลักมือถือ" className="grid shrink-0 grid-cols-4 border-t border-slate-200 bg-white px-2 pt-1 dark:border-white/10 dark:bg-slate-950 lg:hidden" style={{ paddingBottom: 'max(4px, env(safe-area-inset-bottom))' }}>
+          {navItems.slice(0, 3).map(({ to, icon: Icon, label }) => (
+            <NavLink key={to} to={to} className={({ isActive }) => cn('flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg text-xs font-semibold', isActive ? 'bg-violet-50 text-violet-700 dark:bg-violet-400/15 dark:text-violet-300' : 'text-slate-600 dark:text-slate-300')}>
+              <Icon size={18} />{label}
+            </NavLink>
+          ))}
+          <button type="button" onClick={toggleSidebar} aria-expanded={isSidebarOpen} className="flex min-h-12 flex-col items-center justify-center gap-1 text-xs font-semibold text-slate-600 dark:text-slate-300"><Menu size={18} />เพิ่มเติม</button>
+        </nav>
       </div>
 
       {/* MODALS */}

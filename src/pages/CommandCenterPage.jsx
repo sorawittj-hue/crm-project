@@ -29,8 +29,8 @@ import {
   ArrowUpRight, ArrowDownRight, Briefcase,
   Target, Clock, CalendarClock, ChevronRight, CheckCircle2,
   Phone, Mail, FileText, MessageSquare, Activity, Trophy,
-  Flame, BarChart3, Zap,
-  Wrench, ShieldCheck, Loader2, TrendingUp
+  Flame, Zap,
+  ShieldCheck, Loader2, TrendingUp
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis,
@@ -253,28 +253,17 @@ export default function CommandCenterPage() {
             </div>
           </div>
 
-          <nav aria-label="ทางลัด" className="flex flex-wrap items-center gap-1.5 border-t border-white/10 pt-3">
+          <nav aria-label="ไปยังส่วนของแดชบอร์ด" className="grid gap-2 border-t border-white/15 pt-4 sm:grid-cols-3">
             {[
-              { label: 'Pipeline', icon: Briefcase, to: '/pipeline', primary: true },
-              { label: 'ลูกค้า', icon: Users, to: '/customers' },
-              { label: 'ยอดขาย', icon: TrendingUp, to: '/sales' },
-              { label: 'Analytics', icon: BarChart3, to: '/analytics' },
-              { label: 'เครื่องมือ', icon: Wrench, to: '/tools' },
-            ].map((link) => (
-              <motion.button
-                key={link.to}
-                type="button"
-                onClick={() => navigate(link.to)}
-                whileHover={{ y: -3, scale: 1.015 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                className={cn(
-                  'inline-flex min-h-9 items-center gap-2 rounded-lg px-3 text-xs font-medium transition-colors',
-                  link.primary ? 'bg-white text-slate-900' : 'text-slate-300 hover:bg-white/10 hover:text-white'
-                )}
-              >
-                <link.icon size={14} /> {link.label}
-              </motion.button>
+              { id: 'ai-insights-card', label: 'งานวันนี้', detail: 'ดูงานติดตามและดีลเร่งด่วน', icon: CalendarClock },
+              { id: 'monthly-summary', label: 'เป้าหมายเดือนนี้', detail: 'ดูยอดขายเทียบเป้าหมาย', icon: Target },
+              { id: 'revenue-trend', label: 'แนวโน้มยอดขาย', detail: 'ดูผลย้อนหลัง 6 เดือน', icon: TrendingUp },
+            ].map(({ id, label, detail, icon: Icon }) => (
+              <a key={id} href={'#' + id} className="group flex items-center gap-3 rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white transition-colors hover:bg-white/10">
+                <Icon size={19} className="shrink-0 text-violet-300" />
+                <span className="flex-1"><strong className="block text-sm">{label}</strong><span className="text-xs text-slate-300">{detail}</span></span>
+                <ChevronRight size={15} />
+              </a>
             ))}
           </nav>
         </div>
@@ -508,7 +497,7 @@ export default function CommandCenterPage() {
           )}
 
           {/* REVENUE STREAM CHART */}
-          <Card className="p-6">
+          <Card id="revenue-trend" className="scroll-mt-4 p-6">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white tracking-tight">ยอดขาย 6 เดือนล่าสุด</h3>
@@ -594,7 +583,7 @@ export default function CommandCenterPage() {
         </div>
 
         {/* RIGHT COLUMN: KPI CARDS 3.0, GOAL, LEADERBOARD */}
-        <div className="order-1 space-y-4 lg:order-1 lg:col-span-3">
+        <div id="monthly-summary" className="order-1 scroll-mt-4 space-y-4 lg:col-span-3">
 
           {/* MONTHLY GOAL — primary business outcome */}
           <div className="relative overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-white via-violet-50/70 to-indigo-50/60 p-5 shadow-sm dark:border-violet-300/10 dark:from-[#111827] dark:via-[#151a2b] dark:to-[#17172b]">
