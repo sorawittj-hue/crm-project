@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from './ui/Dialog';
 import { Button } from './ui/Button';
 import { Upload, FileText, AlertCircle } from 'lucide-react';
@@ -27,10 +27,10 @@ export default function CustomerCSVImport({ open, onOpenChange, onImportSuccess 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-[2rem] p-6 bg-white/95 dark:bg-[#0f111a]/95 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-2xl">
+      <DialogContent className="sm:max-w-md rounded-[2rem] p-6 bg-white/95 dark:bg-[#192629]/95 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Upload className="text-violet-500" /> นำเข้าข้อมูลลูกค้า (CSV)
+            <Upload className="text-teal-500" /> นำเข้าข้อมูลลูกค้า (CSV)
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
@@ -43,7 +43,7 @@ export default function CustomerCSVImport({ open, onOpenChange, onImportSuccess 
               id="csv-upload"
             />
             <label htmlFor="csv-upload" className="cursor-pointer flex flex-col items-center gap-3">
-              <div className="w-12 h-12 bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-300 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-teal-100 dark:bg-teal-950/60 text-teal-600 dark:text-teal-300 rounded-full flex items-center justify-center">
                 <FileText size={24} />
               </div>
               <div>
@@ -73,7 +73,7 @@ export default function CustomerCSVImport({ open, onOpenChange, onImportSuccess 
           <Button 
             onClick={handleImport} 
             disabled={!file || isUploading}
-            className="rounded-xl bg-violet-600 hover:bg-violet-700 text-white min-w-[120px] cursor-pointer"
+            className="rounded-xl bg-teal-600 hover:bg-teal-700 text-white min-w-[120px] cursor-pointer"
           >
             {isUploading ? 'กำลังนำเข้า...' : 'เริ่มนำเข้าข้อมูล'}
           </Button>

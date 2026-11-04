@@ -21,8 +21,8 @@ export const STAGE_LABELS = STAGES.reduce((acc, s) => {
 }, {});
 
 export const STAGE_COLORS = {
-  lead: '#6366f1',
-  contact: '#8b5cf6',
+  lead: '#0f766e',
+  contact: '#0d9488',
   proposal: '#ec4899',
   negotiation: '#f97316',
   won: '#10b981',

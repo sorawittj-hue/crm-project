@@ -156,14 +156,14 @@ export function NotificationSection() {
     { id: 'deal_at_risk', label: 'ดีลวิกฤต/เสี่ยงหลุด', desc: 'เตือนเมื่อดีลที่กำลังเจรจาไม่มีความเคลื่อนไหวเกิน 3, 5 หรือ 7 วัน', icon: ShieldAlert, color: 'text-rose-500 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-400' },
     { id: 'deal_closing_overdue', label: 'ดีลเลยกำหนดปิด', desc: 'เตือนเมื่อวันปิดดีลที่คาดไว้ได้ผ่านพ้นไปแล้ว', icon: Clock, color: 'text-red-500 bg-red-50 dark:bg-red-950/40 dark:text-red-400' },
     { id: 'follow_up_overdue', label: 'นัดหมายติดตาม', desc: 'เตือนเมื่อถึงกำหนดนัด หรือมีกิจกรรมการนัดหมายเลยกำหนดส่ง', icon: CalendarClock, color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-400' },
-    { id: 'deal_closing_soon', label: 'ดีลใกล้ครบกำหนดปิด', desc: 'เตือนล่วงหน้า 3-7 วันก่อนถึงกำหนดวันคาดว่าจะปิดดีล', icon: Briefcase, color: 'text-violet-500 bg-violet-50 dark:bg-violet-950/40 dark:text-violet-400' },
+    { id: 'deal_closing_soon', label: 'ดีลใกล้ครบกำหนดปิด', desc: 'เตือนล่วงหน้า 3-7 วันก่อนถึงกำหนดวันคาดว่าจะปิดดีล', icon: Briefcase, color: 'text-teal-500 bg-teal-50 dark:bg-teal-950/40 dark:text-teal-400' },
     { id: 'monthly_goal_at_risk', label: 'ยอดขายเฉลี่ยต่ำกว่าเป้า', desc: 'แจ้งเตือนเมื่อเป้ายอดขายรายเดือนของคุณเสี่ยงจะไม่ตรงตามเป้าหมาย', icon: BarChart2, color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/40 dark:text-blue-400' },
     { id: 'deal_stale', label: 'ดีลหยุดนิ่งทั่วไป', desc: 'เตือนดีลขั้นตอนอื่นๆ ที่ไม่มีการขยับขยายตามจำนวนวันที่ระบุ', icon: Clock, color: 'text-slate-500 bg-slate-50 dark:bg-white/10 dark:text-slate-400' },
   ];
 
   return (
-    <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+    <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#192629]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-teal-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
 
       <div className="flex items-center justify-between mb-8 relative z-10">
         <div>
@@ -176,9 +176,9 @@ export function NotificationSection() {
         {/* Sound & Browser Permissions Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Sound Card */}
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-violet-50/20 dark:from-white/[0.04] dark:to-violet-950/20 border border-slate-100/80 dark:border-white/10 flex items-center justify-between transition-all hover:shadow-sm">
+          <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-teal-50/20 dark:from-white/[0.04] dark:to-teal-950/20 border border-slate-100/80 dark:border-white/10 flex items-center justify-between transition-all hover:shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/50 text-violet-600 dark:text-violet-300 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-950/50 text-teal-600 dark:text-teal-300 flex items-center justify-center">
                 <Volume2 size={20} />
               </div>
               <div>
@@ -198,7 +198,7 @@ export function NotificationSection() {
                 onClick={handleToggleSound}
                 className={cn(
                   "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                  settings.soundEnabled ? "bg-violet-600" : "bg-slate-200 dark:bg-white/20"
+                  settings.soundEnabled ? "bg-teal-600" : "bg-slate-200 dark:bg-white/20"
                 )}
               >
                 <span
@@ -253,7 +253,7 @@ export function NotificationSection() {
                   className={cn(
                     "flex items-start justify-between p-4 rounded-2xl border transition-all duration-300",
                     isEnabled
-                      ? "bg-white dark:bg-[#171926] border-slate-100 dark:border-white/10 hover:border-violet-100 dark:hover:border-violet-500/30 hover:shadow-sm"
+                      ? "bg-white dark:bg-[#171926] border-slate-100 dark:border-white/10 hover:border-teal-100 dark:hover:border-teal-500/30 hover:shadow-sm"
                       : "bg-slate-50/50 dark:bg-white/[0.02] border-slate-100 dark:border-white/[0.06] opacity-60"
                   )}
                 >
@@ -270,7 +270,7 @@ export function NotificationSection() {
                     onClick={() => handleToggleCategory(cat.id)}
                     className={cn(
                       "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                      isEnabled ? "bg-violet-600" : "bg-slate-200 dark:bg-white/20"
+                      isEnabled ? "bg-teal-600" : "bg-slate-200 dark:bg-white/20"
                     )}
                   >
                     <span
@@ -302,7 +302,7 @@ export function NotificationSection() {
               max={90}
               value={settings.staleDaysThreshold}
               onChange={(e) => handleThresholdChange(e.target.value)}
-              className="w-16 h-10 text-center font-bold text-slate-800 dark:text-white rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] focus:border-violet-400 focus:ring-2 focus:ring-violet-100 dark:focus:ring-violet-900/30 transition-all outline-none"
+              className="w-16 h-10 text-center font-bold text-slate-800 dark:text-white rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] focus:border-teal-400 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900/30 transition-all outline-none"
             />
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">วัน</span>
           </div>

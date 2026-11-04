@@ -82,8 +82,8 @@ const SOFTWARE_DB = {
   backup: {
     key: 'backup',
     icon: DatabaseBackup,
-    gradient: 'from-blue-600 to-indigo-600',
-    bgGradient: 'from-blue-50/40 to-indigo-50/40',
+    gradient: 'from-blue-600 to-teal-600',
+    bgGradient: 'from-blue-50/40 to-teal-50/40',
     borderColor: 'border-blue-200/50',
     title: "Data Backup & Recovery",
     categories: [
@@ -118,9 +118,9 @@ const SOFTWARE_DB = {
   virtualization: {
     key: 'virtualization',
     icon: Box,
-    gradient: 'from-purple-600 to-fuchsia-600',
-    bgGradient: 'from-purple-50/40 to-fuchsia-50/40',
-    borderColor: 'border-purple-200/50',
+    gradient: 'from-teal-600 to-teal-600',
+    bgGradient: 'from-teal-50/40 to-teal-50/40',
+    borderColor: 'border-teal-200/50',
     title: "Virtualization (VM & HCI)",
     categories: [
       {
@@ -249,7 +249,7 @@ export default function SoftwareCloudGuide() {
               transition={{ duration: 0.3 }}
               className="h-full"
             >
-              <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-2xl rounded-[2.5rem] border border-slate-200/80 dark:border-white/10 p-6 md:p-10 shadow-[0_20px_60px_rgb(0,0,0,0.06)] ring-1 ring-slate-900/5 dark:ring-white/5 h-full flex flex-col relative overflow-hidden">
+              <div className="bg-white/80 dark:bg-[#192629]/80 backdrop-blur-2xl rounded-[2.5rem] border border-slate-200/80 dark:border-white/10 p-6 md:p-10 shadow-[0_20px_60px_rgb(0,0,0,0.06)] ring-1 ring-slate-900/5 dark:ring-white/5 h-full flex flex-col relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5 dark:opacity-10 pointer-events-none">
                   <currentProfile.icon size={120} />
                 </div>

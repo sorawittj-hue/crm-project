@@ -193,7 +193,7 @@ export default function MonthlyPipeline({
   }, [winLossState, onUpdateDeal]);
 
   return (
-    <div className="flex flex-col space-y-5">
+    <div className="nova-pipeline-workspace">
       <PipelineHeader
         deals={deals}
         selectedMonth={selectedMonth}

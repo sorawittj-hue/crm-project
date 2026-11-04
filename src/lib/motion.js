@@ -35,10 +35,10 @@ export const easeBounce   = [0.34, 1.56, 0.64, 1];
 
 // ─── Page Transition ───
 export const pageMotion = {
-  initial:    { opacity: 0, y: 20, filter: 'blur(6px)', scale: 0.99 },
-  animate:    { opacity: 1, y: 0,  filter: 'blur(0px)', scale: 1 },
-  exit:       { opacity: 0, y: -12, filter: 'blur(4px)', scale: 0.99 },
-  transition: { duration: 0.42, ease: easeExpOut },
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -4 },
+  transition: { duration: 0.18, ease: easeExpOut },
 };
 
 // ─── Reduced Motion ───
@@ -54,8 +54,8 @@ export const getPressMotion = (shouldReduceMotion) =>
   shouldReduceMotion
     ? {}
     : {
-        whileHover: { y: -3, scale: 1.02, transition: springSnappy },
-        whileTap:   { scale: 0.96, transition: { ...springSnappy, duration: 0.1 } },
+        whileHover: { y: -1, transition: { duration: 0.14 } },
+        whileTap:   { scale: 0.985, transition: { ...springSnappy, duration: 0.1 } },
       };
 
 // ─── Card Motion ───

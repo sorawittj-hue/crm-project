@@ -93,8 +93,8 @@ export default function SettingsPage() {
 
   if (settingsLoading || teamLoading) return (
     <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
-      <div className="w-14 h-14 rounded-2xl bg-violet-50 dark:bg-violet-950/40 flex items-center justify-center">
-        <Loader2 className="animate-spin text-violet-500" size={26} />
+      <div className="w-14 h-14 rounded-2xl bg-teal-50 dark:bg-teal-950/40 flex items-center justify-center">
+        <Loader2 className="animate-spin text-teal-500" size={26} />
       </div>
       <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">กำลังโหลดการตั้งค่า...</p>
     </div>
@@ -103,8 +103,8 @@ export default function SettingsPage() {
   return (
     <div className="mesh-bg max-w-[1200px] mx-auto pb-20 px-2 sm:px-4 md:px-6 relative ui-enter">
       {/* Ambient glows */}
-      <div className="fixed top-20 left-1/4 w-[500px] h-[500px] bg-violet-600/5 dark:bg-violet-600/10 rounded-full blur-[130px] pointer-events-none -z-10" />
-      <div className="fixed bottom-20 right-10 w-80 h-80 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none -z-10" />
+      <div className="fixed top-20 left-1/4 w-[500px] h-[500px] bg-teal-600/5 dark:bg-teal-600/10 rounded-full blur-[130px] pointer-events-none -z-10" />
+      <div className="fixed bottom-20 right-10 w-80 h-80 bg-teal-500/5 dark:bg-teal-500/10 rounded-full blur-[100px] pointer-events-none -z-10" />
 
       {/* HEADER SECTION */}
       <motion.div
@@ -122,7 +122,7 @@ export default function SettingsPage() {
               <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs font-semibold">
                 <span>Settings</span>
                 <ChevronRight size={12} />
-                <span className="text-violet-600 dark:text-violet-400">{activeItem.label}</span>
+                <span className="text-teal-600 dark:text-teal-400">{activeItem.label}</span>
               </div>
             )
           }
@@ -139,7 +139,7 @@ export default function SettingsPage() {
                   Admin
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 dark:bg-white/10 border border-violet-100 dark:border-white/10 text-xs font-black text-slate-700 dark:text-slate-300 shadow-sm">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 dark:bg-white/10 border border-teal-100 dark:border-white/10 text-xs font-black text-slate-700 dark:text-slate-300 shadow-sm">
                   <User size={13} className="text-slate-500 dark:text-slate-400" />
                   Member
                 </span>
@@ -161,7 +161,7 @@ export default function SettingsPage() {
           <select id="settings-section" value={activeSection} onChange={e => setActiveSection(e.target.value)} className="mb-4 h-12 w-full rounded-xl border border-slate-300 bg-white px-3 text-slate-900 dark:border-white/20 dark:bg-slate-900 dark:text-white lg:hidden">
             {allSections.map(section => <option key={section.id} value={section.id}>{section.label}</option>)}
           </select>
-          <nav className="hidden lg:block lg:sticky lg:top-4 bg-white/90 dark:bg-[#0f111a]/90 backdrop-blur-xl p-2 rounded-xl border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.6)] space-y-4">
+          <nav className="hidden lg:block lg:sticky lg:top-4 bg-white/90 dark:bg-[#192629]/90 backdrop-blur-xl p-2 rounded-xl border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.6)] space-y-4">
             {/* Base groups */}
             {SECTION_GROUPS.map((group) => (
               <div key={group.groupLabel}>
@@ -211,10 +211,10 @@ export default function SettingsPage() {
                   <PipelineSection />
 
                   {/* Custom Fields Card */}
-                  <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm">
+                  <div className="bg-white/80 dark:bg-[#192629]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-xs">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center text-white shadow-xs">
                           <Database size={18} />
                         </div>
                         <div>
@@ -224,28 +224,28 @@ export default function SettingsPage() {
                       </div>
                       <button
                         onClick={() => setShowAddField(s => !s)}
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors shadow-xs cursor-pointer"
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-600 text-white text-xs font-bold hover:bg-teal-700 transition-colors shadow-xs cursor-pointer"
                       >
                         <Plus size={13} /> เพิ่ม Field
                       </button>
                     </div>
 
                     {showAddField && (
-                      <div className="mb-4 p-4 bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800/40 rounded-2xl flex flex-col gap-3">
-                        <p className="text-xs font-bold text-violet-700 dark:text-violet-300 uppercase tracking-wider">เพิ่ม Field ใหม่</p>
+                      <div className="mb-4 p-4 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/40 rounded-2xl flex flex-col gap-3">
+                        <p className="text-xs font-bold text-teal-700 dark:text-teal-300 uppercase tracking-wider">เพิ่ม Field ใหม่</p>
                         <div className="flex gap-2">
                           <input
                             type="text"
                             placeholder="ชื่อ Field เช่น LinkedIn URL"
                             value={newFieldLabel}
                             onChange={e => setNewFieldLabel(e.target.value)}
-                            className="flex-1 h-9 px-3 rounded-xl border border-violet-200 dark:border-violet-800/40 bg-white dark:bg-[#171926] text-slate-900 dark:text-white text-sm font-semibold outline-none focus:border-violet-400"
+                            className="flex-1 h-9 px-3 rounded-xl border border-teal-200 dark:border-teal-800/40 bg-white dark:bg-[#171926] text-slate-900 dark:text-white text-sm font-semibold outline-none focus:border-teal-400"
                             onKeyDown={e => { if (e.key === 'Enter') handleAddField(); }}
                           />
                           <select
                             value={newFieldType}
                             onChange={e => setNewFieldType(e.target.value)}
-                            className="h-9 px-3 rounded-xl border border-violet-200 dark:border-violet-800/40 bg-white dark:bg-[#171926] text-slate-900 dark:text-white text-sm font-semibold outline-none cursor-pointer"
+                            className="h-9 px-3 rounded-xl border border-teal-200 dark:border-teal-800/40 bg-white dark:bg-[#171926] text-slate-900 dark:text-white text-sm font-semibold outline-none cursor-pointer"
                           >
                             <option value="text">ข้อความ</option>
                             <option value="number">ตัวเลข</option>
@@ -254,7 +254,7 @@ export default function SettingsPage() {
                           </select>
                           <button
                             onClick={handleAddField}
-                            className="h-9 px-4 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors cursor-pointer"
+                            className="h-9 px-4 rounded-xl bg-teal-600 text-white text-xs font-bold hover:bg-teal-700 transition-colors cursor-pointer"
                           >
                             บันทึก
                           </button>
@@ -272,9 +272,9 @@ export default function SettingsPage() {
 
                     <div className="space-y-2">
                       {customFieldDefs.map((field, idx) => (
-                        <div key={field.key} className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 hover:border-violet-200 dark:hover:border-violet-800/40 transition-colors">
-                          <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-950/50 flex items-center justify-center">
-                            <Database size={13} className="text-violet-600 dark:text-violet-400" />
+                        <div key={field.key} className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 hover:border-teal-200 dark:hover:border-teal-800/40 transition-colors">
+                          <div className="w-8 h-8 rounded-xl bg-teal-100 dark:bg-teal-950/50 flex items-center justify-center">
+                            <Database size={13} className="text-teal-600 dark:text-teal-400" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold text-slate-800 dark:text-white">{field.label}</p>
@@ -322,7 +322,7 @@ function NavItem({ s, isActive, onClick, isAdmin = false }) {
         isActive
           ? isAdmin
             ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md'
-            : 'bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-600 bg-[length:200%_auto] text-white shadow-[0_4px_16px_rgba(124,58,237,0.35)]'
+            : 'bg-gradient-to-r from-teal-600 via-teal-600 to-teal-600 bg-[length:200%_auto] text-white shadow-[0_4px_16px_rgba(15,118,110,0.35)]'
           : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-white/[0.08] hover:text-slate-900 dark:hover:text-white'
       )}
     >
@@ -332,11 +332,11 @@ function NavItem({ s, isActive, onClick, isAdmin = false }) {
       {/* Icon container */}
       <div className={cn(
         'w-7 h-7 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300',
-        isActive ? 'bg-white/20' : 'bg-slate-100 dark:bg-white/5 group-hover:bg-violet-100 dark:group-hover:bg-violet-950/50 group-hover:scale-110'
+        isActive ? 'bg-white/20' : 'bg-slate-100 dark:bg-white/5 group-hover:bg-teal-100 dark:group-hover:bg-teal-950/50 group-hover:scale-110'
       )}>
         <Icon size={15} className={cn(
           'transition-all duration-300',
-          isActive ? 'text-white' : 'text-slate-400 group-hover:text-violet-600 dark:group-hover:text-violet-400'
+          isActive ? 'text-white' : 'text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400'
         )} />
       </div>
 

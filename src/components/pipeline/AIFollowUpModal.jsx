@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Sparkles, Copy, Check, MessageSquare, Send, Bot, RefreshCw } from 'lucide-react';
+import { Sparkles, Copy, Check, Bot, RefreshCw } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { Textarea } from '../ui/Textarea';
@@ -16,7 +15,6 @@ const TEMPLATES = [
 export default function AIFollowUpModal({ open, onOpenChange, deal }) {
   const [copied, setCopied] = useState(false);
   const [templateType, setTemplateType] = useState('proposal');
-  const [customPrompt, setCustomPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
   const company = deal?.company || 'ลูกค้า';
@@ -59,11 +57,11 @@ export default function AIFollowUpModal({ open, onOpenChange, deal }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg p-0 overflow-hidden bg-white/95 backdrop-blur-3xl border-0 shadow-2xl rounded-[2rem] relative">
-        <div className="h-1.5 bg-gradient-to-r from-violet-600 via-indigo-600 to-fuchsia-600" />
+        <div className="h-1.5 bg-gradient-to-r from-teal-600 via-teal-600 to-teal-600" />
         <div className="p-7">
           <DialogHeader>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-violet-500/20">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-600 to-teal-600 text-white flex items-center justify-center shadow-md shadow-teal-500/20">
                 <Bot size={20} />
               </div>
               <div>
@@ -90,8 +88,8 @@ export default function AIFollowUpModal({ open, onOpenChange, deal }) {
                     onClick={() => handleSelectTemplate(t.type)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all border ${
                       templateType === t.type
-                        ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-transparent shadow-md shadow-violet-500/20'
-                        : 'bg-slate-50 text-slate-600 border-slate-200/80 hover:bg-violet-50 hover:text-violet-700'
+                        ? 'bg-gradient-to-r from-teal-600 to-teal-600 text-white border-transparent shadow-md shadow-teal-500/20'
+                        : 'bg-slate-50 text-slate-600 border-slate-200/80 hover:bg-teal-50 hover:text-teal-700'
                     }`}
                   >
                     {t.label}
@@ -106,10 +104,10 @@ export default function AIFollowUpModal({ open, onOpenChange, deal }) {
                 rows={7}
                 value={messageDraft}
                 onChange={e => setMessageDraft(e.target.value)}
-                className="bg-slate-50/70 border-slate-200/80 rounded-2xl text-xs font-medium leading-relaxed p-4 focus:bg-white focus:border-violet-400"
+                className="bg-slate-50/70 border-slate-200/80 rounded-2xl text-xs font-medium leading-relaxed p-4 focus:bg-white focus:border-teal-400"
               />
               {isGenerating && (
-                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center gap-2 text-violet-600 text-xs font-bold">
+                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center gap-2 text-teal-600 text-xs font-bold">
                   <RefreshCw size={16} className="animate-spin" />
                   กำลังเรียบเรียงข้อความใหม่...
                 </div>

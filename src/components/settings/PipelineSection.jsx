@@ -7,8 +7,8 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { fetchPipelineStages, upsertPipelineStages, deletePipelineStage } from '../../services/apiStages';
 
 const COLOR_CLASSES = {
-  indigo: { bg: 'from-indigo-50 to-indigo-100/50 dark:from-indigo-950/40 dark:to-indigo-900/20', border: 'border-l-indigo-500', dot: 'bg-indigo-500', text: 'text-indigo-700 dark:text-indigo-300', badge: 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300', button: 'bg-indigo-500' },
-  violet: { bg: 'from-violet-50 to-violet-100/50 dark:from-violet-950/40 dark:to-violet-900/20', border: 'border-l-violet-500', dot: 'bg-violet-500', text: 'text-violet-700 dark:text-violet-300', badge: 'bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300', button: 'bg-violet-500' },
+  indigo: { bg: 'from-teal-50 to-teal-100/50 dark:from-teal-950/40 dark:to-teal-900/20', border: 'border-l-teal-500', dot: 'bg-teal-500', text: 'text-teal-700 dark:text-teal-300', badge: 'bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300', button: 'bg-teal-500' },
+  violet: { bg: 'from-teal-50 to-teal-100/50 dark:from-teal-950/40 dark:to-teal-900/20', border: 'border-l-teal-500', dot: 'bg-teal-500', text: 'text-teal-700 dark:text-teal-300', badge: 'bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300', button: 'bg-teal-500' },
   pink: { bg: 'from-pink-50 to-pink-100/50 dark:from-pink-950/40 dark:to-pink-900/20', border: 'border-l-pink-500', dot: 'bg-pink-500', text: 'text-pink-700 dark:text-pink-300', badge: 'bg-pink-100 dark:bg-pink-950/60 text-pink-700 dark:text-pink-300', button: 'bg-pink-500' },
   orange: { bg: 'from-orange-50 to-orange-100/50 dark:from-orange-950/40 dark:to-orange-900/20', border: 'border-l-orange-500', dot: 'bg-orange-500', text: 'text-orange-700 dark:text-orange-300', badge: 'bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300', button: 'bg-orange-500' },
   emerald: { bg: 'from-emerald-50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/20', border: 'border-l-emerald-500', dot: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-300', badge: 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300', button: 'bg-emerald-500' },
@@ -125,20 +125,20 @@ export function PipelineSection() {
   };
 
   return (
-    <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+    <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#192629]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-teal-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
       <div className="flex items-center justify-between mb-8 relative z-10">
         <div>
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">ขั้นตอนดีล (Pipeline Stages)</h2>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 text-xs font-bold mr-2">{stages.length} ขั้นตอน</span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 text-xs font-bold mr-2">{stages.length} ขั้นตอน</span>
             ปรับแต่งลำดับขั้นตอนของคุณ
           </p>
         </div>
         <button
           onClick={handleAdd}
           disabled={isSaving || isLoading || editingId}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-violet-600 text-white rounded-xl text-sm font-bold hover:bg-slate-800 dark:hover:bg-violet-700 transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-slate-800 dark:hover:bg-teal-700 transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
         >
           <Plus size={16} />
           เพิ่มขั้นตอน
@@ -147,13 +147,13 @@ export function PipelineSection() {
 
       <div className="relative z-10">
         {isLoading ? (
-          <div className="flex justify-center p-8"><Loader2 className="animate-spin text-violet-600" /></div>
+          <div className="flex justify-center p-8"><Loader2 className="animate-spin text-teal-600" /></div>
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="pipeline-stages">
               {(provided) => (
                 <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3 relative min-h-[100px]">
-                  <div className="absolute left-[33px] top-6 bottom-6 w-px bg-gradient-to-b from-indigo-200 via-violet-200 to-rose-200 dark:from-indigo-800 dark:via-violet-800 dark:to-rose-800" />
+                  <div className="absolute left-[33px] top-6 bottom-6 w-px bg-gradient-to-b from-teal-200 via-teal-200 to-rose-200 dark:from-teal-800 dark:via-teal-800 dark:to-rose-800" />
 
                   {stages.map((s, i) => {
                     const style = getStageStyle(s.color);
@@ -167,7 +167,7 @@ export function PipelineSection() {
                             {...provided.draggableProps}
                             className={cn(
                               'flex items-center gap-3 p-3 pl-2 rounded-2xl bg-white dark:bg-[#171926] border border-slate-100 dark:border-white/10 shadow-sm transition-all relative',
-                              snapshot.isDragging ? 'shadow-xl ring-2 ring-violet-500/20 z-50 scale-[1.02]' : 'hover:shadow-md'
+                              snapshot.isDragging ? 'shadow-xl ring-2 ring-teal-500/20 z-50 scale-[1.02]' : 'hover:shadow-md'
                             )}
                           >
                             <div {...provided.dragHandleProps} className="text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 cursor-grab active:cursor-grabbing p-1">
@@ -185,7 +185,7 @@ export function PipelineSection() {
                                   value={editForm.label}
                                   onChange={(e) => setEditForm({ ...editForm, label: e.target.value })}
                                   onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit(s.id)}
-                                  className="flex-1 bg-white dark:bg-[#0f111a] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-700 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+                                  className="flex-1 bg-white dark:bg-[#192629] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-700 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
                                   autoFocus
                                   placeholder="ชื่อขั้นตอน"
                                 />
@@ -216,7 +216,7 @@ export function PipelineSection() {
                                   <span className={cn('px-2.5 py-1 rounded-full text-[11px] font-bold', style.badge)}>
                                     Step {i + 1}
                                   </span>
-                                  <button onClick={() => { setEditingId(s.id); setEditForm({ label: s.label, color: s.color || 'indigo' }); }} className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1.5 rounded-lg hover:bg-white/50 dark:hover:bg-white/10 transition-colors cursor-pointer">
+                                  <button onClick={() => { setEditingId(s.id); setEditForm({ label: s.label, color: s.color || 'indigo' }); }} className="text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 p-1.5 rounded-lg hover:bg-white/50 dark:hover:bg-white/10 transition-colors cursor-pointer">
                                     <Edit2 size={16} />
                                   </button>
                                   <button onClick={() => handleDelete(s.id)} className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 p-1.5 rounded-lg hover:bg-white/50 dark:hover:bg-white/10 transition-colors disabled:opacity-30 cursor-pointer" disabled={stages.length <= 1}>
@@ -242,7 +242,7 @@ export function PipelineSection() {
         <Info size={14} className="text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
         <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
           {isSaving ? (
-            <span className="flex items-center gap-2"><Loader2 size={12} className="animate-spin text-violet-600" /> กำลังบันทึกข้อมูล...</span>
+            <span className="flex items-center gap-2"><Loader2 size={12} className="animate-spin text-teal-600" /> กำลังบันทึกข้อมูล...</span>
           ) : (
             'การเปลี่ยนแปลงจะถูกบันทึกอัตโนมัติ การลบขั้นตอนที่กำลังใช้งานอาจมีผลกระทบกับดีลที่อยู่ในขั้นตอนนี้'
           )}

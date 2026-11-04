@@ -22,7 +22,7 @@ export default function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm p-0 overflow-hidden rounded-[2rem] border border-slate-200/80 dark:border-white/10 shadow-2xl relative bg-white/95 dark:bg-[#0f111a]/95 backdrop-blur-3xl">
+      <DialogContent className="max-w-sm p-0 overflow-hidden rounded-[2rem] border border-slate-200/80 dark:border-white/10 shadow-2xl relative bg-white/95 dark:bg-[#192629]/95 backdrop-blur-3xl">
         {/* Subtle dot grid pattern */}
         <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '12px 12px' }} />
 
@@ -80,7 +80,7 @@ export default function ConfirmDialog({
           <DialogFooter className="flex gap-3 mt-4">
             <Button 
               variant="outline" 
-              className="flex-1 h-12 rounded-xl font-bold text-sm text-slate-600 dark:text-slate-300 bg-white dark:bg-white/[0.05] border-slate-200 dark:border-white/10 hover:border-violet-300 dark:hover:border-violet-500/40 hover:bg-violet-50 dark:hover:bg-violet-950/30 hover:text-violet-700 dark:hover:text-violet-300 transition-all shadow-sm"
+              className="flex-1 h-12 rounded-xl font-bold text-sm text-slate-600 dark:text-slate-300 bg-white dark:bg-white/[0.05] border-slate-200 dark:border-white/10 hover:border-teal-300 dark:hover:border-teal-500/40 hover:bg-teal-50 dark:hover:bg-teal-950/30 hover:text-teal-700 dark:hover:text-teal-300 transition-all shadow-sm"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >

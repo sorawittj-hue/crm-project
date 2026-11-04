@@ -14,23 +14,23 @@ const Button = React.forwardRef(({
   const shouldReduceMotion = useReducedMotion()
   const pressMotion = getPressMotion(shouldReduceMotion)
 
-  const baseStyles = "inline-flex items-center justify-center whitespace-nowrap font-semibold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 transition-all duration-200 ease-out select-none cursor-pointer"
+  const baseStyles = "inline-flex items-center justify-center whitespace-nowrap font-semibold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 transition-all duration-200 ease-out select-none cursor-pointer"
 
   const variants = {
     default:
-      "bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-600 bg-[length:200%_auto] hover:bg-right text-white rounded-xl shadow-[0_4px_14px_-2px_rgba(124,58,237,0.35)] hover:shadow-[0_6px_20px_-2px_rgba(124,58,237,0.5)] active:scale-[0.98]",
+      "bg-gradient-to-r from-teal-600 via-teal-600 to-teal-600 bg-[length:200%_auto] hover:bg-right text-white rounded-xl shadow-[0_4px_14px_-2px_rgba(15,118,110,0.35)] hover:shadow-[0_6px_20px_-2px_rgba(15,118,110,0.5)] active:scale-[0.98]",
     primary:
-      "bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-600 bg-[length:200%_auto] hover:bg-right text-white rounded-xl shadow-[0_4px_14px_-2px_rgba(124,58,237,0.35)] hover:shadow-[0_6px_20px_-2px_rgba(124,58,237,0.5)] active:scale-[0.98]",
+      "bg-gradient-to-r from-teal-600 via-teal-600 to-teal-600 bg-[length:200%_auto] hover:bg-right text-white rounded-xl shadow-[0_4px_14px_-2px_rgba(15,118,110,0.35)] hover:shadow-[0_6px_20px_-2px_rgba(15,118,110,0.5)] active:scale-[0.98]",
     destructive:
       "bg-gradient-to-r from-rose-600 to-red-600 text-white rounded-xl shadow-[0_4px_14px_-2px_rgba(244,63,94,0.35)] hover:from-rose-500 hover:to-red-500 active:scale-[0.98]",
     outline:
-      "border border-slate-200/90 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] backdrop-blur-md text-slate-700 dark:text-slate-200 rounded-xl hover:bg-violet-50/50 dark:hover:bg-white/[0.08] hover:border-violet-300 dark:hover:border-violet-500/30 hover:text-violet-700 dark:hover:text-white",
+      "border border-slate-200/90 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] backdrop-blur-md text-slate-700 dark:text-slate-200 rounded-xl hover:bg-teal-50/50 dark:hover:bg-white/[0.08] hover:border-teal-300 dark:hover:border-teal-500/30 hover:text-teal-700 dark:hover:text-white",
     secondary:
       "bg-slate-100/90 dark:bg-white/10 text-slate-800 dark:text-slate-100 rounded-xl hover:bg-slate-200/80 dark:hover:bg-white/15",
     ghost:
       "text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-100/80 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white",
     link:
-      "text-violet-700 dark:text-violet-300 underline-offset-4 hover:underline hover:text-violet-800 dark:hover:text-violet-200 p-0 h-auto font-medium",
+      "text-teal-700 dark:text-teal-300 underline-offset-4 hover:underline hover:text-teal-800 dark:hover:text-teal-200 p-0 h-auto font-medium",
     minimal:
       "bg-transparent text-slate-600 dark:text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white active:scale-[0.98]",
     emerald:

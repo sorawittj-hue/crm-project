@@ -13,12 +13,12 @@ import { useAppStore } from '../../store/useAppStore';
 import ConfirmDialog from '../ui/ConfirmDialog';
 
 const AVATAR_COLORS = {
-  violet: { bg: 'bg-gradient-to-br from-violet-500 to-indigo-600', ring: 'from-violet-400 to-indigo-500', text: 'text-violet-700 dark:text-violet-300 bg-violet-50/50 dark:bg-violet-950/30 border-violet-100/50 dark:border-violet-800/30', dot: 'bg-violet-600' },
+  violet: { bg: 'bg-gradient-to-br from-teal-500 to-teal-600', ring: 'from-teal-400 to-teal-500', text: 'text-teal-700 dark:text-teal-300 bg-teal-50/50 dark:bg-teal-950/30 border-teal-100/50 dark:border-teal-800/30', dot: 'bg-teal-600' },
   emerald: { bg: 'bg-gradient-to-br from-emerald-500 to-teal-600', ring: 'from-emerald-400 to-teal-500', text: 'text-emerald-700 dark:text-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-100/50 dark:border-emerald-800/30', dot: 'bg-emerald-600' },
   amber: { bg: 'bg-gradient-to-br from-amber-400 to-orange-500', ring: 'from-amber-400 to-orange-500', text: 'text-amber-700 dark:text-amber-300 bg-amber-50/50 dark:bg-amber-950/30 border-amber-100/50 dark:border-amber-800/30', dot: 'bg-amber-600' },
   rose: { bg: 'bg-gradient-to-br from-rose-400 to-pink-500', ring: 'from-rose-400 to-pink-500', text: 'text-rose-700 dark:text-rose-300 bg-rose-50/50 dark:bg-rose-950/30 border-rose-100/50 dark:border-rose-800/30', dot: 'bg-rose-600' },
   blue: { bg: 'bg-gradient-to-br from-blue-500 to-cyan-600', ring: 'from-blue-400 to-cyan-500', text: 'text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-100/50 dark:border-blue-800/30', dot: 'bg-blue-600' },
-  purple: { bg: 'bg-gradient-to-br from-purple-500 to-fuchsia-600', ring: 'from-purple-400 to-fuchsia-500', text: 'text-purple-700 dark:text-purple-300 bg-purple-50/50 dark:bg-purple-950/30 border-purple-100/50 dark:border-purple-800/30', dot: 'bg-purple-600' },
+  purple: { bg: 'bg-gradient-to-br from-teal-500 to-teal-600', ring: 'from-teal-400 to-teal-500', text: 'text-teal-700 dark:text-teal-300 bg-teal-50/50 dark:bg-teal-950/30 border-teal-100/50 dark:border-teal-800/30', dot: 'bg-teal-600' },
 };
 
 export function AccountSection() {
@@ -97,8 +97,8 @@ export function AccountSection() {
 
   return (
     <div className="space-y-6">
-      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#192629]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-teal-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
         <div className="flex items-center justify-between relative z-10">
           <div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight relative z-10">โปรไฟล์ของคุณ</h2>
@@ -107,7 +107,7 @@ export function AccountSection() {
           {!isEditingProfile && (
             <Button
               onClick={handleOpenEdit}
-              className="h-9 px-4 rounded-xl text-sm bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20 cursor-pointer"
+              className="h-9 px-4 rounded-xl text-sm bg-teal-600 hover:bg-teal-700 text-white border-0 shadow-md shadow-teal-500/20 cursor-pointer"
             >
               <Pencil size={13} className="mr-1.5" /> แก้ไขข้อมูล
             </Button>
@@ -140,7 +140,7 @@ export function AccountSection() {
                         onClick={() => setSelectedColor(colorKey)}
                         className={cn(
                           "w-9 h-9 rounded-full border-2 transition-all hover:scale-110 flex items-center justify-center p-[2px] cursor-pointer",
-                          isSelected ? "border-violet-600 scale-105 shadow-md shadow-violet-600/10" : "border-transparent"
+                          isSelected ? "border-teal-600 scale-105 shadow-md shadow-teal-600/10" : "border-transparent"
                         )}
                       >
                         <div className={cn("w-full h-full rounded-full shadow-inner", c.bg)} />
@@ -161,7 +161,7 @@ export function AccountSection() {
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 h-9 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-semibold border-0 shadow-md shadow-violet-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="flex-1 h-9 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold border-0 shadow-md shadow-teal-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
                   disabled={savingProfile}
                 >
                   {savingProfile ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
@@ -182,7 +182,7 @@ export function AccountSection() {
                 </p>
                 <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{user?.email}</p>
                 <span className={cn('text-[10px] font-bold px-2.5 py-0.5 rounded-full mt-2 inline-flex items-center gap-1 shrink-0',
-                  isAdmin ? 'bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800/40' : 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-white/10'
+                  isAdmin ? 'bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/40' : 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-white/10'
                 )}>
                   {isAdmin ? '⚡ Admin' : 'Member'}
                 </span>
@@ -200,8 +200,8 @@ export function AccountSection() {
       </Card>
 
       {/* Personal Target Card */}
-      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#192629]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-teal-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
         <div className="flex items-center justify-between relative z-10">
           <div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white">เป้าหมายยอดขายส่วนตัว</h3>
@@ -210,7 +210,7 @@ export function AccountSection() {
           {personalTargetForm === null && (
             <Button
               onClick={() => setPersonalTargetForm(myProfile?.personal_target ?? 0)}
-              className="h-9 px-4 rounded-xl text-sm bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20 cursor-pointer"
+              className="h-9 px-4 rounded-xl text-sm bg-teal-600 hover:bg-teal-700 text-white border-0 shadow-md shadow-teal-500/20 cursor-pointer"
             >
               <Pencil size={13} className="mr-1.5" /> แก้ไข
             </Button>
@@ -218,14 +218,14 @@ export function AccountSection() {
         </div>
 
         {personalTargetForm === null ? (
-          <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-violet-50/60 to-purple-50/30 dark:from-violet-950/30 dark:to-purple-950/20 border border-violet-100/50 dark:border-white/[0.06] relative z-10">
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-teal-50/60 to-teal-50/30 dark:from-teal-950/30 dark:to-teal-950/20 border border-teal-100/50 dark:border-white/[0.06] relative z-10">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-300 flex items-center justify-center shrink-0">
                 <Target size={16} />
               </div>
               <p className="text-sm font-medium text-slate-600 dark:text-slate-300">เป้าหมายรายเดือน</p>
             </div>
-            <p className="text-xl font-semibold tabular-nums text-violet-600 dark:text-violet-400">
+            <p className="text-xl font-semibold tabular-nums text-teal-600 dark:text-teal-400">
               {myProfile?.personal_target > 0 ? formatFullCurrency(myProfile.personal_target) : '—'}
             </p>
           </div>
@@ -247,7 +247,7 @@ export function AccountSection() {
                 ยกเลิก
               </Button>
               <Button type="submit" disabled={savingPersonalTarget}
-                className="flex-[2] h-10 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold border-0 shadow-md shadow-violet-500/20 flex items-center justify-center gap-2 cursor-pointer">
+                className="flex-[2] h-10 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-semibold border-0 shadow-md shadow-teal-500/20 flex items-center justify-center gap-2 cursor-pointer">
                 {savingPersonalTarget && <Loader2 size={13} className="animate-spin" />}
                 <Save size={13} /> บันทึก
               </Button>
@@ -257,7 +257,7 @@ export function AccountSection() {
       </Card>
 
       {/* Privacy & Legal Card */}
-      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-6 relative overflow-hidden">
+      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#192629]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-rose-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
         <div className="relative z-10">
           <h3 className="text-base font-bold text-slate-900 dark:text-white">การจัดการข้อมูลและความเป็นส่วนตัว</h3>

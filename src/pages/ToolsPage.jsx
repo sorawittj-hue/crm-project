@@ -45,7 +45,7 @@ function EmailTemplates() {
 
   const CATEGORIES = [
     { id: 'follow_up', label: 'Follow Up', color: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300', border: 'border-l-blue-400' },
-    { id: 'proposal', label: 'เสนอราคา', color: 'bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300', border: 'border-l-violet-400' },
+    { id: 'proposal', label: 'เสนอราคา', color: 'bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300', border: 'border-l-teal-400' },
     { id: 'introduction', label: 'แนะนำตัว', color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300', border: 'border-l-emerald-400' },
     { id: 'closing', label: 'ปิดดีล', color: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300', border: 'border-l-amber-400' },
     { id: 'win_back', label: 'Win Back', color: 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300', border: 'border-l-rose-400' },
@@ -98,7 +98,7 @@ function EmailTemplates() {
 
   if (isLoading) return (
     <div className="flex items-center justify-center py-20">
-      <Loader2 className="animate-spin text-violet-500" size={28} />
+      <Loader2 className="animate-spin text-teal-500" size={28} />
     </div>
   );
 
@@ -117,7 +117,7 @@ function EmailTemplates() {
         </div>
         <Button
           onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsAdding(true)}
-          className="h-9 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold border-0 shadow-md shadow-violet-500/20 shrink-0"
+          className="h-9 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold border-0 shadow-md shadow-teal-500/20 shrink-0"
         >
           <Plus size={14} className="mr-2" /> เพิ่ม Template
         </Button>
@@ -138,9 +138,9 @@ function EmailTemplates() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
           >
-            <Card className="p-6 md:p-8 rounded-[2rem] border-violet-200/60 dark:border-violet-500/20 bg-gradient-to-br from-violet-50/80 to-white/80 dark:from-violet-950/30 dark:to-[#0f111a]/80 backdrop-blur-xl shadow-2xl shadow-violet-500/10 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-violet-400/10 rounded-bl-full -z-0 pointer-events-none" />
-              <h4 className="text-sm font-black text-violet-700 dark:text-violet-300 uppercase tracking-wider mb-5 relative z-10 flex items-center gap-2">
+            <Card className="p-6 md:p-8 rounded-[2rem] border-teal-200/60 dark:border-teal-500/20 bg-gradient-to-br from-teal-50/80 to-white/80 dark:from-teal-950/30 dark:to-[#192629]/80 backdrop-blur-xl shadow-2xl shadow-teal-500/10 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-teal-400/10 rounded-bl-full -z-0 pointer-events-none" />
+              <h4 className="text-sm font-black text-teal-700 dark:text-teal-300 uppercase tracking-wider mb-5 relative z-10 flex items-center gap-2">
                 <Sparkles size={14} /> เพิ่ม Template ใหม่
               </h4>
               <form onSubmit={handleAdd} className="space-y-3">
@@ -174,7 +174,7 @@ function EmailTemplates() {
                   <Button type="button" variant="ghost" onClick={() => setIsAdding(false)}
                     className="h-9 px-4 rounded-xl text-sm text-slate-500">ยกเลิก</Button>
                   <Button type="submit" disabled={addMutation.isPending}
-                    className="h-9 px-5 rounded-xl bg-violet-600 text-white text-sm border-0">
+                    className="h-9 px-5 rounded-xl bg-teal-600 text-white text-sm border-0">
                     {addMutation.isPending ? <Loader2 size={14} className="animate-spin mr-2" /> : null}
                     บันทึก
                   </Button>
@@ -203,7 +203,7 @@ function EmailTemplates() {
           return (
             <motion.div key={t.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
               <Card className={cn(
-                "rounded-[1.5rem] overflow-hidden border-y border-r border-slate-100/80 dark:border-white/[0.06] border-l-4 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/30 transition-all duration-300 bg-white/60 dark:bg-[#0f111a]/60 backdrop-blur-md group",
+                "rounded-[1.5rem] overflow-hidden border-y border-r border-slate-100/80 dark:border-white/[0.06] border-l-4 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/30 transition-all duration-300 bg-white/60 dark:bg-[#192629]/60 backdrop-blur-md group",
                 cat.border || "border-l-slate-200"
               )}>
                 <div className="p-4 md:p-5">
@@ -250,7 +250,7 @@ function EmailTemplates() {
                       <div className="px-4 md:px-5 pb-5 border-t border-slate-100/80 dark:border-white/[0.06] pt-4">
                         <pre className="text-[13px] text-slate-600 dark:text-slate-300 whitespace-pre-wrap font-medium leading-relaxed bg-slate-50/80 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-2xl p-4 shadow-inner">{t.body}</pre>
                         <button onClick={() => handleCopy(t.body, t.id + '-body')}
-                          className="mt-2 flex items-center gap-1.5 text-xs text-violet-600 hover:text-violet-800 font-semibold">
+                          className="mt-2 flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-800 font-semibold">
                           {copiedId === t.id + '-body' ? <Check size={12} /> : <Copy size={12} />}
                           {copiedId === t.id + '-body' ? 'คัดลอกแล้ว!' : 'คัดลอก Body'}
                         </button>
@@ -288,7 +288,7 @@ function EmailTemplates() {
                           <Button type="button" variant="ghost" onClick={() => setEditingId(null)}
                             className="h-9 px-4 rounded-xl text-sm text-slate-500">ยกเลิก</Button>
                           <Button onClick={() => handleUpdate(t.id)} disabled={updateMutation.isPending}
-                            className="h-9 px-5 rounded-xl bg-violet-600 text-white text-sm border-0">บันทึก</Button>
+                            className="h-9 px-5 rounded-xl bg-teal-600 text-white text-sm border-0">บันทึก</Button>
                         </div>
                       </div>
                     </motion.div>
@@ -354,9 +354,9 @@ function DealCalculator() {
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Inputs */}
-        <div className="lg:col-span-5 space-y-5 bg-white/60 dark:bg-[#0f111a]/80 backdrop-blur-xl p-6 rounded-[2rem] border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/40 dark:shadow-black/30 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
-          <h3 className="text-xs font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 flex items-center gap-2 relative z-10">
+        <div className="lg:col-span-5 space-y-5 bg-white/60 dark:bg-[#192629]/80 backdrop-blur-xl p-6 rounded-[2rem] border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/40 dark:shadow-black/30 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-teal-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+          <h3 className="text-xs font-black uppercase tracking-wider text-teal-600 dark:text-teal-400 flex items-center gap-2 relative z-10">
             <Calculator size={14} /> พารามิเตอร์ของดีล
           </h3>
           <div className="space-y-4 relative z-10">
@@ -369,7 +369,7 @@ function DealCalculator() {
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">{f.prefix}</span>
                   <Input type="number" value={f.value} onChange={e => f.setter(e.target.value)}
-                    placeholder={f.placeholder} className="h-12 pl-8 rounded-xl text-base font-bold border border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-white/[0.06] backdrop-blur-md text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500/40 focus:border-violet-400" />
+                    placeholder={f.placeholder} className="h-12 pl-8 rounded-xl text-base font-bold border border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-white/[0.06] backdrop-blur-md text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400" />
                 </div>
               </div>
             ))}
@@ -378,14 +378,14 @@ function DealCalculator() {
                 <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">โอกาสปิด (%)</label>
                 <div className="relative">
                   <Input type="number" min="0" max="100" value={probability} onChange={e => setProbability(e.target.value)}
-                    className="h-12 pr-8 rounded-xl text-base font-bold border border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-white/[0.06] backdrop-blur-md text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500/40 focus:border-violet-400" />
+                    className="h-12 pr-8 rounded-xl text-base font-bold border border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-white/[0.06] backdrop-blur-md text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400" />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
                 </div>
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">ระยะเวลา (ด.)</label>
                 <Input type="number" min="1" value={months} onChange={e => setMonths(e.target.value)}
-                  className="h-12 rounded-xl text-base font-bold border border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-white/[0.06] backdrop-blur-md text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500/40 focus:border-violet-400" />
+                  className="h-12 rounded-xl text-base font-bold border border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-white/[0.06] backdrop-blur-md text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400" />
               </div>
             </div>
           </div>
@@ -401,12 +401,12 @@ function DealCalculator() {
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {[
-              { label: 'กำไรขั้นต้น', value: formatCurrency(calc.grossProfit), color: calc.grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-gradient-to-br from-violet-50/80 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/20', border: 'border-violet-200/60 dark:border-violet-500/20' },
-              { label: 'Margin', value: `${(calc.margin != null && !isNaN(calc.margin)) ? calc.margin.toFixed(1) : '0.0'}%`, color: calc.margin >= 20 ? 'text-emerald-600 dark:text-emerald-400' : calc.margin >= 10 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-gradient-to-br from-violet-50/80 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/20', border: 'border-violet-200/60 dark:border-violet-500/20' },
-              { label: 'ROI', value: `${(calc.roi != null && !isNaN(calc.roi)) ? calc.roi.toFixed(0) : '0'}%`, color: calc.roi >= 100 ? 'text-emerald-600 dark:text-emerald-400' : calc.roi >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-gradient-to-br from-violet-50/80 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/20', border: 'border-violet-200/60 dark:border-violet-500/20' },
-              { label: 'Expected Revenue', value: formatCurrency(calc.expectedRevenue), color: 'text-violet-700 dark:text-violet-300', bg: 'bg-gradient-to-br from-violet-50/80 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/20', border: 'border-violet-200/60 dark:border-violet-500/20' },
-              { label: 'Expected Profit', value: formatCurrency(calc.expectedProfit), color: 'text-violet-700 dark:text-violet-300', bg: 'bg-gradient-to-br from-violet-50/80 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/20', border: 'border-violet-200/60 dark:border-violet-500/20' },
-              { label: 'รายได้ต่อเดือน', value: formatCurrency(calc.monthlyRevenue), color: 'text-blue-700 dark:text-blue-300', bg: 'bg-gradient-to-br from-violet-50/80 to-indigo-50/50 dark:from-violet-950/30 dark:to-indigo-950/20', border: 'border-violet-200/60 dark:border-violet-500/20' },
+              { label: 'กำไรขั้นต้น', value: formatCurrency(calc.grossProfit), color: calc.grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-gradient-to-br from-teal-50/80 to-teal-50/50 dark:from-teal-950/30 dark:to-teal-950/20', border: 'border-teal-200/60 dark:border-teal-500/20' },
+              { label: 'Margin', value: `${(calc.margin != null && !isNaN(calc.margin)) ? calc.margin.toFixed(1) : '0.0'}%`, color: calc.margin >= 20 ? 'text-emerald-600 dark:text-emerald-400' : calc.margin >= 10 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-gradient-to-br from-teal-50/80 to-teal-50/50 dark:from-teal-950/30 dark:to-teal-950/20', border: 'border-teal-200/60 dark:border-teal-500/20' },
+              { label: 'ROI', value: `${(calc.roi != null && !isNaN(calc.roi)) ? calc.roi.toFixed(0) : '0'}%`, color: calc.roi >= 100 ? 'text-emerald-600 dark:text-emerald-400' : calc.roi >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400', bg: 'bg-gradient-to-br from-teal-50/80 to-teal-50/50 dark:from-teal-950/30 dark:to-teal-950/20', border: 'border-teal-200/60 dark:border-teal-500/20' },
+              { label: 'Expected Revenue', value: formatCurrency(calc.expectedRevenue), color: 'text-teal-700 dark:text-teal-300', bg: 'bg-gradient-to-br from-teal-50/80 to-teal-50/50 dark:from-teal-950/30 dark:to-teal-950/20', border: 'border-teal-200/60 dark:border-teal-500/20' },
+              { label: 'Expected Profit', value: formatCurrency(calc.expectedProfit), color: 'text-teal-700 dark:text-teal-300', bg: 'bg-gradient-to-br from-teal-50/80 to-teal-50/50 dark:from-teal-950/30 dark:to-teal-950/20', border: 'border-teal-200/60 dark:border-teal-500/20' },
+              { label: 'รายได้ต่อเดือน', value: formatCurrency(calc.monthlyRevenue), color: 'text-blue-700 dark:text-blue-300', bg: 'bg-gradient-to-br from-teal-50/80 to-teal-50/50 dark:from-teal-950/30 dark:to-teal-950/20', border: 'border-teal-200/60 dark:border-teal-500/20' },
             ].map((m, i) => (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={m.label}
                 className={cn('p-5 rounded-2xl border shadow-sm', m.bg, m.border)}>
@@ -442,11 +442,11 @@ const TOOLS = [
     icon: Mail,
     title: 'Email Templates',
     subtitle: 'จัดการ template อีเมลสำหรับทุก stage',
-    gradient: 'from-violet-500 to-purple-600',
-    shadowClass: 'shadow-violet-500/30',
+    gradient: 'from-teal-500 to-teal-600',
+    shadowClass: 'shadow-teal-500/30',
     badges: [
       { label: 'Follow Up', color: 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800/40 text-blue-700 dark:text-blue-300' },
-      { label: 'Proposal', color: 'bg-violet-50 dark:bg-violet-950/40 border-violet-200 dark:border-violet-800/40 text-violet-700 dark:text-violet-300' },
+      { label: 'Proposal', color: 'bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800/40 text-teal-700 dark:text-teal-300' },
       { label: 'Closing', color: 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-300' },
     ],
     desc: 'สร้างและจัดการ email template สำหรับทุกขั้นตอนการขาย พร้อม copy-paste ได้ทันที',
@@ -489,7 +489,7 @@ const TOOLS = [
     shadowClass: 'shadow-amber-500/30',
     badges: [
       { label: 'RAID 0/1/5/6/10', color: 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-300' },
-      { label: 'Efficiency %', color: 'bg-purple-50 dark:bg-purple-950/40 border-purple-200 dark:border-purple-800/40 text-purple-700 dark:text-purple-300' },
+      { label: 'Efficiency %', color: 'bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800/40 text-teal-700 dark:text-teal-300' },
     ],
     desc: 'เปรียบเทียบ RAID level ต่างๆ — พื้นที่จริงที่ใช้ได้, fault tolerance และ performance tradeoff',
     component: RaidCalculator,
@@ -499,10 +499,10 @@ const TOOLS = [
     icon: Laptop,
     title: 'คู่มือ Hardware 2026',
     subtitle: 'อ้างอิง spec PC, Server และ Network',
-    gradient: 'from-violet-500 to-purple-500',
-    shadowClass: 'shadow-violet-500/30',
+    gradient: 'from-teal-500 to-teal-500',
+    shadowClass: 'shadow-teal-500/30',
     badges: [
-      { label: 'Laptops', color: 'bg-violet-50 dark:bg-violet-950/40 border-violet-200 dark:border-violet-800/40 text-violet-700 dark:text-violet-300' },
+      { label: 'Laptops', color: 'bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800/40 text-teal-700 dark:text-teal-300' },
       { label: 'Servers', color: 'bg-slate-100 dark:bg-white/10 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300' },
       { label: 'Network', color: 'bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200 dark:border-cyan-800/40 text-cyan-700 dark:text-cyan-300' },
     ],
@@ -539,14 +539,14 @@ export default function ToolsPage() {
       className="mesh-bg max-w-[1400px] mx-auto pb-20 px-2 sm:px-4 md:px-6 relative ui-enter"
     >
       {/* Global Ambient Glow for Tools Page */}
-      <div className="absolute top-0 right-0 w-full max-w-3xl h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-violet-300/30 via-indigo-100/10 to-transparent -z-10 pointer-events-none blur-3xl" />
+      <div className="absolute top-0 right-0 w-full max-w-3xl h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-300/30 via-teal-100/10 to-transparent -z-10 pointer-events-none blur-3xl" />
       <div className="absolute top-1/2 left-0 w-full max-w-2xl h-1/2 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-emerald-200/20 via-teal-100/10 to-transparent -z-10 pointer-events-none blur-3xl" />
 
       <PageHeader
         icon={Sparkles}
         title="เครื่องมือ"
         description="คำนวณ คาดการณ์ และสร้างเนื้อหา"
-        badge={<span className="text-[10px] font-bold text-violet-500 uppercase tracking-widest mt-1 ml-2">Nova Pipeline</span>}
+        badge={<span className="text-[10px] font-bold text-teal-500 uppercase tracking-widest mt-1 ml-2">Nova Pipeline</span>}
       />
 
       <label htmlFor="tool-selection" className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200 lg:hidden">เลือกเครื่องมือ</label>
@@ -559,7 +559,7 @@ export default function ToolsPage() {
         <div className="space-y-1">
           {TOOLS.map(tool => {
             const Icon = tool.icon;
-            return <button key={tool.key} type="button" onClick={() => setActiveTab(tool.key)} aria-current={activeTab === tool.key ? 'page' : undefined} className={cn('w-full rounded-xl p-3 text-left transition-colors', activeTab === tool.key ? 'bg-violet-100 text-violet-800 dark:bg-violet-400/15 dark:text-violet-200' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5')}>
+            return <button key={tool.key} type="button" onClick={() => setActiveTab(tool.key)} aria-current={activeTab === tool.key ? 'page' : undefined} className={cn('w-full rounded-xl p-3 text-left transition-colors', activeTab === tool.key ? 'bg-teal-100 text-teal-800 dark:bg-teal-400/15 dark:text-teal-200' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5')}>
               <span className="flex items-center gap-3 text-sm font-semibold"><Icon size={17} />{tool.title}</span>
               <span className="mt-1 block pl-7 text-xs leading-5 opacity-75">{tool.subtitle}</span>
             </button>;
@@ -575,7 +575,7 @@ export default function ToolsPage() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -16, scale: 0.98 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-lg bg-white/90 dark:bg-[#0f111a]/90 backdrop-blur-3xl overflow-hidden relative"
+          className="rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-lg bg-white/90 dark:bg-[#192629]/90 backdrop-blur-3xl overflow-hidden relative"
         >
           {/* Glass glare effect */}
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent z-10" />
@@ -584,7 +584,7 @@ export default function ToolsPage() {
 
           <div className="px-5 py-5 md:px-6 border-b border-slate-100 dark:border-white/5 relative bg-gradient-to-b from-white/40 dark:from-white/[0.02] to-transparent">
             <div className="flex flex-col sm:flex-row sm:items-center gap-5 relative z-10">
-              <div className={cn("w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center text-white shadow-md shrink-0", activeTool.gradient, activeTool.shadowClass || "shadow-violet-500/30")}>
+              <div className={cn("w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center text-white shadow-md shrink-0", activeTool.gradient, activeTool.shadowClass || "shadow-teal-500/30")}>
                 <activeTool.icon size={26} strokeWidth={2.5} />
               </div>
               <div className="flex-1 min-w-0">

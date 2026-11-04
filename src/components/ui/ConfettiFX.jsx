@@ -1,15 +1,14 @@
-import { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 
 const CONFETTI_COLORS = [
-  '#f59e0b', '#10b981', '#7c3aed', '#ec4899', '#06b6d4',
+  '#f59e0b', '#10b981', '#0f766e', '#ec4899', '#06b6d4',
   '#3b82f6', '#f43f5e', '#fbbf24', '#34d399', '#a855f7'
 ];
 
 const SHAPES = ['square', 'circle', 'rectangle'];
 
-export default function ConfettiFX({ count = 45 }) {
-  const pieces = useMemo(() => {
+function createPieces(count) {
     return Array.from({ length: count }).map((_, i) => {
       const color = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
       const shape = SHAPES[i % SHAPES.length];
@@ -36,7 +35,13 @@ export default function ConfettiFX({ count = 45 }) {
         size
       };
     });
-  }, [count]);
+}
+
+export default function ConfettiFX({ count = 45 }) {
+  const [pieces, setPieces] = useState([]);
+  const reducedMotion = useReducedMotion();
+  useEffect(() => { setPieces(createPieces(count)); }, [count]);
+  if (reducedMotion) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[120] overflow-hidden flex items-center justify-center">

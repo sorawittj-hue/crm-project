@@ -110,7 +110,7 @@ export default function WinLossModal({ open, targetStage, onClose, onConfirm }) 
           {/* Preset Chips */}
           <div>
             <div className="flex items-center gap-1.5 mb-2.5">
-              <Sparkles size={12} className="text-violet-500" />
+              <Sparkles size={12} className="text-teal-500" />
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">เลือกเหตุผลด่วน</span>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -141,7 +141,7 @@ export default function WinLossModal({ open, targetStage, onClose, onConfirm }) 
               <select
                 value={lostReason}
                 onChange={(e) => setLostReason(e.target.value)}
-                className="w-full h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:border-violet-400 focus:bg-white outline-none transition-all cursor-pointer"
+                className="w-full h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:border-teal-400 focus:bg-white outline-none transition-all cursor-pointer"
                 required
               >
                 <option value="">— เลือกหมวดหมู่ —</option>
@@ -193,7 +193,7 @@ export default function WinLossModal({ open, targetStage, onClose, onConfirm }) 
               type="date"
               value={closeDate}
               onChange={(e) => setCloseDate(e.target.value)}
-              className="w-full h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:border-violet-400 focus:bg-white outline-none transition-all"
+              className="w-full h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:border-teal-400 focus:bg-white outline-none transition-all"
               required
             />
           </div>

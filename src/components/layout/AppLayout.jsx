@@ -8,7 +8,7 @@ import {
   ChevronRight, Target, TrendingUp,
   AlertCircle, Clock, CheckCircle2, CalendarClock, Briefcase,
   BarChart2, Trash2, CheckCheck, Plus, Lock,
-  Timer, Zap, Sun, Moon,
+  Timer, Sun, Moon,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useDeals } from '../../hooks/useDeals';
@@ -59,7 +59,7 @@ const PRIORITY_CONFIG = {
 const TYPE_SECTION = {
   deal_at_risk:        { label: 'ดีลเสี่ยงหลุด',         icon: AlertCircle,   color: 'text-rose-600 dark:text-rose-400',   bg: 'bg-rose-50/80 dark:bg-rose-950/40',   border: 'border-rose-200 dark:border-rose-900/40' },
   follow_up_overdue:   { label: 'นัดติดตาม',              icon: CalendarClock, color: 'text-amber-600 dark:text-amber-400',  bg: 'bg-amber-50/60 dark:bg-amber-950/40',  border: 'border-amber-100 dark:border-amber-900/40' },
-  deal_closing_soon:   { label: 'คาดปิดเร็วๆ นี้',       icon: Briefcase,     color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-50/60 dark:bg-violet-950/40', border: 'border-violet-100 dark:border-violet-900/40' },
+  deal_closing_soon:   { label: 'คาดปิดเร็วๆ นี้',       icon: Briefcase,     color: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-50/60 dark:bg-teal-950/40', border: 'border-teal-100 dark:border-teal-900/40' },
   deal_closing_overdue:{ label: 'เลยกำหนดปิด',            icon: Clock,         color: 'text-rose-600 dark:text-rose-400',   bg: 'bg-rose-50/60 dark:bg-rose-950/40',   border: 'border-rose-100 dark:border-rose-900/40' },
   deal_stale:          { label: 'ดีลหยุดนิ่ง',            icon: Clock,         color: 'text-slate-500 dark:text-slate-400',  bg: 'bg-slate-50 dark:bg-slate-900/40',     border: 'border-slate-100 dark:border-slate-800' },
   monthly_goal_at_risk:{ label: 'เป้าหมายเดือนนี้',       icon: BarChart2,     color: 'text-blue-600 dark:text-blue-400',   bg: 'bg-blue-50/60 dark:bg-blue-950/40',   border: 'border-blue-100 dark:border-blue-900/40' },
@@ -110,14 +110,14 @@ function SystemStatusBanner({ deals, customers, activities, effectiveTarget, nav
         'mb-3 rounded-xl border px-3 py-2.5 transition-colors',
         legacyDataMode
           ? 'border-amber-200 bg-amber-50/90 text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-100'
-          : 'border-slate-200 bg-white/80 text-slate-900 dark:border-white/10 dark:bg-[#0f111a]/80 dark:text-white'
+          : 'border-slate-200 bg-white/80 text-slate-900 dark:border-white/10 dark:bg-[#192629]/80 dark:text-white'
       )}
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-2.5">
           <div className={cn(
             'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
-            legacyDataMode ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' : 'bg-violet-50 text-violet-600 dark:bg-violet-950/60 dark:text-violet-300'
+            legacyDataMode ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' : 'bg-teal-50 text-teal-600 dark:bg-teal-950/60 dark:text-teal-300'
           )}>
             {legacyDataMode ? <AlertCircle size={15} /> : <Target size={15} />}
           </div>
@@ -155,7 +155,7 @@ function SystemStatusBanner({ deals, customers, activities, effectiveTarget, nav
             'inline-flex h-8 items-center gap-1 rounded-lg px-3 text-xs font-semibold transition-colors',
               legacyDataMode
                 ? 'bg-amber-600 text-white hover:bg-amber-700'
-                : 'bg-violet-600 text-white hover:bg-violet-700'
+                : 'bg-teal-600 text-white hover:bg-teal-700'
             )}
           >
             {legacyDataMode ? 'เปิดตั้งค่า' : 'เริ่มเพิ่มดีล'}
@@ -210,7 +210,7 @@ function TrialBanner({ isTrialActive, isExpired, trialDaysLeft, trialMsLeft, isG
     : 'normal';
 
   const themes = {
-    normal: { bar: 'bg-violet-600 dark:bg-violet-400', icon: 'bg-violet-100 text-violet-700 dark:bg-violet-400/10 dark:text-violet-300', badge: 'border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-400/20 dark:bg-violet-400/10 dark:text-violet-300' },
+    normal: { bar: 'bg-teal-600 dark:bg-teal-400', icon: 'bg-teal-100 text-teal-700 dark:bg-teal-400/10 dark:text-teal-300', badge: 'border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-400/20 dark:bg-teal-400/10 dark:text-teal-300' },
     warning: { bar: 'bg-amber-500', icon: 'bg-amber-100 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300', badge: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-300' },
     critical: { bar: 'bg-rose-500', icon: 'bg-rose-100 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300', badge: 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-300' },
   };
@@ -221,7 +221,7 @@ function TrialBanner({ isTrialActive, isExpired, trialDaysLeft, trialMsLeft, isG
       initial={{ opacity: 0, y: -10, height: 0 }}
       animate={{ opacity: 1, y: 0, height: 'auto' }}
       exit={{ opacity: 0, y: -10, height: 0 }}
-      className="relative mb-3 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522]"
+      className="nova-trial-banner relative mb-3 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#192629]"
     >
       <div aria-hidden="true" className={cn('absolute inset-y-0 left-0 w-1', theme.bar)} />
 
@@ -271,7 +271,7 @@ function TrialBanner({ isTrialActive, isExpired, trialDaysLeft, trialMsLeft, isG
           <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => openPaywall(isExpired ? 'trial_ended' : isGuestAccount ? 'guest_upgrade' : 'default')}
-              className="whitespace-nowrap rounded-lg bg-violet-600 px-3 py-2 text-white text-xs font-semibold transition-colors hover:bg-violet-700"
+              className="whitespace-nowrap rounded-lg bg-teal-600 px-3 py-2 text-white text-xs font-semibold transition-colors hover:bg-teal-700"
             >
               {isGuestAccount ? '✨ สมัครสมาชิก' : isExpired ? 'อัปเกรดทันที' : 'อัปเกรด Pro'}
             </button>
@@ -481,7 +481,7 @@ export default function AppLayout() {
         transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
         className={cn(
           "w-56 flex flex-col flex-shrink-0 relative border-r z-30 select-none transition-all duration-300",
-          "bg-white/90 dark:bg-[#0b0e17]/90 backdrop-blur-2xl border-slate-200/80 dark:border-white/[0.08] shadow-[4px_0_24px_-4px_rgba(15,23,42,0.03)]",
+          "bg-white/90 dark:bg-[#142d31]/90 backdrop-blur-2xl border-slate-200/80 dark:border-white/[0.08] shadow-[4px_0_24px_-4px_rgba(15,23,42,0.03)]",
           !isDesktop && "fixed inset-y-0 left-0 z-50"
         )}
       >
@@ -489,8 +489,8 @@ export default function AppLayout() {
         <div className="h-16 flex items-center justify-between px-4 shrink-0 border-b border-slate-200 dark:border-white/[0.06] relative z-10">
           <div className="flex items-center gap-3">
             <div className="relative shrink-0">
-              <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-700 flex items-center justify-center border border-white/20 shadow-[0_4px_16px_rgba(124,58,237,0.5)]">
-                <Zap size={16} className="text-white fill-current" />
+              <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-teal-600 via-teal-600 to-teal-700 flex items-center justify-center border border-white/20 shadow-[0_4px_16px_rgba(15,118,110,0.5)]">
+                <img src="/icon.svg" alt="" className="h-9 w-9 rounded-lg" />
               </div>
             </div>
             <div>
@@ -507,7 +507,7 @@ export default function AppLayout() {
                 )}
               </div>
               <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 leading-none mt-1 tracking-[0.12em] uppercase">
-                Sales CRM
+                SALES WORKSPACE
               </p>
             </div>
           </div>
@@ -518,16 +518,16 @@ export default function AppLayout() {
           )}
         </div>
 
-        {/* Navigation */}
+        {/* พื้นที่ทำงาน */}
         <motion.nav
           id="sidebar-nav"
           variants={navContainerVariants}
-          initial="hidden"
+          initial={false}
           animate="visible"
           className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto relative z-10"
         >
           <p className="px-3 text-[10px] font-semibold text-slate-400 dark:text-white/40 uppercase tracking-[0.12em] mb-2 mt-3">
-            Navigation
+            พื้นที่ทำงาน
           </p>
           {navItems.map((item) => {
             const isActive = location.pathname === item.to;
@@ -544,26 +544,26 @@ export default function AppLayout() {
                   className={cn(
                     "group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium relative transition-all duration-200",
                     isActive
-                      ? "bg-gradient-to-r from-violet-600/20 to-indigo-600/10 dark:from-violet-500/20 dark:to-indigo-500/10 text-violet-700 dark:text-violet-300 border-l-2 border-violet-600 dark:border-violet-400 nav-active-glow"
+                      ? "bg-gradient-to-r from-teal-600/20 to-teal-600/10 dark:from-teal-500/20 dark:to-teal-500/10 text-teal-700 dark:text-teal-300 border-l-2 border-teal-600 dark:border-teal-400 nav-active-glow"
                       : "hover:bg-slate-100/70 dark:hover:bg-white/[0.06] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   )}
                 >
                   <div className={cn(
                     "w-[30px] h-[30px] rounded-lg flex items-center justify-center shrink-0 transition-all duration-150",
                     isActive
-                      ? "bg-violet-600 text-white shadow-sm shadow-violet-600/20"
+                      ? "bg-teal-600 text-white shadow-sm shadow-teal-600/20"
                       : "bg-slate-100 text-slate-500 group-hover:bg-slate-200/70 group-hover:text-slate-800 dark:bg-white/[0.04] dark:text-white/55 dark:group-hover:bg-white/[0.08] dark:group-hover:text-white"
                   )}>
                     <item.icon size={14} strokeWidth={isActive ? 2.5 : 2} />
                   </div>
                   <div className="flex flex-col min-w-0 flex-1">
                     <span className={cn("leading-tight tracking-tight", isActive ? "font-bold" : "")}>{item.label}</span>
-                    <span className={cn("text-[11px] font-medium leading-none mt-1", isActive ? "text-violet-600 dark:text-violet-200/75" : "text-slate-400 group-hover:text-slate-500 dark:text-white/45 dark:group-hover:text-white/65")}>
+                    <span className={cn("text-[11px] font-medium leading-none mt-1", isActive ? "text-teal-600 dark:text-teal-200/75" : "text-slate-400 group-hover:text-slate-500 dark:text-white/45 dark:group-hover:text-white/65")}>
                       {item.sub}
                     </span>
                   </div>
                   {isActive && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-violet-500 dark:bg-violet-300 shrink-0" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-teal-500 dark:bg-teal-300 shrink-0" />
                   )}
                 </NavLink>
               </motion.div>
@@ -583,7 +583,7 @@ export default function AppLayout() {
                 goalProgress >= 100
                   ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
                   : goalProgress >= 75
-                  ? "bg-violet-500/20 text-violet-300 border-violet-500/30"
+                  ? "bg-teal-500/20 text-teal-300 border-teal-500/30"
                   : "bg-slate-100 text-slate-500 border-slate-200 dark:bg-white/10 dark:text-white/50 dark:border-white/10"
               )}>
                 {hasEffectiveTarget ? `${goalProgress}%` : '—'}
@@ -601,7 +601,7 @@ export default function AppLayout() {
                   'h-full rounded-full',
                   goalProgress >= 75
                     ? 'bg-gradient-to-r from-emerald-400 to-teal-300'
-                    : 'bg-gradient-to-r from-violet-500 to-indigo-400'
+                    : 'bg-gradient-to-r from-teal-500 to-teal-400'
                 )}
               />}
             </div>
@@ -611,7 +611,7 @@ export default function AppLayout() {
         {/* Sidebar Footer — User Profile */}
         <div className="px-3 pb-3 pt-2 border-t border-slate-200 dark:border-white/[0.06] relative z-10">
           <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer group dark:bg-white/[0.04] dark:border-white/[0.06] dark:hover:bg-white/[0.07]">
-            <div className="w-9 h-9 rounded-xl bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-200 font-bold text-xs flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-500/20 text-teal-700 dark:text-teal-200 font-bold text-xs flex items-center justify-center shrink-0">
               {displayInitial}
             </div>
             <div className="min-w-0 flex-1">
@@ -623,7 +623,7 @@ export default function AppLayout() {
               title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
               className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0 dark:text-white/45 dark:hover:text-white dark:hover:bg-white/10"
             >
-              {theme === 'dark' ? <Sun size={13} className="text-amber-400" /> : <Moon size={13} className="text-violet-300" />}
+              {theme === 'dark' ? <Sun size={13} className="text-amber-400" /> : <Moon size={13} className="text-teal-300" />}
             </button>
           </div>
         </div>
@@ -633,7 +633,7 @@ export default function AppLayout() {
       <div className="flex-1 flex flex-col overflow-hidden bg-background">
 
         {/* TOPBAR */}
-        <header className="h-16 flex items-center justify-between px-4 md:px-6 z-20 shrink-0 border-b border-slate-200/70 dark:border-white/[0.08] bg-white/80 dark:bg-[#060811]/80 backdrop-blur-2xl transition-colors duration-200">
+        <header className="nova-topbar h-16 flex items-center justify-between px-4 md:px-6 z-20 shrink-0 border-b border-slate-200/70 dark:border-white/[0.08] bg-white/80 dark:bg-[#112023]/80 backdrop-blur-2xl transition-colors duration-200">
           <div className="flex items-center gap-3">
             <span className="hidden lg:block text-sm font-semibold text-slate-800 dark:text-slate-200">{navItems.find(item => item.to === location.pathname)?.label || 'พื้นที่ทำงาน'}</span>
             <span className="hidden lg:block text-slate-300 dark:text-slate-700">/</span>
@@ -644,7 +644,7 @@ export default function AppLayout() {
               onClick={() => setGlobalSearchOpen(true)}
               className="hidden md:flex items-center gap-2.5 px-3.5 h-10 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.04] hover:bg-white dark:hover:bg-white/[0.08] transition-colors group text-sm text-slate-600 dark:text-slate-300"
             >
-              <Search size={14} className="text-slate-400 group-hover:text-violet-500" />
+              <Search size={14} className="text-slate-400 group-hover:text-teal-500" />
               <span>ค้นหาดีล ลูกค้า รายงาน...</span>
               <kbd className="text-[10px] px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 text-slate-400 ml-3">Ctrl K</kbd>
             </button>
@@ -657,7 +657,7 @@ export default function AppLayout() {
               whileTap={{ scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               onClick={() => openQuickAdd()}
-              className="flex items-center gap-1.5 px-4 h-10 rounded-xl font-bold text-xs md:text-sm bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-[0_4px_16px_rgba(124,58,237,0.4)] hover:shadow-[0_6px_24px_rgba(124,58,237,0.5)] transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-4 h-10 rounded-xl font-bold text-xs md:text-sm bg-gradient-to-r from-teal-600 to-teal-600 hover:from-teal-500 hover:to-teal-500 text-white shadow-[0_4px_16px_rgba(15,118,110,0.4)] hover:shadow-[0_6px_24px_rgba(15,118,110,0.5)] transition-all cursor-pointer"
               title="สร้างดีลใหม่ (กด C)"
             >
               <Plus size={14} />
@@ -673,7 +673,7 @@ export default function AppLayout() {
               className="rounded-xl p-2 hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all duration-200 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white cursor-pointer border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04]"
               title={theme === 'dark' ? 'เปลี่ยนเป็น Light Mode' : 'เปลี่ยนเป็น Dark Mode'}
             >
-              {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-violet-600" />}
+              {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-teal-600" />}
             </motion.button>
 
             {/* Notification Bell */}
@@ -706,22 +706,22 @@ export default function AppLayout() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={shouldReduceMotion ? undefined : { opacity: 0, y: 4, scale: 0.98 }}
                     transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute right-0 top-12 w-[380px] max-w-[90vw] bg-white dark:bg-[#0f111a] rounded-2xl border border-slate-200 dark:border-white/10 shadow-xl z-50 overflow-hidden"
+                    className="absolute right-0 top-12 w-[380px] max-w-[90vw] bg-white dark:bg-[#192629] rounded-2xl border border-slate-200 dark:border-white/10 shadow-xl z-50 overflow-hidden"
                   >
                     {/* Panel header */}
                     <div className="px-4 py-3 border-b border-slate-100 dark:border-white/[0.08] flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Bell size={14} className="text-violet-600 dark:text-violet-400" />
+                        <Bell size={14} className="text-teal-600 dark:text-teal-400" />
                         <span className="text-sm font-bold text-slate-900 dark:text-white">การแจ้งเตือน</span>
                         {unreadCount > 0 && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 animate-pulse">{unreadCount} ใหม่</span>
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 animate-pulse">{unreadCount} ใหม่</span>
                         )}
                       </div>
                       {totalCount > 0 && (
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => markAllRead.mutate(userId)}
-                            className="flex items-center gap-1 text-[10px] font-semibold text-slate-500 hover:text-violet-600 dark:hover:text-violet-400 px-2 py-1 rounded-lg transition-all"
+                            className="flex items-center gap-1 text-[10px] font-semibold text-slate-500 hover:text-teal-600 dark:hover:text-teal-400 px-2 py-1 rounded-lg transition-all"
                             title="อ่านทั้งหมด"
                           >
                             <CheckCheck size={12} />
@@ -760,7 +760,7 @@ export default function AppLayout() {
                             className={cn(
                               "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1",
                               isActive
-                                ? "bg-white dark:bg-white/10 text-violet-600 dark:text-violet-300 shadow-2xs border border-slate-200/50 dark:border-white/10"
+                                ? "bg-white dark:bg-white/10 text-teal-600 dark:text-teal-300 shadow-2xs border border-slate-200/50 dark:border-white/10"
                                 : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
                             )}
                           >
@@ -768,7 +768,7 @@ export default function AppLayout() {
                             {count > 0 && (
                               <span className={cn(
                                 "text-[9px] px-1 rounded-full",
-                                isActive ? "bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-300" : "bg-slate-200 dark:bg-slate-800 text-slate-500"
+                                isActive ? "bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300" : "bg-slate-200 dark:bg-slate-800 text-slate-500"
                               )}>
                                 {count}
                               </span>
@@ -816,12 +816,12 @@ export default function AppLayout() {
                                           e.stopPropagation();
                                           if (!notif.is_read) markRead.mutate(notif.id);
                                         }}
-                                        className="flex-none mt-1 text-slate-400 hover:text-violet-600 transition-colors"
+                                        className="flex-none mt-1 text-slate-400 hover:text-teal-600 transition-colors"
                                       >
                                         {notif.is_read ? (
                                           <CheckCircle2 size={14} className="text-emerald-500" />
                                         ) : (
-                                          <div className="w-3.5 h-3.5 rounded-full border-2 border-slate-300 dark:border-slate-600 hover:border-violet-500" />
+                                          <div className="w-3.5 h-3.5 rounded-full border-2 border-slate-300 dark:border-slate-600 hover:border-teal-500" />
                                         )}
                                       </button>
 
@@ -892,8 +892,8 @@ export default function AppLayout() {
             <Suspense fallback={
               <div className="flex-1 flex items-center justify-center min-h-[400px]">
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-violet-500/10 border border-violet-500/20">
-                    <Loader2 className="animate-spin text-violet-600 dark:text-violet-400" size={22} />
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-teal-500/10 border border-teal-500/20">
+                    <Loader2 className="animate-spin text-teal-600 dark:text-teal-400" size={22} />
                   </div>
                   <p className="text-xs font-bold text-slate-400">กำลังโหลด...</p>
                 </div>
@@ -907,7 +907,7 @@ export default function AppLayout() {
         </main>
         <nav aria-label="เมนูหลักมือถือ" className="grid shrink-0 grid-cols-4 border-t border-slate-200 bg-white px-2 pt-1 dark:border-white/10 dark:bg-slate-950 lg:hidden" style={{ paddingBottom: 'max(4px, env(safe-area-inset-bottom))' }}>
           {navItems.slice(0, 3).map(({ to, icon: Icon, label }) => (
-            <NavLink key={to} to={to} className={({ isActive }) => cn('flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg text-xs font-semibold', isActive ? 'bg-violet-50 text-violet-700 dark:bg-violet-400/15 dark:text-violet-300' : 'text-slate-600 dark:text-slate-300')}>
+            <NavLink key={to} to={to} className={({ isActive }) => cn('flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg text-xs font-semibold', isActive ? 'bg-teal-50 text-teal-700 dark:bg-teal-400/15 dark:text-teal-300' : 'text-slate-600 dark:text-slate-300')}>
               <Icon size={18} />{label}
             </NavLink>
           ))}

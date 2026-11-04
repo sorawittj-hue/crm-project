@@ -5,7 +5,7 @@ import { cn } from '../../lib/utils';
 
 const ACTIVITY_ICON = {
   call:      { Icon: Phone,         color: 'bg-blue-50 dark:bg-blue-950/40 text-blue-500 dark:text-blue-400',    border: 'border-blue-200 dark:border-blue-800/40',    label: 'โทรหา' },
-  email:     { Icon: Mail,          color: 'bg-violet-50 dark:bg-violet-950/40 text-violet-500 dark:text-violet-400', border: 'border-violet-200 dark:border-violet-800/40',  label: 'อีเมล' },
+  email:     { Icon: Mail,          color: 'bg-teal-50 dark:bg-teal-950/40 text-teal-500 dark:text-teal-400', border: 'border-teal-200 dark:border-teal-800/40',  label: 'อีเมล' },
   meeting:   { Icon: Clock,         color: 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400',   border: 'border-amber-200 dark:border-amber-800/40',   label: 'ประชุม' },
   note:      { Icon: FileText,      color: 'bg-slate-50 dark:bg-white/10 text-slate-500 dark:text-slate-400',   border: 'border-slate-200 dark:border-white/10',   label: 'บันทึก' },
   task:      { Icon: CalendarClock, color: 'bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400', border: 'border-orange-200 dark:border-orange-800/40',  label: 'งาน' },
@@ -115,7 +115,7 @@ export default function CustomerTimeline({ customer, deals = [], allActivities =
                       </p>
                     )}
                     {activity.deal_title && (
-                      <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/50 border border-violet-100 dark:border-violet-800/40 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/50 border border-teal-100 dark:border-teal-800/40 px-2 py-0.5 rounded-full">
                         {activity.deal_title}
                       </span>
                     )}

@@ -157,12 +157,12 @@ export function BackupSection() {
 
   return (
     <div className="space-y-6">
-      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#192629]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-teal-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
         <div className="flex items-center justify-between relative z-10">
           <div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-              <Database className="text-violet-600 dark:text-violet-400" size={24} /> จัดการข้อมูล
+              <Database className="text-teal-600 dark:text-teal-400" size={24} /> จัดการข้อมูล
             </h2>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">สำรอง กู้คืน และจัดการข้อมูลทั้งหมดในพื้นที่ทำงานของคุณ</p>
           </div>
@@ -170,10 +170,10 @@ export function BackupSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
           {/* Export Box */}
-          <div className="p-6 rounded-[1.5rem] bg-gradient-to-br from-violet-50/50 to-white dark:from-violet-950/30 dark:to-[#171926] border border-violet-100/50 dark:border-violet-800/30 shadow-sm space-y-4 flex flex-col justify-between hover:shadow-md transition-all">
+          <div className="p-6 rounded-[1.5rem] bg-gradient-to-br from-teal-50/50 to-white dark:from-teal-950/30 dark:to-[#171926] border border-teal-100/50 dark:border-teal-800/30 shadow-sm space-y-4 flex flex-col justify-between hover:shadow-md transition-all">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-300 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-300 flex items-center justify-center">
                   <DownloadCloud size={20} />
                 </div>
                 <h3 className="font-bold text-slate-800 dark:text-white">ส่งออกข้อมูล (Manual Backup)</h3>
@@ -186,7 +186,7 @@ export function BackupSection() {
               <Button
                 onClick={handleExport}
                 disabled={isExporting}
-                className="w-full h-11 bg-slate-900 dark:bg-violet-600 hover:bg-slate-800 dark:hover:bg-violet-700 text-white rounded-xl shadow-md text-xs font-semibold cursor-pointer"
+                className="w-full h-11 bg-slate-900 dark:bg-teal-600 hover:bg-slate-800 dark:hover:bg-teal-700 text-white rounded-xl shadow-md text-xs font-semibold cursor-pointer"
               >
                 {isExporting ? <Loader2 size={16} className="animate-spin mr-2" /> : <HardDriveDownload size={16} className="mr-2" />}
                 ดาวน์โหลด JSON
@@ -245,7 +245,7 @@ export function BackupSection() {
         {/* Auto Backup Section */}
         <div className="relative z-10 pt-4 border-t border-slate-100 dark:border-white/[0.06]">
           <div className="flex items-center gap-2 mb-4">
-            <CalendarClock size={18} className="text-violet-600 dark:text-violet-400" />
+            <CalendarClock size={18} className="text-teal-600 dark:text-teal-400" />
             <h3 className="font-bold text-slate-800 dark:text-white">ประวัติการสำรองข้อมูลอัตโนมัติ (Auto-Backup)</h3>
           </div>
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-4">
@@ -254,7 +254,7 @@ export function BackupSection() {
 
           <div className="bg-slate-50/50 dark:bg-white/[0.02] rounded-2xl border border-slate-100 dark:border-white/[0.06] overflow-hidden">
             {isLoadingHistory ? (
-              <div className="p-8 text-center"><Loader2 size={24} className="animate-spin text-violet-600 mx-auto" /></div>
+              <div className="p-8 text-center"><Loader2 size={24} className="animate-spin text-teal-600 mx-auto" /></div>
             ) : autoBackups.length === 0 ? (
               <div className="p-8 text-center text-slate-400 dark:text-slate-500 text-sm font-medium">ยังไม่มีประวัติการสำรองข้อมูลอัตโนมัติ</div>
             ) : (
@@ -267,7 +267,7 @@ export function BackupSection() {
                       <div className="flex items-center gap-4">
                         <div className={cn(
                           "w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xs",
-                          isToday ? "bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300" : "bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400"
+                          isToday ? "bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300" : "bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400"
                         )}>
                           {isToday ? 'วันนี้' : dateObj.toLocaleDateString('th-TH', { weekday: 'short' })}
                         </div>
@@ -282,7 +282,7 @@ export function BackupSection() {
                         variant="ghost"
                         disabled={isRestoring}
                         onClick={() => handleRestoreAutoBackup(bkp.data)}
-                        className="text-xs h-8 px-3 rounded-lg text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/40 font-bold cursor-pointer"
+                        className="text-xs h-8 px-3 rounded-lg text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/40 font-bold cursor-pointer"
                       >
                         <RefreshCcw size={12} className="mr-1.5" /> กู้คืน
                       </Button>

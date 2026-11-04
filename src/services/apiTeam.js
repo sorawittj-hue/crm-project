@@ -10,8 +10,8 @@ import {
 } from './sessionScope';
 
 const MEMBER_COLORS = [
-  'bg-violet-600',
-  'bg-indigo-600',
+  'bg-teal-600',
+  'bg-teal-600',
   'bg-blue-600',
   'bg-emerald-600',
   'bg-amber-500',

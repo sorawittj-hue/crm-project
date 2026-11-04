@@ -46,8 +46,8 @@ export default function FocusDealsCard({ focusDeals, onOpenDeal }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-2xl bg-violet-500/10 dark:bg-violet-500/20 flex items-center justify-center">
-          <Target size={18} className="text-violet-600 dark:text-violet-400" strokeWidth={2.5} />
+        <div className="w-10 h-10 rounded-2xl bg-teal-500/10 dark:bg-teal-500/20 flex items-center justify-center">
+          <Target size={18} className="text-teal-600 dark:text-teal-400" strokeWidth={2.5} />
         </div>
         <div>
           <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white tracking-tight">Top Focus Deals</h3>
@@ -64,19 +64,19 @@ export default function FocusDealsCard({ focusDeals, onOpenDeal }) {
             transition={{ delay: i * 0.05 }}
             className={cn(
               "flex flex-col rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden group",
-              "bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border-slate-200/80 dark:border-white/10 shadow-sm",
-              "hover:-translate-y-1 hover:border-violet-400 dark:hover:border-violet-500/50 hover:shadow-lg dark:hover:shadow-violet-950/30"
+              "bg-white/80 dark:bg-[#192629]/80 backdrop-blur-xl border-slate-200/80 dark:border-white/10 shadow-sm",
+              "hover:border-teal-400 dark:hover:border-teal-500/50 hover:shadow-lg dark:hover:shadow-teal-950/30"
             )}
             onClick={() => onOpenDeal(deal)}
           >
             <div className="p-4 flex-1">
               <div className="flex justify-between items-start mb-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-500/20 px-2 py-0.5 rounded-md border border-violet-200 dark:border-violet-500/30">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-500/20 px-2 py-0.5 rounded-md border border-teal-200 dark:border-teal-500/30">
                   Score: {Math.round(deal.focusScore).toLocaleString()}
                 </span>
                 <span className="text-xs font-bold text-slate-400 dark:text-slate-500">{deal.stage}</span>
               </div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-teal-600 dark:group-hover:text-teal-300 transition-colors">
                 {deal.title}
               </h4>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">{deal.company}</p>
@@ -105,13 +105,13 @@ export default function FocusDealsCard({ focusDeals, onOpenDeal }) {
                       "p-3 rounded-xl border relative text-xs leading-relaxed font-medium pr-6",
                       explanations[deal.id].disabled 
                         ? "bg-slate-50 dark:bg-white/[0.03] border-slate-200 dark:border-white/10 text-slate-500" 
-                        : "bg-violet-50 dark:bg-violet-950/40 border-violet-200 dark:border-violet-800/50 text-violet-900 dark:text-violet-200"
+                        : "bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800/50 text-teal-900 dark:text-teal-200"
                     )}
                   >
                     {explanations[deal.id].disabled ? (
                       <Info size={14} className="text-slate-400 absolute top-3 right-3" />
                     ) : (
-                      <Sparkles size={14} className="text-violet-500 absolute top-3 right-3" />
+                      <Sparkles size={14} className="text-teal-500 absolute top-3 right-3" />
                     )}
                     <p>{explanations[deal.id].text}</p>
                   </motion.div>
@@ -119,7 +119,7 @@ export default function FocusDealsCard({ focusDeals, onOpenDeal }) {
                   <button
                     onClick={(e) => handleExplain(e, deal)}
                     disabled={explainingId === deal.id}
-                    className="w-full py-2.5 rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-50/80 dark:bg-white/[0.04] text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:text-violet-700 dark:hover:text-violet-300 hover:border-violet-200 dark:hover:border-violet-800/50 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full py-2.5 rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-50/80 dark:bg-white/[0.04] text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-teal-50 dark:hover:bg-teal-950/40 hover:text-teal-700 dark:hover:text-teal-300 hover:border-teal-200 dark:hover:border-teal-800/50 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     {explainingId === deal.id ? (
                       <>

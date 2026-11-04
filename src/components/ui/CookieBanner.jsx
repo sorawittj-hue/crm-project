@@ -33,7 +33,7 @@ export function CookieBanner() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          className="fixed bottom-3 left-3 right-3 md:bottom-4 md:left-auto md:right-4 md:w-[360px] bg-white dark:bg-[#111522] border border-slate-200 dark:border-white/10 shadow-xl rounded-xl p-4 z-[100]"
+          className="fixed bottom-3 left-3 right-3 md:bottom-4 md:left-auto md:right-4 md:w-[360px] bg-white dark:bg-[#192629] border border-slate-200 dark:border-white/10 shadow-xl rounded-xl p-4 z-[100]"
         >
           <button 
             onClick={handleDecline}
@@ -44,7 +44,7 @@ export function CookieBanner() {
           </button>
           
           <div className="flex gap-4">
-            <div className="w-9 h-9 rounded-lg bg-violet-50 dark:bg-violet-500/15 flex items-center justify-center shrink-0 text-violet-700 dark:text-violet-300">
+            <div className="w-9 h-9 rounded-lg bg-teal-50 dark:bg-teal-500/15 flex items-center justify-center shrink-0 text-teal-700 dark:text-teal-300">
               <Cookie size={18} />
             </div>
             <div>
@@ -56,7 +56,7 @@ export function CookieBanner() {
                 <Button 
                   size="sm" 
                   onClick={handleAccept}
-                  className="flex-1 h-9 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-sm"
+                  className="flex-1 h-9 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold shadow-sm"
                 >
                   ยอมรับทั้งหมด
                 </Button>

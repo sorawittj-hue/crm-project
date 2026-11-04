@@ -127,14 +127,14 @@ export function AuditLogSection() {
   };
 
   return (
-    <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden font-sans">
-      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-indigo-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+    <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#192629]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden font-sans">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-teal-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
 
       {/* Header */}
       <div className="flex items-center justify-between mb-8 relative z-10 flex-wrap gap-4">
         <div>
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            <History className="text-indigo-500" size={20} />
+            <History className="text-teal-500" size={20} />
             ประวัติการทำงาน (Audit Logs)
           </h2>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">
@@ -147,7 +147,7 @@ export function AuditLogSection() {
           className="p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/10 hover:bg-slate-50 dark:hover:bg-white/15 text-slate-600 dark:text-slate-300 shadow-sm transition-all hover:shadow-md disabled:opacity-50 shrink-0 cursor-pointer"
           title="รีเฟรชข้อมูล"
         >
-          <RotateCw className={cn("w-4 h-4", (isLoading || isFetching) && "animate-spin text-indigo-500")} />
+          <RotateCw className={cn("w-4 h-4", (isLoading || isFetching) && "animate-spin text-teal-500")} />
         </button>
       </div>
 
@@ -161,7 +161,7 @@ export function AuditLogSection() {
             placeholder="ค้นหา ตารางข้อมูล หรือ ID เรคอร์ด..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#171926] px-3 text-xs outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 transition-all font-medium text-slate-700 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#171926] px-3 text-xs outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900/30 transition-all font-medium text-slate-700 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
         </div>
 
@@ -175,7 +175,7 @@ export function AuditLogSection() {
               className={cn(
                 "px-4 py-2 rounded-xl text-xs font-bold transition-all border shrink-0 cursor-pointer",
                 actionFilter === act
-                  ? "bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/20"
+                  ? "bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-500/20"
                   : "bg-white dark:bg-white/10 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/15"
               )}
             >
@@ -189,7 +189,7 @@ export function AuditLogSection() {
       <div className="relative z-10 overflow-hidden border border-slate-100 dark:border-white/[0.06] rounded-2xl bg-white/40 dark:bg-white/[0.02]">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-500 gap-2">
-            <RotateCw className="animate-spin text-indigo-500" size={24} />
+            <RotateCw className="animate-spin text-teal-500" size={24} />
             <p className="text-xs font-bold">กำลังโหลดบันทึกกิจกรรม...</p>
           </div>
         ) : filteredLogs.length === 0 ? (
@@ -251,7 +251,7 @@ export function AuditLogSection() {
 
                   {/* Expanded Detail Panel */}
                   {isExpanded && (
-                    <div className="px-4 pb-5 pt-1 border-t border-dashed border-slate-200/80 dark:border-white/10 bg-white/80 dark:bg-[#0f111a]/80">
+                    <div className="px-4 pb-5 pt-1 border-t border-dashed border-slate-200/80 dark:border-white/10 bg-white/80 dark:bg-[#192629]/80">
                       <div className="mt-3 p-4 rounded-xl border border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02] space-y-3">
                         <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider pb-2 border-b border-slate-100 dark:border-white/[0.06]">
                           <span>ข้อมูลการเปลี่ยนสถานะ (Data Diff)</span>

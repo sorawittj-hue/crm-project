@@ -9,7 +9,7 @@ const STAGE_COLOR = {
   lead: 'bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-300',
   contact: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
   proposal: 'bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300',
-  negotiation: 'bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300',
+  negotiation: 'bg-teal-100 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300',
   won: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
   lost: 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300',
 };
@@ -37,10 +37,10 @@ export default function RepDrilldown({ member, deals = [], monthlyTarget = 0, on
 
   return (
     <Dialog open onOpenChange={(isOpen) => { if (!isOpen) onClose?.(); }} className="max-w-2xl">
-      <DialogContent showCloseButton={false} className="flex max-h-[85dvh] flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white/95 p-0 shadow-2xl dark:border-white/10 dark:bg-[#0f111a]/95">
+      <DialogContent showCloseButton={false} className="flex max-h-[85dvh] flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white/95 p-0 shadow-2xl dark:border-white/10 dark:bg-[#192629]/95">
           {/* Header */}
-          <div className="relative p-6 border-b border-slate-100 dark:border-white/10 bg-gradient-to-r from-violet-600 to-indigo-700">
-            <div className="absolute inset-0 bg-gradient-to-br from-violet-600/90 to-indigo-800/90" />
+          <div className="relative p-6 border-b border-slate-100 dark:border-white/10 bg-gradient-to-r from-teal-600 to-teal-700">
+            <div className="absolute inset-0 bg-gradient-to-br from-teal-600/90 to-teal-800/90" />
             <button
               type="button"
               onClick={onClose}
@@ -66,7 +66,7 @@ export default function RepDrilldown({ member, deals = [], monthlyTarget = 0, on
           <div className="p-6 grid grid-cols-2 sm:grid-cols-4 gap-3 border-b border-slate-100 dark:border-white/10">
             {[
               { label: 'Won Value', value: formatCurrency(stats.wonValue), icon: Trophy, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40' },
-              { label: 'Win Rate', value: `${stats.winRate}%`, icon: Target, color: 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/40' },
+              { label: 'Win Rate', value: `${stats.winRate}%`, icon: Target, color: 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/40' },
               { label: 'Avg Deal Size', value: formatCurrency(stats.avgDealSize), icon: DollarSign, color: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40' },
               { label: 'Goal %', value: `${stats.goalPct}%`, icon: TrendingUp, color: stats.goalPct >= 100 ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40' : 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40' },
             ].map(({ label, value, icon: Icon, color }) => (

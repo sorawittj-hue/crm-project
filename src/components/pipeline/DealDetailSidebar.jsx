@@ -59,8 +59,8 @@ const STAGE_WORKFLOW = {
     reminder: '⚠️ Proposal เกิน 7 วันไม่มีตอบรับ = เสี่ยงหลุดสูงมาก ต้องโทรจิกทันที',
   },
   negotiation: {
-    label: 'กำลังปิด', color: 'bg-violet-50/50 border-violet-200', headerColor: 'text-violet-700',
-    dot: 'bg-violet-500',
+    label: 'กำลังปิด', color: 'bg-teal-50/50 border-teal-200', headerColor: 'text-teal-700',
+    dot: 'bg-teal-500',
     steps: [
       { text: 'ยืนยันเงื่อนไขและราคาสุดท้ายกับผู้มีอำนาจ', key: 'confirm' },
       { text: 'ส่ง PO / Contract ให้ลูกค้าเซ็น', key: 'contract' },
@@ -99,14 +99,14 @@ const STAGE_BADGE = {
   lead:        { label: 'ลูกค้าใหม่',  cls: 'bg-slate-100 text-slate-700 border-slate-200' },
   contact:     { label: 'นัดเจอ',      cls: 'bg-amber-50 text-amber-700 border-amber-200' },
   proposal:    { label: 'เสนอราคา',   cls: 'bg-sky-50 text-sky-700 border-sky-200' },
-  negotiation: { label: 'กำลังปิด',   cls: 'bg-violet-50 text-violet-700 border-violet-200' },
+  negotiation: { label: 'กำลังปิด',   cls: 'bg-teal-50 text-teal-700 border-teal-200' },
   won:         { label: '🎉 ปิดได้',   cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   lost:        { label: 'ปิดไม่ได้',  cls: 'bg-rose-50 text-rose-700 border-rose-200' },
 };
 
 const ACTIVITY_TYPES = [
   { id: 'call',    label: 'โทรหา',     icon: Phone,         color: 'bg-blue-50 text-blue-600 border-blue-200' },
-  { id: 'email',   label: 'อีเมล',     icon: Mail,          color: 'bg-violet-50 text-violet-600 border-violet-200' },
+  { id: 'email',   label: 'อีเมล',     icon: Mail,          color: 'bg-teal-50 text-teal-600 border-teal-200' },
   { id: 'meeting', label: 'ประชุม',    icon: Clock,         color: 'bg-amber-50 text-amber-600 border-amber-200' },
   { id: 'note',    label: 'บันทึก',    icon: FileText,      color: 'bg-slate-50 text-slate-600 border-slate-200' },
   { id: 'task',    label: 'นัดติดตาม', icon: CalendarClock, color: 'bg-orange-50 text-orange-700 border-orange-200' },
@@ -372,18 +372,18 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
       className="max-w-xl"
       placement="right"
     >
-      <DialogContent showCloseButton={false} className="h-dvh max-h-none max-w-xl rounded-l-[28px] rounded-r-none border-l border-slate-200/80 bg-white p-0 shadow-[0_0_60px_rgba(0,0,0,0.42)] dark:border-white/10 dark:bg-[#0d0f1a]">
+      <DialogContent showCloseButton={false} className="h-dvh max-h-none max-w-xl rounded-l-[28px] rounded-r-none border-l border-slate-200/80 bg-white p-0 shadow-[0_0_60px_rgba(0,0,0,0.42)] dark:border-white/10 dark:bg-[#192629]">
         <div className="flex h-full flex-col overflow-hidden">
             {/* ─── HEADER ─── */}
             <div className={cn(
               'relative shrink-0 px-6 pt-6 pb-6 border-b border-slate-100/80 dark:border-white/5 overflow-hidden',
               deal.stage === 'lead' ? 'bg-gradient-to-br from-slate-50 via-white to-slate-100/50 dark:from-white/[0.04] dark:to-transparent' :
               deal.stage === 'contact' ? 'bg-gradient-to-br from-amber-50 via-orange-50/20 to-amber-100/40 dark:from-amber-950/30 dark:to-transparent' :
-              deal.stage === 'proposal' ? 'bg-gradient-to-br from-sky-50 via-blue-50/20 to-indigo-50/40 dark:from-sky-950/30 dark:to-transparent' :
-              deal.stage === 'negotiation' ? 'bg-gradient-to-br from-violet-50 via-purple-50/20 to-fuchsia-50/40 dark:from-violet-950/30 dark:to-transparent' :
+              deal.stage === 'proposal' ? 'bg-gradient-to-br from-sky-50 via-blue-50/20 to-teal-50/40 dark:from-sky-950/30 dark:to-transparent' :
+              deal.stage === 'negotiation' ? 'bg-gradient-to-br from-teal-50 via-teal-50/20 to-teal-50/40 dark:from-teal-950/30 dark:to-transparent' :
               deal.stage === 'won' ? 'bg-gradient-to-br from-emerald-50 via-teal-50/20 to-emerald-100/40 dark:from-emerald-950/30 dark:to-transparent' :
               deal.stage === 'lost' ? 'bg-gradient-to-br from-rose-50 via-red-50/20 to-rose-100/40 dark:from-rose-950/30 dark:to-transparent' :
-              'bg-white dark:bg-[#0d0f1a]'
+              'bg-white dark:bg-[#192629]'
             )}>
               {/* Decorative gradient orb */}
               <div className={cn(
@@ -391,7 +391,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                 deal.stage === 'lead' ? 'bg-slate-300' :
                 deal.stage === 'contact' ? 'bg-amber-300' :
                 deal.stage === 'proposal' ? 'bg-sky-300' :
-                deal.stage === 'negotiation' ? 'bg-violet-300' :
+                deal.stage === 'negotiation' ? 'bg-teal-300' :
                 deal.stage === 'won' ? 'bg-emerald-300' :
                 deal.stage === 'lost' ? 'bg-rose-300' : 'bg-slate-200'
               )} />
@@ -408,7 +408,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                     onClick={handleCloneDeal}
                     disabled={isCloning}
                     title="โคลนดีลนี้"
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-violet-600 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/10 transition-all shrink-0 bg-white/40 dark:bg-white/5 backdrop-blur-sm shadow-sm border border-white/50 dark:border-white/10"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-teal-600 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/10 transition-all shrink-0 bg-white/40 dark:bg-white/5 backdrop-blur-sm shadow-sm border border-white/50 dark:border-white/10"
                   >
                     {isCloning ? <Loader2 size={14} className="animate-spin" /> : <Copy size={14} />}
                   </button>
@@ -448,7 +448,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                         type="number"
                         autoFocus
                         defaultValue={deal.value}
-                        className="text-lg font-black w-full border-b-2 border-violet-400 bg-transparent outline-none text-slate-900 dark:text-white"
+                        className="text-lg font-black w-full border-b-2 border-teal-400 bg-transparent outline-none text-slate-900 dark:text-white"
                         onBlur={(e) => {
                           const val = parseFloat(e.target.value);
                           if (!isNaN(val) && val !== deal.value) {
@@ -460,12 +460,12 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       />
                     ) : (
                       <p
-                        className="text-lg font-black text-slate-900 dark:text-white tabular-nums leading-tight cursor-pointer hover:text-violet-600 dark:hover:text-violet-400 transition-colors group flex items-center gap-1"
+                        className="text-lg font-black text-slate-900 dark:text-white tabular-nums leading-tight cursor-pointer hover:text-teal-600 dark:hover:text-teal-400 transition-colors group flex items-center gap-1"
                         onClick={() => setEditingField('value')}
                         title="คลิกเพื่อแก้ไข"
                       >
                         {formatCurrency(deal.value)}
-                        <span className="opacity-0 group-hover:opacity-100 text-xs text-violet-400">✏️</span>
+                        <span className="opacity-0 group-hover:opacity-100 text-xs text-teal-400">✏️</span>
                       </p>
                     )}
                   </div>
@@ -482,7 +482,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                         defaultValue={deal.probability}
                         min="0"
                         max="100"
-                        className="text-lg font-black w-full border-b-2 border-violet-400 bg-transparent outline-none text-slate-900 dark:text-white"
+                        className="text-lg font-black w-full border-b-2 border-teal-400 bg-transparent outline-none text-slate-900 dark:text-white"
                         onBlur={(e) => {
                           const val = parseFloat(e.target.value);
                           if (!isNaN(val) && val !== deal.probability && val >= 0 && val <= 100) {
@@ -494,12 +494,12 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       />
                     ) : (
                       <p
-                        className="text-lg font-black text-slate-900 dark:text-white tabular-nums leading-tight cursor-pointer hover:text-violet-600 dark:hover:text-violet-400 transition-colors group flex items-center gap-1"
+                        className="text-lg font-black text-slate-900 dark:text-white tabular-nums leading-tight cursor-pointer hover:text-teal-600 dark:hover:text-teal-400 transition-colors group flex items-center gap-1"
                         onClick={() => setEditingField('probability')}
                         title="คลิกเพื่อแก้ไข"
                       >
                         {deal.probability}%
-                        <span className="opacity-0 group-hover:opacity-100 text-xs text-violet-400">✏️</span>
+                        <span className="opacity-0 group-hover:opacity-100 text-xs text-teal-400">✏️</span>
                       </p>
                     )}
                   </div>
@@ -509,7 +509,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       animate={{ width: `${deal.probability}%` }}
                       className={cn('h-full rounded-full shadow-sm',
                         deal.probability >= 70 ? 'bg-emerald-500' :
-                        deal.probability >= 40 ? 'bg-violet-500' : 'bg-amber-500'
+                        deal.probability >= 40 ? 'bg-teal-500' : 'bg-amber-500'
                       )}
                     />
                   </div>
@@ -523,7 +523,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                         type="date"
                         autoFocus
                         defaultValue={deal.expected_close_date ? deal.expected_close_date.slice(0, 10) : ''}
-                        className="text-sm font-bold w-full border-b-2 border-violet-400 bg-transparent outline-none text-slate-900 dark:text-white"
+                        className="text-sm font-bold w-full border-b-2 border-teal-400 bg-transparent outline-none text-slate-900 dark:text-white"
                         onBlur={(e) => {
                           const val = e.target.value;
                           if (val !== (deal.expected_close_date ? deal.expected_close_date.slice(0, 10) : '')) {
@@ -535,12 +535,12 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       />
                     ) : (
                       <p
-                        className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate cursor-pointer hover:text-violet-600 dark:hover:text-violet-400 transition-colors group flex items-center gap-1"
+                        className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate cursor-pointer hover:text-teal-600 dark:hover:text-teal-400 transition-colors group flex items-center gap-1"
                         onClick={() => setEditingField('expected_close_date')}
                         title="คลิกเพื่อแก้ไข"
                       >
                         {deal.expected_close_date ? new Date(deal.expected_close_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
-                        <span className="opacity-0 group-hover:opacity-100 text-xs text-violet-400">✏️</span>
+                        <span className="opacity-0 group-hover:opacity-100 text-xs text-teal-400">✏️</span>
                       </p>
                     )}
                   </div>
@@ -599,7 +599,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                   }}
                   disabled={isDuplicating}
                   aria-label="ทำสำเนาดีล"
-                  className="w-11 h-11 rounded-xl bg-white/60 backdrop-blur-sm border border-white/60 text-slate-400 hover:bg-indigo-500 hover:text-white hover:border-indigo-500 transition-all flex items-center justify-center shrink-0 shadow-sm"
+                  className="w-11 h-11 rounded-xl bg-white/60 backdrop-blur-sm border border-white/60 text-slate-400 hover:bg-teal-500 hover:text-white hover:border-teal-500 transition-all flex items-center justify-center shrink-0 shadow-sm"
                   title="Duplicate Deal"
                 >
                   <Sparkles size={18} />
@@ -615,7 +615,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
             </div>
 
             {/* ─── TAB BAR ─── */}
-            <div className="shrink-0 flex border-b border-slate-100 dark:border-white/5 bg-white dark:bg-[#0d0f1a] overflow-x-auto no-scrollbar">
+            <div className="shrink-0 flex border-b border-slate-100 dark:border-white/5 bg-white dark:bg-[#192629] overflow-x-auto no-scrollbar">
               {TABS.map(tab => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -628,11 +628,11 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                     className={cn(
                       'flex items-center gap-1.5 px-5 py-3.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-all relative',
                       isActive
-                        ? 'border-violet-600 text-violet-700 dark:text-violet-400 bg-gradient-to-t from-violet-50/50 dark:from-violet-950/20 to-transparent'
+                        ? 'border-teal-600 text-teal-700 dark:text-teal-400 bg-gradient-to-t from-teal-50/50 dark:from-teal-950/20 to-transparent'
                         : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-50/50 dark:hover:bg-white/5'
                     )}
                   >
-                    <Icon size={13} className={isActive ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400 dark:text-slate-500'} />
+                    <Icon size={13} className={isActive ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400 dark:text-slate-500'} />
                     {tab.label}
                   </button>
                 );
@@ -675,8 +675,8 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                               className={cn(
                                 'flex items-center justify-center gap-2 h-11 rounded-xl text-sm font-semibold transition-all border',
                                 showEmailTemplatesPanel
-                                  ? 'bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-500/20'
-                                  : 'bg-violet-50 hover:bg-violet-100 text-violet-700 border-violet-100'
+                                  ? 'bg-teal-600 text-white border-teal-600 shadow-md shadow-teal-500/20'
+                                  : 'bg-teal-50 hover:bg-teal-100 text-teal-700 border-teal-100'
                               )}
                             >
                               <Mail size={14} /> ส่งอีเมล
@@ -691,16 +691,16 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: 'auto' }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="bg-violet-50/40 border border-violet-100 rounded-2xl p-4 space-y-3 overflow-hidden"
+                              className="bg-teal-50/40 border border-teal-100 rounded-2xl p-4 space-y-3 overflow-hidden"
                             >
                               <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-black uppercase tracking-wider text-violet-700">ส่งอีเมลด้วย Template</h4>
+                                <h4 className="text-xs font-black uppercase tracking-wider text-teal-700">ส่งอีเมลด้วย Template</h4>
                                 <button onClick={() => { setShowEmailTemplatesPanel(false); setSelectedTemplateId(''); }} className="text-slate-400 hover:text-slate-600 text-xs font-semibold">ปิด</button>
                               </div>
                               <select
                                 value={selectedTemplateId}
                                 onChange={e => setSelectedTemplateId(e.target.value)}
-                                className="w-full h-10 rounded-xl bg-white border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-violet-400"
+                                className="w-full h-10 rounded-xl bg-white border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-teal-400"
                               >
                                 <option value="">— เลือกเทมเพลต —</option>
                                 {emailTemplates.map(t => (
@@ -745,7 +745,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                                         window.open(`mailto:${deal.contact_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
                                         onUpdate(deal.id, { last_activity: new Date().toISOString() });
                                       }}
-                                        className="flex-1 h-9 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+                                        className="flex-1 h-9 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5">
                                         <Send size={13} /> เปิดแอปเมล
                                       </button>
                                     </div>
@@ -760,28 +760,28 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
 
                     {/* AI Next Best Action Suggestion */}
                     {!['won', 'lost'].includes(deal.stage) && (
-                      <div className="bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 rounded-2xl p-4 space-y-2.5 shadow-sm">
+                      <div className="bg-gradient-to-br from-teal-50 to-teal-50 border border-teal-100 rounded-2xl p-4 space-y-2.5 shadow-sm">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5">
-                            <Sparkles size={14} className="text-indigo-600 animate-pulse" />
-                            <span className="text-xs font-black uppercase tracking-widest text-indigo-800">แนะนำขั้นตอนถัดไป (AI)</span>
+                            <Sparkles size={14} className="text-teal-600 animate-pulse" />
+                            <span className="text-xs font-black uppercase tracking-widest text-teal-800">แนะนำขั้นตอนถัดไป (AI)</span>
                           </div>
                           <button
                             type="button"
                             onClick={handleFetchNextBestAction}
                             disabled={loadingRecommendation}
-                            className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+                            className="text-[10px] font-bold text-teal-600 hover:text-teal-800 transition-colors"
                           >
                             {loadingRecommendation ? 'กำลังวิเคราะห์...' : 'รีเฟรช 🔄'}
                           </button>
                         </div>
                         {loadingRecommendation ? (
                           <div className="flex items-center gap-2 py-1.5 text-xs text-slate-400 font-semibold">
-                            <Loader2 size={12} className="animate-spin text-indigo-500" />
+                            <Loader2 size={12} className="animate-spin text-teal-500" />
                             <span>กำลังให้ AI ประเมินการกระทำที่ดีที่สุด...</span>
                           </div>
                         ) : nextActionRecommendation ? (
-                          <p className="text-xs font-bold text-slate-700 leading-relaxed bg-white/70 p-2.5 rounded-xl border border-indigo-100/30">
+                          <p className="text-xs font-bold text-slate-700 leading-relaxed bg-white/70 p-2.5 rounded-xl border border-teal-100/30">
                             {nextActionRecommendation}
                           </p>
                         ) : (
@@ -789,7 +789,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                             <button
                               type="button"
                               onClick={handleFetchNextBestAction}
-                              className="text-xs font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg border border-dashed border-indigo-300 bg-white"
+                              className="text-xs font-bold text-teal-600 hover:bg-teal-50 px-3 py-1.5 rounded-lg border border-dashed border-teal-300 bg-white"
                             >
                               วิเคราะห์ Next Best Action ✨
                             </button>
@@ -836,7 +836,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                             <div key={field.key} className="flex items-center justify-between gap-2">
                               <span className="text-xs font-semibold text-slate-500 shrink-0">{field.label}</span>
                               <span
-                                className="text-sm font-bold text-slate-700 text-right cursor-pointer hover:text-violet-600 transition-colors"
+                                className="text-sm font-bold text-slate-700 text-right cursor-pointer hover:text-teal-600 transition-colors"
                                 onClick={() => {
                                   const val = prompt(`แก้ไข ${field.label}:`, deal?.metadata?.custom_fields?.[field.key] || '');
                                   if (val !== null && onUpdate) {
@@ -866,7 +866,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                     {/* Log activity box */}
                     <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4 space-y-3">
                       <div className="flex items-center gap-2">
-                        <Activity size={13} className="text-violet-600" />
+                        <Activity size={13} className="text-teal-600" />
                         <p className="text-[10px] font-black uppercase tracking-wider text-slate-700">บันทึกกิจกรรม</p>
                       </div>
                       <div className="flex gap-1.5 flex-wrap">
@@ -885,11 +885,11 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       <Textarea
                         placeholder="บันทึกรายละเอียด..."
                         value={noteText} onChange={e => setNoteText(e.target.value)}
-                        className="rounded-xl bg-white border-slate-200 resize-none min-h-[80px] text-sm focus:border-violet-400"
+                        className="rounded-xl bg-white border-slate-200 resize-none min-h-[80px] text-sm focus:border-teal-400"
                       />
                       <Button
                         onClick={handleLogActivity} disabled={addActivityMutation.isPending}
-                        className="w-full h-10 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold flex items-center justify-center gap-2 border-0 shadow-md shadow-violet-500/20"
+                        className="w-full h-10 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold flex items-center justify-center gap-2 border-0 shadow-md shadow-teal-500/20"
                       >
                         {addActivityMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                         บันทึก Activity
@@ -1013,19 +1013,19 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                 {/* ── AI TAB ── */}
                 {activeTab === 'ai' && (
                   <motion.div key="ai" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="p-6 space-y-4">
-                    <div className="bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-100 rounded-2xl p-5">
+                    <div className="bg-gradient-to-br from-teal-50 to-teal-50 border border-teal-100 rounded-2xl p-5">
                       <div className="flex items-center justify-between mb-5">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-md">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center text-white shadow-md">
                             <Sparkles size={18} />
                           </div>
                           <div>
-                            <h3 className="text-sm font-bold text-violet-800">AI Sales Strategy</h3>
-                            <p className="text-[10px] text-violet-400 font-bold uppercase tracking-widest">Powered by Gemini</p>
+                            <h3 className="text-sm font-bold text-teal-800">AI Sales Strategy</h3>
+                            <p className="text-[10px] text-teal-400 font-bold uppercase tracking-widest">Powered by Gemini</p>
                           </div>
                         </div>
                         <Button variant="ghost" size="sm" onClick={handleAIAnalysis} disabled={isAnalyzing}
-                          className="text-xs font-bold text-violet-600 hover:bg-violet-100 rounded-xl px-3">
+                          className="text-xs font-bold text-teal-600 hover:bg-teal-100 rounded-xl px-3">
                           {isAnalyzing ? <Loader2 size={13} className="animate-spin" /> : 'วิเคราะห์ใหม่'}
                         </Button>
                       </div>
@@ -1033,29 +1033,29 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                       <AnimatePresence mode="wait">
                         {isAnalyzing ? (
                           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="py-10 flex flex-col items-center gap-4">
-                            <div className="w-10 h-10 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
-                            <p className="text-xs font-bold text-violet-500 uppercase tracking-widest">กำลังวิเคราะห์...</p>
+                            <div className="w-10 h-10 border-4 border-teal-200 border-t-teal-600 rounded-full animate-spin" />
+                            <p className="text-xs font-bold text-teal-500 uppercase tracking-widest">กำลังวิเคราะห์...</p>
                           </motion.div>
                         ) : aiAnalysis ? (
                           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="relative">
                             <div className={cn("space-y-4 transition-all duration-500", isGuestAccount && "blur-[6px] opacity-60 pointer-events-none")}>
                               <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-white rounded-xl p-4 border border-violet-100 shadow-sm text-center">
+                                <div className="bg-white rounded-xl p-4 border border-teal-100 shadow-sm text-center">
                                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Win Likelihood</p>
                                   <span className="text-3xl font-black text-slate-900">{aiAnalysis.win_likelihood}%</span>
                                 </div>
-                                <div className="bg-white rounded-xl p-4 border border-violet-100 shadow-sm text-center">
+                                <div className="bg-white rounded-xl p-4 border border-teal-100 shadow-sm text-center">
                                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ความเสี่ยง</p>
                                   <span className={cn('text-sm font-black', aiAnalysis.risk_level === 'high' ? 'text-rose-600' : aiAnalysis.risk_level === 'medium' ? 'text-amber-600' : 'text-emerald-600')}>
                                     {aiAnalysis.risk_level === 'high' ? '🔴 สูง' : aiAnalysis.risk_level === 'medium' ? '🟡 ปานกลาง' : '🟢 ต่ำ'}
                                   </span>
                                 </div>
                               </div>
-                              <div className="bg-white rounded-xl p-4 border border-violet-100 shadow-sm space-y-2">
+                              <div className="bg-white rounded-xl p-4 border border-teal-100 shadow-sm space-y-2">
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">กลยุทธ์แนะนำ</p>
                                 <p className="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-line">{aiAnalysis.strategy}</p>
                               </div>
-                              <div className="bg-violet-600 rounded-xl p-4 text-white shadow-lg shadow-violet-500/20">
+                              <div className="bg-teal-600 rounded-xl p-4 text-white shadow-lg shadow-teal-500/20">
                                 <p className="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-1">Next Step สำคัญ</p>
                                 <p className="text-sm font-bold">{aiAnalysis.next_step}</p>
                               </div>
@@ -1103,36 +1103,36 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">ชื่อดีล</label>
                           <Input value={localEdit.title} onChange={e => setField('title', e.target.value)} onBlur={() => saveField('title', localEdit.title)}
-                            className="rounded-xl h-11 bg-white border-slate-200 font-bold focus:border-violet-400" />
+                            className="rounded-xl h-11 bg-white border-slate-200 font-bold focus:border-teal-400" />
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">ชื่อบริษัท</label>
                           <Input value={localEdit.company} onChange={e => setField('company', e.target.value)} onBlur={() => saveField('company', localEdit.company)}
-                            className="rounded-xl h-11 bg-white border-slate-200 font-bold focus:border-violet-400" />
+                            className="rounded-xl h-11 bg-white border-slate-200 font-bold focus:border-teal-400" />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">มูลค่า (บาท)</label>
                             <Input type="number" value={localEdit.value} onChange={e => setField('value', e.target.value)} onBlur={() => saveField('value', localEdit.value)}
-                              className="rounded-xl h-11 bg-white border-slate-200 font-bold focus:border-violet-400 text-violet-700" />
+                              className="rounded-xl h-11 bg-white border-slate-200 font-bold focus:border-teal-400 text-teal-700" />
                           </div>
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">โอกาส (%)</label>
                             <Input type="number" min="0" max="100" value={localEdit.probability} onChange={e => setField('probability', e.target.value)} onBlur={() => saveField('probability', localEdit.probability)}
-                              className="rounded-xl h-11 bg-white border-slate-200 font-bold focus:border-violet-400" />
+                              className="rounded-xl h-11 bg-white border-slate-200 font-bold focus:border-teal-400" />
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">วันคาดว่าจะปิด</label>
                             <input type="date" value={localEdit.expected_close_date} onChange={e => setField('expected_close_date', e.target.value)} onBlur={() => saveField('expected_close_date', localEdit.expected_close_date || null)}
-                              className="w-full h-11 rounded-xl bg-white border border-slate-200 px-3 outline-none text-sm font-bold text-slate-800 focus:border-violet-400 transition-all" />
+                              className="w-full h-11 rounded-xl bg-white border border-slate-200 px-3 outline-none text-sm font-bold text-slate-800 focus:border-teal-400 transition-all" />
                           </div>
                           {['won', 'lost'].includes(deal.stage) && (
                             <div className="space-y-1.5">
                               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">วันปิดจริง</label>
                               <input type="date" value={localEdit.actual_close_date || ''} onChange={e => setField('actual_close_date', e.target.value)} onBlur={() => saveField('actual_close_date', localEdit.actual_close_date ? new Date(localEdit.actual_close_date + 'T12:00:00').toISOString() : null)}
-                                className="w-full h-11 rounded-xl bg-white border border-slate-200 px-3 outline-none text-sm font-bold text-slate-800 focus:border-violet-400 transition-all" />
+                                className="w-full h-11 rounded-xl bg-white border border-slate-200 px-3 outline-none text-sm font-bold text-slate-800 focus:border-teal-400 transition-all" />
                             </div>
                           )}
                         </div>
@@ -1150,7 +1150,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                               else { setField('stage', s); onUpdate(deal.id, { stage: s }); }
                             }}
                             disabled={deal.stage === 'won' || deal.stage === 'lost'}
-                            className="w-full h-11 rounded-xl bg-white border border-slate-200 px-3 font-semibold outline-none text-sm focus:border-violet-400 transition-all disabled:opacity-50"
+                            className="w-full h-11 rounded-xl bg-white border border-slate-200 px-3 font-semibold outline-none text-sm focus:border-teal-400 transition-all disabled:opacity-50"
                           >
                             {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                           </select>
@@ -1166,7 +1166,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                                 setField('is_recurring', val);
                                 saveField('is_recurring', val);
                               }}
-                              className="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-slate-300 cursor-pointer"
+                              className="w-4 h-4 rounded text-teal-600 focus:ring-teal-500 border-slate-300 cursor-pointer"
                             />
                             <label htmlFor="is_recurring_edit" className="text-xs font-bold text-slate-655 cursor-pointer">
                               ดีลต่ออายุ (Recurring)
@@ -1180,7 +1180,7 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                                 value={localEdit.renewal_date}
                                 onChange={e => setField('renewal_date', e.target.value)}
                                 onBlur={() => saveField('renewal_date', localEdit.renewal_date || null)}
-                                className="w-full h-11 rounded-xl bg-white border border-slate-200 px-3 outline-none text-sm font-bold text-slate-800 focus:border-violet-400 transition-all"
+                                className="w-full h-11 rounded-xl bg-white border border-slate-200 px-3 outline-none text-sm font-bold text-slate-800 focus:border-teal-400 transition-all"
                               />
                             </div>
                           )}
@@ -1197,18 +1197,18 @@ export default function DealDetailSidebar({ isOpen, deal, onUpdate, onClose, onR
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">ชื่อผู้ติดต่อ</label>
                           <Input placeholder="ชื่อผู้ติดต่อ" value={localEdit.contact} onChange={e => setField('contact', e.target.value)} onBlur={() => saveField('contact', localEdit.contact)}
-                            className="rounded-xl h-11 bg-white border-slate-200 focus:border-violet-400" />
+                            className="rounded-xl h-11 bg-white border-slate-200 focus:border-teal-400" />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">เบอร์โทร</label>
                             <Input placeholder="0XX-XXX-XXXX" value={localEdit.contact_phone} onChange={e => setField('contact_phone', e.target.value)} onBlur={() => saveField('contact_phone', localEdit.contact_phone)}
-                              className="rounded-xl h-11 bg-white border-slate-200 focus:border-violet-400" />
+                              className="rounded-xl h-11 bg-white border-slate-200 focus:border-teal-400" />
                           </div>
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">อีเมล</label>
                             <Input placeholder="email@company.com" value={localEdit.contact_email} onChange={e => setField('contact_email', e.target.value)} onBlur={() => saveField('contact_email', localEdit.contact_email)}
-                              className="rounded-xl h-11 bg-white border-slate-200 focus:border-violet-400" />
+                              className="rounded-xl h-11 bg-white border-slate-200 focus:border-teal-400" />
                           </div>
                         </div>
                       </div>

@@ -350,7 +350,7 @@ export function ConsoleCenterSection() {
 
   if (!isOwner) {
     return (
-      <Card className="p-8 rounded-xl bg-white dark:bg-[#0f111a]/80 border border-slate-100 dark:border-white/10 shadow-xl flex flex-col items-center justify-center text-center">
+      <Card className="p-8 rounded-xl bg-white dark:bg-[#192629]/80 border border-slate-100 dark:border-white/10 shadow-xl flex flex-col items-center justify-center text-center">
         <div className="w-16 h-16 bg-rose-50 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400 rounded-full flex items-center justify-center mb-6">
           <ShieldAlert size={32} />
         </div>
@@ -371,8 +371,8 @@ export function ConsoleCenterSection() {
             label: 'ผู้สมัครใช้งานทั้งหมด',
             value: stats.total,
             icon: Users,
-            gradient: 'from-violet-600 to-indigo-700',
-            shadow: 'shadow-violet-600/10'
+            gradient: 'from-teal-600 to-teal-700',
+            shadow: 'shadow-teal-600/10'
           },
           {
             label: 'ผู้ใช้ระดับ PRO',
@@ -421,7 +421,7 @@ export function ConsoleCenterSection() {
       </div>
 
       {/* Proportion Bar */}
-      <Card className="p-6 rounded-xl bg-white dark:bg-[#0f111a]/80 border border-slate-150 dark:border-white/10 shadow-xl dark:shadow-none space-y-4">
+      <Card className="p-6 rounded-xl bg-white dark:bg-[#192629]/80 border border-slate-150 dark:border-white/10 shadow-xl dark:shadow-none space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <h3 className="text-xs font-semibold text-slate-900 dark:text-white">อัตราส่วนประเภทบัญชีผู้ใช้ (Account Classification Ratio)</h3>
@@ -444,7 +444,7 @@ export function ConsoleCenterSection() {
           {stats.trial > 0 && (
             <div
               style={{ width: `${trialPct}%` }}
-              className="bg-gradient-to-r from-violet-500 to-indigo-600 h-full transition-all duration-500 cursor-help"
+              className="bg-gradient-to-r from-teal-500 to-teal-600 h-full transition-all duration-500 cursor-help"
               title={`TRIAL: ${stats.trial} คน (${trialPct.toFixed(1)}%)`}
             />
           )}
@@ -464,7 +464,7 @@ export function ConsoleCenterSection() {
             <span>PRO ({stats.pro} คน)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 shadow-sm shadow-indigo-500/10" />
+            <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 shadow-sm shadow-teal-500/10" />
             <span>TRIAL ({stats.trial} คน)</span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -475,8 +475,8 @@ export function ConsoleCenterSection() {
       </Card>
 
       {/* Main Console Area */}
-      <Card className="p-8 rounded-xl bg-white dark:bg-[#0f111a]/80 border border-slate-150 dark:border-white/10 shadow-xl dark:shadow-none space-y-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/5 to-transparent rounded-bl-full pointer-events-none" />
+      <Card className="p-8 rounded-xl bg-white dark:bg-[#192629]/80 border border-slate-150 dark:border-white/10 shadow-xl dark:shadow-none space-y-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-teal-400/5 to-transparent rounded-bl-full pointer-events-none" />
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
@@ -505,7 +505,7 @@ export function ConsoleCenterSection() {
             {/* Add User Button */}
             <Button
               onClick={() => setIsAddModalOpen(true)}
-              className="h-10 px-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-violet-500/20 text-xs shrink-0 border-0 cursor-pointer"
+              className="h-10 px-4 bg-gradient-to-r from-teal-600 to-teal-600 hover:from-teal-500 hover:to-teal-500 text-white font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-teal-500/20 text-xs shrink-0 border-0 cursor-pointer"
             >
               <UserPlus size={15} />
               เพิ่มผู้ใช้ใหม่
@@ -527,7 +527,7 @@ export function ConsoleCenterSection() {
               className={cn(
                 "px-4 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer",
                 activeTab === tab.id
-                  ? "bg-white dark:bg-white/15 text-violet-700 dark:text-violet-300 shadow-sm"
+                  ? "bg-white dark:bg-white/15 text-teal-700 dark:text-teal-300 shadow-sm"
                   : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               )}
             >
@@ -540,7 +540,7 @@ export function ConsoleCenterSection() {
         <div className="space-y-3 relative z-10">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-500 gap-2">
-              <RefreshCw className="animate-spin text-violet-600" size={24} />
+              <RefreshCw className="animate-spin text-teal-600" size={24} />
               <p className="text-xs font-bold">กำลังโหลดรายชื่อผู้ใช้...</p>
             </div>
           ) : filteredProfiles.length === 0 ? (
@@ -580,7 +580,7 @@ export function ConsoleCenterSection() {
                         : isUserPro
                           ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white'
                           : isUserTrial
-                            ? 'bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300'
+                            ? 'bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300'
                             : 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300'
                     )}>
                       {(profile.full_name || profile.email || '?').charAt(0).toUpperCase()}
@@ -591,7 +591,7 @@ export function ConsoleCenterSection() {
                           {profile.full_name || 'ไม่ระบุชื่อ'}
                         </span>
                         {isOwnerAccount && (
-                          <span className="text-[8px] font-semibold px-1.5 py-0.5 rounded bg-violet-600 text-white uppercase tracking-wider">
+                          <span className="text-[8px] font-semibold px-1.5 py-0.5 rounded bg-teal-600 text-white uppercase tracking-wider">
                             OWNER 👑
                           </span>
                         )}
@@ -650,7 +650,7 @@ export function ConsoleCenterSection() {
                     ) : (
                       <button
                         onClick={() => setManagedProfile(profile)}
-                        className="h-9 px-3.5 bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all border border-slate-200 dark:border-white/10 shadow-sm active:scale-95 group-hover:border-violet-200 dark:group-hover:border-violet-500/40 group-hover:text-violet-700 dark:group-hover:text-violet-300 cursor-pointer"
+                        className="h-9 px-3.5 bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all border border-slate-200 dark:border-white/10 shadow-sm active:scale-95 group-hover:border-teal-200 dark:group-hover:border-teal-500/40 group-hover:text-teal-700 dark:group-hover:text-teal-300 cursor-pointer"
                       >
                         <Sliders size={13} />
                         จัดการสมาชิก
@@ -666,12 +666,12 @@ export function ConsoleCenterSection() {
 
       {/* 1. Add User Dialog */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-md p-8 rounded-xl border border-slate-200 dark:border-white/10 shadow-2xl relative overflow-hidden bg-white dark:bg-[#0f111a]">
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-violet-600 to-indigo-600" />
+        <DialogContent className="max-w-md p-8 rounded-xl border border-slate-200 dark:border-white/10 shadow-2xl relative overflow-hidden bg-white dark:bg-[#192629]">
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-600 to-teal-600" />
 
           <DialogHeader className="mb-6">
             <DialogTitle className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-              <UserPlus className="text-violet-600 dark:text-violet-400" size={20} />
+              <UserPlus className="text-teal-600 dark:text-teal-400" size={20} />
               เพิ่มผู้ใช้งานใหม่
             </DialogTitle>
             <DialogDescription className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">
@@ -770,7 +770,7 @@ export function ConsoleCenterSection() {
               </Button>
               <Button
                 type="submit"
-                className="flex-1 h-11 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold border-0 shadow-lg shadow-violet-500/20 cursor-pointer"
+                className="flex-1 h-11 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold border-0 shadow-lg shadow-teal-500/20 cursor-pointer"
                 disabled={isAdding}
               >
                 {isAdding ? <Loader2 size={16} className="animate-spin mx-auto" /> : 'สร้างผู้ใช้'}
@@ -830,12 +830,12 @@ export function ConsoleCenterSection() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-full sm:w-[460px] bg-white dark:bg-[#0f111a] shadow-2xl z-50 flex flex-col border-l border-slate-100 dark:border-white/10"
+              className="fixed top-0 right-0 h-full w-full sm:w-[460px] bg-white dark:bg-[#192629] shadow-2xl z-50 flex flex-col border-l border-slate-100 dark:border-white/10"
             >
               {/* Drawer Header */}
               <div className="p-6 border-b border-slate-100 dark:border-white/10 flex items-center justify-between bg-slate-50/50 dark:bg-white/[0.02]">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 flex items-center justify-center">
                     <Sliders size={18} />
                   </div>
                   <div>
@@ -863,7 +863,7 @@ export function ConsoleCenterSection() {
                       : currentManagedProfile.role === 'admin' || currentManagedProfile.plan_type === 'pro'
                         ? "bg-gradient-to-br from-amber-400 to-orange-500"
                         : currentManagedProfile.plan_type === 'trial'
-                          ? "bg-gradient-to-br from-violet-500 to-indigo-600"
+                          ? "bg-gradient-to-br from-teal-500 to-teal-600"
                           : "bg-slate-300 dark:bg-slate-600"
                   )}>
                     {(currentManagedProfile.full_name || currentManagedProfile.email || '?').charAt(0).toUpperCase()}
@@ -896,7 +896,7 @@ export function ConsoleCenterSection() {
                         </span>
                       )}
 
-                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 uppercase">
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 uppercase">
                         {currentManagedProfile.role || 'member'}
                       </span>
                     </div>
@@ -933,7 +933,7 @@ export function ConsoleCenterSection() {
                         value={currentManagedProfile.plan_type || 'free'}
                         onChange={e => handleUpdatePlan(currentManagedProfile.id, e.target.value)}
                         disabled={updateSubscription.isPending}
-                        className="w-full h-11 px-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#171926] text-xs font-semibold outline-none cursor-pointer text-slate-800 dark:text-white focus:border-violet-400 focus:ring-2 focus:ring-violet-100 dark:focus:ring-violet-900/30 transition-all"
+                        className="w-full h-11 px-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#171926] text-xs font-semibold outline-none cursor-pointer text-slate-800 dark:text-white focus:border-teal-400 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900/30 transition-all"
                       >
                         <option value="pro">Pro (พรีเมียม)</option>
                         <option value="trial">Trial (ทดลองใช้)</option>
@@ -949,7 +949,7 @@ export function ConsoleCenterSection() {
                         value={currentManagedProfile.role || 'member'}
                         onChange={e => handleUpdateRole(currentManagedProfile.id, e.target.value)}
                         disabled={updateRole.isPending}
-                        className="w-full h-11 px-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#171926] text-xs font-semibold outline-none cursor-pointer text-slate-800 dark:text-white focus:border-violet-400 focus:ring-2 focus:ring-violet-100 dark:focus:ring-violet-900/30 transition-all"
+                        className="w-full h-11 px-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#171926] text-xs font-semibold outline-none cursor-pointer text-slate-800 dark:text-white focus:border-teal-400 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900/30 transition-all"
                       >
                         <option value="member">Member (ผู้ใช้ทั่วไป)</option>
                         <option value="admin">Admin (ผู้ควบคุม)</option>
@@ -960,9 +960,9 @@ export function ConsoleCenterSection() {
 
                 {/* Trial Duration Extension (Show only if plan is trial or free/expired and not suspended) */}
                 {currentManagedProfile.plan_type !== 'pro' && currentManagedProfile.plan_type !== 'suspended' && (
-                  <div className="p-5 rounded-2.5xl border border-violet-100 dark:border-violet-900/40 bg-violet-50/30 dark:bg-violet-950/20 space-y-4">
+                  <div className="p-5 rounded-2.5xl border border-teal-100 dark:border-teal-900/40 bg-teal-50/30 dark:bg-teal-950/20 space-y-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 flex items-center justify-center">
+                      <div className="w-7 h-7 rounded-lg bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-300 flex items-center justify-center">
                         <Calendar size={14} />
                       </div>
                       <div>
@@ -972,9 +972,9 @@ export function ConsoleCenterSection() {
                     </div>
 
                     {/* Current Expire Info */}
-                    <div className="p-3 bg-white dark:bg-[#171926] rounded-xl border border-violet-100/50 dark:border-violet-900/30 flex justify-between items-center text-xs">
+                    <div className="p-3 bg-white dark:bg-[#171926] rounded-xl border border-teal-100/50 dark:border-teal-900/30 flex justify-between items-center text-xs">
                       <span className="text-slate-500 dark:text-slate-400">วันหมดอายุปัจจุบัน:</span>
-                      <span className="font-bold text-violet-700 dark:text-violet-400">
+                      <span className="font-bold text-teal-700 dark:text-teal-400">
                         {currentManagedProfile.trial_ends_at
                           ? new Date(currentManagedProfile.trial_ends_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })
                           : 'ยังไม่เริ่มทดลองใช้'}
@@ -994,7 +994,7 @@ export function ConsoleCenterSection() {
                             key={btn.label}
                             onClick={() => handleQuickExtendTrial(currentManagedProfile, btn.val)}
                             disabled={updateSubscription.isPending}
-                            className="h-10 bg-white dark:bg-[#171926] hover:bg-violet-600 dark:hover:bg-violet-600 hover:text-white dark:hover:text-white border border-violet-200 dark:border-violet-800/40 text-violet-700 dark:text-violet-300 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 flex items-center justify-center cursor-pointer"
+                            className="h-10 bg-white dark:bg-[#171926] hover:bg-teal-600 dark:hover:bg-teal-600 hover:text-white dark:hover:text-white border border-teal-200 dark:border-teal-800/40 text-teal-700 dark:text-teal-300 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 flex items-center justify-center cursor-pointer"
                           >
                             {btn.label}
                           </button>
@@ -1011,12 +1011,12 @@ export function ConsoleCenterSection() {
                             type="date"
                             value={customExpiries[currentManagedProfile.id] || managedTrialEndDateString}
                             onChange={e => setCustomExpiries({ ...customExpiries, [currentManagedProfile.id]: e.target.value })}
-                            className="w-full h-11 px-3 border border-slate-200 dark:border-white/10 rounded-xl text-xs outline-none bg-white dark:bg-[#171926] text-slate-800 dark:text-white focus:border-violet-400 transition-all cursor-pointer"
+                            className="w-full h-11 px-3 border border-slate-200 dark:border-white/10 rounded-xl text-xs outline-none bg-white dark:bg-[#171926] text-slate-800 dark:text-white focus:border-teal-400 transition-all cursor-pointer"
                           />
                         </div>
                         {customExpiries[currentManagedProfile.id] && customExpiries[currentManagedProfile.id] !== managedTrialEndDateString && (
                           <Button
-                            className="h-11 px-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shrink-0 border-0 flex items-center gap-1.5 cursor-pointer"
+                            className="h-11 px-4 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shrink-0 border-0 flex items-center gap-1.5 cursor-pointer"
                             onClick={() => handleCustomExpirySave(currentManagedProfile.id)}
                             disabled={updateSubscription.isPending}
                           >

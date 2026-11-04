@@ -8,6 +8,12 @@ import { useSubscription } from './useSubscription';
 import { getLocalDeals, addLocalDeal, updateLocalDeal, deleteLocalDeals } from '../lib/localDb';
 import { supabase } from '../utils/supabase';
 
+const selectDealRecords = records => records.map(deal => ({
+  ...deal,
+  company: deal.company || deal.company_name || '',
+  contact: deal.contact || deal.contact_name || '',
+}));
+
 export function useDeals() {
   const { user } = useAuth();
   const { isGuestAccount } = useSubscription();
@@ -58,6 +64,7 @@ export function useDeals() {
   }, [isGuestAccount, user?.id, queryClient]);
 
   return useQuery({
+    select: selectDealRecords,
     queryKey: ['deals', user?.id, isGuestAccount],
     queryFn: async () => {
       if (isGuestAccount) {

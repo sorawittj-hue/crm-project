@@ -55,12 +55,12 @@ export default function GlobalAddDealModal() {
     <Dialog open={isQuickAddOpen} onOpenChange={closeQuickAdd}>
       <DialogContent className="max-w-md p-0 overflow-hidden bg-white/95 backdrop-blur-3xl border-0 shadow-2xl rounded-[2rem] relative">
         {/* Header Ribbon */}
-        <div className="h-1.5 bg-gradient-to-r from-violet-500 via-indigo-500 to-purple-600" />
+        <div className="h-1.5 bg-gradient-to-r from-teal-500 via-teal-500 to-teal-600" />
         
         <div className="p-7">
           <DialogHeader>
             <div className="flex items-center gap-3 mb-1">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-violet-500/20 shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-600 to-teal-600 text-white flex items-center justify-center shadow-md shadow-teal-500/20 shrink-0">
                 <Zap size={20} className="fill-current" />
               </div>
               <div>
@@ -82,7 +82,7 @@ export default function GlobalAddDealModal() {
                   placeholder="เช่น ซื้อไลเซนส์ 5 User, ลูกค้า Walk-in"
                   value={form.title}
                   onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                  className="pl-10 h-11 bg-slate-50/60 border-slate-200/80 rounded-xl text-xs font-semibold focus:bg-white focus:border-violet-400"
+                  className="pl-10 h-11 bg-slate-50/60 border-slate-200/80 rounded-xl text-xs font-semibold focus:bg-white focus:border-teal-400"
                 />
               </div>
             </div>
@@ -110,7 +110,7 @@ export default function GlobalAddDealModal() {
                 <select
                   value={form.stage}
                   onChange={e => setForm(f => ({ ...f, stage: e.target.value }))}
-                  className="w-full h-11 bg-slate-50/60 border border-slate-200/80 rounded-xl px-3 text-xs font-semibold outline-none focus:border-violet-400 focus:bg-white"
+                  className="w-full h-11 bg-slate-50/60 border border-slate-200/80 rounded-xl px-3 text-xs font-semibold outline-none focus:border-teal-400 focus:bg-white"
                 >
                   <option value="lead">ลูกค้าใหม่ (Lead)</option>
                   <option value="contact">นัดเจอ (Contact)</option>
@@ -165,7 +165,7 @@ export default function GlobalAddDealModal() {
               <Button
                 type="submit"
                 disabled={addDealMutation.isPending || !form.title || !form.value}
-                className="bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-violet-500/20"
+                className="bg-gradient-to-r from-teal-600 via-teal-600 to-teal-600 hover:from-teal-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold shadow-md shadow-teal-500/20"
               >
                 {addDealMutation.isPending ? <Loader2 className="animate-spin mr-1.5" size={15} /> : <CheckCircle2 className="mr-1.5" size={15} />}
                 สร้างดีลใหม่

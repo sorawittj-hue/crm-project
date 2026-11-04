@@ -7,10 +7,9 @@ import { migrateLocalToSupabase } from '../../lib/migration';
 import {
   Crown, Sparkles, CheckCircle2, Shield, Zap, ShieldCheck,
   Loader2, LogIn, Mail, Lock, User, AlertCircle,
-  ArrowRight, Star, Users2, Building2,
+  ArrowRight, Star,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '../../lib/utils';
 
 const SOCIAL_PROOF = [
   'Kasikorn Digital', 'Central Retail', 'PTTEP', 'Minor Hotels', 'Grab Thailand',
@@ -122,7 +121,7 @@ export default function PaywallModal() {
 
   return (
     <Dialog open={isPaywallOpen} onOpenChange={handleClose} className="max-w-4xl">
-      <DialogContent className="overflow-hidden p-0 border border-slate-200/80 dark:border-white/10 bg-white dark:bg-[#0f111a] sm:rounded-3xl shadow-2xl">
+      <DialogContent className="overflow-hidden p-0 border border-slate-200/80 dark:border-white/10 bg-white dark:bg-[#192629] sm:rounded-3xl shadow-2xl">
         <AnimatePresence mode="wait">
 
           {/* ── SUCCESS SCREEN ── */}
@@ -173,8 +172,8 @@ export default function PaywallModal() {
             >
               {/* ── LEFT COLUMN: Benefits ── */}
               <div className="w-full md:w-5/12 bg-slate-900 p-8 text-white relative overflow-hidden flex flex-col justify-between">
-                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-violet-600/20 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 -mb-20 -ml-16 w-48 h-48 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-teal-600/20 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 -mb-20 -ml-16 w-48 h-48 bg-teal-600/15 rounded-full blur-3xl pointer-events-none" />
 
                 <div className="relative z-10">
                   <div className="w-11 h-11 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center mb-5">
@@ -192,7 +191,7 @@ export default function PaywallModal() {
                   <div className="space-y-4">
                     {PRO_BENEFITS.map(({ icon: Icon, label, desc }) => (
                       <div key={label} className="flex gap-3 items-start">
-                        <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 mt-0.5 text-violet-400">
+                        <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 mt-0.5 text-teal-400">
                           <Icon size={15} />
                         </div>
                         <div>
@@ -224,13 +223,13 @@ export default function PaywallModal() {
               </div>
 
               {/* ── RIGHT COLUMN ── */}
-              <div className="w-full md:w-7/12 p-8 lg:p-10 bg-white dark:bg-[#0f111a]">
+              <div className="w-full md:w-7/12 p-8 lg:p-10 bg-white dark:bg-[#192629]">
 
                 {/* GUEST UPGRADE */}
                 {isGuestUpgrade ? (
                   <div className="flex flex-col h-full">
                     <div className="mb-5">
-                      <span className="text-[10px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest bg-violet-50 dark:bg-violet-950/50 border border-violet-200/60 dark:border-violet-800/40 px-2 py-1 rounded-md">
+                      <span className="text-[10px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest bg-teal-50 dark:bg-teal-950/50 border border-teal-200/60 dark:border-teal-800/40 px-2 py-1 rounded-md">
                         Sandbox → Cloud
                       </span>
                       <h2 className="text-xl font-black text-slate-900 dark:text-white mt-3 tracking-tight">สมัครสมาชิก Nova Pipeline</h2>
@@ -242,7 +241,7 @@ export default function PaywallModal() {
                       <div className="grid grid-cols-3 font-black uppercase tracking-wider text-[10px]">
                         <div className="bg-slate-50 dark:bg-white/[0.04] px-3 py-2 text-slate-500 dark:text-slate-400">ฟีเจอร์</div>
                         <div className="bg-slate-100/80 dark:bg-white/[0.08] px-3 py-2 text-slate-600 dark:text-slate-300 text-center">Sandbox</div>
-                        <div className="bg-violet-600 px-3 py-2 text-white text-center">หลังสมัคร ✓</div>
+                        <div className="bg-teal-600 px-3 py-2 text-white text-center">หลังสมัคร ✓</div>
                       </div>
                       {[
                         { label: 'ที่เก็บข้อมูล', sandbox: '🌐 เบราว์เซอร์', pro: '☁️ Cloud' },
@@ -253,7 +252,7 @@ export default function PaywallModal() {
                         <div key={i} className="grid grid-cols-3 border-t border-slate-100 dark:border-white/[0.06]">
                           <div className="px-3 py-2 font-semibold text-slate-700 dark:text-slate-300">{row.label}</div>
                           <div className="px-3 py-2 text-slate-500 dark:text-slate-400 text-center bg-slate-50/50 dark:bg-white/[0.02]">{row.sandbox}</div>
-                          <div className="px-3 py-2 text-violet-700 dark:text-violet-300 font-bold text-center bg-violet-50/40 dark:bg-violet-950/30">{row.pro}</div>
+                          <div className="px-3 py-2 text-teal-700 dark:text-teal-300 font-bold text-center bg-teal-50/40 dark:bg-teal-950/30">{row.pro}</div>
                         </div>
                       ))}
                     </div>
@@ -268,7 +267,7 @@ export default function PaywallModal() {
                           </motion.div>
                         ) : (
                           <>
-                            <Loader2 size={36} className="text-violet-500 animate-spin mb-4" />
+                            <Loader2 size={36} className="text-teal-500 animate-spin mb-4" />
                             <p className="font-bold text-slate-900 dark:text-white text-sm mb-1">
                               {migrationStep?.label || 'กำลังย้ายข้อมูล...'}
                             </p>
@@ -309,7 +308,7 @@ export default function PaywallModal() {
                               type={type}
                               value={formData[field]}
                               onChange={e => setFormData(p => ({ ...p, [field]: e.target.value }))}
-                              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all text-sm font-medium"
+                              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all text-sm font-medium"
                               placeholder={placeholder}
                               required
                             />
@@ -320,7 +319,7 @@ export default function PaywallModal() {
                           <button
                             type="submit"
                             disabled={registering}
-                            className="w-full h-11 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-violet-500/20 disabled:opacity-50 active:scale-95 text-sm cursor-pointer"
+                            className="w-full h-11 bg-gradient-to-r from-teal-600 to-teal-600 hover:from-teal-700 hover:to-teal-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-teal-500/20 disabled:opacity-50 active:scale-95 text-sm cursor-pointer"
                           >
                             {registering
                               ? <><Loader2 size={16} className="animate-spin" /> กำลังสร้างบัญชี...</>
@@ -338,7 +337,7 @@ export default function PaywallModal() {
                 ) : isDefault ? (
                   /* DEFAULT: Go to login */
                   <div className="h-full flex flex-col justify-center items-center text-center">
-                    <div className="w-16 h-16 bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 rounded-full flex items-center justify-center mb-5">
+                    <div className="w-16 h-16 bg-teal-100 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 rounded-full flex items-center justify-center mb-5">
                       <Sparkles size={32} />
                     </div>
                     <h2 className="text-xl font-black text-slate-900 dark:text-white mb-2">เข้าสู่ระบบ / สมัครสมาชิก</h2>
@@ -347,7 +346,7 @@ export default function PaywallModal() {
                     </p>
                     <button
                       onClick={() => { closePaywall(); signOut(); }}
-                      className="w-full max-w-xs h-12 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer"
+                      className="w-full max-w-xs h-12 bg-gradient-to-r from-teal-600 to-teal-600 hover:from-teal-500 hover:to-teal-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer"
                     >
                       <LogIn size={18} /> ไปหน้าเข้าสู่ระบบ
                     </button>
@@ -361,7 +360,7 @@ export default function PaywallModal() {
                   <div className="flex flex-col h-full">
                     <div className="flex justify-between items-end mb-7 pb-6 border-b border-slate-100 dark:border-white/10">
                       <div>
-                        <span className="text-[10px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest bg-violet-50 dark:bg-violet-950/50 border border-violet-200/60 dark:border-violet-800/40 px-2 py-1 rounded-md">Pro Plan</span>
+                        <span className="text-[10px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest bg-teal-50 dark:bg-teal-950/50 border border-teal-200/60 dark:border-teal-800/40 px-2 py-1 rounded-md">Pro Plan</span>
                         <h2 className="text-xl font-black text-slate-900 dark:text-white mt-2.5">สมัครสมาชิกรายเดือน</h2>
                       </div>
                       <div className="text-right">
@@ -379,7 +378,7 @@ export default function PaywallModal() {
                           <img src="/promptpay_qr.png" alt="PromptPay QR Code" className="w-full h-full object-contain" />
                         </div>
                         <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-0.5">สแกนเพื่อชำระเงิน</p>
-                        <p className="text-lg font-black text-violet-700 dark:text-violet-400">299.00 บาท</p>
+                        <p className="text-lg font-black text-teal-700 dark:text-teal-400">299.00 บาท</p>
                       </div>
                     </div>
 
@@ -387,7 +386,7 @@ export default function PaywallModal() {
                       <button
                         onClick={handleConfirmPayment}
                         disabled={confirming}
-                        className="w-full h-12 bg-slate-900 dark:bg-violet-600 hover:bg-slate-800 dark:hover:bg-violet-700 text-white font-bold rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-lg disabled:opacity-50 active:scale-95 cursor-pointer"
+                        className="w-full h-12 bg-slate-900 dark:bg-teal-600 hover:bg-slate-800 dark:hover:bg-teal-700 text-white font-bold rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-lg disabled:opacity-50 active:scale-95 cursor-pointer"
                       >
                         {confirming
                           ? <><Loader2 size={18} className="animate-spin" /> กำลังตรวจสอบ...</>

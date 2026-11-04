@@ -13,6 +13,12 @@ import { useSubscription } from './useSubscription';
 import { getLocalCustomers, addLocalCustomer, updateLocalCustomer, deleteLocalCustomer } from '../lib/localDb';
 import { supabase } from '../utils/supabase';
 
+const selectCustomerRecords = records => records.map(customer => ({
+  ...customer,
+  name: customer.name || customer.contact_name || customer.company || customer.company_name || '',
+  company: customer.company || customer.company_name || '',
+}));
+
 export function useCustomers() {
   const { user } = useAuth();
   const { isGuestAccount } = useSubscription();
@@ -53,6 +59,7 @@ export function useCustomers() {
   }, [isGuestAccount, user?.id, queryClient]);
 
   return useQuery({
+    select: selectCustomerRecords,
     queryKey: ['customers', user?.id, isGuestAccount],
     queryFn: async () => {
       if (isGuestAccount) {

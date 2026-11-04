@@ -32,10 +32,10 @@ export default function GlobalSearch({ deals = [], customers = [], onNavigate, o
 
   return (
     <Dialog open onOpenChange={(isOpen) => { if (!isOpen) onClose?.(); }} className="max-w-xl">
-      <DialogContent showCloseButton={false} className="max-h-[85dvh] overflow-hidden rounded-3xl border border-slate-200/80 bg-white/98 p-0 shadow-2xl shadow-slate-900/30 dark:border-white/10 dark:bg-[#111522]/98">
+      <DialogContent showCloseButton={false} className="max-h-[85dvh] overflow-hidden rounded-3xl border border-slate-200/80 bg-white/98 p-0 shadow-2xl shadow-slate-900/30 dark:border-white/10 dark:bg-[#192629]/98">
         <DialogTitle className="sr-only">ค้นหาดีลและลูกค้า</DialogTitle>
         <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
-          <Search size={18} className="text-violet-500 shrink-0" />
+          <Search size={18} className="text-teal-500 shrink-0" />
           <input
             ref={inputRef}
             value={query}
@@ -54,8 +54,8 @@ export default function GlobalSearch({ deals = [], customers = [], onNavigate, o
         <div className="max-h-[55vh] overflow-y-auto">
           {!query && (
             <div className="py-10 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center mx-auto mb-3">
-                <Zap size={22} className="text-violet-400" />
+              <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center mx-auto mb-3">
+                <Zap size={22} className="text-teal-400" />
               </div>
               <p className="text-sm font-bold text-slate-400">พิมพ์เพื่อค้นหา</p>
               <p className="text-xs text-slate-300 mt-1">ค้นหาดีล, ลูกค้า, ชื่อบริษัท</p>
@@ -71,16 +71,16 @@ export default function GlobalSearch({ deals = [], customers = [], onNavigate, o
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-2">ดีล</p>
               {results.deals.map(deal => (
                 <button key={deal.id} onClick={() => { onNavigate?.('deal', deal); onClose(); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-violet-50 group transition-colors text-left">
-                  <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
-                    <Briefcase size={15} className="text-violet-600" />
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-teal-50 group transition-colors text-left">
+                  <div className="w-9 h-9 rounded-xl bg-teal-100 flex items-center justify-center shrink-0">
+                    <Briefcase size={15} className="text-teal-600" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-slate-800 truncate">{deal.title}</p>
                     <p className="text-xs text-slate-400 truncate">{deal.company} · {STAGE_LABELS[deal.stage] || deal.stage}</p>
                   </div>
                   <p className="text-sm font-black text-slate-900 shrink-0">{formatCurrency(deal.value)}</p>
-                  <ArrowRight size={13} className="text-slate-300 group-hover:text-violet-500 transition-colors shrink-0" />
+                  <ArrowRight size={13} className="text-slate-300 group-hover:text-teal-500 transition-colors shrink-0" />
                 </button>
               ))}
             </div>
@@ -90,15 +90,15 @@ export default function GlobalSearch({ deals = [], customers = [], onNavigate, o
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-2">ลูกค้า</p>
               {results.customers.map(c => (
                 <button key={c.id} onClick={() => { onNavigate?.('customer', c); onClose(); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-violet-50 group transition-colors text-left">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shrink-0 text-white text-sm font-black">
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-teal-50 group transition-colors text-left">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shrink-0 text-white text-sm font-black">
                     {(c.name || c.company || '?')[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-slate-800 truncate">{c.name || c.company}</p>
                     <p className="text-xs text-slate-400 truncate">{c.company}</p>
                   </div>
-                  <ArrowRight size={13} className="text-slate-300 group-hover:text-violet-500 transition-colors shrink-0" />
+                  <ArrowRight size={13} className="text-slate-300 group-hover:text-teal-500 transition-colors shrink-0" />
                 </button>
               ))}
             </div>

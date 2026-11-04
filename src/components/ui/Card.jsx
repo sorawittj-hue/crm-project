@@ -10,10 +10,10 @@ const Card = React.forwardRef(({ className, hover = false, glow = false, glass =
         // Light mode — crisp alabaster glass with subtle depth
         "bg-white/90 text-slate-900 border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.04),0_2px_6px_-1px_rgba(15,23,42,0.02)] ",
         // Dark mode — deep obsidian with top specular highlight
-        "dark:bg-[#111522]/90 dark:text-slate-100 dark:border-white/[0.08] dark:shadow-[0_8px_32px_-6px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)]",
+        "dark:bg-[#192629]/90 dark:text-slate-100 dark:border-white/[0.08] dark:shadow-[0_8px_32px_-6px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)]",
         // Hover
-        hover && "hover:border-violet-300/80 hover:-translate-y-1 hover:shadow-[0_16px_36px_-6px_rgba(124,58,237,0.12),0_4px_12px_-2px_rgba(15,23,42,0.03)] dark:hover:border-violet-500/40 dark:hover:bg-[#151a2a]/95",
-        glow && "border-violet-500/30 dark:border-violet-500/40 shadow-glow-brand",
+        hover && "hover:border-teal-300/80 hover:shadow-[0_16px_36px_-6px_rgba(15,118,110,0.12),0_4px_12px_-2px_rgba(15,23,42,0.03)] dark:hover:border-teal-500/40 dark:hover:bg-[#151a2a]/95",
+        glow && "border-teal-500/30 dark:border-teal-500/40 shadow-glow-brand",
         glass && "bg-white/75 dark:bg-white/[0.04] backdrop-blur-2xl border-white/70 dark:border-white/10",
         className
       )}

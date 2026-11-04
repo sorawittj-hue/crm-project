@@ -16,7 +16,7 @@ export default function PipelineListView({ deals, onDeleteDeal, onDealClick }) {
     lead: 'bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10',
     contact: 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/40',
     proposal: 'bg-sky-100 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800/40',
-    negotiation: 'bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800/40',
+    negotiation: 'bg-teal-100 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800/40',
     won: 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/40',
     lost: 'bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/40'
   };
@@ -30,7 +30,7 @@ export default function PipelineListView({ deals, onDeleteDeal, onDealClick }) {
   }
 
   return (
-    <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-sm rounded-2xl overflow-hidden">
+    <div className="bg-white/80 dark:bg-[#192629]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-sm rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="bg-slate-50/80 dark:bg-white/[0.03] border-b border-slate-200/80 dark:border-white/10">
@@ -60,7 +60,7 @@ export default function PipelineListView({ deals, onDeleteDeal, onDealClick }) {
                     onDealClick?.(deal);
                   }
                 }}
-                className="cursor-pointer hover:bg-violet-50/50 dark:hover:bg-white/[0.04] focus-within:bg-violet-50/50 dark:focus-within:bg-white/[0.04] transition-colors"
+                className="cursor-pointer hover:bg-teal-50/50 dark:hover:bg-white/[0.04] focus-within:bg-teal-50/50 dark:focus-within:bg-white/[0.04] transition-colors"
               >
                 <td className="px-6 py-4">
                   <div className="font-bold text-slate-900 dark:text-white">{deal.title || 'Untitled'}</div>

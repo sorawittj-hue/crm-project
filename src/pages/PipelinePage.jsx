@@ -20,7 +20,7 @@ import { DEFAULT_STAGE_PROBABILITY } from '../utils/salesIntelligence';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { motion, AnimatePresence } from 'framer-motion';
-import { containerVariants, cardVariants, hoverLift, pageVariants } from '../lib/animations';
+import { pageVariants } from '../lib/animations';
 import { cn } from '../lib/utils';
 import PageHeader from '../components/layout/PageHeader';
 
@@ -254,12 +254,19 @@ export default function PipelinePage() {
     }
     if (addDealMutation.isPending) return;
     setFormError(null);
+    const dealValue = Number(newDeal.value);
+    const dealProbability = newDeal.probability === '' ? 50 : Number(newDeal.probability);
+    if (!newDeal.title.trim() || !Number.isFinite(dealValue) || dealValue < 0 || !Number.isFinite(dealProbability) || dealProbability < 0 || dealProbability > 100) {
+      setFormError('กรุณาระบุชื่อดีล มูลค่าตั้งแต่ 0 และโอกาสสำเร็จระหว่าง 0–100%');
+      return;
+    }
     try {
       const isClosed = ['won', 'lost'].includes(newDeal.stage);
       await addDealMutation.mutateAsync({
         ...newDeal,
-        value: Number(newDeal.value) || 0,
-        probability: Number(newDeal.probability) || 50,
+        title: newDeal.title.trim(),
+        value: dealValue,
+        probability: dealProbability,
         expected_close_date: newDeal.expected_close_date || null,
         actual_close_date: isClosed ? (newDeal.expected_close_date ? new Date(newDeal.expected_close_date + 'T12:00:00').toISOString() : new Date().toISOString()) : null,
         assigned_to: newDeal.assigned_to || null,
@@ -335,8 +342,8 @@ export default function PipelinePage() {
       className="mesh-bg max-w-[1600px] mx-auto space-y-6 pb-20 px-2 sm:px-4 md:px-6 mt-4 relative overflow-hidden ui-enter"
     >
       {/* Ambient Glowing Orbs */}
-      <div className="absolute top-[-5%] left-[-10%] w-[50%] h-[600px] rounded-full bg-violet-500/10 blur-[130px] pointer-events-none" />
-      <div className="absolute top-[20%] right-[-5%] w-[40%] h-[500px] rounded-full bg-indigo-500/10 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[-5%] left-[-10%] w-[50%] h-[600px] rounded-full bg-teal-500/10 blur-[130px] pointer-events-none" />
+      <div className="absolute top-[20%] right-[-5%] w-[40%] h-[500px] rounded-full bg-teal-500/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[20%] w-[30%] h-[400px] rounded-full bg-amber-400/5 blur-[100px] pointer-events-none" />
       
       {/* HEADER */}
@@ -351,20 +358,20 @@ export default function PipelinePage() {
               aria-label="ค้นหาดีล" placeholder="ค้นหาดีล บริษัท หรือผู้ติดต่อ..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-11 w-full rounded-2xl border-slate-200/80 dark:border-white/10 bg-white/60 dark:bg-white/[0.05] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-[#171926] focus:border-violet-400 shadow-sm transition-all"
+              className="pl-10 h-11 w-full rounded-2xl border-slate-200/80 dark:border-white/10 bg-white/60 dark:bg-white/[0.05] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-[#171926] focus:border-teal-400 shadow-sm transition-all"
             />
             {searchTerm && (
               <button
                 type="button"
                 onClick={() => setSearchTerm('')}
                 aria-label="ล้างคำค้นหา"
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-700 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-400"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-700 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-teal-400"
               >
                 <X size={14} />
               </button>
             )}
             {searchTerm !== debouncedSearchTerm && (
-              <Loader2 className="absolute right-10 top-1/2 -translate-y-1/2 text-violet-500 animate-spin" size={15} />
+              <Loader2 className="absolute right-10 top-1/2 -translate-y-1/2 text-teal-500 animate-spin" size={15} />
             )}
           </div>
         }
@@ -378,7 +385,7 @@ export default function PipelinePage() {
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
                 boardType === 'pipeline'
-                  ? 'bg-violet-600 text-white shadow-sm'
+                  ? 'bg-teal-600 text-white shadow-sm'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/10'
               )}
             >
@@ -437,7 +444,7 @@ export default function PipelinePage() {
             className={cn(
               'h-10 px-4 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer',
               myDealsOnly
-                ? 'bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800/60 shadow-xs'
+                ? 'bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800/60 shadow-xs'
                 : 'bg-white/70 dark:bg-white/[0.06] text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
             )}
           >
@@ -471,7 +478,7 @@ export default function PipelinePage() {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 8 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 mt-1.5 w-56 bg-white dark:bg-[#0f111a] border border-slate-200/80 dark:border-white/10 rounded-xl shadow-xl py-1.5 z-50 origin-top-right backdrop-blur-xl"
+                    className="absolute right-0 mt-1.5 w-56 bg-white dark:bg-[#192629] border border-slate-200/80 dark:border-white/10 rounded-xl shadow-xl py-1.5 z-50 origin-top-right backdrop-blur-xl"
                   >
                     <button
                       onClick={() => {
@@ -499,7 +506,7 @@ export default function PipelinePage() {
                       }}
                       className="w-full text-left px-3.5 py-2.5 hover:bg-slate-50 dark:hover:bg-white/[0.06] text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2 transition-colors cursor-pointer"
                     >
-                      <Sliders size={12} className="text-violet-500" />
+                      <Sliders size={12} className="text-teal-500" />
                       <span>สแกนใบเสนอราคา (PDF)</span>
                     </button>
                     <button
@@ -524,76 +531,17 @@ export default function PipelinePage() {
 
           <Button
             onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : setIsAddModalOpen(true)}
-            className="h-10 px-5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 hover:from-violet-500 hover:via-indigo-500 hover:to-purple-500 text-white text-sm font-bold shadow-[0_8px_20px_rgba(139,92,246,0.3)] hover:shadow-[0_12px_25px_rgba(139,92,246,0.4)] hover:-translate-y-0.5 border-0 flex items-center gap-2 transition-all duration-300 ring-1 ring-white/20 group ml-auto"
+            className="h-10 px-5 rounded-xl bg-gradient-to-r from-teal-600 via-teal-600 to-teal-600 hover:from-teal-500 hover:via-teal-500 hover:to-teal-500 text-white text-sm font-bold shadow-[0_8px_20px_rgba(13,148,136,0.3)] hover:shadow-[0_12px_25px_rgba(13,148,136,0.4)] border-0 flex items-center gap-2 transition-all duration-300 ring-1 ring-white/20 group ml-auto"
           >
             <Plus size={16} strokeWidth={3} className="transition-transform duration-300 group-hover:rotate-90" /> เพิ่มดีลใหม่
           </Button>
       </PageHeader>
 
-      <details className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#16182b]">
-        <summary className="cursor-pointer font-semibold text-slate-800 dark:text-white">ภาพรวม Pipeline</summary>
-      <motion.section
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25 }}
-        aria-label="ภาพรวม Pipeline"
-        className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3"
-      >
-        {/* Active Pipeline */}
-        <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#0f111a]/90 card-glow-overlay card-lift depth-2">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">มูลค่าดีลที่กำลังดำเนินการ</p>
-              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-                {new Intl.NumberFormat('th-TH', { notation: 'compact', maximumFractionDigits: 1 }).format(pipelinePulse.activeValue)}
-                <span className="ml-1 text-xs font-bold text-slate-400">THB</span>
-              </p>
-              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{pipelinePulse.activeCount} ดีลที่เปิดอยู่</p>
-            </div>
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700 dark:bg-violet-400/10 dark:text-violet-300">
-              <TrendingUp size={18} aria-hidden="true" />
-            </div>
-          </div>
-        </div>
 
-        {/* ดีลในมุมมองนี้ */}
-        <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#0f111a]/90 card-glow-overlay card-lift depth-2">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">ดีลในมุมมองนี้</p>
-              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">{filteredDeals.length}</p>
-              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">ดีลที่ตรงกับตัวกรอง</p>
-            </div>
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700 dark:bg-sky-400/10 dark:text-sky-300">
-              <Briefcase size={18} aria-hidden="true" />
-            </div>
-          </div>
-        </div>
-
-        {/* ดีลที่ควรติดตาม */}
-        <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#0f111a]/90 card-glow-overlay card-lift depth-2">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">ดีลที่ควรติดตาม</p>
-              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-                {pipelinePulse.atRiskCount}
-                <span className="ml-1 text-xs font-bold text-slate-400">ดีล</span>
-              </p>
-              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {new Intl.NumberFormat('th-TH', { notation: 'compact', maximumFractionDigits: 1 }).format(pipelinePulse.atRiskValue)} บาทที่มีความเสี่ยง
-              </p>
-            </div>
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300">
-              <AlertTriangle size={18} aria-hidden="true" />
-            </div>
-          </div>
-        </div>
-      </motion.section>
-      </details>
 
       {/* QUICK ADD DIALOG */}
       <Dialog open={isQuickAddOpen} onOpenChange={(v) => { setIsQuickAddOpen(v); if (!v) { setQuickDeal({ company: '', title: '', value: '', expected_close_date: '' }); setQuickError(null); } }}>
-        <DialogContent className="max-w-sm p-0 overflow-hidden rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-[#0f111a]">
+        <DialogContent className="max-w-sm p-0 overflow-hidden rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-[#192629]">
           {/* Amber top ribbon */}
           <div className="h-1.5 bg-gradient-to-r from-amber-400 to-orange-500" />
           <div className="p-6">
@@ -723,16 +671,77 @@ export default function PipelinePage() {
           />
       </div>
 
+      <details className="rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#16182b]">
+        <summary className="cursor-pointer font-semibold text-slate-800 dark:text-white">ภาพรวม Pipeline</summary>
+      <motion.section
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+        aria-label="ภาพรวม Pipeline"
+        className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3"
+      >
+        {/* Active Pipeline */}
+        <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#192629]/90 card-glow-overlay card-lift depth-2">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">มูลค่าดีลที่กำลังดำเนินการ</p>
+              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                {new Intl.NumberFormat('th-TH', { notation: 'compact', maximumFractionDigits: 1 }).format(pipelinePulse.activeValue)}
+                <span className="ml-1 text-xs font-bold text-slate-400">THB</span>
+              </p>
+              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{pipelinePulse.activeCount} ดีลที่เปิดอยู่</p>
+            </div>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700 dark:bg-teal-400/10 dark:text-teal-300">
+              <TrendingUp size={18} aria-hidden="true" />
+            </div>
+          </div>
+        </div>
+
+        {/* ดีลในมุมมองนี้ */}
+        <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#192629]/90 card-glow-overlay card-lift depth-2">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">ดีลในมุมมองนี้</p>
+              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">{filteredDeals.length}</p>
+              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">ดีลที่ตรงกับตัวกรอง</p>
+            </div>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700 dark:bg-sky-400/10 dark:text-sky-300">
+              <Briefcase size={18} aria-hidden="true" />
+            </div>
+          </div>
+        </div>
+
+        {/* ดีลที่ควรติดตาม */}
+        <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#192629]/90 card-glow-overlay card-lift depth-2">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">ดีลที่ควรติดตาม</p>
+              <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                {pipelinePulse.atRiskCount}
+                <span className="ml-1 text-xs font-bold text-slate-400">ดีล</span>
+              </p>
+              <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {new Intl.NumberFormat('th-TH', { notation: 'compact', maximumFractionDigits: 1 }).format(pipelinePulse.atRiskValue)} บาทที่มีความเสี่ยง
+              </p>
+            </div>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300">
+              <AlertTriangle size={18} aria-hidden="true" />
+            </div>
+          </div>
+        </div>
+      </motion.section>
+      </details>
+
       {/* ADD ASSET MODAL */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-4xl lg:max-w-5xl p-0 border border-slate-200/80 dark:border-white/10 shadow-2xl overflow-hidden rounded-[2rem] bg-white/95 dark:bg-[#0f111a]/95 backdrop-blur-2xl">
+        <DialogContent className="max-w-4xl lg:max-w-5xl p-0 border border-slate-200/80 dark:border-white/10 shadow-2xl overflow-hidden rounded-[2rem] bg-white/95 dark:bg-[#192629]/95 backdrop-blur-2xl">
           {/* Top Gradient Ribbon */}
-          <div className="h-2 bg-gradient-to-r from-violet-600 via-indigo-600 to-fuchsia-600" />
+          <div className="h-2 bg-gradient-to-r from-teal-600 via-teal-600 to-teal-600" />
           
           <div className="p-8 overflow-y-auto max-h-[88vh]">
-            <div className="flex items-center gap-4 mb-6 pb-5 border-b border-violet-100/50">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-100 flex items-center justify-center shrink-0 shadow-sm shadow-violet-500/5">
-                <Plus size={22} className="text-violet-600" />
+            <div className="flex items-center gap-4 mb-6 pb-5 border-b border-teal-100/50">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-50 to-teal-50 border border-teal-100 flex items-center justify-center shrink-0 shadow-sm shadow-teal-500/5">
+                <Plus size={22} className="text-teal-600" />
               </div>
               <div>
                 <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
@@ -744,24 +753,24 @@ export default function PipelinePage() {
             </div>
 
             {/* Wizard Steps Header */}
-            <div className="flex items-center gap-6 border-b border-violet-100/50 pb-4 mb-6">
+            <div className="flex items-center gap-6 border-b border-teal-100/50 pb-4 mb-6">
               <button
                 type="button"
                 onClick={() => setFormTab('details')}
                 className={cn(
                   "flex items-center gap-2 pb-2 text-sm font-bold relative transition-all duration-200",
-                  formTab === 'details' ? "text-violet-600" : "text-slate-400 hover:text-slate-600"
+                  formTab === 'details' ? "text-teal-600" : "text-slate-400 hover:text-slate-600"
                 )}
               >
                 <div className={cn(
                   "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200",
-                  formTab === 'details' ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-500"
+                  formTab === 'details' ? "bg-teal-600 text-white" : "bg-slate-100 text-slate-500"
                 )}>
                   1
                 </div>
                 <span>ข้อมูลดีลหลัก</span>
                 {formTab === 'details' && (
-                  <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-600 rounded-full" />
+                  <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600 rounded-full" />
                 )}
               </button>
               <button
@@ -769,18 +778,18 @@ export default function PipelinePage() {
                 onClick={() => setFormTab('contact')}
                 className={cn(
                   "flex items-center gap-2 pb-2 text-sm font-bold relative transition-all duration-200",
-                  formTab === 'contact' ? "text-violet-600" : "text-slate-400 hover:text-slate-600"
+                  formTab === 'contact' ? "text-teal-600" : "text-slate-400 hover:text-slate-600"
                 )}
               >
                 <div className={cn(
                   "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200",
-                  formTab === 'contact' ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-500"
+                  formTab === 'contact' ? "bg-teal-600 text-white" : "bg-slate-100 text-slate-500"
                 )}>
                   2
                 </div>
                 <span>ผู้ติดต่อ & ผู้รับผิดชอบ</span>
                 {formTab === 'contact' && (
-                  <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-600 rounded-full" />
+                  <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600 rounded-full" />
                 )}
               </button>
             </div>
@@ -799,11 +808,11 @@ export default function PipelinePage() {
                       className="space-y-5"
                     >
                       {/* Customer Selector / Linkage */}
-                      <div className="space-y-1.5 bg-slate-50/50 p-4 rounded-2xl border border-violet-100/50 relative z-50">
+                      <div className="space-y-1.5 bg-slate-50/50 p-4 rounded-2xl border border-teal-100/50 relative z-50">
                         {newDeal.customer_id ? (
-                          <div className="bg-gradient-to-br from-violet-50/80 to-indigo-50/80 border border-violet-100 rounded-2xl p-4 flex items-center justify-between gap-4 shadow-sm shadow-violet-500/5 transition-all duration-300">
+                          <div className="bg-gradient-to-br from-teal-50/80 to-teal-50/80 border border-teal-100 rounded-2xl p-4 flex items-center justify-between gap-4 shadow-sm shadow-teal-500/5 transition-all duration-300">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-sm shadow-violet-500/20">
+                              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center text-white font-black text-sm shadow-sm shadow-teal-500/20">
                                 {(customers.find(c => c.id === newDeal.customer_id)?.name || 'C').charAt(0).toUpperCase()}
                               </div>
                               <div>
@@ -831,7 +840,7 @@ export default function PipelinePage() {
                                   contact_email: '',
                                 }));
                               }}
-                              className="h-8 px-2.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 border-violet-100/50 hover:border-rose-100 text-xs font-bold border transition-all"
+                              className="h-8 px-2.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 border-teal-100/50 hover:border-rose-100 text-xs font-bold border transition-all"
                             >
                               ยกเลิกเชื่อมโยง
                             </Button>
@@ -854,7 +863,7 @@ export default function PipelinePage() {
                                 }}
                                 onClick={() => setIsCustomerDropdownOpen(true)}
                                 onFocus={() => setIsCustomerDropdownOpen(true)}
-                                className="w-full h-11 rounded-xl border border-violet-100 bg-white pl-10 pr-10 outline-none focus:border-violet-400 transition-all text-sm font-semibold cursor-pointer"
+                                className="w-full h-11 rounded-xl border border-teal-100 bg-white pl-10 pr-10 outline-none focus:border-teal-400 transition-all text-sm font-semibold cursor-pointer"
                               />
                               <button
                                 type="button"
@@ -871,7 +880,7 @@ export default function PipelinePage() {
                             {isCustomerDropdownOpen && (
                               <>
                                 <div className="fixed inset-0 z-10" onClick={() => setIsCustomerDropdownOpen(false)} />
-                                <div className="absolute left-0 right-0 mt-2 max-h-56 overflow-y-auto bg-white border border-violet-100 rounded-xl shadow-2xl z-50 py-2 custom-scrollbar">
+                                <div className="absolute left-0 right-0 mt-2 max-h-56 overflow-y-auto bg-white border border-teal-100 rounded-xl shadow-2xl z-50 py-2 custom-scrollbar">
                                   {filteredCustomers.length === 0 ? (
                                     <div className="px-4 py-6 text-sm text-slate-400 text-center font-medium flex flex-col items-center gap-2">
                                       <span>ไม่มีชื่อลูกค้านี้ในระบบ</span>
@@ -895,10 +904,10 @@ export default function PipelinePage() {
                                             contact_email: c.email || '',
                                           }));
                                         }}
-                                        className="w-full text-left px-4 py-2.5 hover:bg-violet-50 text-xs font-semibold text-slate-700 flex flex-col gap-0.5 border-b border-slate-50 last:border-0 transition-colors"
+                                        className="w-full text-left px-4 py-2.5 hover:bg-teal-50 text-xs font-semibold text-slate-700 flex flex-col gap-0.5 border-b border-slate-50 last:border-0 transition-colors"
                                       >
                                         <div className="flex items-center gap-2">
-                                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center text-[10px] font-bold text-violet-700">
+                                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-teal-100 to-teal-100 flex items-center justify-center text-[10px] font-bold text-teal-700">
                                             {(c.name || 'C').charAt(0).toUpperCase()}
                                           </div>
                                           <div>
@@ -928,7 +937,7 @@ export default function PipelinePage() {
                             placeholder="เช่น โปรเจกต์ติดตั้งระบบ"
                             value={newDeal.title}
                             onChange={(e) => setNewDeal({...newDeal, title: e.target.value})}
-                            className="h-11 pl-10 rounded-xl border-violet-100 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
+                            className="h-11 pl-10 rounded-xl border-teal-100 bg-slate-50 text-sm font-bold focus:bg-white focus:border-teal-400"
                           />
                         </div>
                       </div>
@@ -960,7 +969,7 @@ export default function PipelinePage() {
                                   customer_id: matched ? matched.id : "",
                                 });
                               }}
-                              className="h-11 pl-10 rounded-xl border-violet-100 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
+                              className="h-11 pl-10 rounded-xl border-teal-100 bg-slate-50 text-sm font-bold focus:bg-white focus:border-teal-400"
                             />
                           </div>
                         </div>
@@ -968,7 +977,7 @@ export default function PipelinePage() {
                           <label className="text-xs font-bold text-slate-500">มูลค่าดีล (บาท) *</label>
                           <div className="relative">
                             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                              <DollarSign size={16} className="text-violet-500" />
+                              <DollarSign size={16} className="text-teal-500" />
                             </span>
                             <Input
                               required
@@ -976,7 +985,7 @@ export default function PipelinePage() {
                               placeholder="0"
                               value={newDeal.value}
                               onChange={(e) => setNewDeal({...newDeal, value: e.target.value})}
-                              className="h-11 pl-10 rounded-xl border-violet-100 bg-slate-50 text-sm font-black focus:bg-white text-violet-700 focus:border-violet-400"
+                              className="h-11 pl-10 rounded-xl border-teal-100 bg-slate-50 text-sm font-black focus:bg-white text-teal-700 focus:border-teal-400"
                             />
                           </div>
                         </div>
@@ -990,7 +999,7 @@ export default function PipelinePage() {
                             { id: 'lead', label: 'ลูกค้าใหม่', color: 'bg-slate-400', activeBg: 'bg-slate-100 border-slate-400 text-slate-900' },
                             { id: 'contact', label: 'นัดเจอ', color: 'bg-amber-500', activeBg: 'bg-amber-50 border-amber-500 text-amber-900' },
                             { id: 'proposal', label: 'เสนอราคา', color: 'bg-sky-500', activeBg: 'bg-sky-50 border-sky-500 text-sky-900' },
-                            { id: 'negotiation', label: 'กำลังปิด', color: 'bg-violet-500', activeBg: 'bg-violet-50 border-violet-500 text-violet-900' },
+                            { id: 'negotiation', label: 'กำลังปิด', color: 'bg-teal-500', activeBg: 'bg-teal-50 border-teal-500 text-teal-900' },
                             { id: 'won', label: 'ปิดได้', color: 'bg-emerald-500', activeBg: 'bg-emerald-50 border-emerald-500 text-emerald-900' },
                             { id: 'lost', label: 'ปิดไม่ได้', color: 'bg-rose-500', activeBg: 'bg-rose-50 border-rose-500 text-rose-900' }
                           ].map((stage) => {
@@ -1021,13 +1030,13 @@ export default function PipelinePage() {
                                   "flex items-center justify-center gap-1.5 min-h-[2.5rem] py-1.5 px-2 h-auto flex-wrap rounded-xl border text-center transition-all duration-200 text-xs font-semibold relative overflow-hidden",
                                   isActive
                                     ? cn("border-2 shadow-sm", stage.activeBg)
-                                    : "border-violet-100 bg-white text-slate-500 hover:bg-slate-50"
+                                    : "border-teal-100 bg-white text-slate-500 hover:bg-slate-50"
                                 )}
                               >
                                 {isActive && (
                                   <motion.div
                                     layoutId="activeStageGlow"
-                                    className="absolute inset-0 bg-gradient-to-r from-violet-500/5 to-fuchsia-500/5 opacity-50"
+                                    className="absolute inset-0 bg-gradient-to-r from-teal-500/5 to-teal-500/5 opacity-50"
                                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
                                   />
                                 )}
@@ -1055,7 +1064,7 @@ export default function PipelinePage() {
                               placeholder="50"
                               value={newDeal.probability}
                               onChange={(e) => setNewDeal({...newDeal, probability: e.target.value})}
-                              className="h-11 pl-10 rounded-xl border-violet-100 bg-slate-50 text-sm font-bold focus:bg-white focus:border-violet-400"
+                              className="h-11 pl-10 rounded-xl border-teal-100 bg-slate-50 text-sm font-bold focus:bg-white focus:border-teal-400"
                             />
                           </div>
                         </div>
@@ -1069,7 +1078,7 @@ export default function PipelinePage() {
                               type="date"
                               value={newDeal.expected_close_date}
                               onChange={(e) => setNewDeal({...newDeal, expected_close_date: e.target.value})}
-                              className="w-full h-11 pl-10 rounded-xl border border-violet-100 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-bold text-slate-800"
+                              className="w-full h-11 pl-10 rounded-xl border border-teal-100 bg-slate-50 px-3 outline-none focus:border-teal-400 focus:bg-white transition-all text-sm font-bold text-slate-800"
                             />
                           </div>
                         </div>
@@ -1083,7 +1092,7 @@ export default function PipelinePage() {
                             id="is_recurring_add"
                             checked={newDeal.is_recurring}
                             onChange={(e) => setNewDeal({ ...newDeal, is_recurring: e.target.checked })}
-                            className="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-slate-300 cursor-pointer"
+                            className="w-4 h-4 rounded text-teal-600 focus:ring-teal-500 border-slate-300 cursor-pointer"
                           />
                           <label htmlFor="is_recurring_add" className="text-xs font-bold text-slate-600 cursor-pointer">
                             ดีลต่ออายุ (Recurring/SaaS)
@@ -1100,7 +1109,7 @@ export default function PipelinePage() {
                                 type="date"
                                 value={newDeal.renewal_date}
                                 onChange={(e) => setNewDeal({ ...newDeal, renewal_date: e.target.value })}
-                                className="w-full h-11 pl-10 rounded-xl border border-violet-100 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-bold text-slate-800"
+                                className="w-full h-11 pl-10 rounded-xl border border-teal-100 bg-slate-50 px-3 outline-none focus:border-teal-400 focus:bg-white transition-all text-sm font-bold text-slate-800"
                               />
                             </div>
                           </div>
@@ -1108,7 +1117,7 @@ export default function PipelinePage() {
                       </div>
 
                       {/* Nav Buttons Tab 1 */}
-                      <div className="pt-6 flex gap-3 border-t border-violet-100/50 mt-6">
+                      <div className="pt-6 flex gap-3 border-t border-teal-100/50 mt-6">
                         <Button
                           type="button"
                           variant="ghost"
@@ -1120,9 +1129,12 @@ export default function PipelinePage() {
                         <Button
                           type="button"
                           onClick={() => setFormTab('contact')}
-                          className="flex-[2] h-11 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-bold shadow-md shadow-violet-500/20 flex items-center justify-center gap-2"
+                          className="flex-[2] h-11 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-bold shadow-md shadow-teal-500/20 flex items-center justify-center gap-2"
                         >
-                          ถัดไป <ArrowRight size={16} />
+                          เพิ่มผู้ติดต่อ <ArrowRight size={16} />
+                        </Button>
+                        <Button type="submit" disabled={addDealMutation.isPending} className="flex-1 h-11">
+                          {addDealMutation.isPending ? 'กำลังบันทึก…' : 'บันทึกดีล'}
                         </Button>
                       </div>
                     </motion.div>
@@ -1146,7 +1158,7 @@ export default function PipelinePage() {
                             <select
                               value={newDeal.assigned_to}
                               onChange={(e) => setNewDeal({ ...newDeal, assigned_to: e.target.value })}
-                              className="w-full h-11 pl-10 rounded-xl border border-violet-100 bg-slate-50 px-3 outline-none focus:border-violet-400 focus:bg-white transition-all text-sm font-semibold appearance-none"
+                              className="w-full h-11 pl-10 rounded-xl border border-teal-100 bg-slate-50 px-3 outline-none focus:border-teal-400 focus:bg-white transition-all text-sm font-semibold appearance-none"
                             >
                               <option value="">— ไม่ระบุ —</option>
                               {teamMembers.map(m => (
@@ -1162,8 +1174,8 @@ export default function PipelinePage() {
 
                       {/* Contacts block */}
                       <div className="space-y-4 pt-2">
-                        <div className="border-b border-violet-100/50 pb-2">
-                          <h4 className="text-xs font-black uppercase tracking-wider text-violet-600">ข้อมูลผู้ติดต่อประสานงาน</h4>
+                        <div className="border-b border-teal-100/50 pb-2">
+                          <h4 className="text-xs font-black uppercase tracking-wider text-teal-600">ข้อมูลผู้ติดต่อประสานงาน</h4>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div className="space-y-1">
@@ -1176,7 +1188,7 @@ export default function PipelinePage() {
                                 placeholder="ระบุชื่อจริง/ชื่อเล่น"
                                 value={newDeal.contact}
                                 onChange={(e) => setNewDeal({...newDeal, contact: e.target.value})}
-                                className="h-11 pl-10 rounded-xl border-violet-100 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
+                                className="h-11 pl-10 rounded-xl border-teal-100 bg-slate-50 text-sm font-medium focus:bg-white focus:border-teal-400"
                               />
                             </div>
                           </div>
@@ -1190,7 +1202,7 @@ export default function PipelinePage() {
                                 placeholder="เช่น 089-XXX-XXXX"
                                 value={newDeal.contact_phone}
                                 onChange={(e) => setNewDeal({...newDeal, contact_phone: e.target.value})}
-                                className="h-11 pl-10 rounded-xl border-violet-100 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
+                                className="h-11 pl-10 rounded-xl border-teal-100 bg-slate-50 text-sm font-medium focus:bg-white focus:border-teal-400"
                               />
                             </div>
                           </div>
@@ -1205,7 +1217,7 @@ export default function PipelinePage() {
                                 placeholder="เช่น name@company.com"
                                 value={newDeal.contact_email}
                                 onChange={(e) => setNewDeal({...newDeal, contact_email: e.target.value})}
-                                className="h-11 pl-10 rounded-xl border-violet-100 bg-slate-50 text-sm font-medium focus:bg-white focus:border-violet-400"
+                                className="h-11 pl-10 rounded-xl border-teal-100 bg-slate-50 text-sm font-medium focus:bg-white focus:border-teal-400"
                               />
                             </div>
                           </div>
@@ -1219,7 +1231,7 @@ export default function PipelinePage() {
                       )}
 
                       {/* Nav Buttons Tab 2 */}
-                      <div className="pt-6 flex gap-3 border-t border-violet-100/50 mt-6">
+                      <div className="pt-6 flex gap-3 border-t border-teal-100/50 mt-6">
                         <Button
                           type="button"
                           variant="ghost"
@@ -1231,7 +1243,7 @@ export default function PipelinePage() {
                         <Button
                           type="submit"
                           disabled={addDealMutation.isPending}
-                          className="flex-[2] h-11 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-bold shadow-md shadow-violet-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                          className="flex-[2] h-11 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-bold shadow-md shadow-teal-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                           {addDealMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                           {addDealMutation.isPending ? 'กำลังบันทึก...' : 'บันทึกดีล'}
@@ -1243,7 +1255,7 @@ export default function PipelinePage() {
               </div>
 
               {/* Right Column: Live Card Preview & AI Guidance (5 cols) */}
-              <div className="xl:col-span-5 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-white/[0.03] dark:to-white/[0.01] p-6 rounded-3xl border border-violet-100/60 dark:border-white/10 flex flex-col justify-between space-y-6 max-h-[78vh] overflow-y-auto">
+              <div className="xl:col-span-5 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-white/[0.03] dark:to-white/[0.01] p-6 rounded-3xl border border-teal-100/60 dark:border-white/10 flex flex-col justify-between space-y-6 max-h-[78vh] overflow-y-auto">
                 <div className="space-y-6">
                   <div>
                     <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
@@ -1258,7 +1270,7 @@ export default function PipelinePage() {
                     "rounded-[1.25rem] shadow-sm p-5 space-y-4 pointer-events-none relative overflow-hidden group transition-all",
                     Number(newDeal.value) >= 1000000 
                       ? "bg-gradient-to-br from-amber-50/80 via-white to-yellow-50/40 border border-amber-200/80 shadow-amber-500/5" 
-                      : "bg-white border border-violet-100/65"
+                      : "bg-white border border-teal-100/65"
                   )}>
                     {Number(newDeal.value) >= 1000000 && (
                        <div className="absolute top-0 right-0 px-2.5 py-0.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-amber-950 text-[9px] font-black tracking-widest rounded-bl-xl uppercase shadow-sm shadow-amber-500/20">
@@ -1268,7 +1280,7 @@ export default function PipelinePage() {
                     {/* Header */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        <div className="w-7 h-7 rounded-[0.4rem] bg-indigo-600 flex items-center justify-center text-xs font-black text-white shrink-0 shadow-sm shadow-indigo-500/20">
+                        <div className="w-7 h-7 rounded-[0.4rem] bg-teal-600 flex items-center justify-center text-xs font-black text-white shrink-0 shadow-sm shadow-teal-500/20">
                           {(newDeal.assigned_to ? (teamMembers.find(t => t.id === newDeal.assigned_to)?.name?.charAt(0).toUpperCase() || 'U') : 'U')}
                         </div>
                         <p className="text-[11px] font-bold text-slate-500 truncate flex-1 tracking-wide uppercase">
@@ -1281,7 +1293,7 @@ export default function PipelinePage() {
                         "w-2 h-2 rounded-full ring-4 ring-offset-0 mt-1.5 mr-1 shrink-0 transition-all duration-300",
                         newDeal.stage === 'won' ? 'bg-emerald-500 ring-emerald-100' :
                         newDeal.stage === 'lost' ? 'bg-rose-500 ring-rose-100' :
-                        newDeal.stage === 'negotiation' ? 'bg-violet-500 ring-violet-100' :
+                        newDeal.stage === 'negotiation' ? 'bg-teal-500 ring-teal-100' :
                         newDeal.stage === 'proposal' ? 'bg-sky-500 ring-sky-100' :
                         newDeal.stage === 'contact' ? 'bg-amber-500 ring-amber-100' : 'bg-slate-400 ring-slate-100'
                       )} />
@@ -1300,7 +1312,7 @@ export default function PipelinePage() {
                       )}>
                         {new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(Number(newDeal.value) || 0)}
                       </span>
-                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 border border-violet-100/50">
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 border border-teal-100/50">
                         <TrendingUp size={11} className={Number(newDeal.probability) >= 70 ? 'text-emerald-500' : 'text-slate-400'} />
                         <span className="text-[10px] font-black text-slate-600">{newDeal.probability || '50'}%</span>
                       </div>
@@ -1309,12 +1321,12 @@ export default function PipelinePage() {
                 </div>
 
                 {/* AI Guidance Box */}
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-white p-5 border border-slate-800/80 shadow-xl space-y-3 mt-auto">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-2xl pointer-events-none" />
-                  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-violet-500/10 rounded-full blur-xl pointer-events-none" />
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-teal-950 to-teal-950 text-white p-5 border border-slate-800/80 shadow-xl space-y-3 mt-auto">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
+                  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-teal-500/10 rounded-full blur-xl pointer-events-none" />
                   
-                  <h5 className="text-[10px] font-black uppercase tracking-widest text-violet-400 flex items-center gap-1.5 relative z-10">
-                    <Zap size={12} className="text-violet-400 fill-violet-400/20 animate-pulse" />
+                  <h5 className="text-[10px] font-black uppercase tracking-widest text-teal-400 flex items-center gap-1.5 relative z-10">
+                    <Zap size={12} className="text-teal-400 fill-teal-400/20 animate-pulse" />
                     <span>วิเคราะห์กลยุทธ์ด้วย AI ผู้ช่วยขาย</span>
                   </h5>
                   <div className="text-xs leading-relaxed space-y-2 relative z-10">
@@ -1340,7 +1352,7 @@ export default function PipelinePage() {
                         );
                       } else if (val > 0) {
                         priorityChip = (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-[10px] font-black text-violet-400 tracking-wider uppercase">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-[10px] font-black text-teal-400 tracking-wider uppercase">
                             💼 Standard Deal
                           </span>
                         );
@@ -1375,7 +1387,7 @@ export default function PipelinePage() {
                             <ul className="space-y-2 text-slate-350 font-medium text-xs leading-snug">
                               {tips.map((tip, idx) => (
                                 <li key={idx} className="flex items-start gap-1.5">
-                                  <span className="text-violet-400 mt-0.5 shrink-0">•</span>
+                                  <span className="text-teal-400 mt-0.5 shrink-0">•</span>
                                   <span>{tip}</span>
                                 </li>
                               ))}
@@ -1393,12 +1405,12 @@ export default function PipelinePage() {
       </Dialog>
       {/* SYNC MODAL */}
       <Dialog open={isScanOpen} onOpenChange={setIsScanOpen}>
-        <DialogContent className="max-w-xl p-0 overflow-hidden rounded-2xl bg-white dark:bg-[#0f111a] border border-slate-200/80 dark:border-white/10 shadow-2xl">
+        <DialogContent className="max-w-xl p-0 overflow-hidden rounded-2xl bg-white dark:bg-[#192629] border border-slate-200/80 dark:border-white/10 shadow-2xl">
           {/* Scanner ribbon */}
-          <div className="h-1.5 bg-gradient-to-r from-violet-500 via-indigo-500 to-blue-500" />
+          <div className="h-1.5 bg-gradient-to-r from-teal-500 via-teal-500 to-blue-500" />
           <div className="p-8">
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-500/20 shrink-0">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-teal-500/20 shrink-0">
                  <ScanLine size={26} />
               </div>
               <div>
@@ -1409,7 +1421,7 @@ export default function PipelinePage() {
             
             <Suspense fallback={
               <div className="flex flex-col items-center justify-center p-12 gap-4">
-                <Loader2 className="animate-spin text-violet-500" size={28} />
+                <Loader2 className="animate-spin text-teal-500" size={28} />
                 <p className="text-sm text-slate-400">กำลังโหลด AI Scanner...</p>
               </div>
             }>

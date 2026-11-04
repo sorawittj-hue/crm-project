@@ -117,7 +117,7 @@ export function createOwnerMember(user) {
     role: 'Admin',
     email: user?.email || null,
     goal: DEFAULT_MONTHLY_TARGET,
-    color: 'bg-violet-600',
+    color: 'bg-teal-600',
     icon_type: 'ShieldCheck',
     is_active: true,
   };

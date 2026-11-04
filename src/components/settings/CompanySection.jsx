@@ -47,8 +47,8 @@ export function CompanySection() {
   };
 
   return (
-    <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+    <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#192629]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-8 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-teal-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
       <div className="flex items-center justify-between relative z-10">
         <div>
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight relative z-10">บริษัท</h2>
@@ -57,7 +57,7 @@ export function CompanySection() {
         {!companyForm && (
           <Button
             onClick={initCompanyForm}
-            className="h-9 px-4 rounded-xl text-sm bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20 cursor-pointer"
+            className="h-9 px-4 rounded-xl text-sm bg-teal-600 hover:bg-teal-700 text-white border-0 shadow-md shadow-teal-500/20 cursor-pointer"
           >
             <Pencil size={13} className="mr-1.5" /> แก้ไข
           </Button>
@@ -67,7 +67,7 @@ export function CompanySection() {
       {!companyForm ? (
         <div className="space-y-4 relative z-10">
           {[
-            { label: 'ชื่อบริษัท', value: settings?.company_name || '—', icon: Building2, gradient: 'from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20 border-violet-100 dark:border-white/[0.06]', border: 'border-l-violet-400', iconBg: 'bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300' },
+            { label: 'ชื่อบริษัท', value: settings?.company_name || '—', icon: Building2, gradient: 'from-teal-50 to-teal-50 dark:from-teal-950/30 dark:to-teal-950/20 border-teal-100 dark:border-white/[0.06]', border: 'border-l-teal-400', iconBg: 'bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-300' },
             { label: 'อุตสาหกรรม', value: settings?.company_industry || '—', icon: Briefcase, gradient: 'from-blue-50 to-sky-50 dark:from-blue-950/30 dark:to-sky-950/20 border-blue-100 dark:border-white/[0.06]', border: 'border-l-blue-400', iconBg: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300' },
             { label: 'สกุลเงิน', value: settings?.currency || 'THB', icon: Banknote, gradient: 'from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/20 border-emerald-100 dark:border-white/[0.06]', border: 'border-l-emerald-400', iconBg: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300' },
           ].map((item) => (
@@ -107,7 +107,7 @@ export function CompanySection() {
             <select
               value={companyForm.currency}
               onChange={(e) => setCompanyForm({ ...companyForm, currency: e.target.value })}
-              className="w-full h-11 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#171926] text-slate-900 dark:text-white px-3 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 dark:focus:ring-violet-900/30 transition-all appearance-none cursor-pointer"
+              className="w-full h-11 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#171926] text-slate-900 dark:text-white px-3 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900/30 transition-all appearance-none cursor-pointer"
             >
               <option value="THB">THB — บาทไทย</option>
               <option value="USD">USD — ดอลลาร์</option>
@@ -148,7 +148,7 @@ export function CompanySection() {
             <Button
               type="submit"
               disabled={savingCompany}
-              className="flex-[2] h-10 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold border-0 shadow-md shadow-violet-500/20 flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-[2] h-10 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-semibold border-0 shadow-md shadow-teal-500/20 flex items-center justify-center gap-2 cursor-pointer"
             >
               {savingCompany && <Loader2 size={13} className="animate-spin" />}
               <Save size={13} /> บันทึก

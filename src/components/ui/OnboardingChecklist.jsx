@@ -46,8 +46,9 @@ export default function OnboardingChecklist() {
   const allDone = doneCount === total;
   const progress = Math.round((doneCount / total) * 100);
 
+  const [now] = useState(() => Date.now());
   const accountAge = user?.created_at
-    ? (Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24)
+    ? (now - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24)
     : 0;
 
   if (dismissed || accountAge > 7 || !user) return null;
@@ -60,8 +61,8 @@ export default function OnboardingChecklist() {
         exit={{ opacity: 0, y: -12 }}
         className="mx-4 mb-4 rounded-2xl overflow-hidden"
         style={{
-          background: 'linear-gradient(135deg, rgba(139,92,246,0.15), rgba(99,102,241,0.08))',
-          border: '1px solid rgba(139,92,246,0.2)',
+          background: 'linear-gradient(135deg, rgba(13,148,136,0.15), rgba(15,118,110,0.08))',
+          border: '1px solid rgba(13,148,136,0.2)',
           boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
         }}
       >
@@ -76,7 +77,7 @@ export default function OnboardingChecklist() {
               style={{
                 background: allDone
                   ? 'linear-gradient(135deg, #10b981, #059669)'
-                  : 'linear-gradient(135deg, #7c3aed, #6366f1)',
+                  : 'linear-gradient(135deg, #0f766e, #0f766e)',
               }}
             >
               {allDone ? <Sparkles size={13} /> : `${doneCount}/${total}`}
@@ -89,7 +90,7 @@ export default function OnboardingChecklist() {
                 <div className="h-1 w-20 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
                   <motion.div
                     className="h-full rounded-full"
-                    style={{ background: 'linear-gradient(90deg, #a78bfa, #818cf8)' }}
+                    style={{ background: 'linear-gradient(90deg, #5eead4, #2dd4bf)' }}
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -127,7 +128,7 @@ export default function OnboardingChecklist() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="px-4 pb-3 space-y-1" style={{ borderTop: '1px solid rgba(139,92,246,0.15)' }}>
+              <div className="px-4 pb-3 space-y-1" style={{ borderTop: '1px solid rgba(13,148,136,0.15)' }}>
                 {steps.map((step, i) => (
                   <div
                     key={step.id}
@@ -153,9 +154,9 @@ export default function OnboardingChecklist() {
                         onClick={step.action}
                         className="text-[10px] font-black px-2 py-0.5 rounded-lg transition-all whitespace-nowrap"
                         style={{
-                          background: 'rgba(139,92,246,0.25)',
-                          color: '#c4b5fd',
-                          border: '1px solid rgba(139,92,246,0.3)',
+                          background: 'rgba(13,148,136,0.25)',
+                          color: '#99f6e4',
+                          border: '1px solid rgba(13,148,136,0.3)',
                         }}
                       >
                         {step.actionLabel}

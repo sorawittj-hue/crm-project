@@ -35,7 +35,7 @@ import CustomerCSVImport from '../components/CustomerCSVImport';
 const TIER_CONFIG = {
   Silver: { color: 'bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10', icon: '🥈', gradient: 'from-slate-400 to-slate-500' },
   Gold: { color: 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/40', icon: '🥇', gradient: 'from-amber-400 to-orange-400' },
-  Platinum: { color: 'bg-violet-50 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800/40', icon: '💎', gradient: 'from-violet-500 to-indigo-500' },
+  Platinum: { color: 'bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800/40', icon: '💎', gradient: 'from-teal-500 to-teal-500' },
 };
 
 const GRADE_CONFIG = {
@@ -57,9 +57,9 @@ const EMPTY_FORM = { name: '', company: '', email: '', phone: '', industry: '', 
 // ─── Avatar gradient ───────────────────────────────────────────────────────────
 const getAvatarGradient = (name) => {
   const gradients = [
-    ['#6366f1', '#8b5cf6'], ['#0ea5e9', '#6366f1'], ['#10b981', '#06b6d4'],
-    ['#f59e0b', '#ef4444'], ['#ec4899', '#8b5cf6'], ['#3b82f6', '#06b6d4'],
-    ['#14b8a6', '#10b981'], ['#f97316', '#ef4444'], ['#8b5cf6', '#ec4899'],
+    ['#0f766e', '#0d9488'], ['#0ea5e9', '#0f766e'], ['#10b981', '#06b6d4'],
+    ['#f59e0b', '#ef4444'], ['#ec4899', '#0d9488'], ['#3b82f6', '#06b6d4'],
+    ['#14b8a6', '#10b981'], ['#f97316', '#ef4444'], ['#0d9488', '#ec4899'],
     ['#06b6d4', '#3b82f6'],
   ];
   const hash = (name || 'C').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
@@ -101,9 +101,9 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
       transition={{ duration: 0.2 }}
       className={cn(
         'group rounded-2xl border p-5 cursor-pointer relative overflow-hidden transition-all duration-300 card-lift card-glow-overlay',
-        'bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border-slate-200/80 dark:border-white/10 shadow-sm',
-        'hover:border-violet-300 dark:hover:border-violet-500/40 hover:shadow-lg dark:hover:shadow-violet-950/20 hover:-translate-y-1',
-        isSelected ? 'border-violet-500 ring-2 ring-violet-500/20' : '',
+        'bg-white/80 dark:bg-[#192629]/80 backdrop-blur-xl border-slate-200/80 dark:border-white/10 shadow-sm',
+        'hover:border-teal-300 dark:hover:border-teal-500/40 hover:shadow-lg dark:hover:shadow-teal-950/20 hover:-translate-y-1',
+        isSelected ? 'border-teal-500 ring-2 ring-teal-500/20' : '',
       )}
       onClick={() => onOpen(customer)}
     >
@@ -114,7 +114,7 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
       >
         <div className={cn(
           'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all',
-          isSelected ? 'bg-violet-600 border-violet-600' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-white/10 group-hover:border-violet-400'
+          isSelected ? 'bg-teal-600 border-teal-600' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-white/10 group-hover:border-teal-400'
         )}>
           {isSelected && <CheckCircle2 size={13} className="text-white" />}
         </div>
@@ -136,7 +136,7 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
             {customer.name?.charAt(0)?.toUpperCase() || '?'}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
               {customer.name}
             </h3>
             {customer.company && (
@@ -197,8 +197,8 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
             <p className="text-sm md:text-base font-black text-emerald-600 dark:text-emerald-400 tabular-nums">{customer.dealStats.won}</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] text-violet-600 dark:text-violet-400 font-medium mb-0.5">CLV</p>
-            <p className="text-xs font-black text-violet-600 dark:text-violet-400 leading-tight tabular-nums truncate">
+            <p className="text-[10px] text-teal-600 dark:text-teal-400 font-medium mb-0.5">CLV</p>
+            <p className="text-xs font-black text-teal-600 dark:text-teal-400 leading-tight tabular-nums truncate">
               {formatCurrency(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0))}
             </p>
           </div>
@@ -211,7 +211,7 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
               <a
                 href={`mailto:${customer.email}`}
                 onClick={e => e.stopPropagation()}
-                className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:text-violet-600 dark:hover:text-violet-300 transition-all"
+                className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-teal-50 dark:hover:bg-teal-950/40 hover:text-teal-600 dark:hover:text-teal-300 transition-all"
                 title={customer.email}
               >
                 <Mail size={12} />
@@ -228,7 +228,7 @@ function CustomerCard({ customer, onOpen, onSelect, isSelected }) {
               </a>
             )}
           </div>
-          <span className="flex items-center gap-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="flex items-center gap-1 text-[11px] font-bold text-teal-600 dark:text-teal-400 opacity-0 group-hover:opacity-100 transition-opacity">
             ดูข้อมูล <ChevronRight size={12} />
           </span>
         </div>
@@ -247,7 +247,7 @@ function CustomerRow({ customer, onOpen, onSelect, isSelected }) {
     <tr
       className={cn(
         'group cursor-pointer transition-colors',
-        isSelected ? 'bg-violet-50/60 dark:bg-violet-950/30' : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
+        isSelected ? 'bg-teal-50/60 dark:bg-teal-950/30' : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
       )}
       onClick={() => onOpen(customer)}
     >
@@ -255,7 +255,7 @@ function CustomerRow({ customer, onOpen, onSelect, isSelected }) {
         <div
           className={cn(
             'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer',
-            isSelected ? 'bg-violet-600 border-violet-600' : 'border-slate-300 dark:border-slate-600'
+            isSelected ? 'bg-teal-600 border-teal-600' : 'border-slate-300 dark:border-slate-600'
           )}
           onClick={() => onSelect(customer.id)}
         >
@@ -271,7 +271,7 @@ function CustomerRow({ customer, onOpen, onSelect, isSelected }) {
             {customer.name?.charAt(0)?.toUpperCase() || '?'}
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{customer.name}</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{customer.name}</p>
             {customer.company && <p className="text-xs text-slate-400 dark:text-slate-500">{customer.company}</p>}
           </div>
         </div>
@@ -329,7 +329,7 @@ function CustomerRow({ customer, onOpen, onSelect, isSelected }) {
       <td className="p-4 text-right" onClick={e => e.stopPropagation()}>
         <button
           onClick={() => onOpen(customer)}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-white/10 transition-colors"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-white/10 transition-colors"
         >
           <ChevronRight size={15} />
         </button>
@@ -395,7 +395,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
   ];
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-[#0d0f1a] text-slate-900 dark:text-white transition-colors duration-300">
+    <div className="h-full flex flex-col bg-white dark:bg-[#192629] text-slate-900 dark:text-white transition-colors duration-300">
       {/* ── Header ── */}
       <div className="relative p-6 pb-0">
         {/* Gradient bg */}
@@ -414,7 +414,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
             </button>
             <div className="flex items-center gap-2">
               {customer.email && (
-                <a href={`mailto:${customer.email}`} className="p-2 rounded-xl text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-white/10 transition-all" title="ส่งอีเมล">
+                <a href={`mailto:${customer.email}`} className="p-2 rounded-xl text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-white/10 transition-all" title="ส่งอีเมล">
                   <Mail size={18} />
                 </a>
               )}
@@ -429,7 +429,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                   setIsSidebarOpen(false);
                   navigate('/pipeline');
                 }}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition-all shadow-md shadow-violet-500/20 cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition-all shadow-md shadow-teal-500/20 cursor-pointer"
               >
                 <Plus size={14} /> สร้างดีล
               </button>
@@ -481,7 +481,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
             {[
               { label: 'ดีลรวม', val: customer.dealStats.total, color: 'text-slate-800 dark:text-white' },
               { label: 'Won', val: customer.dealStats.won, color: 'text-emerald-600 dark:text-emerald-400' },
-              { label: 'CLV', val: formatCurrency(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0)), color: 'text-violet-700 dark:text-violet-400' },
+              { label: 'CLV', val: formatCurrency(customer.dealStats.wonValue + (customer.dealStats.activeValue || 0)), color: 'text-teal-700 dark:text-teal-400' },
             ].map(({ label, val, color }) => (
               <div key={label} className="bg-slate-50 dark:bg-white/[0.04] rounded-2xl p-3 text-center border border-slate-100 dark:border-white/5">
                 <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium mb-0.5">{label}</p>
@@ -503,7 +503,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px whitespace-nowrap cursor-pointer',
                   active
-                    ? 'border-violet-600 text-violet-600 dark:text-violet-400'
+                    ? 'border-teal-600 text-teal-600 dark:text-teal-400'
                     : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-white'
                 )}
               >
@@ -554,7 +554,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ระดับลูกค้า</label>
-                    <select value={localCustomer.tier} onChange={e => setLocalCustomer(p => ({ ...p, tier: e.target.value }))} className="w-full h-11 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] px-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-violet-400 cursor-pointer">
+                    <select value={localCustomer.tier} onChange={e => setLocalCustomer(p => ({ ...p, tier: e.target.value }))} className="w-full h-11 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] px-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-teal-400 cursor-pointer">
                       <option value="Silver">🥈 Silver</option>
                       <option value="Gold">🥇 Gold</option>
                       <option value="Platinum">💎 Platinum</option>
@@ -572,12 +572,12 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
 
                 <div className="flex gap-3">
                   {customer._fromDeals ? (
-                    <Button type="button" onClick={() => handleConvertSynthetic(customer)} className="flex-1 h-11 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-xs border-0 cursor-pointer" disabled={createCustomerMutation.isPending}>
+                    <Button type="button" onClick={() => handleConvertSynthetic(customer)} className="flex-1 h-11 rounded-xl bg-gradient-to-r from-teal-600 to-teal-600 text-white font-bold text-xs border-0 cursor-pointer" disabled={createCustomerMutation.isPending}>
                       <Plus size={14} className="mr-1.5" /> บันทึกเป็นลูกค้าทางการ
                     </Button>
                   ) : (
                     <>
-                      <Button type="submit" className="flex-[2] h-11 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-sm border-0 shadow-md cursor-pointer" disabled={updateCustomerMutation.isPending}>
+                      <Button type="submit" className="flex-[2] h-11 rounded-xl bg-gradient-to-r from-teal-600 to-teal-600 text-white font-bold text-sm border-0 shadow-md cursor-pointer" disabled={updateCustomerMutation.isPending}>
                         {updateCustomerMutation.isPending ? <Loader2 size={14} className="animate-spin mr-1.5" /> : <Settings size={14} className="mr-1.5" />}
                         บันทึก
                       </Button>
@@ -599,7 +599,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
               <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-4 border border-slate-100 dark:border-white/5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <HeartPulse size={16} className="text-violet-500" />
+                    <HeartPulse size={16} className="text-teal-500" />
                     <span className="text-sm font-bold text-slate-800 dark:text-white">Account Health</span>
                   </div>
                   <span className="text-xl font-black text-slate-900 dark:text-white">{customer.health?.score ?? 0}%</span>
@@ -632,7 +632,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                 {!aiPlaybook && !aiPlaybookLoading && (
                   <button
                     onClick={() => generateAIPlaybook(customer)}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-teal-600 to-teal-600 text-white text-sm font-bold shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 transition-all cursor-pointer"
                   >
                     <Sparkles size={16} />
                     วิเคราะห์ด้วย AI
@@ -640,20 +640,20 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                 )}
                 {aiPlaybookLoading && (
                   <div className="flex items-center justify-center py-8 gap-3">
-                    <Loader2 className="animate-spin text-violet-500" size={20} />
+                    <Loader2 className="animate-spin text-teal-500" size={20} />
                     <span className="text-sm text-slate-500 dark:text-slate-400">AI กำลังวิเคราะห์...</span>
                   </div>
                 )}
                 {aiPlaybook && (
-                  <div className="bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-950/30 dark:to-indigo-950/30 border border-violet-100 dark:border-violet-800/40 rounded-2xl p-4">
+                  <div className="bg-gradient-to-br from-teal-50 to-teal-50 dark:from-teal-950/30 dark:to-teal-950/30 border border-teal-100 dark:border-teal-800/40 rounded-2xl p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <Sparkles size={14} className="text-violet-500" />
-                      <p className="text-xs font-black text-violet-600 dark:text-violet-400 uppercase tracking-wide">AI Playbook</p>
+                      <Sparkles size={14} className="text-teal-500" />
+                      <p className="text-xs font-black text-teal-600 dark:text-teal-400 uppercase tracking-wide">AI Playbook</p>
                     </div>
                     <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">{aiPlaybook}</p>
                     <button
                       onClick={() => generateAIPlaybook(customer)}
-                      className="mt-3 text-xs text-violet-500 dark:text-violet-400 font-bold hover:underline cursor-pointer"
+                      className="mt-3 text-xs text-teal-500 dark:text-teal-400 font-bold hover:underline cursor-pointer"
                     >
                       🔄 สร้างใหม่
                     </button>
@@ -682,9 +682,9 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                   <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-widest mb-1">ปิดได้รวม</p>
                   <p className="text-lg font-black text-emerald-700 dark:text-emerald-300 tabular-nums">{formatFullCurrency(customer.dealStats.wonValue)}</p>
                 </div>
-                <div className="bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800/40 rounded-2xl p-4">
-                  <p className="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest mb-1">กำลังดำเนินการ</p>
-                  <p className="text-lg font-black text-violet-700 dark:text-violet-300 tabular-nums">{formatFullCurrency(customer.dealStats.activeValue)}</p>
+                <div className="bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/40 rounded-2xl p-4">
+                  <p className="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-widest mb-1">กำลังดำเนินการ</p>
+                  <p className="text-lg font-black text-teal-700 dark:text-teal-300 tabular-nums">{formatFullCurrency(customer.dealStats.activeValue)}</p>
                 </div>
               </div>
 
@@ -694,10 +694,10 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                 </p>
                 <div className="space-y-2 max-h-[45vh] overflow-y-auto">
                   {customer.dealStats.deals.map(deal => (
-                    <div key={deal.id} className="bg-white dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-4 hover:border-violet-200 dark:hover:border-violet-500/40 transition-all group">
+                    <div key={deal.id} className="bg-white dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-4 hover:border-teal-200 dark:hover:border-teal-500/40 transition-all group">
                       <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{deal.title}</p>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{deal.title}</p>
                           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             <strong className="text-slate-800 dark:text-slate-200">{formatCurrency(deal.value)}</strong>
                             <span className="mx-1 text-slate-300 dark:text-slate-600">·</span>
@@ -708,7 +708,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                           'text-[10px] font-black px-2.5 py-1 rounded-full border shrink-0',
                           deal.stage === 'won' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800/40 dark:text-emerald-300'
                             : deal.stage === 'lost' ? 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-950/40 dark:border-rose-800/40 dark:text-rose-400'
-                            : 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-white/5 dark:border-white/10 dark:text-slate-300 group-hover:border-violet-200 group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors'
+                            : 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-white/5 dark:border-white/10 dark:text-slate-300 group-hover:border-teal-200 group-hover:text-teal-600 dark:group-hover:text-teal-300 transition-colors'
                         )}>
                           {STAGE_LABELS[deal.stage] || deal.stage}
                         </span>
@@ -732,7 +732,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
               <div className="flex items-center justify-between">
                 <p className="text-sm font-bold text-slate-800 dark:text-white">ผู้ติดต่อ ({contacts.length})</p>
                 <Button onClick={() => { setEditingContact(null); setContactForm({ full_name: '', role: '', email: '', phone: '', is_primary: false }); setIsContactFormOpen(true); }}
-                  className="h-8 px-3 rounded-lg bg-violet-600 text-white text-xs font-bold border-0 cursor-pointer">
+                  className="h-8 px-3 rounded-lg bg-teal-600 text-white text-xs font-bold border-0 cursor-pointer">
                   <Plus size={13} className="mr-1" /> เพิ่ม
                 </Button>
               </div>
@@ -740,9 +740,9 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
               <AnimatePresence>
                 {isContactFormOpen && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                    <div className="bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800/40 rounded-2xl p-4">
+                    <div className="bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/40 rounded-2xl p-4">
                       <form onSubmit={handleContactSubmit} className="space-y-3">
-                        <p className="text-xs font-bold text-violet-700 dark:text-violet-300">{editingContact ? 'แก้ไขผู้ติดต่อ' : 'เพิ่มผู้ติดต่อใหม่'}</p>
+                        <p className="text-xs font-bold text-teal-700 dark:text-teal-300">{editingContact ? 'แก้ไขผู้ติดต่อ' : 'เพิ่มผู้ติดต่อใหม่'}</p>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1">
                             <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">ชื่อ-นามสกุล *</label>
@@ -762,12 +762,12 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                           </div>
                         </div>
                         <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
-                          <input type="checkbox" checked={contactForm.is_primary} onChange={e => setContactForm(p => ({ ...p, is_primary: e.target.checked }))} className="rounded accent-violet-600" />
+                          <input type="checkbox" checked={contactForm.is_primary} onChange={e => setContactForm(p => ({ ...p, is_primary: e.target.checked }))} className="rounded accent-teal-600" />
                           ตั้งเป็นผู้ติดต่อหลัก
                         </label>
                         <div className="flex gap-2">
                           <Button type="button" variant="ghost" onClick={() => setIsContactFormOpen(false)} className="h-8 text-xs text-slate-500 dark:text-slate-400">ยกเลิก</Button>
-                          <Button type="submit" className="h-8 px-4 rounded-lg bg-violet-600 text-white text-xs font-bold border-0">บันทึก</Button>
+                          <Button type="submit" className="h-8 px-4 rounded-lg bg-teal-600 text-white text-xs font-bold border-0">บันทึก</Button>
                         </div>
                       </form>
                     </div>
@@ -783,8 +783,8 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                   </div>
                 )}
                 {contacts.map(contact => (
-                  <div key={contact.id} className="bg-white dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-4 hover:border-violet-100 dark:hover:border-violet-500/30 transition-all group flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-sm font-black shrink-0 shadow-sm">
+                  <div key={contact.id} className="bg-white dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl p-4 hover:border-teal-100 dark:hover:border-teal-500/30 transition-all group flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center text-white text-sm font-black shrink-0 shadow-sm">
                       {contact.full_name?.charAt(0) || '?'}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -799,7 +799,7 @@ CLV (มูลค่าที่ปิดได้): ${(customer.dealStats?.wonV
                       </div>
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => { setEditingContact(contact); setContactForm(contact); setIsContactFormOpen(true); }} className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-white/10 transition-colors">
+                      <button onClick={() => { setEditingContact(contact); setContactForm(contact); setIsContactFormOpen(true); }} className="p-1.5 rounded-lg text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-white/10 transition-colors">
                         <Pencil size={13} />
                       </button>
                       <button onClick={() => { if (confirm('ต้องการลบผู้ติดต่อนี้?')) deleteContact(contact.id); }} className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-white/10 transition-colors">
@@ -985,7 +985,7 @@ export default function CustomersPage() {
   if (isLoading) return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="bg-white dark:bg-[#0f111a] rounded-2xl border border-slate-200/80 dark:border-white/10 p-5 space-y-4 animate-pulse shadow-sm">
+        <div key={i} className="bg-white dark:bg-[#192629] rounded-2xl border border-slate-200/80 dark:border-white/10 p-5 space-y-4 animate-pulse shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 bg-slate-200 dark:bg-white/10 rounded-2xl" />
             <div className="space-y-2 flex-1"><div className="h-3 bg-slate-200 dark:bg-white/10 rounded w-2/3" /><div className="h-2.5 bg-slate-100 dark:bg-white/5 rounded w-1/2" /></div>
@@ -1000,8 +1000,8 @@ export default function CustomersPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mesh-bg max-w-[1600px] mx-auto pb-20 px-2 sm:px-4 md:px-6 relative ui-enter">
       {/* Ambient glows */}
-      <div className="fixed top-20 right-0 w-[500px] h-[500px] bg-violet-400/5 rounded-full blur-[120px] pointer-events-none -z-10" />
-      <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-fuchsia-400/5 rounded-full blur-[100px] pointer-events-none -z-10" />
+      <div className="fixed top-20 right-0 w-[500px] h-[500px] bg-teal-400/5 rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-teal-400/5 rounded-full blur-[100px] pointer-events-none -z-10" />
 
       <div className={cn(
         'flex gap-6 transition-all duration-500',
@@ -1024,7 +1024,7 @@ export default function CustomersPage() {
                 </Button>
                 <Button
                   onClick={() => shouldBlockBasic ? openPaywall(isGuestAccount ? 'default' : 'trial_ended') : (setNewCustomer(EMPTY_FORM), setFormError(null), setIsAddModalOpen(true))}
-                  className="h-9 px-4 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold border-0 shadow-md shadow-violet-500/20 flex items-center gap-1.5 hover:-translate-y-0.5 transition-all"
+                  className="h-9 px-4 rounded-xl bg-gradient-to-r from-teal-600 to-teal-600 text-white text-sm font-bold border-0 shadow-md shadow-teal-500/20 flex items-center gap-1.5 transition-all"
                 >
                   <Plus size={16} strokeWidth={3} /> เพิ่มลูกค้า
                 </Button>
@@ -1037,10 +1037,10 @@ export default function CustomersPage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-2 md:grid-cols-4 gap-3"
+            className="nova-customer-metrics grid grid-cols-2 md:grid-cols-4 gap-3"
           >
             {[
-              { label: 'ลูกค้าทั้งหมด', val: totalStats.total, icon: Users, tone: 'text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-400/10' },
+              { label: 'ลูกค้าทั้งหมด', val: totalStats.total, icon: Users, tone: 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-400/10' },
               { label: 'ปิดได้รวม', val: formatCurrency(totalStats.totalWonValue), icon: DollarSign, tone: 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-400/10' },
               { label: 'Pipeline ดำเนินการ', val: formatCurrency(totalStats.totalActiveValue), icon: TrendingUp, tone: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-400/10' },
               { label: 'บัญชีต้องดูแลด่วน', val: totalStats.atRiskAccounts, icon: AlertTriangle, tone: 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-400/10' },
@@ -1048,10 +1048,10 @@ export default function CustomersPage() {
               <motion.div
                 key={label}
                 variants={cardVariants}
-                whileHover={{ y: -3, scale: 1.015 }}
+                whileHover={{ y: -1 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ type: 'spring', stiffness: 450, damping: 30 }}
-                className="min-w-0 rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#0f111a]/90 sm:p-5 card-glow-overlay card-lift depth-2 cursor-default"
+                className="min-w-0 rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-lg dark:border-white/10 dark:bg-[#192629]/90 sm:p-5 card-glow-overlay card-lift depth-2 cursor-default"
               >
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <p className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</p>
@@ -1065,7 +1065,7 @@ export default function CustomersPage() {
           </motion.div>
 
           {/* Search + Filter bar */}
-          <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white/80 backdrop-blur-xl p-3 shadow-sm dark:border-white/10 dark:bg-[#0f111a]/80 sm:flex-row">
+          <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white/80 backdrop-blur-xl p-3 shadow-sm dark:border-white/10 dark:bg-[#192629]/80 sm:flex-row">
             {/* Search */}
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
@@ -1073,7 +1073,7 @@ export default function CustomersPage() {
                 aria-label="ค้นหาลูกค้า" placeholder="ค้นหาชื่อ, บริษัท, อีเมล..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-50 dark:bg-white/[0.04] text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-[#171926] focus:border-violet-400 outline-none transition-all"
+                className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-50 dark:bg-white/[0.04] text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-[#171926] focus:border-teal-400 outline-none transition-all"
               />
               {searchTerm && (
                 <button aria-label="ล้างคำค้นหา" onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-white">
@@ -1085,7 +1085,7 @@ export default function CustomersPage() {
             {/* Grade filter pills */}
             <div className="flex items-center gap-1 bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 p-1 rounded-xl overflow-x-auto no-scrollbar">
               {[
-                { val: 'all', label: 'ทั้งหมด', count: gradeCounts.all, cls: 'bg-violet-600 text-white' },
+                { val: 'all', label: 'ทั้งหมด', count: gradeCounts.all, cls: 'bg-teal-600 text-white' },
                 { val: 'grade-A', label: 'A', count: gradeCounts.A, cls: 'bg-emerald-600 text-white' },
                 { val: 'grade-B', label: 'B', count: gradeCounts.B, cls: 'bg-blue-600 text-white' },
                 { val: 'grade-C', label: 'C', count: gradeCounts.C, cls: 'bg-amber-500 text-white' },
@@ -1116,7 +1116,7 @@ export default function CustomersPage() {
             {/* Sort + View */}
             <div className="flex items-center gap-2">
               <select value={`${sortBy}-${sortOrder}`} onChange={e => { const [by, ord] = e.target.value.split('-'); setSortBy(by); setSortOrder(ord); }}
-                className="h-10 px-3 rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-50 dark:bg-[#171926] text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:border-violet-400 cursor-pointer">
+                className="h-10 px-3 rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-50 dark:bg-[#171926] text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:border-teal-400 cursor-pointer">
                 <option value="name-asc">ชื่อ A→Z</option>
                 <option value="name-desc">ชื่อ Z→A</option>
                 <option value="clv-desc">CLV มากสุด</option>
@@ -1126,10 +1126,10 @@ export default function CustomersPage() {
                 <option value="date-desc">อัปเดตล่าสุด</option>
               </select>
               <div className="flex bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 p-1 rounded-xl">
-                <button aria-label="แสดงแบบการ์ด" aria-pressed={viewMode === 'grid'} onClick={() => setViewMode('grid')} className={cn('p-1.5 rounded-lg transition-all cursor-pointer', viewMode === 'grid' ? 'bg-white dark:bg-violet-600 text-violet-600 dark:text-white shadow-xs' : 'text-slate-400 hover:text-slate-700 dark:hover:text-white')}>
+                <button aria-label="แสดงแบบการ์ด" aria-pressed={viewMode === 'grid'} onClick={() => setViewMode('grid')} className={cn('p-1.5 rounded-lg transition-all cursor-pointer', viewMode === 'grid' ? 'bg-white dark:bg-teal-600 text-teal-600 dark:text-white shadow-xs' : 'text-slate-400 hover:text-slate-700 dark:hover:text-white')}>
                   <LayoutGrid size={15} />
                 </button>
-                <button aria-label="แสดงแบบตาราง" aria-pressed={viewMode === 'list'} onClick={() => setViewMode('list')} className={cn('p-1.5 rounded-lg transition-all cursor-pointer', viewMode === 'list' ? 'bg-white dark:bg-violet-600 text-violet-600 dark:text-white shadow-xs' : 'text-slate-400 hover:text-slate-700 dark:hover:text-white')}>
+                <button aria-label="แสดงแบบตาราง" aria-pressed={viewMode === 'list'} onClick={() => setViewMode('list')} className={cn('p-1.5 rounded-lg transition-all cursor-pointer', viewMode === 'list' ? 'bg-white dark:bg-teal-600 text-teal-600 dark:text-white shadow-xs' : 'text-slate-400 hover:text-slate-700 dark:hover:text-white')}>
                   <List size={15} />
                 </button>
               </div>
@@ -1140,10 +1140,10 @@ export default function CustomersPage() {
           <AnimatePresence>
             {selectedIds.length > 0 && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                <div className="flex items-center justify-between bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800/40 rounded-2xl px-4 py-2.5">
-                  <span className="text-sm font-bold text-violet-700 dark:text-violet-300">เลือก {selectedIds.length} รายการ</span>
+                <div className="flex items-center justify-between bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/40 rounded-2xl px-4 py-2.5">
+                  <span className="text-sm font-bold text-teal-700 dark:text-teal-300">เลือก {selectedIds.length} รายการ</span>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setSelectedIds([])} className="h-8 text-xs border-violet-200 dark:border-violet-800 text-violet-600 dark:text-violet-300">ยกเลิก</Button>
+                    <Button variant="outline" size="sm" onClick={() => setSelectedIds([])} className="h-8 text-xs border-teal-200 dark:border-teal-800 text-teal-600 dark:text-teal-300">ยกเลิก</Button>
                     <Button variant="outline" size="sm" onClick={handleBulkDelete} className="h-8 text-xs border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40">
                       <Trash2 size={13} className="mr-1" /> ลบที่เลือก
                     </Button>
@@ -1172,13 +1172,13 @@ export default function CustomersPage() {
 
           {/* List view */}
           {viewMode === 'list' && filteredCustomers.length > 0 && (
-            <div className="overflow-hidden rounded-2xl bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-sm">
+            <div className="overflow-hidden rounded-2xl bg-white/80 dark:bg-[#192629]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-200/60 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02]">
                       <th className="p-4 w-12">
-                        <div className={cn('w-5 h-5 rounded-full border-2 cursor-pointer flex items-center justify-center', selectedIds.length === filteredCustomers.length && filteredCustomers.length > 0 ? 'bg-violet-600 border-violet-600' : 'border-slate-300 dark:border-slate-600')}
+                        <div className={cn('w-5 h-5 rounded-full border-2 cursor-pointer flex items-center justify-center', selectedIds.length === filteredCustomers.length && filteredCustomers.length > 0 ? 'bg-teal-600 border-teal-600' : 'border-slate-300 dark:border-slate-600')}
                           onClick={() => setSelectedIds(selectedIds.length === filteredCustomers.length ? [] : filteredCustomers.map(c => c.id))}>
                           {selectedIds.length === filteredCustomers.length && filteredCustomers.length > 0 && <CheckCircle2 size={11} className="text-white" />}
                         </div>
@@ -1200,9 +1200,9 @@ export default function CustomersPage() {
 
           {/* Empty state */}
           {filteredCustomers.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-sm">
-              <div className="w-16 h-16 bg-violet-500/10 rounded-2xl flex items-center justify-center mb-4">
-                <Users size={32} className="text-violet-600 dark:text-violet-400" />
+            <div className="flex flex-col items-center justify-center py-20 bg-white/80 dark:bg-[#192629]/80 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-sm">
+              <div className="w-16 h-16 bg-teal-500/10 rounded-2xl flex items-center justify-center mb-4">
+                <Users size={32} className="text-teal-600 dark:text-teal-400" />
               </div>
               <h3 className="text-lg font-black text-slate-900 dark:text-white mb-1">
                 {searchTerm ? 'ไม่พบลูกค้า' : 'ยังไม่มีฐานลูกค้า'}
@@ -1212,7 +1212,7 @@ export default function CustomersPage() {
               </p>
               <button
                 onClick={() => searchTerm ? setSearchTerm('') : (setNewCustomer(EMPTY_FORM), setIsAddModalOpen(true))}
-                className="px-5 py-2.5 bg-violet-600 text-white text-xs font-bold rounded-xl hover:bg-violet-700 transition-all shadow-md cursor-pointer"
+                className="px-5 py-2.5 bg-teal-600 text-white text-xs font-bold rounded-xl hover:bg-teal-700 transition-all shadow-md cursor-pointer"
               >
                 {searchTerm ? 'ล้างการค้นหา' : '+ เพิ่มลูกค้าใหม่'}
               </button>
@@ -1228,7 +1228,7 @@ export default function CustomersPage() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 40 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-y-0 right-0 z-50 w-full max-w-[400px] 2xl:relative 2xl:inset-auto 2xl:z-auto 2xl:w-[400px] shrink-0 bg-white dark:bg-[#0d0f1a] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.08)] dark:shadow-[0_0_40px_rgba(0,0,0,0.6)] overflow-hidden 2xl:sticky 2xl:top-4 h-[100dvh] 2xl:h-[calc(100vh-6rem)]"
+              className="fixed inset-y-0 right-0 z-50 w-full max-w-[400px] 2xl:relative 2xl:inset-auto 2xl:z-auto 2xl:w-[400px] shrink-0 bg-white dark:bg-[#192629] rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.08)] dark:shadow-[0_0_40px_rgba(0,0,0,0.6)] overflow-hidden 2xl:sticky 2xl:top-4 h-[100dvh] 2xl:h-[calc(100vh-6rem)]"
             >
               <CustomerDetailPanel
                 customer={selectedCustomer}
@@ -1268,13 +1268,13 @@ export default function CustomersPage() {
 
       {/* Add Customer Modal */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-lg bg-white dark:bg-[#0d0f1a] text-slate-900 dark:text-white rounded-3xl p-0 border border-slate-200/80 dark:border-white/10 shadow-2xl overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-violet-500 to-indigo-500" />
+        <DialogContent className="max-w-lg bg-white dark:bg-[#192629] text-slate-900 dark:text-white rounded-3xl p-0 border border-slate-200/80 dark:border-white/10 shadow-2xl overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-teal-500 to-teal-500" />
           <div className="p-7 space-y-5">
             <DialogHeader>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-950/40 border border-violet-100 dark:border-violet-800/40 flex items-center justify-center">
-                  <Users size={22} className="text-violet-600 dark:text-violet-400" />
+                <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/40 border border-teal-100 dark:border-teal-800/40 flex items-center justify-center">
+                  <Users size={22} className="text-teal-600 dark:text-teal-400" />
                 </div>
                 <div>
                   <DialogTitle className="text-xl font-black text-slate-900 dark:text-white">เพิ่มลูกค้าใหม่</DialogTitle>
@@ -1306,7 +1306,7 @@ export default function CustomersPage() {
                 </div>
                 <div className="col-span-2 space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ระดับลูกค้า</label>
-                  <select value={newCustomer.tier} onChange={e => setNewCustomer({ ...newCustomer, tier: e.target.value })} className="w-full h-11 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] px-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-violet-400 cursor-pointer">
+                  <select value={newCustomer.tier} onChange={e => setNewCustomer({ ...newCustomer, tier: e.target.value })} className="w-full h-11 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#171926] px-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-teal-400 cursor-pointer">
                     <option value="Silver">🥈 Silver</option>
                     <option value="Gold">🥇 Gold</option>
                     <option value="Platinum">💎 Platinum</option>
@@ -1320,7 +1320,7 @@ export default function CustomersPage() {
               {formError && <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 text-sm text-rose-600 dark:text-rose-300 font-semibold">{formError}</div>}
               <div className="flex gap-3">
                 <Button type="button" variant="ghost" onClick={() => setIsAddModalOpen(false)} className="flex-1 h-11 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10" disabled={createCustomerMutation.isPending}>ยกเลิก</Button>
-                <Button type="submit" className="flex-[2] h-11 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold border-0 shadow-md" disabled={createCustomerMutation.isPending}>
+                <Button type="submit" className="flex-[2] h-11 rounded-xl bg-gradient-to-r from-teal-600 to-teal-600 text-white font-bold border-0 shadow-md" disabled={createCustomerMutation.isPending}>
                   {createCustomerMutation.isPending ? <><Loader2 size={16} className="animate-spin mr-2" />กำลังบันทึก...</> : 'บันทึกลูกค้า'}
                 </Button>
               </div>

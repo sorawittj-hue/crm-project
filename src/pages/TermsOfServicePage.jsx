@@ -11,7 +11,7 @@ export default function TermsOfServicePage() {
             กลับหน้าหลัก
           </Link>
           <div className="flex items-center gap-3">
-            <FileText className="w-8 h-8 text-violet-400" />
+            <FileText className="w-8 h-8 text-teal-400" />
             <h1 className="text-3xl font-bold">ข้อตกลงการใช้งาน (Terms of Service)</h1>
           </div>
           <p className="mt-4 text-slate-400">อัปเดตล่าสุด: มิถุนายน 2026</p>

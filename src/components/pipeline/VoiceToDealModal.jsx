@@ -120,11 +120,11 @@ export default function VoiceToDealModal({ open, onOpenChange, onSaveDeal }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md p-0 overflow-hidden rounded-2xl border-0 bg-white shadow-2xl">
-        <div className="h-1.5 bg-gradient-to-r from-violet-500 to-fuchsia-500" />
+        <div className="h-1.5 bg-gradient-to-r from-teal-500 to-teal-500" />
         <div className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
-              <Mic size={18} className="text-violet-600" />
+            <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
+              <Mic size={18} className="text-teal-600" />
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900">Voice to Deal</h3>
@@ -149,7 +149,7 @@ export default function VoiceToDealModal({ open, onOpenChange, onSaveDeal }) {
                   onTouchEnd={stopRecording}
                   className={cn(
                     "w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 relative",
-                    isRecording ? "bg-rose-50 border-rose-200" : "bg-violet-50 hover:bg-violet-100 border-violet-200",
+                    isRecording ? "bg-rose-50 border-rose-200" : "bg-teal-50 hover:bg-teal-100 border-teal-200",
                     "border-4 cursor-pointer"
                   )}
                 >
@@ -157,11 +157,11 @@ export default function VoiceToDealModal({ open, onOpenChange, onSaveDeal }) {
                     <div className="absolute inset-0 rounded-full animate-ping bg-rose-400 opacity-20" />
                   )}
                   {isProcessing ? (
-                    <Loader2 size={40} className="text-violet-600 animate-spin" />
+                    <Loader2 size={40} className="text-teal-600 animate-spin" />
                   ) : isRecording ? (
                     <StopCircle size={40} className="text-rose-500" />
                   ) : (
-                    <Mic size={40} className="text-violet-600" />
+                    <Mic size={40} className="text-teal-600" />
                   )}
                 </button>
                 
@@ -212,7 +212,7 @@ export default function VoiceToDealModal({ open, onOpenChange, onSaveDeal }) {
                       type="number"
                       value={parsedData.value}
                       onChange={e => setParsedData({...parsedData, value: e.target.value})}
-                      className="h-10 rounded-xl font-bold text-violet-700"
+                      className="h-10 rounded-xl font-bold text-teal-700"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -247,7 +247,7 @@ export default function VoiceToDealModal({ open, onOpenChange, onSaveDeal }) {
                   </Button>
                   <Button
                     onClick={handleSave}
-                    className="flex-1 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold shadow-md shadow-violet-500/20"
+                    className="flex-1 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-md shadow-teal-500/20"
                   >
                     บันทึกดีล
                   </Button>

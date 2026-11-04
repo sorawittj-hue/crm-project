@@ -61,34 +61,34 @@ export default function PipelineHeader({
     }).format(val || 0);
 
   return (
-    <div className="space-y-4">
+    <div className="nova-pipeline-header">
       {/* MONTH NAVIGATOR */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <div className="flex items-center bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-md border border-slate-200/80 dark:border-white/10 rounded-2xl p-1 shadow-2xs gap-1">
+          <div className="flex items-center bg-white/80 dark:bg-[#192629]/80 backdrop-blur-md border border-slate-200/80 dark:border-white/10 rounded-2xl p-1 shadow-2xs gap-1">
             <button
               onClick={goPrev}
-              className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-violet-50 dark:hover:bg-white/10 hover:text-violet-600 dark:hover:text-white transition-all cursor-pointer"
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-teal-50 dark:hover:bg-white/10 hover:text-teal-600 dark:hover:text-white transition-all cursor-pointer"
               aria-label="เดือนก่อน"
             >
               <ChevronLeft size={16} />
             </button>
             <div className="flex items-center gap-2 px-3 min-w-[190px] justify-center select-none">
-              <div className="w-6 h-6 rounded-lg bg-violet-100 dark:bg-violet-950 text-violet-600 dark:text-violet-400 flex items-center justify-center">
+              <div className="w-6 h-6 rounded-lg bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center">
                 <CalendarDays size={13} />
               </div>
               <span className="text-xs md:text-sm font-extrabold text-slate-900 dark:text-white tracking-wide">
                 {MONTHS_TH[selectedMonth]} {selectedYear + 543}
               </span>
               {isCurrent && (
-                <span className="text-[10px] font-bold px-2 py-0.5 bg-violet-600 text-white rounded-full">
+                <span className="text-[10px] font-bold px-2 py-0.5 bg-teal-600 text-white rounded-full">
                   ปัจจุบัน
                 </span>
               )}
             </div>
             <button
               onClick={goNext}
-              className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-violet-50 dark:hover:bg-white/10 hover:text-violet-600 dark:hover:text-white transition-all cursor-pointer"
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-teal-50 dark:hover:bg-white/10 hover:text-teal-600 dark:hover:text-white transition-all cursor-pointer"
               aria-label="เดือนถัดไป"
             >
               <ChevronRight size={16} />
@@ -100,7 +100,7 @@ export default function PipelineHeader({
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               onClick={goToday}
-              className="h-9 px-3 rounded-xl bg-violet-600 text-white hover:bg-violet-700 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+              className="h-9 px-3 rounded-xl bg-teal-600 text-white hover:bg-teal-700 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
             >
               <Target size={13} /> กลับเดือนปัจจุบัน
             </motion.button>
@@ -129,13 +129,13 @@ export default function PipelineHeader({
         <summary className="cursor-pointer font-semibold text-slate-800 dark:text-white">สรุปยอดขายรายเดือน</summary>
       <div className="mt-4 grid grid-cols-2 lg:grid-cols-6 gap-3.5">
         {/* Monthly Target — Hero Card with Aurora background */}
-        <div className="col-span-2 relative overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-white via-violet-50/70 to-indigo-50/60 p-5 shadow-sm transition-shadow hover:shadow-md dark:border-violet-300/10 dark:from-[#111827] dark:via-[#151a2b] dark:to-[#17172b] md:p-6">
+        <div className="col-span-2 relative overflow-hidden rounded-2xl border border-teal-200 bg-gradient-to-br from-white via-teal-50/70 to-teal-50/60 p-5 shadow-sm transition-shadow hover:shadow-md dark:border-teal-300/10 dark:from-[#111827] dark:via-[#203136] dark:to-[#203136] md:p-6">
 
           <div className="relative z-10 space-y-3 md:space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-400/10 flex items-center justify-center">
-                  <Zap size={15} className="text-violet-700 dark:text-violet-300" />
+                <div className="w-8 h-8 rounded-xl bg-teal-100 dark:bg-teal-400/10 flex items-center justify-center">
+                  <Zap size={15} className="text-teal-700 dark:text-teal-300" />
                 </div>
                 <div>
                   <p className="text-xs text-slate-600 dark:text-slate-300 font-semibold flex items-center gap-1">
@@ -144,7 +144,7 @@ export default function PipelineHeader({
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">เป้าหมายประจำเดือน</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-violet-100 text-violet-800 dark:bg-violet-400/10 dark:text-violet-200 text-xs font-semibold">
+              <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-teal-100 text-teal-800 dark:bg-teal-400/10 dark:text-teal-200 text-xs font-semibold">
                 <Target size={12} />
                 <AnimatedNumber value={Math.round(progress)} suffix="%" />
               </div>
@@ -165,7 +165,7 @@ export default function PipelineHeader({
                   transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                   className={cn(
                     'h-full rounded-full transition-all duration-500',
-                    progress >= 100 ? 'bg-emerald-500' : 'bg-violet-600 dark:bg-violet-400'
+                    progress >= 100 ? 'bg-emerald-500' : 'bg-teal-600 dark:bg-teal-400'
                   )}
                 />
               </div>
@@ -183,7 +183,7 @@ export default function PipelineHeader({
         </div>
 
         {/* Growth MoM — KPI Emerald / Rose */}
-        <div className="p-4 md:p-5 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522] shadow-sm relative overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-md">
+        <div className="p-4 md:p-5 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#192629] shadow-sm relative overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-md">
           <div className="relative z-10 flex justify-between items-start">
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
               การเติบโต
@@ -205,7 +205,7 @@ export default function PipelineHeader({
         </div>
 
         {/* Won deals count — KPI Amber */}
-        <div className="p-4 md:p-5 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522] shadow-sm relative overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-md">
+        <div className="p-4 md:p-5 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#192629] shadow-sm relative overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-md">
           <div className="relative z-10 flex justify-between items-start">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">ปิดได้เดือนนี้</p>
             <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-400/10 text-amber-700 dark:text-amber-300 flex items-center justify-center">
@@ -222,7 +222,7 @@ export default function PipelineHeader({
         </div>
 
         {/* At risk — KPI Rose */}
-        <div className="col-span-2 lg:col-span-1 p-4 md:p-5 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522] shadow-sm relative overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-md">
+        <div className="col-span-2 lg:col-span-1 p-4 md:p-5 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#192629] shadow-sm relative overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-md">
           <div className="relative z-10 flex justify-between items-start">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">ดีลค้าง/เสี่ยง</p>
             <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-400/10 text-rose-700 dark:text-rose-300 flex items-center justify-center">
@@ -240,10 +240,10 @@ export default function PipelineHeader({
         </div>
 
         {/* Weighted Pipeline — KPI Violet */}
-        <div className="col-span-2 lg:col-span-1 p-4 md:p-5 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111522] shadow-sm relative overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-md">
+        <div className="col-span-2 lg:col-span-1 p-4 md:p-5 rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#192629] shadow-sm relative overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-md">
           <div className="relative z-10 flex justify-between items-start">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">Weighted</p>
-            <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-400/10 text-violet-700 dark:text-violet-300 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-400/10 text-teal-700 dark:text-teal-300 flex items-center justify-center">
               <Briefcase size={14} />
             </div>
           </div>

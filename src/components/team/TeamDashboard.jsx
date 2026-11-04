@@ -68,7 +68,7 @@ const MemberCard = ({ member, deals, formatCurrency, onDealClick }) => {
   const stageColors = { negotiation: '#F97316', proposal: '#EAB308', contact: '#3B82F6', lead: '#6B7280' };
 
   return (
-    <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl rounded-[28px] border border-slate-200/80 dark:border-white/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+    <div className="bg-white/80 dark:bg-[#192629]/80 backdrop-blur-xl rounded-[28px] border border-slate-200/80 dark:border-white/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
       {/* Header Band */}
       <div className="h-2" style={{ backgroundColor: member.color }} />
 
@@ -232,9 +232,9 @@ const TeamDashboard = ({ deals = [], teamMembers = [], onDealClick, formatCurren
     <div className="max-w-7xl mx-auto space-y-8 pb-20">
 
       {/* ── TEAM HEADER ── */}
-      <div className="bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 rounded-[32px] p-8 text-white relative overflow-hidden shadow-2xl">
+      <div className="bg-gradient-to-br from-teal-900 via-teal-900 to-slate-900 rounded-[32px] p-8 text-white relative overflow-hidden shadow-2xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-24 -mt-24 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full -ml-16 -mb-16 blur-2xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-500/10 rounded-full -ml-16 -mb-16 blur-2xl pointer-events-none" />
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-6">
@@ -243,7 +243,7 @@ const TeamDashboard = ({ deals = [], teamMembers = [], onDealClick, formatCurren
             </div>
             <div>
               <h2 className="text-2xl font-black">Team Dashboard</h2>
-              <p className="text-indigo-300 text-xs font-bold uppercase tracking-widest">
+              <p className="text-teal-300 text-xs font-bold uppercase tracking-widest">
                 ภาพรวมทีมขาย • {new Date().toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
               </p>
             </div>
@@ -251,19 +251,19 @@ const TeamDashboard = ({ deals = [], teamMembers = [], onDealClick, formatCurren
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white/10 backdrop-blur rounded-2xl p-4">
-              <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-1">ยอดทีม (Won)</p>
+              <p className="text-[10px] font-black text-teal-300 uppercase tracking-widest mb-1">ยอดทีม (Won)</p>
               <p className="text-2xl font-black">{formatShort(teamWon)}</p>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-2xl p-4">
-              <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-1">เป้าทีม</p>
+              <p className="text-[10px] font-black text-teal-300 uppercase tracking-widest mb-1">เป้าทีม</p>
               <p className="text-2xl font-black text-yellow-300">{formatShort(teamGoal)}</p>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-2xl p-4">
-              <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-1">Pipeline รวม</p>
+              <p className="text-[10px] font-black text-teal-300 uppercase tracking-widest mb-1">Pipeline รวม</p>
               <p className="text-2xl font-black text-cyan-300">{formatShort(teamPipeline)}</p>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-2xl p-4">
-              <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-1">Gap ที่เหลือ</p>
+              <p className="text-[10px] font-black text-teal-300 uppercase tracking-widest mb-1">Gap ที่เหลือ</p>
               <p className={`text-2xl font-black ${teamGap > 0 ? 'text-red-300' : 'text-green-300'}`}>
                 {teamGap > 0 ? formatShort(teamGap) : '🎉 Done!'}
               </p>
@@ -272,7 +272,7 @@ const TeamDashboard = ({ deals = [], teamMembers = [], onDealClick, formatCurren
 
           {/* Team Progress Bar */}
           <div>
-            <div className="flex justify-between text-xs font-bold text-indigo-300 mb-2">
+            <div className="flex justify-between text-xs font-bold text-teal-300 mb-2">
               <span>Team Progress</span>
               <span>{teamPct}% • ต้องปิดอีก {fc(teamDailyNeeded)}/วัน ({daysLeft} วัน)</span>
             </div>
@@ -323,7 +323,7 @@ const TeamDashboard = ({ deals = [], teamMembers = [], onDealClick, formatCurren
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Leaderboard */}
-        <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl rounded-[24px] border border-slate-200/80 dark:border-white/10 shadow-sm p-6">
+        <div className="bg-white/80 dark:bg-[#192629]/80 backdrop-blur-xl rounded-[24px] border border-slate-200/80 dark:border-white/10 shadow-sm p-6">
           <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
             <Trophy size={14} className="text-yellow-500" /> Leaderboard (เดือนนี้)
           </h3>
@@ -355,7 +355,7 @@ const TeamDashboard = ({ deals = [], teamMembers = [], onDealClick, formatCurren
         </div>
 
         {/* Monthly Trend */}
-        <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-xl rounded-[24px] border border-slate-200/80 dark:border-white/10 shadow-sm p-6">
+        <div className="bg-white/80 dark:bg-[#192629]/80 backdrop-blur-xl rounded-[24px] border border-slate-200/80 dark:border-white/10 shadow-sm p-6">
           <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
             <TrendingUp size={14} className="text-emerald-500" /> ยอดปิด 6 เดือนย้อนหลัง (ทีมรวม)
           </h3>

@@ -64,9 +64,9 @@ const HARDWARE_DB = {
   server: {
     key: 'server',
     icon: Server,
-    gradient: 'from-violet-600 to-purple-500',
-    bgGradient: 'from-violet-50/40 to-purple-50/40',
-    borderColor: 'border-violet-200/50',
+    gradient: 'from-teal-600 to-teal-500',
+    bgGradient: 'from-teal-50/40 to-teal-50/40',
+    borderColor: 'border-teal-200/50',
     title: "Enterprise Servers & Datacenter",
     categories: [
       {
@@ -183,7 +183,7 @@ export default function HardwareGuide() {
   return (
     <div className="space-y-8 relative">
       {/* Background Orbs */}
-      <div className="absolute -top-40 -left-20 w-96 h-96 bg-violet-400/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute -top-40 -left-20 w-96 h-96 bg-teal-400/10 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute top-20 -right-20 w-80 h-80 bg-cyan-400/10 blur-[100px] rounded-full pointer-events-none" />
 
       {/* Top Level Category Selector */}
@@ -283,7 +283,7 @@ export default function HardwareGuide() {
               transition={{ duration: 0.3 }}
               className="h-full"
             >
-              <div className="bg-white/80 dark:bg-[#0f111a]/80 backdrop-blur-2xl rounded-[2.5rem] border border-slate-200/80 dark:border-white/10 p-6 md:p-10 shadow-[0_20px_60px_rgb(0,0,0,0.06)] ring-1 ring-slate-900/5 dark:ring-white/5 h-full flex flex-col relative overflow-hidden">
+              <div className="bg-white/80 dark:bg-[#192629]/80 backdrop-blur-2xl rounded-[2.5rem] border border-slate-200/80 dark:border-white/10 p-6 md:p-10 shadow-[0_20px_60px_rgb(0,0,0,0.06)] ring-1 ring-slate-900/5 dark:ring-white/5 h-full flex flex-col relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5 dark:opacity-10 pointer-events-none">
                   <currentProfile.icon size={120} />
                 </div>

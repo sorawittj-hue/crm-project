@@ -40,9 +40,9 @@ const PLUGINS = [
     name: 'Custom Webhook (Zapier/Make)',
     desc: 'ยิงข้อมูล JSON ออกไปยังระบบอื่น เมื่อเกิดเหตุการณ์สำคัญใน CRM',
     icon: Webhook,
-    color: 'bg-violet-500',
-    textColor: 'text-violet-500',
-    glow: 'shadow-violet-500/30',
+    color: 'bg-teal-500',
+    textColor: 'text-teal-500',
+    glow: 'shadow-teal-500/30',
     fields: [
       { key: 'webhook_url', label: 'Webhook URL', type: 'url', placeholder: 'https://hooks.zapier.com/hooks/catch/...' },
       { key: 'secret_key', label: 'Secret Key (Optional)', type: 'password', placeholder: 'my-super-secret-signature' }
@@ -130,7 +130,7 @@ export function IntegrationSection() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <Loader2 className="animate-spin text-violet-600" size={32} />
+        <Loader2 className="animate-spin text-teal-600" size={32} />
       </div>
     );
   }
@@ -139,12 +139,12 @@ export function IntegrationSection() {
     <div className="space-y-8">
       <div className="flex flex-col gap-1 mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-500/20 ring-1 ring-white/20">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-teal-500/20 ring-1 ring-white/20">
             <Plug size={20} strokeWidth={2.5} />
           </div>
           <div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">ปลั๊กอิน & การเชื่อมต่อ</h2>
-            <p className="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest mt-0.5">Integrations</p>
+            <p className="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-widest mt-0.5">Integrations</p>
           </div>
         </div>
         <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-2 pl-[3.25rem]">
@@ -162,7 +162,7 @@ export function IntegrationSection() {
               key={plugin.id}
               whileHover={{ y: -6, scale: 1.02 }}
               className={cn(
-                "group relative overflow-hidden bg-white/70 dark:bg-[#0f111a]/80 backdrop-blur-2xl rounded-xl border transition-all duration-500 cursor-pointer",
+                "group relative overflow-hidden bg-white/70 dark:bg-[#192629]/80 backdrop-blur-2xl rounded-xl border transition-all duration-500 cursor-pointer",
                 isEnabled
                   ? `border-${plugin.textColor.split('-')[1]}-300/50 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.12)] ${plugin.glow}`
                   : "border-white/80 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 dark:ring-white/5 hover:shadow-[0_15px_35px_rgb(0,0,0,0.06)]"
@@ -225,7 +225,7 @@ export function IntegrationSection() {
         onOpenChange={(isOpen) => { if (!isOpen) setActivePlugin(null); }}
         className="max-w-lg"
       >
-        <DialogContent showCloseButton={false} className="max-h-[90dvh] overflow-y-auto rounded-xl border-white/50 bg-white/95 p-0 shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)] dark:border-white/10 dark:bg-[#0f111a]/95">
+        <DialogContent showCloseButton={false} className="max-h-[90dvh] overflow-y-auto rounded-xl border-white/50 bg-white/95 p-0 shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)] dark:border-white/10 dark:bg-[#192629]/95">
           {activePlugin && (
             <>
               <div className={cn("h-2 w-full", activePlugin.color)} />
@@ -286,7 +286,7 @@ export function IntegrationSection() {
                     <Button
                       type="submit"
                       disabled={isSaving}
-                      className={cn("flex-1 rounded-[1.25rem] h-14 font-bold text-white shadow-xl transition-all hover:-translate-y-0.5 cursor-pointer", activePlugin.color.replace('bg-', 'hover:bg-').replace(']', ']/90'), activePlugin.color, activePlugin.glow)}
+                      className={cn("flex-1 rounded-[1.25rem] h-14 font-bold text-white shadow-xl transition-all cursor-pointer", activePlugin.color.replace('bg-', 'hover:bg-').replace(']', ']/90'), activePlugin.color, activePlugin.glow)}
                     >
                       {isSaving ? <Loader2 className="animate-spin" size={20} /> : (
                         <>

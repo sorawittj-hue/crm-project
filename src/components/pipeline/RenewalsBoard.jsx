@@ -52,7 +52,7 @@ export default function RenewalsBoard({ deals, customers, onDealClick }) {
               </div>
             </div>
             
-            <h4 className="font-bold text-slate-900 text-sm mb-1 group-hover:text-violet-600 transition-colors">{deal.title || deal.company}</h4>
+            <h4 className="font-bold text-slate-900 text-sm mb-1 group-hover:text-teal-600 transition-colors">{deal.title || deal.company}</h4>
             <p className="text-xs text-slate-500 font-medium mb-4">{deal.company}</p>
             
             <div className="mt-auto pt-4 border-t border-slate-100 flex items-end justify-between">

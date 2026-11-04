@@ -24,7 +24,7 @@ export default function PageHeader({
       <div className="relative z-10 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <div className="flex min-w-0 items-center gap-4">
           {Icon && (
-            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-violet-200/80 bg-gradient-to-br from-violet-50 via-white to-indigo-50 text-violet-700 shadow-[0_4px_14px_-2px_rgba(124,58,237,0.15)] dark:border-violet-400/20 dark:from-violet-500/20 dark:via-indigo-500/10 dark:to-transparent dark:text-violet-300">
+            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-teal-200/80 bg-gradient-to-br from-teal-50 via-white to-teal-50 text-teal-700 shadow-[0_4px_14px_-2px_rgba(15,118,110,0.15)] dark:border-teal-400/20 dark:from-teal-500/20 dark:via-teal-500/10 dark:to-transparent dark:text-teal-300">
               <Icon size={21} strokeWidth={2.2} />
             </div>
           )}

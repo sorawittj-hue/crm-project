@@ -47,7 +47,7 @@ export default function UPSCalculator() {
 
   const inputClasses = cn(
     "flex h-14 w-full rounded-2xl border-2 bg-white dark:bg-[#171926] px-5 py-3 text-base font-bold outline-none transition-all duration-200 text-slate-900 dark:text-white",
-    "border-slate-200 dark:border-white/10 focus:border-slate-900 dark:focus:border-violet-400 focus:ring-4 focus:ring-slate-900/10 dark:focus:ring-violet-500/20"
+    "border-slate-200 dark:border-white/10 focus:border-slate-900 dark:focus:border-teal-400 focus:ring-4 focus:ring-slate-900/10 dark:focus:ring-teal-500/20"
   );
 
   const labelClasses = "text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2";
@@ -152,7 +152,7 @@ export default function UPSCalculator() {
           onClick={calculate}
           className={cn(
             "w-full h-14 md:h-16 rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-[0.25em] shadow-xl transition-all duration-300 cursor-pointer",
-            "bg-gradient-to-r from-slate-900 to-slate-700 dark:from-violet-600 dark:to-indigo-600 text-white hover:scale-[1.02] hover:shadow-2xl active:scale-95 border-0"
+            "bg-gradient-to-r from-slate-900 to-slate-700 dark:from-teal-600 dark:to-teal-600 text-white hover:scale-[1.02] hover:shadow-2xl active:scale-95 border-0"
           )}
         >
           <Calculator size={18} className="mr-3 shrink-0" />
@@ -169,7 +169,7 @@ export default function UPSCalculator() {
           className="grid md:grid-cols-2 gap-4 md:gap-6 mt-8"
         >
           {/* UPS Size Result */}
-          <div className="group relative p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] bg-gradient-to-br from-slate-50 to-white dark:from-slate-950/40 dark:to-[#0f111a] border-2 border-slate-200/80 dark:border-white/10 overflow-hidden shadow-sm">
+          <div className="group relative p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] bg-gradient-to-br from-slate-50 to-white dark:from-slate-950/40 dark:to-[#192629] border-2 border-slate-200/80 dark:border-white/10 overflow-hidden shadow-sm">
             <div className="absolute top-0 right-0 w-24 md:w-32 h-24 md:h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-[4rem] -z-0 pointer-events-none" />
             <div className="relative z-10">
               <div className="flex items-start gap-4 md:gap-5 mb-5 md:mb-6">

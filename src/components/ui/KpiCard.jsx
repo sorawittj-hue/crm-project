@@ -9,16 +9,16 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 const COLOR_MAP = {
   violet: {
     lightBg: "bg-white/80 border-slate-200/80 shadow-sm",
-    darkBg: "dark:bg-[#111522]/90 dark:border-white/[0.08]",
-    accent: "#7c3aed",
-    darkAccent: "#a78bfa",
-    labelCls: "text-violet-700 dark:text-violet-300/90",
+    darkBg: "dark:bg-[#192629]/90 dark:border-white/[0.08]",
+    accent: "#0f766e",
+    darkAccent: "#5eead4",
+    labelCls: "text-teal-700 dark:text-teal-300/90",
     valueCls: "text-slate-900 dark:text-white",
     barCls: "stat-bar-violet"
   },
   emerald: {
     lightBg: "bg-white/80 border-slate-200/80 shadow-sm",
-    darkBg: "dark:bg-[#111522]/90 dark:border-white/[0.08]",
+    darkBg: "dark:bg-[#192629]/90 dark:border-white/[0.08]",
     accent: "#059669",
     darkAccent: "#34d399",
     labelCls: "text-emerald-700 dark:text-emerald-300/90",
@@ -27,7 +27,7 @@ const COLOR_MAP = {
   },
   amber: {
     lightBg: "bg-white/80 border-slate-200/80 shadow-sm",
-    darkBg: "dark:bg-[#111522]/90 dark:border-white/[0.08]",
+    darkBg: "dark:bg-[#192629]/90 dark:border-white/[0.08]",
     accent: "#d97706",
     darkAccent: "#fbbf24",
     labelCls: "text-amber-700 dark:text-amber-300/90",
@@ -36,7 +36,7 @@ const COLOR_MAP = {
   },
   cyan: {
     lightBg: "bg-white/80 border-slate-200/80 shadow-sm",
-    darkBg: "dark:bg-[#111522]/90 dark:border-white/[0.08]",
+    darkBg: "dark:bg-[#192629]/90 dark:border-white/[0.08]",
     accent: "#0284c7",
     darkAccent: "#38bdf8",
     labelCls: "text-cyan-700 dark:text-cyan-300/90",
@@ -45,7 +45,7 @@ const COLOR_MAP = {
   },
   rose: {
     lightBg: "bg-white/80 border-slate-200/80 shadow-sm",
-    darkBg: "dark:bg-[#111522]/90 dark:border-white/[0.08]",
+    darkBg: "dark:bg-[#192629]/90 dark:border-white/[0.08]",
     accent: "#e11d48",
     darkAccent: "#fb7185",
     labelCls: "text-rose-700 dark:text-rose-300/90",

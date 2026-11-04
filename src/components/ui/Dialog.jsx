@@ -67,7 +67,7 @@ function DialogContent({ className = '', children, showCloseButton = true, ...pr
           aria-hidden="true"
           className="fixed inset-0 z-[100] overflow-hidden bg-slate-950/65 backdrop-blur-sm"
         >
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_8%,rgba(139,92,246,0.20),transparent_48%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_8%,rgba(13,148,136,0.20),transparent_48%)]" />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_85%_90%,rgba(56,189,248,0.08),transparent_38%)]" />
         </motion.div>
       </DialogPrimitive.Overlay>
@@ -89,7 +89,7 @@ function DialogContent({ className = '', children, showCloseButton = true, ...pr
         >
           <div
             className={cn(
-              'relative isolate w-full overflow-hidden border border-white/70 bg-white/95 text-slate-900 shadow-[0_32px_100px_rgba(2,6,23,0.38),0_8px_30px_rgba(109,40,217,0.16)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#0f111a]/95 dark:text-white dark:shadow-[0_32px_100px_rgba(0,0,0,0.62)]',
+              'relative isolate w-full overflow-hidden border border-white/70 bg-white/95 text-slate-900 shadow-[0_32px_100px_rgba(2,6,23,0.38),0_8px_30px_rgba(109,40,217,0.16)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#192629]/95 dark:text-white dark:shadow-[0_32px_100px_rgba(0,0,0,0.62)]',
               placement === 'right' ? 'h-dvh max-h-none max-w-xl rounded-l-2xl rounded-r-none' : 'max-h-[90dvh] max-w-lg rounded-2xl',
               dialogClassName,
               className
@@ -97,18 +97,18 @@ function DialogContent({ className = '', children, showCloseButton = true, ...pr
           >
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-x-10 top-0 z-20 h-px bg-gradient-to-r from-transparent via-violet-400/80 to-transparent"
+              className="pointer-events-none absolute inset-x-10 top-0 z-20 h-px bg-gradient-to-r from-transparent via-teal-400/80 to-transparent"
             />
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute -right-20 -top-24 z-0 h-48 w-48 rounded-full bg-violet-400/10 blur-3xl dark:bg-violet-400/15"
+              className="pointer-events-none absolute -right-20 -top-24 z-0 h-48 w-48 rounded-full bg-teal-400/10 blur-3xl dark:bg-teal-400/15"
             />
             <div className="relative z-[1]">{children}</div>
             {showCloseButton && (
               <DialogPrimitive.Close asChild>
                 <button
                   type="button"
-                  className="absolute right-3 top-3 z-30 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/70 bg-white/80 text-slate-500 shadow-sm backdrop-blur-md transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+                  className="absolute right-3 top-3 z-30 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/70 bg-white/80 text-slate-500 shadow-sm backdrop-blur-md transition-colors hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
                   aria-label="ปิดหน้าต่าง"
                 >
                   <X className="h-4 w-4" />

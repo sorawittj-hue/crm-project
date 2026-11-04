@@ -25,7 +25,7 @@ const WarCard = ({ children, className, delay = 0, gradient = false }) => (
     transition={{ duration: 0.4, delay }}
     className={cn(
       "relative overflow-hidden rounded-3xl border backdrop-blur-xl shadow-xl",
-      gradient ? "bg-gradient-to-br from-primary/20 via-purple-500/10 to-primary/20 border-primary/30" :
+      gradient ? "bg-gradient-to-br from-primary/20 via-teal-500/10 to-primary/20 border-primary/30" :
         "border-white/5 bg-black/40",
       className
     )}
@@ -337,7 +337,7 @@ const CommandCenter = ({
                 className={cn(
                   "h-full rounded-full relative overflow-hidden",
                   stats.pct >= 100 ? "bg-gradient-to-r from-emerald-500 to-emerald-400" :
-                    stats.pct >= 50 ? "bg-gradient-to-r from-primary to-indigo-400" :
+                    stats.pct >= 50 ? "bg-gradient-to-r from-primary to-teal-400" :
                       "bg-gradient-to-r from-red-500 to-orange-400"
                 )}
               >

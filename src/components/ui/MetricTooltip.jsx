@@ -7,7 +7,7 @@ export default function MetricTooltip({ label, explanation, formula, position = 
 
   return (
     <div className="relative inline-flex items-center gap-1 group">
-      <span className="cursor-help border-b border-dashed border-slate-300 group-hover:border-violet-400 transition-colors">
+      <span className="cursor-help border-b border-dashed border-slate-300 group-hover:border-teal-400 transition-colors">
         {label}
       </span>
       <button
@@ -16,7 +16,7 @@ export default function MetricTooltip({ label, explanation, formula, position = 
         onMouseLeave={() => setIsOpen(false)}
         onFocus={() => setIsOpen(true)}
         onBlur={() => setIsOpen(false)}
-        className="text-slate-400 hover:text-violet-600 transition-colors p-0.5 rounded focus:outline-none"
+        className="text-slate-400 hover:text-teal-600 transition-colors p-0.5 rounded focus:outline-none"
         aria-label={`ข้อมูลเพิ่มเติมสำหรับ ${label}`}
       >
         <Info size={12} />
@@ -34,10 +34,10 @@ export default function MetricTooltip({ label, explanation, formula, position = 
               ${position === 'bottom' ? 'top-full left-1/2 mt-2.5' : ''}
             `}
           >
-            <p className="font-bold text-violet-300 mb-1">{label}</p>
+            <p className="font-bold text-teal-300 mb-1">{label}</p>
             <p className="text-slate-200 font-medium">{explanation}</p>
             {formula && (
-              <div className="mt-2 pt-2 border-t border-white/10 text-[10px] text-indigo-200 font-mono">
+              <div className="mt-2 pt-2 border-t border-white/10 text-[10px] text-teal-200 font-mono">
                 <span className="font-bold uppercase text-[9px] block text-slate-400 mb-0.5">สูตรคำนวณ:</span>
                 {formula}
               </div>

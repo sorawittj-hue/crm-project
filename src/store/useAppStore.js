@@ -17,7 +17,7 @@ export const useAppStore = create(
   persist(
     (set, get) => ({
       // Theme Management
-      theme: 'dark', // 'dark' | 'light' | 'system'
+      theme: 'light', // 'dark' | 'light' | 'system'
       setTheme: (theme) => {
         applyThemeToDOM(theme);
         set({ theme });
@@ -92,7 +92,7 @@ export const useAppStore = create(
         if (state?.theme) {
           applyThemeToDOM(state.theme);
         } else {
-          applyThemeToDOM('dark');
+          applyThemeToDOM('light');
         }
       }
     }

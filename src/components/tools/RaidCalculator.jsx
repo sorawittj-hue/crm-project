@@ -16,7 +16,7 @@ const RAID_TYPES = [
 const RAID_COLORS = {
   blue: { bg: 'from-blue-500 to-cyan-500', light: 'bg-blue-50 dark:bg-blue-950/40', border: 'border-blue-200 dark:border-blue-800/40', text: 'text-blue-600 dark:text-blue-400' },
   green: { bg: 'from-emerald-500 to-green-500', light: 'bg-emerald-50 dark:bg-emerald-950/40', border: 'border-emerald-200 dark:border-emerald-800/40', text: 'text-emerald-600 dark:text-emerald-400' },
-  purple: { bg: 'from-purple-500 to-violet-500', light: 'bg-purple-50 dark:bg-purple-950/40', border: 'border-purple-200 dark:border-purple-800/40', text: 'text-purple-600 dark:text-purple-400' },
+  purple: { bg: 'from-teal-500 to-teal-500', light: 'bg-teal-50 dark:bg-teal-950/40', border: 'border-teal-200 dark:border-teal-800/40', text: 'text-teal-600 dark:text-teal-400' },
   amber: { bg: 'from-amber-500 to-orange-500', light: 'bg-amber-50 dark:bg-amber-950/40', border: 'border-amber-200 dark:border-amber-800/40', text: 'text-amber-600 dark:text-amber-400' },
   emerald: { bg: 'from-emerald-500 to-teal-500', light: 'bg-emerald-50 dark:bg-emerald-950/40', border: 'border-emerald-200 dark:border-emerald-800/40', text: 'text-emerald-600 dark:text-emerald-400' }
 };
@@ -65,7 +65,7 @@ export default function RaidCalculator() {
 
   const inputClasses = cn(
     "flex h-14 w-full rounded-2xl border-2 bg-white dark:bg-[#171926] px-5 py-3 text-base font-bold outline-none transition-all duration-200 text-slate-900 dark:text-white",
-    "border-slate-200 dark:border-white/10 focus:border-slate-900 dark:focus:border-violet-400 focus:ring-4 focus:ring-slate-900/10 dark:focus:ring-violet-500/20"
+    "border-slate-200 dark:border-white/10 focus:border-slate-900 dark:focus:border-teal-400 focus:ring-4 focus:ring-slate-900/10 dark:focus:ring-teal-500/20"
   );
 
   const labelClasses = "text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2";
@@ -150,7 +150,7 @@ export default function RaidCalculator() {
           onClick={calculate}
           className={cn(
             "w-full h-14 md:h-16 rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-[0.25em] shadow-xl transition-all duration-300 cursor-pointer border-0",
-            "bg-gradient-to-r from-slate-900 to-slate-700 dark:from-violet-600 dark:to-indigo-600 text-white hover:scale-[1.02] hover:shadow-2xl active:scale-95"
+            "bg-gradient-to-r from-slate-900 to-slate-700 dark:from-teal-600 dark:to-teal-600 text-white hover:scale-[1.02] hover:shadow-2xl active:scale-95"
           )}
         >
           <Server size={18} className="mr-3 shrink-0" />
@@ -203,7 +203,7 @@ export default function RaidCalculator() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
-              className="group relative p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/40 dark:to-[#0f111a] border-2 border-emerald-200 dark:border-emerald-800/40 overflow-hidden shadow-sm"
+              className="group relative p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/40 dark:to-[#192629] border-2 border-emerald-200 dark:border-emerald-800/40 overflow-hidden shadow-sm"
             >
               <div className="absolute top-0 right-0 w-20 md:w-24 h-20 md:h-24 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-bl-[3rem] -z-0 pointer-events-none" />
               <div className="relative z-10 text-center">
@@ -221,7 +221,7 @@ export default function RaidCalculator() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.55 }}
-              className="group relative p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-slate-50 to-white dark:from-slate-950/40 dark:to-[#0f111a] border-2 border-slate-200 dark:border-white/10 overflow-hidden shadow-sm"
+              className="group relative p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-slate-50 to-white dark:from-slate-950/40 dark:to-[#192629] border-2 border-slate-200 dark:border-white/10 overflow-hidden shadow-sm"
             >
               <div className="absolute top-0 right-0 w-20 md:w-24 h-20 md:h-24 bg-gradient-to-br from-slate-500/10 to-transparent rounded-bl-[3rem] -z-0 pointer-events-none" />
               <div className="relative z-10 text-center">
@@ -239,7 +239,7 @@ export default function RaidCalculator() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.6 }}
-              className="group relative p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-amber-50 to-white dark:from-amber-950/40 dark:to-[#0f111a] border-2 border-amber-200 dark:border-amber-800/40 overflow-hidden shadow-sm"
+              className="group relative p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-amber-50 to-white dark:from-amber-950/40 dark:to-[#192629] border-2 border-amber-200 dark:border-amber-800/40 overflow-hidden shadow-sm"
             >
               <div className="absolute top-0 right-0 w-20 md:w-24 h-20 md:h-24 bg-gradient-to-br from-amber-500/10 to-transparent rounded-bl-[3rem] -z-0 pointer-events-none" />
               <div className="relative z-10 text-center">
@@ -257,14 +257,14 @@ export default function RaidCalculator() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.65 }}
-              className="group relative p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-violet-50 to-white dark:from-violet-950/40 dark:to-[#0f111a] border-2 border-violet-200 dark:border-violet-800/40 overflow-hidden shadow-sm"
+              className="group relative p-4 md:p-6 rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-teal-50 to-white dark:from-teal-950/40 dark:to-[#192629] border-2 border-teal-200 dark:border-teal-800/40 overflow-hidden shadow-sm"
             >
-              <div className="absolute top-0 right-0 w-20 md:w-24 h-20 md:h-24 bg-gradient-to-br from-violet-500/10 to-transparent rounded-bl-[3rem] -z-0 pointer-events-none" />
+              <div className="absolute top-0 right-0 w-20 md:w-24 h-20 md:h-24 bg-gradient-to-br from-teal-500/10 to-transparent rounded-bl-[3rem] -z-0 pointer-events-none" />
               <div className="relative z-10 text-center">
-                <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-violet-500/30 mx-auto mb-3">
+                <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-teal-500 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-teal-500/30 mx-auto mb-3">
                   <TrendingUp size={24} strokeWidth={2.5} />
                 </div>
-                <p className="text-[10px] font-black text-violet-600/70 dark:text-violet-400 uppercase tracking-[0.15em] mb-1.5">Efficiency</p>
+                <p className="text-[10px] font-black text-teal-600/70 dark:text-teal-400 uppercase tracking-[0.15em] mb-1.5">Efficiency</p>
                 <p className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tabular-nums">{results.storageEfficiency}</p>
                 <p className="text-[10px] md:text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase">%</p>
               </div>

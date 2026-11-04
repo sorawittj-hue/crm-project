@@ -13,8 +13,8 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { useAppStore } from '../../store/useAppStore';
 
 const MEMBER_COLORS = [
-  { value: 'bg-violet-600', label: 'ม่วง' },
-  { value: 'bg-indigo-600', label: 'น้ำเงินเข้ม' },
+  { value: 'bg-teal-600', label: 'ม่วง' },
+  { value: 'bg-teal-600', label: 'น้ำเงินเข้ม' },
   { value: 'bg-blue-600',   label: 'น้ำเงิน' },
   { value: 'bg-emerald-600',label: 'เขียว' },
   { value: 'bg-amber-500',  label: 'เหลือง' },
@@ -24,7 +24,7 @@ const MEMBER_COLORS = [
   { value: 'bg-slate-700',  label: 'เทา' },
 ];
 
-const EMPTY_MEMBER = { name: '', role: '', goal: '', color: 'bg-violet-600' };
+const EMPTY_MEMBER = { name: '', role: '', goal: '', color: 'bg-teal-600' };
 
 export function TeamSection() {
   const { data: teamMembers = [] } = useTeam();
@@ -82,13 +82,13 @@ export function TeamSection() {
 
   return (
     <div className="space-y-4">
-      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#0f111a]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
+      <Card className="p-8 rounded-xl bg-white/60 dark:bg-[#192629]/80  border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-teal-400/10 to-transparent rounded-bl-full -z-0 pointer-events-none" />
         <div className="flex items-center justify-between mb-8 relative z-10">
           <div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight relative z-10 flex items-center gap-2">
               ทีมงาน
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300">{teamMembers.length} คน</span>
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-teal-100 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300">{teamMembers.length} คน</span>
             </h2>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1 relative z-10">จัดการสมาชิกและเป้าหมายรายบุคคล</p>
           </div>
@@ -101,7 +101,7 @@ export function TeamSection() {
                 setNewMember(EMPTY_MEMBER);
               }
             }}
-            className="h-9 px-4 rounded-xl text-xs bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-md shadow-violet-500/20 font-bold flex items-center gap-1.5 cursor-pointer"
+            className="h-9 px-4 rounded-xl text-xs bg-teal-600 hover:bg-teal-700 text-white border-0 shadow-md shadow-teal-500/20 font-bold flex items-center gap-1.5 cursor-pointer"
           >
             <Plus size={13} className="mr-1.5" /> เพิ่มสมาชิก
           </Button>
@@ -111,7 +111,7 @@ export function TeamSection() {
           {teamMembers.map((m) => (
             <div
               key={m.id}
-              className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] hover:bg-gradient-to-r hover:from-violet-50/40 hover:to-white dark:hover:from-white/[0.06] dark:hover:to-white/[0.04] hover:border-violet-100 dark:hover:border-violet-500/20 hover:shadow-sm transition-all group"
+              className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] hover:bg-gradient-to-r hover:from-teal-50/40 hover:to-white dark:hover:from-white/[0.06] dark:hover:to-white/[0.04] hover:border-teal-100 dark:hover:border-teal-500/20 hover:shadow-sm transition-all group"
             >
               {editingMemberId === m.id ? (
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -160,8 +160,8 @@ export function TeamSection() {
                 </div>
               ) : (
                 <>
-                  <div className={cn('p-0.5 rounded-xl shrink-0', m.color ? m.color.replace('bg-', 'bg-gradient-to-br from-').concat('/80 to-', m.color.replace('bg-', '')) : 'bg-gradient-to-br from-violet-500 to-violet-700')}>
-                    <div className={cn('w-10 h-10 rounded-[10px] flex items-center justify-center text-white font-bold text-base border border-white/20', m.color || 'bg-violet-600')}>
+                  <div className={cn('p-0.5 rounded-xl shrink-0', m.color ? m.color.replace('bg-', 'bg-gradient-to-br from-').concat('/80 to-', m.color.replace('bg-', '')) : 'bg-gradient-to-br from-teal-500 to-teal-700')}>
+                    <div className={cn('w-10 h-10 rounded-[10px] flex items-center justify-center text-white font-bold text-base border border-white/20', m.color || 'bg-teal-600')}>
                       {m.name.charAt(0)}
                     </div>
                   </div>
@@ -182,7 +182,7 @@ export function TeamSection() {
                           setEditMemberForm({ name: m.name, role: m.role, goal: m.goal, color: m.color });
                         }
                       }}
-                      className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-300 dark:hover:border-violet-500/40 transition-all cursor-pointer"
+                      className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-300 dark:hover:border-teal-500/40 transition-all cursor-pointer"
                     >
                       <Pencil size={13} />
                     </button>
@@ -206,8 +206,8 @@ export function TeamSection() {
 
           {teamMembers.length === 0 && (
             <div className="text-center py-14">
-              <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20 border border-violet-100 dark:border-white/10 flex items-center justify-center mx-auto mb-4">
-                <Users size={32} className="text-violet-400" />
+              <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-teal-50 to-teal-50 dark:from-teal-950/30 dark:to-teal-950/20 border border-teal-100 dark:border-white/10 flex items-center justify-center mx-auto mb-4">
+                <Users size={32} className="text-teal-400" />
               </div>
               <p className="text-sm font-bold text-slate-600 dark:text-slate-300">ยังไม่มีสมาชิกในทีม</p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">กดปุ่ม &ldquo;เพิ่มสมาชิก&rdquo; เพื่อเริ่มสร้างทีมขาย</p>
@@ -224,7 +224,7 @@ export function TeamSection() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
           >
-            <Card className="p-6 rounded-2xl bg-white dark:bg-[#0f111a] border border-violet-200 dark:border-violet-500/30 shadow-sm">
+            <Card className="p-6 rounded-2xl bg-white dark:bg-[#192629] border border-teal-200 dark:border-teal-500/30 shadow-sm">
               <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-4">เพิ่มสมาชิกใหม่</h3>
               <form onSubmit={handleAddMember} className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -268,7 +268,7 @@ export function TeamSection() {
                           className={cn(
                             'w-7 h-7 rounded-lg transition-all cursor-pointer',
                             c.value,
-                            newMember.color === c.value ? 'ring-2 ring-offset-2 ring-violet-400 scale-110' : 'opacity-60 hover:opacity-100'
+                            newMember.color === c.value ? 'ring-2 ring-offset-2 ring-teal-400 scale-110' : 'opacity-60 hover:opacity-100'
                           )}
                         />
                       ))}
@@ -287,7 +287,7 @@ export function TeamSection() {
                   <Button
                     type="submit"
                     disabled={addMember.isPending}
-                    className="flex-[2] h-10 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold border-0 shadow-md shadow-violet-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-[2] h-10 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-semibold border-0 shadow-md shadow-teal-500/20 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {addMember.isPending && <Loader2 size={13} className="animate-spin" />}
                     <Plus size={13} /> เพิ่มสมาชิก

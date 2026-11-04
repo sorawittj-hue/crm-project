@@ -20,7 +20,7 @@ const TOUR_STEPS = [
     description: 'คุณกำลังอยู่ใน Sandbox Mode — ข้อมูลตัวอย่างระดับ Enterprise ของบริษัทชั้นนำของไทยพร้อมให้สำรวจแล้ว',
     features: [
       { icon: LayoutDashboard, label: 'Command Center', desc: 'Dashboard real-time พร้อมกราฟวิเคราะห์', color: 'text-blue-500 bg-blue-50' },
-      { icon: Target, label: 'Sales Pipeline', desc: 'Kanban board ลากวางได้', color: 'text-violet-500 bg-violet-50' },
+      { icon: Target, label: 'Sales Pipeline', desc: 'Kanban board ลากวางได้', color: 'text-teal-500 bg-teal-50' },
       { icon: Users, label: 'Customer Intelligence', desc: 'ประเมิน health score อัตโนมัติ', color: 'text-emerald-500 bg-emerald-50' },
       { icon: Bot, label: 'AI Copilot', desc: 'วิเคราะห์ดีลและแนะนำกลยุทธ์', color: 'text-amber-500 bg-amber-50' },
     ],
@@ -111,7 +111,7 @@ export default function WelcomeModal() {
             transition={{ type: 'spring', stiffness: 360, damping: 28 }}
           >
             {/* Gradient header */}
-            <div className="h-2 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500" />
+            <div className="h-2 bg-gradient-to-r from-teal-500 via-teal-500 to-pink-500" />
 
             {/* Step progress dots */}
             <div className="flex items-center justify-between px-7 pt-5 pb-1">
@@ -122,9 +122,9 @@ export default function WelcomeModal() {
                     className={cn(
                       'h-1.5 rounded-full transition-all duration-300',
                       i === step
-                        ? 'w-6 bg-violet-600'
+                        ? 'w-6 bg-teal-600'
                         : i < step
-                          ? 'w-1.5 bg-violet-300'
+                          ? 'w-1.5 bg-teal-300'
                           : 'w-1.5 bg-slate-200'
                     )}
                   />
@@ -148,7 +148,7 @@ export default function WelcomeModal() {
                 <h2 className="text-xl font-black text-slate-900 tracking-tight mb-1">
                   {current.title}
                 </h2>
-                <p className="text-sm font-semibold text-violet-600 mb-3">{current.subtitle}</p>
+                <p className="text-sm font-semibold text-teal-600 mb-3">{current.subtitle}</p>
                 <p className="text-sm text-slate-500 leading-relaxed">{current.description}</p>
               </div>
 
@@ -173,7 +173,7 @@ export default function WelcomeModal() {
               {current.tips && (
                 <div className="space-y-2 mb-6">
                   {current.tips.map((tip, i) => (
-                    <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-violet-50/60 border border-violet-100/60">
+                    <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-teal-50/60 border border-teal-100/60">
                       <p className="text-xs text-slate-700 leading-relaxed font-medium">{tip}</p>
                     </div>
                   ))}
@@ -225,7 +225,7 @@ export default function WelcomeModal() {
                         handleClose();
                         openPaywall('guest_upgrade');
                       }}
-                      className="w-full py-3 rounded-xl font-black text-white bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 shadow-lg shadow-violet-500/25 transition-all hover:scale-[1.02] active:scale-95 text-sm"
+                      className="w-full py-3 rounded-xl font-black text-white bg-gradient-to-r from-teal-600 to-teal-600 hover:from-teal-500 hover:to-teal-500 shadow-lg shadow-teal-500/25 transition-all hover:scale-[1.02] active:scale-95 text-sm"
                     >
                       ✨ สมัครสมาชิกฟรี — ย้ายข้อมูลขึ้น Cloud
                     </button>
@@ -240,7 +240,7 @@ export default function WelcomeModal() {
                   <>
                     <button
                       onClick={() => handleCta(current.cta.route)}
-                      className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                      className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-teal-600 hover:bg-teal-700 transition-all flex items-center justify-center gap-1.5 active:scale-95"
                     >
                       {current.cta.label} <ArrowRight size={15} />
                     </button>
@@ -254,7 +254,7 @@ export default function WelcomeModal() {
                 ) : (
                   <button
                     onClick={handleNext}
-                    className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                    className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-teal-600 hover:bg-teal-700 transition-all flex items-center justify-center gap-1.5 active:scale-95"
                   >
                     ถัดไป <ArrowRight size={15} />
                   </button>
